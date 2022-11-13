@@ -33,6 +33,13 @@ export const loader = async ({ request }: LoaderArgs) => {
   );
 };
 
+const node_env = process.env.NODE_ENV;
+
+const authRedirect =
+  process.env.NODE_ENV === 'production'
+    ? 'https://bf2-matchmaking.netlify.app/'
+    : 'http://localhost:3000/';
+
 export default function Index() {
   const supabase = useSupabaseClient();
   const user = useUser();
@@ -43,14 +50,17 @@ export default function Index() {
     console.log(res);
   };
 
+  console.log('node: ', node_env);
+
   if (!user) {
     return (
       <Auth
-        redirectTo="http://localhost:3000/"
+        redirectTo={authRedirect}
         appearance={{ theme: ThemeSupa }}
         supabaseClient={supabase}
         providers={['discord']}
         socialLayout="horizontal"
+        onlyThirdPartyProviders={true}
       />
     );
   }
