@@ -11,12 +11,7 @@ export const sendMatchJoinMessage = async (
 ) => {
   const player = match.players.find((p) => p.id === player_id);
   await replaceChannelMessage(match, {
-    embeds: [
-      getMatchEmbed(
-        match,
-        source === 'web' && player ? `${player.full_name} joined` : undefined
-      ),
-    ],
+    embeds: [getMatchEmbed(match, `${player?.full_name || 'Player'} joined`)],
   });
 };
 
@@ -26,9 +21,7 @@ export const sendMatchLeaveMessage = async (
 ) => {
   const player = await client().getPlayer(player_id).then(verifySingleResult);
   await replaceChannelMessage(match, {
-    embeds: [
-      getMatchEmbed(match, source === 'web' ? `${player.full_name} left` : undefined),
-    ],
+    embeds: [getMatchEmbed(match, `${player.full_name} left`)],
   });
 };
 
