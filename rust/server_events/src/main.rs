@@ -1,45 +1,18 @@
-use std::thread;
-use std::net::{TcpListener, TcpStream, Shutdown};
-use std::io::{Read, Write};
+use std::{env, result};
 
-const EVENT_PORT: &str = "8080";
-const LOCALHOST: &str = "127.0.0.1";
+mod http_client;
+mod http_server;
 
-fn main() {
-    let listener = TcpListener::bind(format!("{LOCALHOST}!:{EVENT_PORT}!")).unwrap();
-    // accept connections and process them, spawning a new thread for each one
-    println!("Server listening on port 3333");
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                println!("New connection: {}", stream.peer_addr().unwrap());
-                thread::spawn(move|| {
-                    // connection succeeded
-                    handle_event(stream)
-                });
-            }
-            Err(e) => {
-                println!("Error: {}", e);
-                /* connection failed */
-            }
-        }
+#[tokio::main]
+async fn main() {
+    if env::var_os("RUST_LOG").is_none() {
+        // Set `RUST_LOG=events=debug` to see debug logs,
+        // this only shows access logs.
+        env::set_var("RUST_LOG", "events=info");
     }
-    // close the socket server
-    drop(listener);
-}
+    pretty_env_logger::init();
 
-fn handle_event(mut stream: TcpStream) {
-    let mut data = [0 as u8; 50]; // using 50 byte buffer
-    while match stream.read(&mut data) {
-        Ok(size) => {
-            // echo everything!
-            stream.write(&data[0..size]).unwrap();
-            true
-        },
-        Err(_) => {
-            println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
-            stream.shutdown(Shutdown::Both).unwrap();
-            false
-        }
-    } {}
+    let result = http_client::register().await;
+    println!("{:#?}", result);
+    http_server::run().await;
 }

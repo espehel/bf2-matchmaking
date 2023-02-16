@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import invariant from 'tiny-invariant';
 import { createClient } from './bf2-client';
 import { mapListPlayers, mapServerInfo } from './mappers';
-import { error } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 import { client } from '@bf2-matchmaking/supabase';
 
 const app = express();
@@ -148,6 +148,19 @@ app.post('/rounds', async (req, res) => {
   }
 
   return res.status(201).send(`Round ${round.id} created.`);
+});
+
+app.post('/servers', async (req, res) => {
+  const { ip, serverName } = req.body;
+  info('POST /servers', 'Received request');
+  const { data: server, error: err } = await client().upsertServer(ip, serverName);
+
+  if (err) {
+    error('POST /servers', err.message);
+    res.status(502).send(err.message);
+  } else {
+    res.status(201).send(server);
+  }
 });
 
 app.get('/health', (req, res) => {
