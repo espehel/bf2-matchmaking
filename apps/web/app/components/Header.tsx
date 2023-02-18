@@ -1,19 +1,15 @@
 import React, { FC } from 'react';
-import { NavLink, useNavigate } from '@remix-run/react';
+import { Form, NavLink, useLocation, useNavigate, useResolvedPath } from '@remix-run/react';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useUser } from '@supabase/auth-helpers-react';
 import { usePlayer } from '~/state/PlayerContext';
-
-const authRedirect =
-  process.env.NODE_ENV === 'production'
-    ? 'https://bf2-matchmaking.netlify.app/matches/'
-    : 'http://localhost:5003/matches/';
 
 const Header: FC = () => {
   const supabase = useSupabaseClient();
   const user = useUser();
   const { player } = usePlayer();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   return (
     <header className="header">
@@ -47,7 +43,7 @@ const Header: FC = () => {
               <button
                 onClick={async () => {
                   await supabase.auth.signOut();
-                  navigate('/');
+                  navigate('/', { replace: true });
                 }}
               >
                 Sign out
@@ -56,18 +52,9 @@ const Header: FC = () => {
           )}
           {!user && (
             <li>
-              <button
-                onClick={async () => {
-                  await supabase.auth.signInWithOAuth({
-                    provider: 'discord',
-                    options: {
-                      redirectTo: authRedirect,
-                    },
-                  });
-                }}
-              >
-                Sign in
-              </button>
+              <Form action={`/signin?redirectPath=${pathname}`} method="post" reloadDocument>
+                <button type="submit">Sign in</button>
+              </Form>
             </li>
           )}
         </ul>

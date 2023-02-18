@@ -7,10 +7,11 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRevalidator,
 } from '@remix-run/react';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { createBrowserClient } from '@supabase/auth-helpers-remix';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from './components/Header';
 import styles from './styles/app.css';
 import { remixClient } from '@bf2-matchmaking/supabase';
@@ -49,10 +50,25 @@ export const loader = async ({ request }: LoaderArgs) => {
 };
 
 export default function App() {
+  const revalidator = useRevalidator();
   const { env, initialSession, player } = useLoaderData<typeof loader>();
   const [supabaseClient] = useState(() =>
     createBrowserClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
   );
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session?.access_token !== initialSession?.access_token) {
+        revalidator.revalidate();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [initialSession, supabaseClient, revalidator]);
 
   return (
     <html lang="en">

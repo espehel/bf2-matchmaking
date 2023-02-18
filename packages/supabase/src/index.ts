@@ -8,6 +8,7 @@ import { createServerClient } from '@supabase/auth-helpers-remix';
 import supabaseApi from './supabase-api';
 import matchServices from './services/match-service';
 import { Database } from '@bf2-matchmaking/types';
+import { json } from '@remix-run/node';
 
 export const client = () => {
   invariant(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
@@ -42,6 +43,13 @@ export const remixClient = (request: Request) => {
     SUPABASE_ANON_KEY,
     getSession: () => supabase.auth.getSession(),
     getUser: () => supabase.auth.getUser().then(({ data }) => data.user),
+    signInUser: (redirectTo: string) =>
+      supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo,
+        },
+      }),
   };
 };
 
