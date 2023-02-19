@@ -3,12 +3,14 @@ import { useFirstRenderDefault } from '../../state/ssr-hooks';
 import { RoundsJoined } from '@bf2-matchmaking/types';
 import { UnmountClosed } from 'react-collapse';
 import RoundSummary from '~/components/round/RoundSummary';
+import { useUser } from '@supabase/auth-helpers-react';
 
 interface Props {
   round: RoundsJoined;
 }
 
 const RoundItem: FC<Props> = ({ round }) => {
+  const user = useUser();
   const [isSummaryOpen, setSummaryOpen] = useState(false);
   const date = useFirstRenderDefault(round.created_at, () =>
     new Date(round.created_at).toLocaleTimeString()
@@ -20,7 +22,11 @@ const RoundItem: FC<Props> = ({ round }) => {
 
   return (
     <li className="border rounded w-full">
-      <button className="flex gap-4 p-4 w-full" onClick={() => setSummaryOpen(!isSummaryOpen)}>
+      <button
+        className="flex gap-4 p-4 w-full"
+        onClick={() => setSummaryOpen(!isSummaryOpen)}
+        disabled={!user}
+      >
         <div className="mr-auto text-left">
           <p className="text-xl">{round.map.name}</p>
           <p className="text-sm">{date}</p>

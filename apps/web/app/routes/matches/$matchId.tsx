@@ -14,6 +14,7 @@ import {
 import { getDraftStep } from '@bf2-matchmaking/utils';
 import AdminActions from '~/components/admin/MatchAdminPanel';
 import { usePlayer } from '~/state/PlayerContext';
+import { useUser } from '@supabase/auth-helpers-react';
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   const client = remixClient(request);
@@ -36,6 +37,7 @@ export default function Index() {
   const { match, draftStep, matchAdmins } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const { player } = usePlayer();
+  const user = useUser();
 
   const isAdmin = Boolean(
     player && matchAdmins && matchAdmins.some((admin) => admin.player_id === player.id)
@@ -68,7 +70,8 @@ export default function Index() {
         </div>
         {match.status === MatchStatus.Open && <StagingContainer />}
         {match.status === MatchStatus.Summoning && <StagingContainer />}
-        {match.status === MatchStatus.Drafting && <DraftingContainer />}
+        {match.status === MatchStatus.Drafting && !user && <StagingContainer />}
+        {match.status === MatchStatus.Drafting && user && <DraftingContainer />}
         {match.status === MatchStatus.Ongoing && <StartedContainer />}
         {match.status === MatchStatus.Closed && <StartedContainer />}
       </div>
