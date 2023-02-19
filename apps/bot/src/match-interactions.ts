@@ -42,7 +42,7 @@ export const addPlayer = async (channelId: string, user: User | APIUser) => {
     return { content: 'No open match currently in channel' };
   }
 
-  await client().createMatchPlayer(match.id, player.id, 'bot').then(verifyResult);
+  await client().createMatchPlayer(match.id, player.id, 'bot').then(verifySingleResult);
   return { embeds: [getMatchEmbed(match, `${player.full_name} joined`)] };
 };
 
@@ -56,7 +56,7 @@ export const removePlayer = async (channelId: string, user: User | APIUser) => {
     return { content: 'Can only leave Open matches.' };
   }
 
-  await client().deleteMatchPlayer(match.id, player.id).then(verifyResult);
+  await client().deleteMatchPlayer(match.id, player.id).then(verifySingleResult);
   return { embeds: [getMatchEmbed(match, `${player.full_name} left`)] };
 };
 

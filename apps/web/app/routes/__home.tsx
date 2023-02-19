@@ -69,7 +69,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-center mb-6">Quick match</h1>
       <ul>
         {quickMatches.map(([matchConfig, match]) => (
-          <li key={matchConfig.id}>
+          <li key={matchConfig.id} className="mb-6">
             <QuickMatchSection config={matchConfig} match={match} hasJoined={hasJoined(match)} />
           </li>
         ))}
