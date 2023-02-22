@@ -1,5 +1,9 @@
-import { DiscordMatch, MatchPlayersRow } from '@bf2-matchmaking/types';
-import { sendChannelMessage, removeExistingMatchEmbeds } from '@bf2-matchmaking/discord';
+import { DiscordMatch, MatchesJoined, MatchPlayersRow } from '@bf2-matchmaking/types';
+import {
+  sendChannelMessage,
+  removeExistingMatchEmbeds,
+  sendDirectMessage,
+} from '@bf2-matchmaking/discord';
 import { getMatchEmbed } from '@bf2-matchmaking/discord';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { RESTPostAPIChannelMessageJSONBody } from 'discord-api-types/v10';
@@ -39,4 +43,11 @@ const replaceChannelMessage = async (
   info('replaceChannelMessage', `Replacing match message for match ${match.id}`);
   removeExistingMatchEmbeds(match.channel.channel_id, [match]);
   await sendChannelMessage(match.channel.channel_id, body);
+};
+
+export const sendSummoningDM = (match: MatchesJoined) => {
+  const content = `Check in has started for Match ${match.id}. Some more info will come here...`;
+  return Promise.allSettled(
+    match.players.map((player) => sendDirectMessage(player.id, { content }))
+  );
 };

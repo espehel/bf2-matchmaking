@@ -9,10 +9,9 @@ import {
   MatchStatus,
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
-import { sendMatchInfoMessage } from './message-service';
+import { sendMatchInfoMessage, sendSummoningDM } from './message-service';
 import { api, assignMatchPlayerTeams, shuffleArray } from '@bf2-matchmaking/utils';
 import moment from 'moment';
-import { raw } from 'express';
 
 export const handleInsertedMatch = async (match: MatchesRow) => {
   info('handleInsertedMatch', `New match ${match.id}`);
@@ -77,6 +76,7 @@ export const handleMatchSummon = async (match: MatchesJoined) => {
   if (isDiscordMatch(match) && match.channel.staging_channel) {
     try {
       const { error: err } = await api.bot().postMatchEvent(match.id, MatchEvent.Summon);
+      await sendSummoningDM(match);
       if (err) {
         error('handleMatchSummon', err);
       }
@@ -141,7 +141,7 @@ const setRandomTeams = async (match: MatchesJoined) => {
 const reopenMatch = async (match: MatchesJoined) => {
   await client()
     .updateMatch(match.id, { status: MatchStatus.Open, ready_at: null })
-    .then(verifyResult);
+    .then(verifySingleResult);
 };
 
 const setMatchCaptains = async (match: MatchesJoined) => {

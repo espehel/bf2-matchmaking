@@ -8,10 +8,13 @@ import {
   RESTGetAPIChannelMessagesResult,
   RESTPatchAPIChannelMessageJSONBody,
   RESTPatchAPIChannelMessageResult,
+  RESTPostAPICurrentUserCreateDMChannelJSONBody,
+  RESTPostAPICurrentUserCreateDMChannelResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
 import { error } from '@bf2-matchmaking/logging';
 import { RESTDeleteAPIChannelMessageResult } from 'discord-api-types/rest/v10/channel';
+import { channel } from 'diagnostics_channel';
 
 invariant(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
@@ -24,10 +27,12 @@ export interface ErrorResponse {
   data: null;
   error: unknown;
 }
+
+export type DiscordRestResponse<T> = SuccessResponse<T> | ErrorResponse;
 const postDiscordRoute = async <T>(
   route: `/${string}`,
   options?: RequestData
-): Promise<SuccessResponse<T> | ErrorResponse> => {
+): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.post(route, options)) as T;
     return { data, error: null };
@@ -40,7 +45,7 @@ const postDiscordRoute = async <T>(
 const getDiscordRoute = async <T>(
   route: `/${string}`,
   options?: RequestData
-): Promise<SuccessResponse<T> | ErrorResponse> => {
+): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.get(route, options)) as T;
     return { data, error: null };
@@ -53,7 +58,7 @@ const getDiscordRoute = async <T>(
 const deleteDiscordRoute = async <T>(
   route: `/${string}`,
   options?: RequestData
-): Promise<SuccessResponse<T> | ErrorResponse> => {
+): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.delete(route, options)) as T;
     return { data, error: null };
@@ -66,7 +71,7 @@ const deleteDiscordRoute = async <T>(
 const patchDiscordRoute = async <T>(
   route: `/${string}`,
   options?: RequestData
-): Promise<SuccessResponse<T> | ErrorResponse> => {
+): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.patch(route, options)) as T;
     return { data, error: null };
@@ -89,6 +94,23 @@ export const sendChannelMessage = (
     body,
   });
 
+export const sendDirectMessage = async (
+  playerId: string,
+  body: RESTPostAPIChannelMessageJSONBody
+) => {
+  const { data: dmChannel, error } =
+    await postDiscordRoute<RESTPostAPICurrentUserCreateDMChannelResult>(
+      Routes.userChannels(),
+      {
+        body: { recipient_id: playerId },
+      }
+    );
+  if (dmChannel) {
+    return sendChannelMessage(dmChannel.id, body);
+  }
+  return { error } as ErrorResponse;
+};
+
 export const editChannelMessage = (
   channelId: string,
   messageId: string,
@@ -103,12 +125,6 @@ export const removeChannelMessage = (channelId: string, messageId: string) =>
   deleteDiscordRoute<RESTDeleteAPIChannelMessageResult>(
     Routes.channelMessage(channelId, messageId)
   );
-
-export const getMembers = (guildId: string) =>
-  getDiscordRoute<Array<APIGuildMember>>(`${Routes.guildMembers(guildId)}?limit=1000`);
-
-export const getMember = (guildId: string, userId?: string) =>
-  getDiscordRoute<APIGuildMember>(Routes.guildMember(guildId, userId));
 
 export const postCommand = (
   appId: string,

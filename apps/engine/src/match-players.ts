@@ -6,7 +6,7 @@ import {
   MatchStatus,
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
-import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
   sendMatchInfoMessage,
   sendMatchJoinMessage,
@@ -72,12 +72,12 @@ const setMatchSummoning = async (match: MatchesJoined) => {
       status: MatchStatus.Summoning,
       ready_at: moment().add(SUMMONING_DURATION, 'ms').toISOString(),
     })
-    .then(verifyResult);
+    .then(verifySingleResult);
 };
 const setMatchDrafting = async (match: MatchesJoined) => {
   await client()
     .updateMatch(match.id, { status: MatchStatus.Drafting })
-    .then(verifyResult);
+    .then(verifySingleResult);
 };
 
 const setMatchStatusOngoing = async (match: MatchesJoined) => {
@@ -86,7 +86,7 @@ const setMatchStatusOngoing = async (match: MatchesJoined) => {
       status: MatchStatus.Ongoing,
       started_at: new Date().toISOString(),
     })
-    .then(verifyResult);
+    .then(verifySingleResult);
 };
 
 const isPickEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
