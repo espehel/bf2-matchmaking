@@ -1,6 +1,6 @@
 import { info, warn } from '@bf2-matchmaking/logging';
 import { MatchesRow, MatchStatus, RoundsRow } from '@bf2-matchmaking/types';
-import { client, verifyResult } from '@bf2-matchmaking/supabase';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 
 export const handleInsertedRound = async (round: RoundsRow) => {
   info('handleInsertedRound', `New round ${round.id}`);
@@ -35,5 +35,5 @@ const setMatchStatusClosed = async (match: MatchesRow) => {
       status: MatchStatus.Closed,
       closed_at: new Date().toISOString(),
     })
-    .then(verifyResult);
+    .then(verifySingleResult);
 };

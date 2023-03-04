@@ -9,7 +9,11 @@ import {
   MatchStatus,
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
-import { sendMatchInfoMessage, sendSummoningDM } from './message-service';
+import {
+  sendMatchInfoMessage,
+  sendMatchSummoningMessage,
+  sendSummoningDM,
+} from './message-service';
 import { api, assignMatchPlayerTeams, shuffleArray } from '@bf2-matchmaking/utils';
 import moment from 'moment';
 
@@ -30,7 +34,7 @@ export const handleUpdatedMatch = async (
   );
   const match = await client().getMatch(payload.record.id).then(verifySingleResult);
   if (isSummoningUpdate(payload)) {
-    await handleMatchSummon(match);
+    return await handleMatchSummon(match);
   }
   if (isDraftingUpdate(payload)) {
     return await handleMatchDraft(match);
@@ -38,8 +42,11 @@ export const handleUpdatedMatch = async (
   if (isReopenUpdate(payload)) {
     return await handleMatchReopen(match);
   }
-  if (isDiscordMatch(match) && (isClosedUpdate(payload) || isDeletedUpdate(payload))) {
-    await handleMatchClosed(match);
+  if (
+    isDiscordMatch(match) &&
+    (isOngoingUpdate(payload) || isClosedUpdate(payload) || isDeletedUpdate(payload))
+  ) {
+    await handleNewMatch(match);
   }
   if (isDiscordMatch(match)) {
     return sendMatchInfoMessage(match);
@@ -73,15 +80,12 @@ export const handleMatchSummon = async (match: MatchesJoined) => {
     }
   }, moment(match.ready_at).diff(moment()));
 
-  if (isDiscordMatch(match) && match.channel.staging_channel) {
-    try {
-      const { error: err } = await api.bot().postMatchEvent(match.id, MatchEvent.Summon);
-      await sendSummoningDM(match);
-      if (err) {
-        error('handleMatchSummon', err);
-      }
-    } catch (err) {
-      error('handleMatchSummon', err);
+  if (isDiscordMatch(match)) {
+    await sendMatchSummoningMessage(match);
+    await sendSummoningDM(match);
+
+    if (match.channel.staging_channel) {
+      await api.bot().postMatchEvent(match.id, MatchEvent.Summon);
     }
   }
 };
@@ -110,7 +114,8 @@ export const handleMatchDraft = async (match: MatchesJoined) => {
   }
 };
 
-export const handleMatchClosed = async (match: DiscordMatch) => {
+export const handleNewMatch = async (match: DiscordMatch) => {
+  info('handleNewMatch', `Fetching match ${match.id} config.`);
   const { data: config } = await client().getMatchConfigByChannelId(
     match.channel.channel_id
   );
@@ -119,6 +124,7 @@ export const handleMatchClosed = async (match: DiscordMatch) => {
       config.channel.channel_id
     );
     if (!data || data.length === 0) {
+      info('handleNewMatch', `No matches for config ${config.id}, creating new!`);
       await client().services.createMatchFromConfig(config);
     }
   }
@@ -172,6 +178,14 @@ const setMatchCaptains = async (match: MatchesJoined) => {
     })
     .then(verifyResult);
 };
+
+const isOngoingUpdate = ({
+  record,
+  old_record,
+}: WebhookPostgresUpdatePayload<MatchesRow>) =>
+  record.status === MatchStatus.Ongoing &&
+  (old_record.status === MatchStatus.Drafting ||
+    old_record.status === MatchStatus.Summoning);
 
 const isDraftingUpdate = ({
   record,

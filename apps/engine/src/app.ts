@@ -35,7 +35,7 @@ app.post(
     try {
       switch (req.body.type) {
         case WEBHOOK_POSTGRES_CHANGES_TYPE.INSERT: {
-          handleInsertedMatch(req.body.record);
+          await handleInsertedMatch(req.body.record);
           break;
         }
         case WEBHOOK_POSTGRES_CHANGES_TYPE.UPDATE: {

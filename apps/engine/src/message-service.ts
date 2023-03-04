@@ -3,6 +3,7 @@ import {
   sendChannelMessage,
   removeExistingMatchEmbeds,
   sendDirectMessage,
+  createMessageReaction,
 } from '@bf2-matchmaking/discord';
 import { getMatchEmbed } from '@bf2-matchmaking/discord';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -29,6 +30,16 @@ export const sendMatchLeaveMessage = async (
   });
 };
 
+export const sendMatchSummoningMessage = async (match: DiscordMatch) => {
+  const playerMentions = match.teams.map((player) => `<@${player.player_id}>`).join(', ');
+  const { data: message } = await replaceChannelMessage(match, {
+    embeds: [getMatchEmbed(match, `Ready up! ${playerMentions}`)],
+  });
+  if (message) {
+    await createMessageReaction(match.channel.channel_id, message.id, '✅');
+  }
+};
+
 export const sendMatchInfoMessage = async (match: DiscordMatch) => {
   const embed = getMatchEmbed(match);
   await replaceChannelMessage(match, {
@@ -41,8 +52,8 @@ const replaceChannelMessage = async (
   body: RESTPostAPIChannelMessageJSONBody
 ) => {
   info('replaceChannelMessage', `Replacing match message for match ${match.id}`);
-  removeExistingMatchEmbeds(match.channel.channel_id, [match]);
-  await sendChannelMessage(match.channel.channel_id, body);
+  await removeExistingMatchEmbeds(match.channel.channel_id, [match]);
+  return await sendChannelMessage(match.channel.channel_id, body);
 };
 
 export const sendSummoningDM = (match: MatchesJoined) => {
