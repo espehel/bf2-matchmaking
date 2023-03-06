@@ -15,7 +15,7 @@ const StagingContainer = () => {
   return (
     <article className="flex justify-between flex-wrap gap-4">
       <PlayersSection match={match} />
-      {user && <PlayerActions match={match} user={user} />}
+      {user && <PlayerActions match={match} />}
       {!user && <SigninSection />}
       <SummonedDialog />
     </article>

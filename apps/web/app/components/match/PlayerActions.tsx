@@ -1,23 +1,38 @@
 import { Form } from '@remix-run/react';
-import { User } from '@supabase/supabase-js';
 import { FC } from 'react';
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { usePlayer } from '~/state/PlayerContext';
+import moment from 'moment';
+import ActionButton from '~/components/form/ActionButton';
 
 interface Props {
   match: MatchesJoined;
-  user: User;
 }
 
-const PlayerActions: FC<Props> = ({ match, user }) => {
-  const hasJoined = match.players.some((player) => player.user_id === user.id);
+const PlayerActions: FC<Props> = ({ match }) => {
+  const { getMatchPlayer } = usePlayer();
+  const matchPlayer = getMatchPlayer(match);
 
   return (
-    <div className="section grow flex gap-2 h-min w-1/3">
-      {match.status === MatchStatus.Open && hasJoined && (
-        <Action action="./leave" name="Leave match" className="leave-button" />
+    <div className="section grow flex flex-col gap-2 h-min w-1/3">
+      {match.status === MatchStatus.Open && matchPlayer && (
+        <ActionButton action="./leave" className="leave-button">
+          Leave match
+        </ActionButton>
       )}
-      {match.status === MatchStatus.Open && !hasJoined && (
-        <Action action="./join" name="Join match" />
+      {match.status === MatchStatus.Open && !matchPlayer && (
+        <ActionButton action="./join">Join match</ActionButton>
+      )}
+      {matchPlayer && matchPlayer.expire_at && (
+        <div>
+          <ActionButton action={`./players/${matchPlayer.player_id}/renew`}>
+            Renew expire
+          </ActionButton>
+          <p>
+            You will automatically be removed from queue at{' '}
+            {moment(matchPlayer.expire_at).format('HH:mm:ss')}
+          </p>
+        </div>
       )}
     </div>
   );
@@ -30,7 +45,7 @@ interface ActionProps {
   className?: string;
 }
 const Action: FC<ActionProps> = ({ action, name, disabled, className }) => (
-  <Form method="post" action={action}>
+  <Form method="post" action={action} replace>
     <button type="submit" className={className || 'filled-button'} disabled={disabled}>
       {name}
     </button>

@@ -70,8 +70,12 @@ export default (client: SupabaseClient<Database>) => ({
   updateMatch: (matchId: number | undefined, values: MatchesUpdate) =>
     client.from('matches').update(values).eq('id', matchId),
 
-  createMatchPlayer: (match_id: number, player_id: string, source: 'web' | 'bot') =>
-    client.from('match_players').insert([{ match_id, player_id, source }]),
+  createMatchPlayer: (
+    match_id: number,
+    player_id: string,
+    source: 'web' | 'bot',
+    expire_at: string | null
+  ) => client.from('match_players').insert([{ match_id, player_id, source, expire_at }]),
 
   deleteMatchPlayer: (matchId: number, playerId: string) =>
     client

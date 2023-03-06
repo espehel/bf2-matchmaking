@@ -13,9 +13,11 @@ import {
   sendMatchInfoMessage,
   sendMatchSummoningMessage,
   sendSummoningDM,
-} from './message-service';
-import { api, assignMatchPlayerTeams, shuffleArray } from '@bf2-matchmaking/utils';
+} from './services/message-service';
+import { api } from '@bf2-matchmaking/utils';
 import moment from 'moment';
+import { reopenMatch } from './services/match-service';
+import { setMatchCaptains, setRandomTeams } from './services/match-player-service';
 
 export const handleInsertedMatch = async (match: MatchesRow) => {
   info('handleInsertedMatch', `New match ${match.id}`);
@@ -128,55 +130,6 @@ export const handleNewMatch = async (match: DiscordMatch) => {
       await client().services.createMatchFromConfig(config);
     }
   }
-};
-
-const setRandomTeams = async (match: MatchesJoined) => {
-  const matchPlayers = assignMatchPlayerTeams(match.players);
-  client().updateMatchPlayers(
-    match.id,
-    matchPlayers.filter((mp) => mp.team === 'a'),
-    { team: 'a' }
-  );
-  client().updateMatchPlayers(
-    match.id,
-    matchPlayers.filter((mp) => mp.team === 'b'),
-    { team: 'b' }
-  );
-};
-
-const reopenMatch = async (match: MatchesJoined) => {
-  await client()
-    .updateMatch(match.id, { status: MatchStatus.Open, ready_at: null })
-    .then(verifySingleResult);
-};
-
-const setMatchCaptains = async (match: MatchesJoined) => {
-  const shuffledPlayers = shuffleArray(
-    match.players.filter((player) => !player.username.includes('Test'))
-  );
-  if (shuffledPlayers.length < 2) {
-    throw new Error('To few players for captain mode.');
-  }
-  info(
-    'setMatchCaptains',
-    `Setting player ${shuffledPlayers[0].id} as captain for team a.`
-  );
-  await client()
-    .updateMatchPlayer(match.id, shuffledPlayers[0].id, {
-      team: 'a',
-      captain: true,
-    })
-    .then(verifyResult);
-  info(
-    'setMatchCaptains',
-    `Setting player ${shuffledPlayers[1].id} as captain for team b.`
-  );
-  await client()
-    .updateMatchPlayer(match.id, shuffledPlayers[1].id, {
-      team: 'b',
-      captain: true,
-    })
-    .then(verifyResult);
 };
 
 const isOngoingUpdate = ({

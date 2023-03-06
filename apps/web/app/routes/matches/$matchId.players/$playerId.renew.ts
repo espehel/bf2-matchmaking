@@ -9,19 +9,17 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     const matchId = params['matchId'] ? parseInt(params['matchId']) : undefined;
     invariant(matchId, 'No matchId');
-
-    const formData = await request.formData();
-    console.log(formData);
-    const playerId = formData.get('playerId')?.toString();
-    console.log(playerId);
-    invariant(playerId, 'playerId not defined');
+    const playerId = params['playerId'];
+    invariant(playerId, 'No playerId');
 
     const { data: config } = await client.getMatchConfigByMatchId(matchId);
     const expireAt = config?.player_expire
       ? moment().add(config.player_expire, 'ms').toISOString()
       : null;
 
-    const { error, status } = await client.createMatchPlayer(matchId, playerId, 'web', expireAt);
+    const { error, status } = await client.updateMatchPlayer(matchId, playerId, {
+      expire_at: expireAt,
+    });
 
     if (error) {
       return json(error, { status });

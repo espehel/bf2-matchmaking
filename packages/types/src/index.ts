@@ -42,6 +42,13 @@ export enum WEBHOOK_POSTGRES_CHANGES_TYPE {
   DELETE = 'DELETE',
 }
 
+export interface PostgrestError {
+  message: string;
+  details: string | null;
+  hint: string;
+  code: string;
+}
+
 export interface ServerInfo {
   version: string;
   currentGameStatus: string;

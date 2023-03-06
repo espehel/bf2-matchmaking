@@ -23,7 +23,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
     updateValues.captain = formData.has('captain');
     updateValues.ready = formData.has('ready');
-    console.log(updateValues);
     const { error, status } = await client.updateMatchPlayer(matchId, playerId, updateValues);
 
     if (error) {

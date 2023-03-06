@@ -3,26 +3,23 @@ import { addPlayer, pickMatchPlayer, removePlayer } from './match-interactions';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { getDiscordClient } from './client';
 import {
-  editChannelMessage,
-  getChannelMessages,
   getMatchEmbed,
-  removeChannelMessage,
   removeExistingMatchEmbeds,
   sendChannelMessage,
 } from '@bf2-matchmaking/discord';
 import { Message } from 'discord.js';
-import { isMatchTitle } from '@bf2-matchmaking/discord/src/embed-utils';
+import { DiscordChannelsJoined } from '@bf2-matchmaking/types';
 
 export const initMessageListener = async () => {
   const channels = await client().getChannels().then(verifyResult);
-  const channelMap = new Map(channels.map(({ channel_id, id }) => [channel_id, id]));
+  const channelMap = new Map(channels.map((channel) => [channel.channel_id, channel]));
   const discordClient = await getDiscordClient();
   discordClient.on('messageCreate', async (msg) => {
     if (!channelMap.has(msg.channel.id)) {
       return;
     }
     try {
-      const result = await parseMessage(msg);
+      const result = await parseMessage(msg, channelMap.get(msg.channel.id)!);
       if (result) {
         await sendChannelMessage(msg.channel.id, result);
       }
@@ -38,14 +35,14 @@ export const initMessageListener = async () => {
   });
 };
 
-const parseMessage = (msg: Message) => {
+const parseMessage = (msg: Message, channel: DiscordChannelsJoined) => {
   switch (msg.content.split(' ')[0]) {
     case '!who':
       return onWho(msg);
     case '--':
       return onLeave(msg);
     case '++':
-      return onJoin(msg);
+      return onJoin(msg, channel);
     case '!pick':
       return onPick(msg);
     case '!help':
@@ -82,12 +79,16 @@ const onLeave = async (msg: Message) => {
   return removePlayer(msg.channel.id, msg.author);
 };
 
-const onJoin = async (msg: Message) => {
+const onJoin = async (msg: Message, channel: DiscordChannelsJoined) => {
   info(
     'discord-gateway',
     `Received command <${msg.content}> for channel <${msg.channel.id}>`
   );
-  return addPlayer(msg.channel.id, msg.author);
+  return addPlayer(
+    msg.channel.id,
+    msg.author,
+    channel.match_config?.player_expire || null
+  );
 };
 const onPick = async (msg: Message) => {
   info(

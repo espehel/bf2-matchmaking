@@ -1,9 +1,9 @@
 import React, { FC } from 'react';
-import { DiscordChannelsJoined, DiscordChannelsRow } from '@bf2-matchmaking/types';
+import { DiscordChannelsWithMatches, DiscordChannelsRow } from '@bf2-matchmaking/types';
 import { Listbox } from '@headlessui/react';
 
 interface Props {
-  channels: Array<DiscordChannelsJoined>;
+  channels: Array<DiscordChannelsWithMatches>;
 }
 
 const ChannelListbox: FC<Props> = ({ channels }) => {

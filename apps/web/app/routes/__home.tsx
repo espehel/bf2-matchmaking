@@ -1,5 +1,5 @@
 import { ErrorBoundaryComponent, json, LoaderArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import { Link, Outlet, useCatch, useLoaderData, useNavigate } from '@remix-run/react';
 import { remixClient, verifyResult } from '@bf2-matchmaking/supabase';
 import QuickMatchSection from '~/components/match/QuickMatchSection';
 import { usePlayer } from '~/state/PlayerContext';
@@ -8,7 +8,7 @@ import {
   useSubscribeMatchUpdate,
 } from '~/state/supabase-subscription-hooks';
 import { useCallback } from 'react';
-import { MatchesJoined } from '@bf2-matchmaking/types';
+import { isPostgrestError, MatchesJoined } from '@bf2-matchmaking/types';
 
 export const loader = async ({ request }: LoaderArgs) => {
   const client = remixClient(request);
@@ -23,8 +23,12 @@ export const loader = async ({ request }: LoaderArgs) => {
       }
     );
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Response(error.message);
+    if (error instanceof Error || isPostgrestError(error)) {
+      console.error(error);
+      throw new Response(error.message, { status: 500 });
+    } else if (typeof error === 'string') {
+      console.error(error);
+      throw new Response(error, { status: 500 });
     } else {
       throw error;
     }
@@ -86,6 +90,20 @@ export const ErrorBoundary: ErrorBoundaryComponent = ({ error }) => {
       <p>{error.message}</p>
       <p>The stack trace is:</p>
       <pre>{error.stack}</pre>
+    </div>
+  );
+};
+
+export const CatchBoundary = () => {
+  const caught = useCatch();
+
+  return (
+    <div>
+      <h1>Caught</h1>
+      <p>Status: {caught.status}</p>
+      <pre>
+        <code>{JSON.stringify(caught.data, null, 2)}</code>
+      </pre>
     </div>
   );
 };

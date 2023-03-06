@@ -41,7 +41,11 @@ export interface ServersJoined extends ServersRow {
   matches: Array<{ id: number; status: string }>;
 }
 
-export interface DiscordChannelsJoined extends DiscordChannelsRow {
+export interface DiscordChannelsJoined extends Omit<DiscordChannelsRow, 'match_config'> {
+  match_config: MatchConfigsRow | null;
+}
+
+export interface DiscordChannelsWithMatches extends DiscordChannelsRow {
   matches: Array<{ id: number; status: string }>;
 }
 

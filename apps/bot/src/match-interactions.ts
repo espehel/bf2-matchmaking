@@ -1,9 +1,10 @@
 import { error, info } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult, verifyResult } from '@bf2-matchmaking/supabase';
-import { getDraftStep, isAssignedTeam } from '@bf2-matchmaking/utils';
+import { getDraftStep, isAssignedTeam, SUMMONING_DURATION } from '@bf2-matchmaking/utils';
 import { getMatchEmbed } from '@bf2-matchmaking/discord';
 import { MatchStatus } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
+import moment from 'moment';
 
 export const getOrCreatePlayer = async ({
   id,
@@ -34,15 +35,21 @@ export const getMatchInfoByChannel = async (channelId: string) => {
   return getMatchEmbed(match);
 };
 
-export const addPlayer = async (channelId: string, user: User | APIUser) => {
+export const addPlayer = async (
+  channelId: string,
+  user: User | APIUser,
+  playerExpire: number | null
+) => {
   const { data: match } = await client().getOpenMatchByChannelId(channelId);
   const player = await getOrCreatePlayer(user);
 
   if (!match) {
     return { content: 'No open match currently in channel' };
   }
-
-  await client().createMatchPlayer(match.id, player.id, 'bot').then(verifySingleResult);
+  const expireAt = playerExpire ? moment().add(playerExpire, 'ms').toISOString() : null;
+  await client()
+    .createMatchPlayer(match.id, player.id, 'bot', expireAt)
+    .then(verifySingleResult);
   return { embeds: [getMatchEmbed(match, `${player.full_name} joined`)] };
 };
 

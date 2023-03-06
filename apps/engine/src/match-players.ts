@@ -11,9 +11,15 @@ import {
   sendMatchInfoMessage,
   sendMatchJoinMessage,
   sendMatchLeaveMessage,
-} from './message-service';
-import moment from 'moment';
-import { getDraftStep, SUMMONING_DURATION } from '@bf2-matchmaking/utils';
+} from './services/message-service';
+import { getDraftStep } from '@bf2-matchmaking/utils';
+import {
+  createNextMatchFromConfig,
+  setMatchDrafting,
+  setMatchStatusOngoing,
+  setMatchSummoning,
+} from './services/match-service';
+import { setPlayerExpireTimer } from './services/match-player-service';
 
 export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) => {
   info('handleInsertedMatchPlayer', `Player ${matchPlayer.player_id} joined.`);
@@ -39,6 +45,10 @@ export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) =>
     return client().deleteMatchPlayer(match.id, matchPlayer.player_id);
   }
 
+  if (matchPlayer.expire_at) {
+    setPlayerExpireTimer(matchPlayer);
+  }
+
   if (isDiscordMatch(match)) {
     return await sendMatchJoinMessage(matchPlayer, match);
   }
@@ -47,6 +57,9 @@ export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) =>
 export const handleUpdatedMatchPlayer = async (
   payload: WebhookPostgresUpdatePayload<MatchPlayersRow>
 ) => {
+  if (isRenewExpireEvent(payload)) {
+    setPlayerExpireTimer(payload.record);
+  }
   if (isReadyEvent(payload)) {
     return handlePlayerReady(payload);
   }
@@ -66,29 +79,11 @@ export const handleDeletedMatchPlayer = async (
     return await sendMatchLeaveMessage(oldMatchPlayer, match);
   }
 };
-const setMatchSummoning = async (match: MatchesJoined) => {
-  await client()
-    .updateMatch(match.id, {
-      status: MatchStatus.Summoning,
-      ready_at: moment().add(SUMMONING_DURATION, 'ms').toISOString(),
-    })
-    .then(verifySingleResult);
-};
-const setMatchDrafting = async (match: MatchesJoined) => {
-  await client()
-    .updateMatch(match.id, { status: MatchStatus.Drafting })
-    .then(verifySingleResult);
-};
 
-const setMatchStatusOngoing = async (match: MatchesJoined) => {
-  client()
-    .updateMatch(match.id, {
-      status: MatchStatus.Ongoing,
-      started_at: new Date().toISOString(),
-    })
-    .then(verifySingleResult);
-};
-
+const isRenewExpireEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
+  payload.record.expire_at
+    ? payload.old_record.expire_at !== payload.record.expire_at
+    : false;
 const isPickEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
   payload.old_record.team === null &&
   (payload.record.team === 'a' || payload.record.team === 'b');
@@ -123,7 +118,7 @@ const handlePlayerPicked = async (
   if (pool.length === 0) {
     info('handleUpdatedMatchPlayer', `Setting match ${match.id} status to "Ongoing".`);
     await setMatchStatusOngoing(match);
-    return await handleNextMatch(match);
+    return await createNextMatchFromConfig(match);
   }
 
   if (isDiscordMatch(match) && !payload.record.captain) {
@@ -139,15 +134,5 @@ const handlePlayerReady = async (
     await setMatchDrafting(match);
   } else if (isDiscordMatch(match)) {
     await sendMatchInfoMessage(match);
-  }
-};
-
-const handleNextMatch = async (match: MatchesJoined) => {
-  const { data: config } = await client().getMatchConfigByChannelId(
-    match.channel?.channel_id
-  );
-  if (config) {
-    info('handleUpdatedMatchPlayer', `Creating new match with config ${config.id}`);
-    await client().services.createMatchFromConfig(config);
   }
 };

@@ -34,6 +34,7 @@ export interface Database {
           channel_id: string
           created_at: string | null
           id: number
+          match_config: number | null
           name: string
           server_id: string
           staging_channel: string | null
@@ -43,6 +44,7 @@ export interface Database {
           channel_id: string
           created_at?: string | null
           id?: number
+          match_config?: number | null
           name: string
           server_id: string
           staging_channel?: string | null
@@ -52,6 +54,7 @@ export interface Database {
           channel_id?: string
           created_at?: string | null
           id?: number
+          match_config?: number | null
           name?: string
           server_id?: string
           staging_channel?: string | null
@@ -83,6 +86,7 @@ export interface Database {
           id: number
           map_draft: string
           name: string
+          player_expire: number
           size: number
         }
         Insert: {
@@ -92,6 +96,7 @@ export interface Database {
           id?: number
           map_draft: string
           name: string
+          player_expire?: number
           size: number
         }
         Update: {
@@ -101,6 +106,7 @@ export interface Database {
           id?: number
           map_draft?: string
           name?: string
+          player_expire?: number
           size?: number
         }
       }
@@ -124,6 +130,7 @@ export interface Database {
       match_players: {
         Row: {
           captain: boolean
+          expire_at: string | null
           match_id: number
           player_id: string
           ready: boolean
@@ -133,6 +140,7 @@ export interface Database {
         }
         Insert: {
           captain?: boolean
+          expire_at?: string | null
           match_id: number
           player_id: string
           ready?: boolean
@@ -142,6 +150,7 @@ export interface Database {
         }
         Update: {
           captain?: boolean
+          expire_at?: string | null
           match_id?: number
           player_id?: string
           ready?: boolean
@@ -289,6 +298,9 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }

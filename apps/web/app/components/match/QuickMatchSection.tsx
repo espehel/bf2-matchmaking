@@ -25,6 +25,7 @@ const QuickMatchSection: FC<Props> = ({ config, match, hasJoined }) => {
         className="join-button mb-4"
         disabled={hasJoined}
         action={`/matches/${match?.id}/join`}
+        isNavigation
       >
         {hasJoined ? 'Waiting for players...' : 'Join'}
       </ActionButton>
