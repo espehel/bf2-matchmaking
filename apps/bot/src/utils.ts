@@ -6,6 +6,8 @@ import {
 import { verifyKey } from 'discord-interactions';
 import { ErrorRequestHandler, Request } from 'express';
 import { ApiError } from '@bf2-matchmaking/types';
+import { Message } from 'discord.js';
+import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 
 export const getOption = (
   key: string,
@@ -45,3 +47,10 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
 };
 
 export const toMatchPlayerId = (memberId: string) => ({ player_id: memberId });
+
+export const hasSummonEmbed = (message: Message) => message.embeds.some(isSummonEmbed);
+export const findMatchId = (message: Message) =>
+  message.embeds
+    .filter(isSummonEmbed)
+    .map(getMatchIdFromEmbed)
+    .find((matchId) => Boolean(matchId));

@@ -9,6 +9,8 @@ import {
 } from '@bf2-matchmaking/discord';
 import { Message } from 'discord.js';
 import { DiscordChannelsJoined } from '@bf2-matchmaking/types';
+import { hasSummonEmbed } from './utils';
+import { startReactionListener } from './reaction-listener';
 
 export const initMessageListener = async () => {
   const channels = await client().getChannels().then(verifyResult);
@@ -18,6 +20,11 @@ export const initMessageListener = async () => {
     if (!channelMap.has(msg.channel.id)) {
       return;
     }
+
+    if (hasSummonEmbed(msg)) {
+      startReactionListener(msg);
+    }
+
     try {
       const result = await parseMessage(msg, channelMap.get(msg.channel.id)!);
       if (result) {
