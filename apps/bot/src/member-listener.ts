@@ -39,6 +39,8 @@ const addVoiceListener = async () => {
 export const getVoiceMembers = async (match: DiscordMatch) => {
   const discordClient = await getDiscordClient();
   const guild = await discordClient.guilds.fetch(match.channel.server_id);
+  info('getVoiceMembers', `Fetched guild ${guild.id}`);
   const members = await guild.members.fetch({ withPresences: true });
+  info('getVoiceMembers', `Found ${members.size} members in voice`);
   return [...members.filter((m) => m.voice.channelId).values()].map((m) => m.user.id);
 };
