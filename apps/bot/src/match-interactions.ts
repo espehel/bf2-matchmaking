@@ -5,6 +5,7 @@ import { getMatchEmbed } from '@bf2-matchmaking/discord';
 import { MatchStatus } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
 import moment from 'moment';
+import { getMatchCopyWithoutPlayer, getMatchCopyWithPlayer } from './utils';
 
 export const getOrCreatePlayer = async ({
   id,
@@ -50,7 +51,8 @@ export const addPlayer = async (
   await client()
     .createMatchPlayer(match.id, player.id, 'bot', expireAt)
     .then(verifySingleResult);
-  return { embeds: [getMatchEmbed(match, `${player.full_name} joined`)] };
+  const matchWithPlayer = getMatchCopyWithPlayer(match, player);
+  return { embeds: [getMatchEmbed(matchWithPlayer, `${player.full_name} joined`)] };
 };
 
 export const removePlayer = async (channelId: string, user: User | APIUser) => {
@@ -64,7 +66,8 @@ export const removePlayer = async (channelId: string, user: User | APIUser) => {
   }
 
   await client().deleteMatchPlayer(match.id, player.id).then(verifySingleResult);
-  return { embeds: [getMatchEmbed(match, `${player.full_name} left`)] };
+  const matchWithoutPlayer = getMatchCopyWithoutPlayer(match, player.id);
+  return { embeds: [getMatchEmbed(matchWithoutPlayer, `${player.full_name} left`)] };
 };
 
 export const pickMatchPlayer = async (

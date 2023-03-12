@@ -5,7 +5,7 @@ import {
 } from 'discord-api-types/v10';
 import { verifyKey } from 'discord-interactions';
 import { ErrorRequestHandler, Request } from 'express';
-import { ApiError } from '@bf2-matchmaking/types';
+import { ApiError, MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
 import { Message } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 
@@ -54,3 +54,33 @@ export const findMatchId = (message: Message) =>
     .filter(isSummonEmbed)
     .map(getMatchIdFromEmbed)
     .find((matchId) => Boolean(matchId));
+
+export const getMatchCopyWithPlayer = (
+  match: MatchesJoined,
+  player: PlayersRow
+): MatchesJoined => ({
+  ...match,
+  players: [...match.players, player],
+  teams: [
+    ...match.teams,
+    {
+      match_id: match.id,
+      player_id: player.id,
+      team: null,
+      expire_at: '',
+      ready: false,
+      source: '',
+      captain: false,
+      updated_at: '',
+    },
+  ],
+});
+
+export const getMatchCopyWithoutPlayer = (
+  match: MatchesJoined,
+  playerId: string
+): MatchesJoined => ({
+  ...match,
+  players: match.players.filter((player) => player.id !== playerId),
+  teams: match.teams.filter((player) => player.player_id !== playerId),
+});
