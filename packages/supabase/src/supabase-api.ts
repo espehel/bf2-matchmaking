@@ -24,10 +24,12 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('players').select('*').eq('id', playerId).single(),
   createPlayer: (player: PlayersInsert) =>
     client.from('players').insert([player]).select().single(),
-  getRounds: () =>
+  getRounds: (limit?: number) =>
     client
       .from('rounds')
-      .select<'*, map(*), server(*)', RoundsJoined>('*, map(*), server(*)'),
+      .select<'*, map(*), server(*)', RoundsJoined>('*, map(*), server(*)')
+      .order('id', { ascending: false })
+      .limit(limit || 50),
   getServers: () =>
     client
       .from('servers')
