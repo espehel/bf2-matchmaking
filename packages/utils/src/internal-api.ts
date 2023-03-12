@@ -7,15 +7,19 @@ export const bot = () => {
       const headers = {
         'Content-Type': 'application/json',
       };
-      const res = await fetch(`${basePath}/api/match_events`, {
-        headers,
-        method: 'POST',
-        body: JSON.stringify({ matchId, event }),
-      });
-      if (res.ok) {
-        return { data: res, error: null };
-      } else {
-        const error = await res.text();
+      try {
+        const res = await fetch(`${basePath}/api/match_events`, {
+          headers,
+          method: 'POST',
+          body: JSON.stringify({ matchId, event }),
+        });
+        if (res.ok) {
+          return { data: res, error: null };
+        } else {
+          const error = await res.text();
+          return { data: null, error };
+        }
+      } catch (error) {
         return { data: null, error };
       }
     },
