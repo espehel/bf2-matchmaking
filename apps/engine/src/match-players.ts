@@ -19,6 +19,7 @@ import {
   setMatchSummoning,
 } from './services/match-service';
 import { setPlayerExpireTimer } from './services/match-player-service';
+import { createMessageReaction } from '@bf2-matchmaking/discord';
 
 export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) => {
   info('handleInsertedMatchPlayer', `Player ${matchPlayer.player_id} joined.`);
@@ -131,6 +132,9 @@ const handlePlayerReady = async (
   if (isReadyMatch(match)) {
     await setMatchDrafting(match);
   } else if (isDiscordMatch(match)) {
-    await sendMatchInfoMessage(match);
+    const { data: message } = await sendMatchInfoMessage(match);
+    if (message) {
+      await createMessageReaction(match.channel.channel_id, message.id, '✅');
+    }
   }
 };

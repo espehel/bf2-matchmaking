@@ -32,7 +32,6 @@ const addVoiceListener = async () => {
     const player = match && match.players.find((p) => p.id === newState.member?.id);
     if (newState.member && match && player) {
       const res = await client().updateMatchPlayer(match.id, player.id, { ready: true });
-      console.log(res);
     }
   });
 };

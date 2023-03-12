@@ -42,7 +42,7 @@ export const sendMatchSummoningMessage = async (match: DiscordMatch) => {
 
 export const sendMatchInfoMessage = async (match: DiscordMatch) => {
   const embed = getMatchEmbed(match);
-  await replaceChannelMessage(match, {
+  return await replaceChannelMessage(match, {
     embeds: [embed],
   });
 };
