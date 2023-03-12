@@ -1,8 +1,8 @@
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { DiscordMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import moment from 'moment/moment';
 import { SUMMONING_DURATION } from '@bf2-matchmaking/utils';
-import { info } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 
 export const setMatchSummoning = async (match: MatchesJoined) => {
   await client()
@@ -27,13 +27,23 @@ export const setMatchStatusOngoing = async (match: MatchesJoined) => {
     .then(verifySingleResult);
 };
 
-export const createNextMatchFromConfig = async (match: MatchesJoined) => {
-  const { data: config } = await client().getMatchConfigByChannelId(
-    match.channel?.channel_id
-  );
-  if (config) {
-    info('handleUpdatedMatchPlayer', `Creating new match with config ${config.id}`);
-    await client().services.createMatchFromConfig(config);
+export const createNextMatchFromConfig = async (match: DiscordMatch) => {
+  try {
+    info('handleNewMatch', `Fetching match ${match.id} config.`);
+    const config = await client()
+      .getMatchConfigByChannelId(match.channel.id)
+      .then(verifySingleResult);
+
+    const stagingMatches = await client()
+      .getStagingMatchesByChannelId(config.channel.channel_id)
+      .then(verifyResult);
+
+    if (stagingMatches.length === 0) {
+      info('handleNewMatch', `No matches for config ${config.id}, creating new!`);
+      await client().services.createMatchFromConfig(config);
+    }
+  } catch (err) {
+    error('handleNewMatch', err);
   }
 };
 

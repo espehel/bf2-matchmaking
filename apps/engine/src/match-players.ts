@@ -14,7 +14,6 @@ import {
 } from './services/message-service';
 import { getDraftStep } from '@bf2-matchmaking/utils';
 import {
-  createNextMatchFromConfig,
   setMatchDrafting,
   setMatchStatusOngoing,
   setMatchSummoning,
@@ -117,8 +116,7 @@ const handlePlayerPicked = async (
 
   if (pool.length === 0) {
     info('handleUpdatedMatchPlayer', `Setting match ${match.id} status to "Ongoing".`);
-    await setMatchStatusOngoing(match);
-    return await createNextMatchFromConfig(match);
+    return await setMatchStatusOngoing(match);
   }
 
   if (isDiscordMatch(match) && !payload.record.captain) {

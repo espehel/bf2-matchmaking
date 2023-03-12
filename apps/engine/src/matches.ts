@@ -1,7 +1,6 @@
-import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error, info } from '@bf2-matchmaking/logging';
 import {
-  DiscordMatch,
   isDiscordMatch,
   MatchesJoined,
   MatchesRow,
@@ -16,7 +15,7 @@ import {
 } from './services/message-service';
 import { api } from '@bf2-matchmaking/utils';
 import moment from 'moment';
-import { reopenMatch } from './services/match-service';
+import { createNextMatchFromConfig, reopenMatch } from './services/match-service';
 import { setMatchCaptains, setRandomTeams } from './services/match-player-service';
 
 export const handleInsertedMatch = async (match: MatchesRow) => {
@@ -48,7 +47,7 @@ export const handleUpdatedMatch = async (
     isDiscordMatch(match) &&
     (isOngoingUpdate(payload) || isClosedUpdate(payload) || isDeletedUpdate(payload))
   ) {
-    await handleNewMatch(match);
+    await createNextMatchFromConfig(match);
   }
   if (isDiscordMatch(match)) {
     return sendMatchInfoMessage(match);
@@ -112,22 +111,6 @@ export const handleMatchDraft = async (match: MatchesJoined) => {
     const matchWithCaptains = await client().getMatch(match.id).then(verifySingleResult);
     if (isDiscordMatch(matchWithCaptains)) {
       await sendMatchInfoMessage(matchWithCaptains);
-    }
-  }
-};
-
-export const handleNewMatch = async (match: DiscordMatch) => {
-  info('handleNewMatch', `Fetching match ${match.id} config.`);
-  const { data: config } = await client().getMatchConfigByChannelId(
-    match.channel.channel_id
-  );
-  if (config) {
-    const { data } = await client().getStagingMatchesByChannelId(
-      config.channel.channel_id
-    );
-    if (!data || data.length === 0) {
-      info('handleNewMatch', `No matches for config ${config.id}, creating new!`);
-      await client().services.createMatchFromConfig(config);
     }
   }
 };

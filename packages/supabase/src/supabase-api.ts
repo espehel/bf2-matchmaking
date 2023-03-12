@@ -66,11 +66,11 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('match_configs')
       .select<'*, channel(*)', MatchConfigsJoined>('*, channel(*)'),
-  getMatchConfigByChannelId: (channelId?: string) =>
+  getMatchConfigByChannelId: (channelId: number) =>
     client
       .from('match_configs')
       .select<'*, channel(*)', MatchConfigsJoined>('*, channel(*)')
-      .eq('channel.channel_id', channelId)
+      .eq('channel', channelId)
       .single(),
   getMatchConfigByMatchId: async (matchId: number) => {
     const res = await client
