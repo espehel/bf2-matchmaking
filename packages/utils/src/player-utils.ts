@@ -21,6 +21,11 @@ export const getPlayersReadyStatus = (match: MatchesJoined) =>
     return {
       id: teamPlayer.player_id,
       ready: teamPlayer.ready,
-      name: player?.full_name || '-',
+      full_name: player?.full_name || '-',
     };
   });
+
+export const getPlayerName =
+  (players: Array<PlayersRow>) =>
+  ({ player_id }: MatchPlayersRow) =>
+    players.find((p) => p.id === player_id)?.full_name || 'player';

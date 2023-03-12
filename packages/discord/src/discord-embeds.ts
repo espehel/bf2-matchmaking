@@ -1,7 +1,10 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
+  compareFullName,
+  compareUpdatedAt,
   getDraftStep,
+  getPlayerName,
   getPlayersReadyStatus,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
@@ -32,13 +35,14 @@ const getMatchFields = (match: MatchesJoined) =>
     .concat(createTeamFields(match))
     .concat(createServerFields(match));
 
-const createCurrentPlayersFields = ({ status, players, size }: MatchesJoined) =>
+const createCurrentPlayersFields = ({ status, players, size, teams }: MatchesJoined) =>
   status === MatchStatus.Open
     ? [
         {
           name: 'Players',
-          value: `${players.length}/${size} | ${players
-            .map((player) => player.full_name)
+          value: `${players.length}/${size} | ${teams
+            .sort(compareUpdatedAt)
+            .map(getPlayerName(players))
             .join(', ')}`,
         },
       ]
@@ -50,7 +54,8 @@ const createSummoningFields = (match: MatchesJoined) =>
         {
           name: 'Ready players',
           value: getPlayersReadyStatus(match)
-            .map(({ name, ready }) => `${ready ? '✅' : '❌'}  ${name}`)
+            .sort(compareFullName)
+            .map(({ full_name, ready }) => `${ready ? '✅' : '❌'}  ${full_name}`)
             .join('\n'),
         },
       ]
@@ -62,6 +67,7 @@ const createPoolFields = (match: MatchesJoined) =>
         {
           name: 'Pool',
           value: getTeamPlayers(match, null)
+            .sort(compareFullName)
             .map((player) => player.full_name)
             .join(', '),
         },
@@ -76,12 +82,14 @@ const createTeamFields = (match: MatchesJoined) =>
         {
           name: 'Team A',
           value: getTeamPlayers(match, 'a')
+            .sort(compareFullName)
             .map((player) => player.full_name)
             .join(', '),
         },
         {
           name: 'Team B',
           value: getTeamPlayers(match, 'b')
+            .sort(compareFullName)
             .map((player) => player.full_name)
             .join(', '),
         },

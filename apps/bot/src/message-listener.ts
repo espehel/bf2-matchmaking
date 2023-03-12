@@ -1,5 +1,10 @@
 import { error, info } from '@bf2-matchmaking/logging';
-import { addPlayer, pickMatchPlayer, removePlayer } from './match-interactions';
+import {
+  addPlayer,
+  getPlayerExpiration,
+  pickMatchPlayer,
+  removePlayer,
+} from './match-interactions';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { getDiscordClient } from './client';
 import {
@@ -52,8 +57,10 @@ const parseMessage = (msg: Message, channel: DiscordChannelsJoined) => {
       return onJoin(msg, channel);
     case '!pick':
       return onPick(msg);
+    case '!expire':
+      return onExpire(msg, channel);
     case '!help':
-      return { content: 'Commands: `!who`, `--`, `++`, `!pick <@user>`' };
+      return { content: 'Commands: `!who`, `--`, `++`, `!pick <@user>`, !expire' };
     default:
       return Promise.resolve();
   }
@@ -108,4 +115,12 @@ const onPick = async (msg: Message) => {
   }
   const feedbackMessage = await pickMatchPlayer(msg.channel.id, msg.author.id, playerId);
   return { content: feedbackMessage };
+};
+
+const onExpire = async (msg: Message, channel: DiscordChannelsJoined) => {
+  info(
+    'discord-gateway',
+    `Received command <${msg.content}> for channel <${msg.channel.id}>`
+  );
+  return getPlayerExpiration(msg.channel.id, msg.author);
 };

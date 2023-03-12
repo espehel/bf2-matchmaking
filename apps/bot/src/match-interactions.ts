@@ -100,3 +100,12 @@ export const pickMatchPlayer = async (
     return 'Something went wrong while picking';
   }
 };
+
+export const getPlayerExpiration = async (channelId: string, user: User | APIUser) => {
+  const { data: match } = await client().getOpenMatchByChannelId(channelId);
+  const expireAt = match?.teams.find((p) => p.player_id === user.id)?.expire_at;
+  if (expireAt) {
+    return { content: `Your queue expires ${moment().to(expireAt)}` };
+  }
+  return { content: 'No expire time found' };
+};

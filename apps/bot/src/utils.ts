@@ -71,7 +71,7 @@ export const getMatchCopyWithPlayer = (
       ready: false,
       source: '',
       captain: false,
-      updated_at: '',
+      updated_at: new Date().toISOString(),
     },
   ],
 });
