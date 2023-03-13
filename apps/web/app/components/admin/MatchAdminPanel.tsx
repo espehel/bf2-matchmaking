@@ -34,7 +34,7 @@ const MatchAdminPanel: FC<Props> = ({ match }) => {
           <Action action="./start" name="Start match" disabled={hasUnpickedPlayers} />
         )}
         {match.status === MatchStatus.Drafting && <Action action="./reopen" name="Reopen match" />}
-        {match.status === MatchStatus.Ongoing && <Action action="./close" name="Close match" />}
+        {match.status !== MatchStatus.Closed && <Action action="./close" name="Close match" />}
       </section>
       <section>
         <h3>Players:</h3>

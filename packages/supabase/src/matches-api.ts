@@ -10,14 +10,17 @@ import {
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
-  '*, players(*), maps(*), channel(*), teams:match_players(*), server(*)';
+  '*, players(*), maps(*), channel!inner(*), teams:match_players(*), server(*)';
 
 export default (client: SupabaseClient<Database>) => ({
   createMatch: (values: MatchesInsert) =>
     client
       .from('matches')
       .insert([values])
-      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
+      .select<
+        '*, players(*), maps(*), channel(*), teams:match_players(*), server(*)',
+        MatchesJoined
+      >('*, players(*), maps(*), channel(*), teams:match_players(*), server(*)')
       .single(),
   getMatches: () => client.from('matches').select('*'),
   getOpenMatches: () =>

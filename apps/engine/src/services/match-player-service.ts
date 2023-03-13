@@ -3,6 +3,7 @@ import { assignMatchPlayerTeams, shuffleArray } from '@bf2-matchmaking/utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
 import moment from 'moment/moment';
+import { reopenMatch } from './match-service';
 
 export const setRandomTeams = async (match: MatchesJoined) => {
   const matchPlayers = assignMatchPlayerTeams(match.players);
@@ -64,4 +65,18 @@ export const setPlayerExpireTimer = (player: MatchPlayersRow) => {
     }
   }, moment(player.expire_at).diff(moment()));
   matchPlayerTimeouts.set(matchPlayerId, timeout);
+};
+
+export const setPlayerReadyTimer = (match: MatchesJoined) => {
+  setTimeout(async () => {
+    const timedOutMatch = await client().getMatch(match.id).then(verifySingleResult);
+    if (timedOutMatch.status === MatchStatus.Summoning) {
+      info('handleMatchSummon', `Match ${match.id} timed out while summoning`);
+      await client().deleteMatchPlayers(
+        timedOutMatch.id,
+        timedOutMatch.teams.filter((player) => !player.ready)
+      );
+      await reopenMatch(timedOutMatch);
+    }
+  }, moment(match.ready_at).diff(moment()));
 };

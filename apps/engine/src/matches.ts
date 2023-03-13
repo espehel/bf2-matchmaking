@@ -16,7 +16,11 @@ import {
 import { api } from '@bf2-matchmaking/utils';
 import moment from 'moment';
 import { createNextMatchFromConfig, reopenMatch } from './services/match-service';
-import { setMatchCaptains, setRandomTeams } from './services/match-player-service';
+import {
+  setMatchCaptains,
+  setPlayerReadyTimer,
+  setRandomTeams,
+} from './services/match-player-service';
 
 export const handleInsertedMatch = async (match: MatchesRow) => {
   info('handleInsertedMatch', `New match ${match.id}`);
@@ -69,17 +73,8 @@ export const handleMatchReopen = async (match: MatchesJoined) => {
 
 export const handleMatchSummon = async (match: MatchesJoined) => {
   info('handleMatchSummon', `Match ${match.id} is summoning`);
-  setTimeout(async () => {
-    const timedOutMatch = await client().getMatch(match.id).then(verifySingleResult);
-    if (timedOutMatch.status === MatchStatus.Summoning) {
-      info('handleMatchSummon', `Match ${match.id} timed out while summoning`);
-      await client().deleteMatchPlayers(
-        timedOutMatch.id,
-        timedOutMatch.teams.filter((player) => !player.ready)
-      );
-      await reopenMatch(timedOutMatch);
-    }
-  }, moment(match.ready_at).diff(moment()));
+
+  setPlayerReadyTimer(match);
 
   if (isDiscordMatch(match)) {
     await sendMatchSummoningMessage(match);
