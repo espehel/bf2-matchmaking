@@ -1,6 +1,6 @@
 import { useLoaderData } from '@remix-run/react';
 import { loader } from '~/routes/matches/$matchId';
-import { MatchPlayersRow, PlayersRow } from '@bf2-matchmaking/types';
+import { MatchPlayersRow } from '@bf2-matchmaking/types';
 import RoundsList from '~/components/match/RoundsList';
 import { FC } from 'react';
 import { useUser } from '@supabase/auth-helpers-react';

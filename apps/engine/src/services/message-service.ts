@@ -1,4 +1,4 @@
-import { DiscordMatch, MatchesJoined, MatchPlayersRow } from '@bf2-matchmaking/types';
+import { DiscordMatch, MatchPlayersRow } from '@bf2-matchmaking/types';
 import {
   sendChannelMessage,
   removeExistingMatchEmbeds,
@@ -56,8 +56,16 @@ const replaceChannelMessage = async (
   return await sendChannelMessage(match.channel.channel_id, body);
 };
 
-export const sendSummoningDM = (match: MatchesJoined) => {
-  const content = `Check in has started for Match ${match.id}. Some more info will come here...`;
+export const sendSummoningDM = (match: DiscordMatch) => {
+  const content =
+    `Check in has started for Match ${match.id}, you can check in at following places:`
+      .concat(`\n  - Web: https://bf2-matchmaking.netlify.app/matches/${match.id}`)
+      .concat(`\n  - React to discord message: <#${match.channel.channel_id}>`)
+      .concat(
+        match.channel.staging_channel
+          ? `\n  - Join staging voice channel: <#${match.channel.staging_channel}>.`
+          : ''
+      );
   return Promise.allSettled(
     match.players.map((player) => sendDirectMessage(player.id, { content }))
   );
