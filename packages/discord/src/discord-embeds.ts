@@ -102,7 +102,7 @@ const createServerFields = (match: MatchesJoined) =>
     ? [
         {
           name: match.server.name,
-          value: `[https://joinme.click/${match.server.ip}](https://joinme.click/g/bf2/${match.server.ip}:${match.server.port})`,
+          value: `https://joinme.click/g/bf2/${match.server.ip}:${match.server.port}`,
         },
       ]
     : [];
