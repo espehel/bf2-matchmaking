@@ -13,9 +13,17 @@ export const action = async ({ request }: ActionArgs) => {
   invariant(pick, 'No pick included');
   const client = remixClient(request);
   const user = await client.getUser();
-  const result = await client.createMatch({ pick, size, channel, host: user?.id });
-  invariant(result.data, 'Failed to create match');
-  return redirect(`/matches/${result.data.id}`);
+  const { data, error, status } = await client.createMatch({
+    pick,
+    size,
+    channel,
+    host: user?.id,
+  });
+  if (error) {
+    console.error(error);
+    return json(error, { status });
+  }
+  return redirect(`/matches/${data.id}`);
 };
 
 export const loader = async ({ request }: LoaderArgs) => {

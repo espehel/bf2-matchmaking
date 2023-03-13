@@ -6,16 +6,18 @@ import moment from 'moment/moment';
 
 export const setRandomTeams = async (match: MatchesJoined) => {
   const matchPlayers = assignMatchPlayerTeams(match.players);
-  client().updateMatchPlayers(
-    match.id,
-    matchPlayers.filter((mp) => mp.team === 'a'),
-    { team: 'a' }
-  );
-  client().updateMatchPlayers(
-    match.id,
-    matchPlayers.filter((mp) => mp.team === 'b'),
-    { team: 'b' }
-  );
+  await Promise.all([
+    client().updateMatchPlayers(
+      match.id,
+      matchPlayers.filter((mp) => mp.team === 'a'),
+      { team: 'a' }
+    ),
+    client().updateMatchPlayers(
+      match.id,
+      matchPlayers.filter((mp) => mp.team === 'b'),
+      { team: 'b' }
+    ),
+  ]);
 };
 
 export const setMatchCaptains = async (match: MatchesJoined) => {

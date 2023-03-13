@@ -120,7 +120,7 @@ const handlePlayerPicked = async (
     return await setMatchStatusOngoing(match);
   }
 
-  if (isDiscordMatch(match) && !payload.record.captain) {
+  if (isDiscordMatch(match) && !payload.record.captain && match.pick === 'captain') {
     return sendMatchInfoMessage(match);
   }
 };

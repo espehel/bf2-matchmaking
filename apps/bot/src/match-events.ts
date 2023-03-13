@@ -8,7 +8,9 @@ export const handleMatchSummon = async (match: DiscordMatch) => {
     await addChannel(match.channel.staging_channel, match);
   }
   const members = await getVoiceMembers(match);
-  client().updateMatchPlayers(match.id, members.map(toMatchPlayerId), { ready: true });
+  await client().updateMatchPlayers(match.id, members.map(toMatchPlayerId), {
+    ready: true,
+  });
 };
 
 export const handleMatchDraft = async (match: DiscordMatch) => {

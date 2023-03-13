@@ -10,7 +10,7 @@ import {
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
-  '*, players(*), maps(*), channel!inner(*), teams:match_players(*), server(*)';
+  '*, players(*), maps(*), channel(*), teams:match_players(*), server(*)';
 
 export default (client: SupabaseClient<Database>) => ({
   createMatch: (values: MatchesInsert) =>
@@ -92,23 +92,23 @@ export default (client: SupabaseClient<Database>) => ({
         'player_id',
         players.map((mp) => mp.player_id)
       ),
-  updateMatchPlayer: (
+  updateMatchPlayer: async (
     matchId: number,
     playerId: string | undefined,
     values: Partial<MatchPlayersRow>
   ) =>
-    client
+    await client
       .from('match_players')
       .update(values)
       .eq('match_id', matchId)
       .eq('player_id', playerId)
       .select(),
-  updateMatchPlayers: (
+  updateMatchPlayers: async (
     matchId: number,
     players: Array<{ player_id: string }>,
     values: Partial<MatchPlayersRow>
   ) =>
-    client
+    await client
       .from('match_players')
       .update(values)
       .eq('match_id', matchId)
