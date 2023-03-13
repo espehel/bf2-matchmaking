@@ -14,7 +14,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   const client = remixClient(request);
 
   try {
-    const configs = await client.getMatchConfigs().then(verifyResult);
+    const configs = await client.getActiveMatchConfigs().then(verifyResult);
     const quickMatches = await Promise.all(configs.map(client.services.getQuickMatchFromConfig));
     return json(
       { quickMatches },

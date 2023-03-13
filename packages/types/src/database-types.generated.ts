@@ -80,6 +80,7 @@ export interface Database {
       }
       match_configs: {
         Row: {
+          active: boolean
           channel: number
           created_at: string
           draft: string
@@ -90,6 +91,7 @@ export interface Database {
           size: number
         }
         Insert: {
+          active?: boolean
           channel: number
           created_at?: string
           draft: string
@@ -100,6 +102,7 @@ export interface Database {
           size: number
         }
         Update: {
+          active?: boolean
           channel?: number
           created_at?: string
           draft?: string

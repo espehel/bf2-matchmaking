@@ -64,10 +64,11 @@ export default (client: SupabaseClient<Database>) => ({
           foreignTable: 'matches',
         }
       ),
-  getMatchConfigs: () =>
+  getActiveMatchConfigs: () =>
     client
       .from('match_configs')
-      .select<'*, channel(*)', MatchConfigsJoined>('*, channel(*)'),
+      .select<'*, channel(*)', MatchConfigsJoined>('*, channel(*)')
+      .eq('active', true),
   getMatchConfigByChannelId: (channelId: number) =>
     client
       .from('match_configs')

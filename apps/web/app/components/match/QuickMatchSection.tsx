@@ -34,7 +34,7 @@ const QuickMatchSection: FC<Props> = ({ config, match, hasJoined }) => {
           Leave
         </ActionButton>
       )}
-      <div className="flex justify-between gap-4 w-full">
+      <div className="flex justify-between flex-wrap gap-x-4 w-full">
         {match && (
           <div>
             <span className="mr-1">Match:</span>
