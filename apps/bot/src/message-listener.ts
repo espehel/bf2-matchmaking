@@ -114,7 +114,7 @@ const onPick = async (msg: Message) => {
     return { content: 'No player mentioned' };
   }
   const feedbackMessage = await pickMatchPlayer(msg.channel.id, msg.author.id, playerId);
-  return { content: feedbackMessage };
+  return feedbackMessage ? { content: feedbackMessage } : null;
 };
 
 const onExpire = async (msg: Message, channel: DiscordChannelsJoined) => {

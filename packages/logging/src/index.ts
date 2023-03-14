@@ -4,7 +4,7 @@ import expressWinston from 'express-winston';
 const { combine, timestamp, printf, colorize, json } = format;
 
 const APP_FORMAT = printf(({ level, message, label, timestamp }) => {
-  return `${timestamp} [${label}] ${level}: ${message}`;
+  return `${timestamp} [${level.toLocaleUpperCase()}] [${label}] ${message}`;
 });
 const EXPRESS_FORMAT = printf(({ message, timestamp }) => {
   return `${timestamp} ${message}`;

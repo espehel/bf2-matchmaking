@@ -13,6 +13,7 @@ const discordClient = new Client({
     GatewayIntentBits.GuildMessageReactions,
   ],
 });
+discordClient.setMaxListeners(Number.POSITIVE_INFINITY);
 export const getDiscordClient = () =>
   new Promise<Client<true>>(async (resolve, reject) => {
     if (discordClient.isReady()) {
@@ -26,5 +27,6 @@ export const getDiscordClient = () =>
       error('discord-client', err);
       reject(err);
     });
+    info('discord-client', 'Connecting...');
     await discordClient.login(process.env.DISCORD_TOKEN);
   });

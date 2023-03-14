@@ -99,6 +99,7 @@ export const pickMatchPlayer = async (
     error('pickMatchPlayer', err.message);
     return 'Something went wrong while picking';
   }
+  info('pickMatchPlayer', `Player ${pickedPlayerId} joined team ${team}.`);
 };
 
 export const getPlayerExpiration = async (channelId: string, user: User | APIUser) => {
