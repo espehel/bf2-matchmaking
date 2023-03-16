@@ -8,3 +8,6 @@ export const isPostgrestError = (error: unknown): error is PostgrestError => {
   const pgError = error as PostgrestError;
   return Boolean(pgError && pgError.code && pgError.message && pgError.hint);
 };
+
+export const isDefined = <T>(object: undefined | T): object is T =>
+  typeof object !== 'undefined';

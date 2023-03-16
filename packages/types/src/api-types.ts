@@ -29,3 +29,14 @@ export interface PostMatchEventRequestBody {
   event: MatchEvent;
   matchId: number;
 }
+
+export enum MatchConfigEvent {
+  INSERT = 'Insert',
+  UPDATE = 'Update',
+  DELETE = 'Delete',
+}
+
+export interface PostMatchConfigEventRequestBody {
+  event: MatchConfigEvent;
+  channelId: string;
+}

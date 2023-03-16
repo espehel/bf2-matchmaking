@@ -65,16 +65,9 @@ export default (client: SupabaseClient<Database>) => ({
         }
       ),
   getActiveMatchConfigs: () =>
-    client
-      .from('match_configs')
-      .select<'*, channel(*)', MatchConfigsJoined>('*, channel(*)')
-      .eq('active', true),
-  getMatchConfigByChannelId: (channelId: number) =>
-    client
-      .from('match_configs')
-      .select<'*, channel(*)', MatchConfigsJoined>('*, channel(*)')
-      .eq('channel', channelId)
-      .single(),
+    client.from('match_configs').select('*').eq('active', true),
+  getMatchConfigByChannelId: (channelId: string) =>
+    client.from('match_configs').select('*').eq('channel', channelId).single(),
   getMatchConfigByMatchId: async (matchId: number) => {
     const res = await client
       .from('matches')
@@ -90,7 +83,7 @@ export default (client: SupabaseClient<Database>) => ({
       data: channel?.match_config,
     } as PostgrestResponseSuccess<MatchConfigsRow>;
   },
-
+  getMatchConfigs: () => client.from('match_configs').select('*'),
   createRound: (round: RoundsInsert) =>
     client.from('rounds').insert([round]).select().single(),
   searchMap: (map: string) => client.from('maps').select().textSearch('name', `'${map}'`),

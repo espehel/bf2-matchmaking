@@ -31,7 +31,7 @@ export const createNextMatchFromConfig = async (match: DiscordMatch) => {
   try {
     info('handleNewMatch', `Fetching match ${match.id} config.`);
     const config = await client()
-      .getMatchConfigByChannelId(match.channel.id)
+      .getMatchConfigByChannelId(match.channel.channel_id)
       .then(verifySingleResult);
 
     const stagingMatches = await client()

@@ -81,7 +81,7 @@ export interface Database {
       match_configs: {
         Row: {
           active: boolean
-          channel: number
+          channel: string
           created_at: string
           draft: string
           id: number
@@ -92,7 +92,7 @@ export interface Database {
         }
         Insert: {
           active?: boolean
-          channel: number
+          channel: string
           created_at?: string
           draft: string
           id?: number
@@ -103,7 +103,7 @@ export interface Database {
         }
         Update: {
           active?: boolean
-          channel?: number
+          channel?: string
           created_at?: string
           draft?: string
           id?: number

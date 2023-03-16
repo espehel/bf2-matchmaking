@@ -6,7 +6,7 @@ import {
 import { verifyKey } from 'discord-interactions';
 import { ErrorRequestHandler, Request } from 'express';
 import { ApiError, MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
-import { Message } from 'discord.js';
+import { Channel, Message, TextChannel } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 
 export const getOption = (
@@ -84,3 +84,6 @@ export const getMatchCopyWithoutPlayer = (
   players: match.players.filter((player) => player.id !== playerId),
   teams: match.teams.filter((player) => player.player_id !== playerId),
 });
+
+export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
+  Boolean(channel && channel.isTextBased());

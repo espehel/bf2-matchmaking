@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express, { Request } from 'express';
 import bodyParser from 'body-parser';
 import {
+  MatchConfigEvent,
+  MatchConfigsRow,
   MatchesRow,
   MatchPlayersRow,
   RoundsRow,
@@ -21,6 +23,7 @@ import {
   handleUpdatedMatchPlayer,
 } from './match-players';
 import { handleInsertedRound } from './rounds';
+import { api } from '@bf2-matchmaking/utils';
 
 const app = express();
 
@@ -110,6 +113,47 @@ app.post(
         error('/rounds', e);
       } else {
         error('/rounds', JSON.stringify(e));
+      }
+    }
+    res.end();
+  }
+);
+
+app.post(
+  '/match_configs',
+  async (req: Request<{}, {}, WebhookPostgresChangesPayload<MatchConfigsRow>>, res) => {
+    info('POST /match_configs', `Request body: ${JSON.stringify(req.body)}`);
+    try {
+      switch (req.body.type) {
+        case WEBHOOK_POSTGRES_CHANGES_TYPE.INSERT: {
+          await api
+            .bot()
+            .postMatchConfigEvent(req.body.record.channel, MatchConfigEvent.INSERT);
+          break;
+        }
+        case WEBHOOK_POSTGRES_CHANGES_TYPE.UPDATE: {
+          await api
+            .bot()
+            .postMatchConfigEvent(req.body.record.channel, MatchConfigEvent.UPDATE);
+          break;
+        }
+        case WEBHOOK_POSTGRES_CHANGES_TYPE.DELETE: {
+          if (!req.body.old_record.channel) {
+            throw new Error('Deleted match config does not contain channel');
+          }
+          await api
+            .bot()
+            .postMatchConfigEvent(req.body.old_record.channel, MatchConfigEvent.DELETE);
+          break;
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        error('POST /match_configs', e.message);
+      } else if (typeof e === 'string') {
+        error('POST /match_configs', e);
+      } else {
+        error('POST /match_configs', JSON.stringify(e));
       }
     }
     res.end();

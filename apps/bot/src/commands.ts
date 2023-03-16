@@ -1,6 +1,12 @@
 import { getCommands, postCommand } from '@bf2-matchmaking/discord';
-import { APIApplicationCommand } from 'discord-api-types/v10';
+import {
+  APIApplicationCommand,
+  RESTPostAPIChannelMessageJSONBody,
+} from 'discord-api-types/v10';
 import { error, info } from '@bf2-matchmaking/logging';
+import { Message } from 'discord.js';
+import { MatchConfigsRow } from '@bf2-matchmaking/types';
+import { onExpire, onHelp, onJoin, onLeave, onPick, onWho } from './message-interactions';
 
 export async function HasGuildCommands(
   appId: string,
@@ -74,4 +80,47 @@ export const PICK_COMMAND: Partial<APIApplicationCommand> = {
       type: 1,
     },
   ],
+};
+
+// ------------------- GATEWAY COMMANDS -------------------------//
+export interface BaseCommand {
+  name: string;
+  command: string;
+  action: (msg: Message) => Promise<RESTPostAPIChannelMessageJSONBody | null>;
+}
+
+export interface ConfigCommand extends Omit<BaseCommand, 'action'> {
+  name: 'join' | 'expire';
+  action: (
+    msg: Message,
+    matchConfig: MatchConfigsRow | null
+  ) => Promise<RESTPostAPIChannelMessageJSONBody>;
+}
+
+export type GatewayCommand = BaseCommand | ConfigCommand;
+export const commands: Array<GatewayCommand> = [
+  { name: 'help', command: '!help', action: onHelp },
+  { name: 'info', command: '!who', action: onWho },
+  { name: 'join', command: '++', action: onJoin },
+  { name: 'leave', command: '--', action: onLeave },
+  { name: 'pick', command: '!pick', action: onPick },
+  { name: 'expire', command: '!expire', action: onExpire },
+];
+
+export const isCommand = (message: Message) =>
+  commands.some((interaction) => message.content.startsWith(interaction.command));
+export const executeCommand = (
+  message: Message,
+  config: MatchConfigsRow
+): Promise<RESTPostAPIChannelMessageJSONBody | null> => {
+  const command = commands.find((interaction) =>
+    message.content.startsWith(interaction.command)
+  );
+
+  if (command) {
+    info('executeCommand', `Executing interaction ${command.name}`);
+    return command.action(message, config);
+  }
+
+  return Promise.resolve(null);
 };

@@ -22,15 +22,22 @@ import {
   removePlayer,
 } from './match-interactions';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { initMessageListener } from './message-listener';
 import {
   ApiError,
   ApiErrorType,
   isDiscordMatch,
+  MatchConfigEvent,
+  PostMatchConfigEventRequestBody,
   PostMatchEventRequestBody,
 } from '@bf2-matchmaking/types';
 import { error, info } from '@bf2-matchmaking/logging';
 import { handleMatchDraft, handleMatchSummon } from './match-events';
+import {
+  addChannelListener,
+  initChannelListener,
+  updateChannelListener,
+} from './channel-listener';
+import { removeChannel } from './member-listener';
 
 // Create an express app
 const app = express();
@@ -40,7 +47,11 @@ const PORT = process.env.PORT || 5001;
 invariant(process.env.PUBLIC_KEY, 'PUBLIC_KEY not defined');
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
-initMessageListener();
+(function () {
+  initChannelListener()
+    .then(() => info('app init', 'Channel listener initialization complete.'))
+    .catch((err) => error('app init', err));
+})();
 
 app.post(
   '/api/match_events',
@@ -58,6 +69,33 @@ app.post(
       }
       if (event === 'Draft') {
         await handleMatchDraft(match);
+      }
+      res.end();
+    } catch (e) {
+      error('match_events', e);
+      next(e);
+    }
+  }
+);
+
+app.post(
+  '/api/match_config_events',
+  async (req: Request<{}, {}, PostMatchConfigEventRequestBody>, res, next) => {
+    try {
+      const { event, channelId } = req.body;
+      info(
+        '/api/match_config_events',
+        `Received event ${event} for channel ${channelId}`
+      );
+
+      if (event === MatchConfigEvent.INSERT) {
+        await addChannelListener(channelId);
+      }
+      if (event === MatchConfigEvent.UPDATE) {
+        await updateChannelListener(channelId);
+      }
+      if (event === MatchConfigEvent.DELETE) {
+        await removeChannel(channelId);
       }
       res.end();
     } catch (e) {

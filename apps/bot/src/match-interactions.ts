@@ -1,6 +1,6 @@
 import { error, info } from '@bf2-matchmaking/logging';
-import { client, verifySingleResult, verifyResult } from '@bf2-matchmaking/supabase';
-import { getDraftStep, isAssignedTeam, SUMMONING_DURATION } from '@bf2-matchmaking/utils';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { getDraftStep, isAssignedTeam } from '@bf2-matchmaking/utils';
 import { getMatchEmbed } from '@bf2-matchmaking/discord';
 import { MatchStatus } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';

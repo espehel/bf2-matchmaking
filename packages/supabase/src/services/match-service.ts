@@ -1,5 +1,6 @@
 import {
   MatchConfigsJoined,
+  MatchConfigsRow,
   MatchesJoined,
   QuickMatch,
   RoundsJoined,
@@ -51,13 +52,13 @@ export default (api: ReturnType<typeof supabaseApi>) => ({
 
     return [config, match];
   },
-  createMatchFromConfig: async (config: MatchConfigsJoined) => {
+  createMatchFromConfig: async (config: MatchConfigsRow) => {
     const { draft, size, channel, map_draft } = config;
     return await api
       .createMatch({
         pick: draft,
         size,
-        channel: channel.id,
+        channel,
         map_draft,
       })
       .then(verifySingleResult);
