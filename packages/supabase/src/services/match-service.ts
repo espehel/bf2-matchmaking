@@ -1,5 +1,4 @@
 import {
-  MatchConfigsJoined,
   MatchConfigsRow,
   MatchesJoined,
   QuickMatch,
@@ -29,37 +28,29 @@ export default (api: ReturnType<typeof supabaseApi>) => ({
     }
     return data as Array<RoundsJoined>;
   },
-  getQuickMatchFromConfig: async (config: MatchConfigsJoined): Promise<QuickMatch> => {
-    const openMatches = await api
-      .getStagingMatchesByChannel(config.channel.id)
+  getQuickMatchFromConfig: async (config: MatchConfigsRow): Promise<QuickMatch> => {
+    const stagingMatches = await api
+      .getStagingMatchesByConfig(config.id)
       .then(verifyResult);
-    const match = openMatches.at(0);
+    const match = stagingMatches.at(0);
 
     if (!match) {
-      const { draft, size, channel, map_draft } = config;
       const { data: newMatch } = await api.createMatch({
-        pick: draft,
-        size,
-        channel: channel.id,
-        map_draft,
+        config: config.id,
       });
       return [config, newMatch];
     }
 
-    if (openMatches.length > 1) {
+    if (stagingMatches.length > 1) {
       console.log('Multiple open matches for the same channel exists.');
     }
 
     return [config, match];
   },
   createMatchFromConfig: async (config: MatchConfigsRow) => {
-    const { draft, size, channel, map_draft } = config;
     return await api
       .createMatch({
-        pick: draft,
-        size,
-        channel,
-        map_draft,
+        config: config.id,
       })
       .then(verifySingleResult);
   },

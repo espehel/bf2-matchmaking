@@ -1,6 +1,6 @@
 import { ActionFunction, json, LoaderFunction, redirect } from '@remix-run/node';
 import invariant from 'tiny-invariant';
-import { remixClient } from '@bf2-matchmaking/supabase';
+import { remixClient, verifySingleResult } from '@bf2-matchmaking/supabase';
 import moment from 'moment/moment';
 
 export const loader: LoaderFunction = ({ request, params }) => {
@@ -22,10 +22,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     invariant(player, 'Could not find player connected to user id.');
     const matchId = params['matchId'] ? parseInt(params['matchId']) : undefined;
     invariant(matchId, 'No matchId');
-    const { data: config } = await client.getMatchConfigByMatchId(matchId);
-    const expireAt = config?.player_expire
-      ? moment().add(config.player_expire, 'ms').toISOString()
-      : null;
+    const { config } = await client.getMatch(matchId).then(verifySingleResult);
+    const expireAt = moment().add(config.player_expire, 'ms').toISOString();
 
     const { error: err, status } = await client.createMatchPlayer(
       matchId,

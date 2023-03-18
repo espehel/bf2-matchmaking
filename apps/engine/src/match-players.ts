@@ -1,5 +1,6 @@
 import { info, warn } from '@bf2-matchmaking/logging';
 import {
+  DraftType,
   isDiscordMatch,
   MatchesJoined,
   MatchPlayersRow,
@@ -32,12 +33,12 @@ export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) =>
     );
   }
 
-  if (match.players.length === match.size) {
+  if (match.players.length === match.config.size) {
     info('handleInsertedMatchPlayer', `Setting match ${match.id} status to "summoning".`);
     return await setMatchSummoning(match);
   }
 
-  if (match.players.length > match.size) {
+  if (match.players.length > match.config.size) {
     warn(
       'handleInsertedMatchPlayer',
       `Player ${matchPlayer.player_id} joined full match ${match.id}. Removing player.`
@@ -120,7 +121,11 @@ const handlePlayerPicked = async (
     return await setMatchStatusOngoing(match);
   }
 
-  if (isDiscordMatch(match) && !payload.record.captain && match.pick === 'captain') {
+  if (
+    isDiscordMatch(match) &&
+    !payload.record.captain &&
+    match.config.draft === DraftType.Captain
+  ) {
     return sendMatchInfoMessage(match);
   }
 };
@@ -134,7 +139,7 @@ const handlePlayerReady = async (
   } else if (isDiscordMatch(match)) {
     const { data: message } = await sendMatchInfoMessage(match);
     if (message) {
-      await createMessageReaction(match.channel.channel_id, message.id, '✅');
+      await createMessageReaction(match.config.channel, message.id, '✅');
     }
   }
 };

@@ -1,5 +1,10 @@
 import { getDiscordClient } from './client';
-import { isDefined, MatchConfigsRow } from '@bf2-matchmaking/types';
+import {
+  DiscordConfig,
+  isDefined,
+  isDiscordConfig,
+  MatchConfigsRow,
+} from '@bf2-matchmaking/types';
 
 import { error, info } from '@bf2-matchmaking/logging';
 import { hasSummonEmbed, isTextBasedChannel } from './utils';
@@ -12,7 +17,7 @@ import { executeCommand, isCommand } from './commands';
 const listenerMap = new Map<string, MessageCollector>();
 export const initChannelListener = async () => {
   const configs = await client().getMatchConfigs().then(verifyResult);
-  (await Promise.all(configs.map(listenToChannel)))
+  (await Promise.all(configs.filter(isDiscordConfig).map(listenToChannel)))
     .filter(isDefined)
     .map<[string, MessageCollector]>((listener) => [listener.channel.id, listener])
     .forEach(([channel, listener]) => listenerMap.set(channel, listener));
@@ -58,7 +63,7 @@ export const updateChannelListener = async (channelId: string) => {
   }
 };
 
-export const listenToChannel = async (config: MatchConfigsRow) => {
+export const listenToChannel = async (config: DiscordConfig) => {
   const discordClient = await getDiscordClient();
   const channel = await discordClient.channels.fetch(config.channel);
 

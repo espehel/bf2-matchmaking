@@ -81,36 +81,45 @@ export interface Database {
       match_configs: {
         Row: {
           active: boolean
-          channel: string
+          channel: string | null
           created_at: string
           draft: string
           id: number
           map_draft: string
           name: string
+          owner: string
+          permanent: boolean
           player_expire: number
           size: number
+          updated_at: string
         }
         Insert: {
           active?: boolean
-          channel: string
+          channel?: string | null
           created_at?: string
           draft: string
           id?: number
           map_draft: string
           name: string
+          owner: string
+          permanent?: boolean
           player_expire?: number
           size: number
+          updated_at?: string
         }
         Update: {
           active?: boolean
-          channel?: string
+          channel?: string | null
           created_at?: string
           draft?: string
           id?: number
           map_draft?: string
           name?: string
+          owner?: string
+          permanent?: boolean
           player_expire?: number
           size?: number
+          updated_at?: string
         }
       }
       match_maps: {
@@ -163,6 +172,38 @@ export interface Database {
         }
       }
       matches: {
+        Row: {
+          closed_at: string | null
+          config: number
+          created_at: string | null
+          id: number
+          ready_at: string | null
+          server: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          closed_at?: string | null
+          config: number
+          created_at?: string | null
+          id?: number
+          ready_at?: string | null
+          server?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          closed_at?: string | null
+          config?: number
+          created_at?: string | null
+          id?: number
+          ready_at?: string | null
+          server?: string | null
+          started_at?: string | null
+          status?: string
+        }
+      }
+      matches_duplicate: {
         Row: {
           channel: number | null
           closed_at: string | null

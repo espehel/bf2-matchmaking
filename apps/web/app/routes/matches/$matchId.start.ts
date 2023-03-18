@@ -1,7 +1,7 @@
 import { ActionFunction, json, LoaderFunction, redirect } from '@remix-run/node';
 import invariant from 'tiny-invariant';
-import { client, remixClient } from '@bf2-matchmaking/supabase';
-import { MatchStatus } from '@bf2-matchmaking/types';
+import { remixClient } from '@bf2-matchmaking/supabase';
+import { DraftType, MatchStatus } from '@bf2-matchmaking/types';
 import { assignMatchPlayerTeams } from '@bf2-matchmaking/utils';
 
 const getMaps = () => {
@@ -25,7 +25,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     invariant(match, 'No match found');
     const addResult = await client.createMatchMaps(matchId, ...getMaps());
 
-    if (match.pick === 'random') {
+    if (match.config.draft === DraftType.Random) {
       const matchPlayers = assignMatchPlayerTeams(match.players);
       client.updateMatchPlayers(
         match.id,

@@ -23,7 +23,7 @@ const PlayerActions: FC<Props> = ({ match }) => {
       {match.status === MatchStatus.Open && !matchPlayer && (
         <ActionButton action="./join">Join match</ActionButton>
       )}
-      {matchPlayer && matchPlayer.expire_at && (
+      {matchPlayer && matchPlayer.expire_at && match.status === MatchStatus.Open && (
         <div>
           <ActionButton action={`./players/${matchPlayer.player_id}/renew`}>
             Renew expire

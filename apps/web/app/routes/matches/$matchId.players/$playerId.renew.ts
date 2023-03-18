@@ -1,5 +1,5 @@
 import { ActionFunction, json, redirect } from '@remix-run/node';
-import { remixClient } from '@bf2-matchmaking/supabase';
+import { remixClient, verifySingleResult } from '@bf2-matchmaking/supabase';
 import invariant from 'tiny-invariant';
 import moment from 'moment';
 
@@ -12,10 +12,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     const playerId = params['playerId'];
     invariant(playerId, 'No playerId');
 
-    const { data: config } = await client.getMatchConfigByMatchId(matchId);
-    const expireAt = config?.player_expire
-      ? moment().add(config.player_expire, 'ms').toISOString()
-      : null;
+    const { config } = await client.getMatch(matchId).then(verifySingleResult);
+    const expireAt = moment().add(config.player_expire, 'ms').toISOString();
 
     const { error, status } = await client.updateMatchPlayer(matchId, playerId, {
       expire_at: expireAt,

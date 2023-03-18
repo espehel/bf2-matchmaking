@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request } from 'express';
 import bodyParser from 'body-parser';
 import {
+  isDiscordConfig,
   MatchConfigEvent,
   MatchConfigsRow,
   MatchesRow,
@@ -126,24 +127,27 @@ app.post(
     try {
       switch (req.body.type) {
         case WEBHOOK_POSTGRES_CHANGES_TYPE.INSERT: {
-          await api
-            .bot()
-            .postMatchConfigEvent(req.body.record.channel, MatchConfigEvent.INSERT);
+          if (isDiscordConfig(req.body.record)) {
+            await api
+              .bot()
+              .postMatchConfigEvent(req.body.record.channel, MatchConfigEvent.INSERT);
+          }
           break;
         }
         case WEBHOOK_POSTGRES_CHANGES_TYPE.UPDATE: {
-          await api
-            .bot()
-            .postMatchConfigEvent(req.body.record.channel, MatchConfigEvent.UPDATE);
+          if (isDiscordConfig(req.body.record)) {
+            await api
+              .bot()
+              .postMatchConfigEvent(req.body.record.channel, MatchConfigEvent.UPDATE);
+          }
           break;
         }
         case WEBHOOK_POSTGRES_CHANGES_TYPE.DELETE: {
-          if (!req.body.old_record.channel) {
-            throw new Error('Deleted match config does not contain channel');
+          if (isDiscordConfig(req.body.old_record)) {
+            await api
+              .bot()
+              .postMatchConfigEvent(req.body.old_record.channel, MatchConfigEvent.DELETE);
           }
-          await api
-            .bot()
-            .postMatchConfigEvent(req.body.old_record.channel, MatchConfigEvent.DELETE);
           break;
         }
       }

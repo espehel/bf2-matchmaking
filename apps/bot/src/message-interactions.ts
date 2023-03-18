@@ -21,7 +21,7 @@ export const onWho = async (msg: Message) => {
     'discord-gateway',
     `Received command <${msg.content}> for channel <${msg.channel.id}>`
   );
-  const { data: matches, error: err } = await client().getStagingMatchesByChannelId(
+  const { data: matches, error: err } = await client().getStagingMatchesByChannel(
     msg.channel.id
   );
 

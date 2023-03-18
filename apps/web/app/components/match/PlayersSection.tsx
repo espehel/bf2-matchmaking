@@ -22,7 +22,7 @@ const PlayersSection: FC<Props> = ({ match }) => {
   return (
     <section className="section grow">
       <h2 className="text-xl">
-        Players({playerCount}/{match.size}):
+        Players({playerCount}/{match.config.size}):
       </h2>
       <ul>
         {playerList.map(([playerId, username]) => (

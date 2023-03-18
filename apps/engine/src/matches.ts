@@ -1,10 +1,10 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { error, info } from '@bf2-matchmaking/logging';
+import { info } from '@bf2-matchmaking/logging';
 import {
+  DraftType,
   isDiscordMatch,
   MatchesJoined,
   MatchesRow,
-  MatchEvent,
   MatchStatus,
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
@@ -13,9 +13,7 @@ import {
   sendMatchSummoningMessage,
   sendSummoningDM,
 } from './services/message-service';
-import { api } from '@bf2-matchmaking/utils';
-import moment from 'moment';
-import { createNextMatchFromConfig, reopenMatch } from './services/match-service';
+import { createNextMatchFromConfig } from './services/match-service';
 import {
   setMatchCaptains,
   setPlayerReadyTimer,
@@ -80,14 +78,16 @@ export const handleMatchSummon = async (match: MatchesJoined) => {
     await sendMatchSummoningMessage(match);
     await sendSummoningDM(match);
 
-    if (match.channel.staging_channel) {
+    // TODO: Create channel per match
+    /*if (match.channel.staging_channel) {
       await api.bot().postMatchEvent(match.id, MatchEvent.Summon);
-    }
+    }*/
   }
 };
 
 export const handleMatchDraft = async (match: MatchesJoined) => {
-  try {
+  // TODO: create channel per match
+  /*try {
     if (isDiscordMatch(match) && match.channel.staging_channel) {
       const { error: err } = await api.bot().postMatchEvent(match.id, MatchEvent.Draft);
       if (err) {
@@ -96,12 +96,12 @@ export const handleMatchDraft = async (match: MatchesJoined) => {
     }
   } catch (err) {
     error('handleMatchDraft', err);
-  }
+  }*/
 
-  if (match.pick === 'random') {
+  if (match.config.draft === DraftType.Random) {
     await setRandomTeams(match);
   }
-  if (match.pick === 'captain') {
+  if (match.config.draft === DraftType.Captain) {
     await setMatchCaptains(match);
     const matchWithCaptains = await client().getMatch(match.id).then(verifySingleResult);
     if (isDiscordMatch(matchWithCaptains)) {

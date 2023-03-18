@@ -5,7 +5,7 @@ import DraftingContainer from '~/components/match/DraftingContainer';
 import StagingContainer from '~/components/match/StagingContainer';
 import StartedContainer from '~/components/match/StartedContainer';
 import { remixClient } from '@bf2-matchmaking/supabase';
-import { MatchStatus } from '@bf2-matchmaking/types';
+import { isDiscordMatch, MatchStatus } from '@bf2-matchmaking/types';
 import {
   useSubscribeMatchUpdate,
   useSubscribeMatchPlayer,
@@ -63,8 +63,8 @@ export default function Index() {
         <div className="mb-4 section">
           <h1 className="text-2xl">Match {match.id}</h1>
           <span className="mr-4">Status: {match.status}</span>
-          <span>Pick mode: {match.pick}</span>
-          {match.channel && <span className="ml-4">Channel: {match.channel.name}</span>}
+          <span>Pick mode: {match.config.draft}</span>
+          {isDiscordMatch(match) && <span className="ml-4">Channel: {match.config.name}</span>}
           {draftStep.captain && <span className="ml-4">Picking: {draftStep.captain.username}</span>}
           {match.server && <span className="ml-4">Server: {match.server.name}</span>}
         </div>

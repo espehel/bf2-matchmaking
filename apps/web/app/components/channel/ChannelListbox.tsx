@@ -1,9 +1,8 @@
 import React, { FC } from 'react';
-import { DiscordChannelsWithMatches, DiscordChannelsRow } from '@bf2-matchmaking/types';
 import { Listbox } from '@headlessui/react';
 
 interface Props {
-  channels: Array<DiscordChannelsWithMatches>;
+  channels: Array<string>;
 }
 
 const ChannelListbox: FC<Props> = ({ channels }) => {
@@ -13,8 +12,8 @@ const ChannelListbox: FC<Props> = ({ channels }) => {
       <Listbox.Button>{({ value }) => value.name}</Listbox.Button>
       <Listbox.Options>
         {channels.map((channel) => (
-          <Listbox.Option key={channel.id} value={channel}>
-            {channel.name}
+          <Listbox.Option key={channel} value={channel}>
+            {channel}
           </Listbox.Option>
         ))}
       </Listbox.Options>

@@ -1,7 +1,6 @@
 import { Form } from '@remix-run/react';
 import { FC } from 'react';
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import PlayerSelect from '~/components/admin/PlayerSelect';
+import { DraftType, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import AddPlayerForm from '~/components/admin/AddPlayerForm';
 import EditPlayerForm from '~/components/admin/EditPlayerForm';
 
@@ -10,31 +9,32 @@ interface Props {
 }
 
 const MatchAdminPanel: FC<Props> = ({ match }) => {
-  const playerCount = match.players.length;
-  const hasUnpickedPlayers = match.teams.some(({ team }) => team === null);
+  const { status, players, teams, config } = match;
+  const playerCount = players.length;
+  const hasUnpickedPlayers = teams.some(({ team }) => team === null);
 
   return (
     <article className="section">
       <p className="font-bold text-red-600 text-xl mb-2">Warning: Highly experimental!</p>
       <h2>Admin panel</h2>
       <section className="flex gap-2 mb-6">
-        {match.status === MatchStatus.Open && (
-          <Action action="./summon" name="Start summoning" disabled={playerCount < match.size} />
+        {status === MatchStatus.Open && (
+          <Action action="./summon" name="Start summoning" disabled={playerCount < config.size} />
         )}
-        {match.status === MatchStatus.Open && match.pick === 'random' && (
-          <Action action="./start" name="Start match" disabled={playerCount < match.size} />
+        {status === MatchStatus.Ongoing && config.draft === DraftType.Random && (
+          <Action action="./start" name="Start match" disabled={playerCount < config.size} />
         )}
-        {match.status === MatchStatus.Open && match.pick === 'captain' && (
-          <Action action="./drafting" name="Start drafting" disabled={playerCount < match.size} />
+        {status === MatchStatus.Open && config.draft === DraftType.Captain && (
+          <Action action="./drafting" name="Start drafting" disabled={playerCount < config.size} />
         )}
-        {match.status === MatchStatus.Summoning && match.pick === 'captain' && (
-          <Action action="./drafting" name="Start drafting" disabled={playerCount < match.size} />
+        {status === MatchStatus.Summoning && config.draft === DraftType.Captain && (
+          <Action action="./drafting" name="Start drafting" disabled={playerCount < config.size} />
         )}
-        {match.status === MatchStatus.Drafting && (
+        {status === MatchStatus.Drafting && (
           <Action action="./start" name="Start match" disabled={hasUnpickedPlayers} />
         )}
-        {match.status === MatchStatus.Drafting && <Action action="./reopen" name="Reopen match" />}
-        {match.status !== MatchStatus.Closed && <Action action="./close" name="Close match" />}
+        {status === MatchStatus.Drafting && <Action action="./reopen" name="Reopen match" />}
+        {status !== MatchStatus.Closed && <Action action="./close" name="Close match" />}
       </section>
       <section>
         <h3>Players:</h3>

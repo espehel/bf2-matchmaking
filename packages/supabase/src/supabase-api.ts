@@ -1,19 +1,15 @@
-import { PostgrestResponse, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import matches from './matches-api';
 import {
-  DiscordChannelsWithMatches,
   Database,
-  MatchConfigsJoined,
+  DiscordConfig,
+  MatchConfigsRow,
   MatchStatus,
   PlayersInsert,
   RoundsInsert,
   RoundsJoined,
   ServersJoined,
-  DiscordChannelsJoined,
-  DiscordChannelsRow,
-  MatchConfigsRow,
 } from '@bf2-matchmaking/types';
-import { PostgrestResponseSuccess } from '@supabase/postgrest-js/src/types';
 
 export default (client: SupabaseClient<Database>) => ({
   ...matches(client),
@@ -48,42 +44,15 @@ export default (client: SupabaseClient<Database>) => ({
       .gt('created_at', timestampFrom)
       .lt('created_at', timestampTo)
       .eq('server.ip', serverIp),
-  getChannels: () =>
-    client
-      .from('discord_channels')
-      .select<'*, match_config(*)', DiscordChannelsJoined>('*, match_config(*)'),
-  getChannelsWithStagingMatches: () =>
-    client
-      .from('discord_channels')
-      .select<'*, matches(id, status)', DiscordChannelsWithMatches>(
-        '*, matches(id, status)'
-      )
-      .or(
-        `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Drafting},status.eq.${MatchStatus.Ongoing}`,
-        {
-          foreignTable: 'matches',
-        }
-      ),
   getActiveMatchConfigs: () =>
-    client.from('match_configs').select('*').eq('active', true),
+    client.from('match_configs').select<'*', MatchConfigsRow>('*').eq('active', true),
   getMatchConfigByChannelId: (channelId: string) =>
-    client.from('match_configs').select('*').eq('channel', channelId).single(),
-  getMatchConfigByMatchId: async (matchId: number) => {
-    const res = await client
-      .from('matches')
-      .select('id, channel(match_config(*))')
-      .eq('id', matchId)
-      .single();
-    if (res.error) {
-      return res;
-    }
-    const channel = res.data.channel as DiscordChannelsJoined | null;
-    return {
-      ...res,
-      data: channel?.match_config,
-    } as PostgrestResponseSuccess<MatchConfigsRow>;
-  },
-  getMatchConfigs: () => client.from('match_configs').select('*'),
+    client
+      .from('match_configs')
+      .select<'*', DiscordConfig>('*')
+      .eq('channel', channelId)
+      .single(),
+  getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
   createRound: (round: RoundsInsert) =>
     client.from('rounds').insert([round]).select().single(),
   searchMap: (map: string) => client.from('maps').select().textSearch('name', `'${map}'`),

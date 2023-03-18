@@ -36,7 +36,7 @@ export const sendMatchSummoningMessage = async (match: DiscordMatch) => {
     embeds: [getMatchEmbed(match, `Ready up! ${playerMentions}`)],
   });
   if (message) {
-    await createMessageReaction(match.channel.channel_id, message.id, '✅');
+    await createMessageReaction(match.config.channel, message.id, '✅');
   }
 };
 
@@ -52,20 +52,21 @@ const replaceChannelMessage = async (
   body: RESTPostAPIChannelMessageJSONBody
 ) => {
   info('replaceChannelMessage', `Replacing match message for match ${match.id}`);
-  await removeExistingMatchEmbeds(match.channel.channel_id, [match]);
-  return await sendChannelMessage(match.channel.channel_id, body);
+  await removeExistingMatchEmbeds(match.config.channel, [match]);
+  return await sendChannelMessage(match.config.channel, body);
 };
 
 export const sendSummoningDM = (match: DiscordMatch) => {
   const content =
     `Check in has started for Match ${match.id}, you can check in at following places:`
       .concat(`\n  - Web: https://bf2-matchmaking.netlify.app/matches/${match.id}`)
-      .concat(`\n  - React to discord message: <#${match.channel.channel_id}>`)
-      .concat(
-        match.channel.staging_channel
-          ? `\n  - Join staging voice channel: <#${match.channel.staging_channel}>.`
+      .concat(`\n  - React to discord message: <#${match.config.channel}>`);
+  // TODO: Create staging channel for each match
+  /*.concat(
+        match.config.channel
+          ? `\n  - Join staging voice channel: <#${match.config.channel}>.`
           : ''
-      );
+      );*/
   return Promise.allSettled(
     match.players.map((player) => sendDirectMessage(player.id, { content }))
   );

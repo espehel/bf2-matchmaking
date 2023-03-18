@@ -1,4 +1,4 @@
-import { MatchPlayersRow, PlayersRow } from './database-types';
+import { PlayersRow } from './database-types';
 
 export * from './database-types.generated';
 export * from './api-types';

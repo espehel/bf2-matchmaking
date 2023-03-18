@@ -28,9 +28,9 @@ export const getOrCreatePlayer = async ({
   return data;
 };
 
-export const getMatchInfoByChannel = async (channelId: string) => {
+export const getMatchInfoByChannel = async (channel: string) => {
   const match = await client()
-    .getStagingMatchesByChannelId(channelId)
+    .getStagingMatchesByChannel(channel)
     .single()
     .then(verifySingleResult);
   return getMatchEmbed(match);

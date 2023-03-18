@@ -1,7 +1,8 @@
 import { getDiscordClient } from './client';
 import { ApiError, ApiErrorType, DiscordMatch } from '@bf2-matchmaking/types';
-import { info } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 import { client } from '@bf2-matchmaking/supabase';
+import { TextChannel } from 'discord.js';
 
 const matchChannelsMap = new Map<string, DiscordMatch>();
 
@@ -38,8 +39,15 @@ const addVoiceListener = async () => {
 
 export const getVoiceMembers = async (match: DiscordMatch) => {
   const discordClient = await getDiscordClient();
-  const guild = await discordClient.guilds.fetch(match.channel.server_id);
+  const guild = (
+    (await discordClient.channels.fetch(match.config.channel)) as TextChannel | null
+  )?.guild;
+  if (!guild) {
+    error('getVoiceMembers', `Could not fetch guild for channel ${match.config.channel}`);
+    return [];
+  }
   info('getVoiceMembers', `Fetched guild ${guild.id}`);
+
   const members = await guild.members.fetch({ withPresences: true });
   const matchPlayerIds = [...members.filter((m) => m.voice.channelId).values()]
     .map((m) => m.user.id)

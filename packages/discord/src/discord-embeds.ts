@@ -35,12 +35,12 @@ const getMatchFields = (match: MatchesJoined) =>
     .concat(createTeamFields(match))
     .concat(createServerFields(match));
 
-const createCurrentPlayersFields = ({ status, players, size, teams }: MatchesJoined) =>
+const createCurrentPlayersFields = ({ status, players, teams, config }: MatchesJoined) =>
   status === MatchStatus.Open
     ? [
         {
           name: 'Players',
-          value: `${players.length}/${size} | ${teams
+          value: `${players.length}/${config.size} | ${teams
             .sort(compareUpdatedAt)
             .map(getPlayerName(players))
             .join(', ')}`,

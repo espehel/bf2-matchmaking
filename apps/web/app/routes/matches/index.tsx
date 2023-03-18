@@ -13,28 +13,26 @@ export const action = async ({ request }: ActionArgs) => {
   invariant(pick, 'No pick included');
   const client = remixClient(request);
   const user = await client.getUser();
-  const { data, error, status } = await client.createMatch({
+  /*const { data, error, status } = await client.createMatch({
     pick,
     size,
-    channel,
     host: user?.id,
   });
   if (error) {
     console.error(error);
     return json(error, { status });
-  }
-  return redirect(`/matches/${data.id}`);
+  }*/
+  return redirect(`/matches/`);
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
   const client = remixClient(request);
   const { data: matches } = await client.getMatches();
-  const { data: channels } = await client.getChannelsWithStagingMatches();
-  return json({ matches, channels });
+  return json({ matches });
 };
 
 export default function Index() {
-  const { matches, channels } = useLoaderData<typeof loader>();
+  const { matches } = useLoaderData<typeof loader>();
 
   return (
     <article className="route flex flex-col gap-4">
@@ -54,23 +52,6 @@ export default function Index() {
                 <option value="random">Random pick</option>
               </select>
             </label>
-            {channels && (
-              <label>
-                channel:
-                <select className="dropdown" name="channel" defaultValue="">
-                  <option value="">None</option>
-                  {channels.map((channel) => (
-                    <option
-                      key={channel.id}
-                      value={channel.id}
-                      disabled={channel.matches.length !== 0}
-                    >
-                      {channel.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
           </div>
           <button type="submit" className="filled-button max-w-sm">
             Create

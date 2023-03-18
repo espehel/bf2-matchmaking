@@ -30,17 +30,13 @@ export const setMatchStatusOngoing = async (match: MatchesJoined) => {
 export const createNextMatchFromConfig = async (match: DiscordMatch) => {
   try {
     info('handleNewMatch', `Fetching match ${match.id} config.`);
-    const config = await client()
-      .getMatchConfigByChannelId(match.channel.channel_id)
-      .then(verifySingleResult);
-
     const stagingMatches = await client()
-      .getStagingMatchesByChannelId(config.channel.channel_id)
+      .getStagingMatchesByConfig(match.config.id)
       .then(verifyResult);
 
     if (stagingMatches.length === 0) {
-      info('handleNewMatch', `No matches for config ${config.id}, creating new!`);
-      await client().services.createMatchFromConfig(config);
+      info('handleNewMatch', `No matches for config ${match.config.id}, creating new!`);
+      await client().services.createMatchFromConfig(match.config);
     }
   } catch (err) {
     error('handleNewMatch', err);
