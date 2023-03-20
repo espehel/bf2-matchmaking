@@ -1,5 +1,4 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { APIEmbed } from 'discord-api-types/v10';
 
 const getMatchIdText = (match: MatchesJoined) => `Match ${match.id}`;
 export const getEmbedTitle = (match: MatchesJoined) =>
