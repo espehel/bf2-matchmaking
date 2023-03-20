@@ -15,25 +15,30 @@ const someMatch = (embed: APIEmbed, matches: Array<MatchesJoined>) =>
 const notSomeMatch = (matches: Array<MatchesJoined>) => (embed: APIEmbed) =>
   !someMatch(embed, matches);
 
+const removeEmbeds = (messages: Array<APIMessage>, matches: Array<MatchesJoined>) =>
+  Promise.all(
+    messages.filter(hasEmbeds).map(async (message) => {
+      const embedsWithoutExistingMatches = message.embeds.filter(notSomeMatch(matches));
+
+      if (embedsWithoutExistingMatches.length === 0) {
+        info('removeExistingMatchEmbeds', `Removing channel message ${message.id}`);
+        return await removeChannelMessage(message.channel_id, message.id);
+      } else if (embedsWithoutExistingMatches.length !== message.embeds.length) {
+        info('removeExistingMatchEmbeds', `Editing channel message ${message.id}`);
+        return await editChannelMessage(message.channel_id, message.id, {
+          embeds: embedsWithoutExistingMatches,
+        });
+      }
+    })
+  );
+
 export const removeExistingMatchEmbeds = async (
   channelId: string,
   matches: Array<MatchesJoined>
 ) => {
   const { data: messages } = await getChannelMessages(channelId);
   if (messages) {
-    messages.filter(hasEmbeds).forEach((message) => {
-      const embedsWithoutExistingMatches = message.embeds.filter(notSomeMatch(matches));
-
-      if (embedsWithoutExistingMatches.length === 0) {
-        info('removeExistingMatchEmbeds', `Removing channel message ${message.id}`);
-        removeChannelMessage(message.channel_id, message.id);
-      } else if (embedsWithoutExistingMatches.length !== message.embeds.length) {
-        info('removeExistingMatchEmbeds', `Editing channel message ${message.id}`);
-        editChannelMessage(message.channel_id, message.id, {
-          embeds: embedsWithoutExistingMatches,
-        });
-      }
-    });
+    await removeEmbeds(messages, matches);
   }
 };
 
@@ -52,6 +57,8 @@ export const replaceChannelMessage = async (match: DiscordMatch, embed: APIEmbed
     });
   }
 
-  await removeExistingMatchEmbeds(match.config.channel, [match]);
+  if (messages) {
+    await removeEmbeds(messages, [match]);
+  }
   return await sendChannelMessage(match.config.channel, { embeds: [embed] });
 };

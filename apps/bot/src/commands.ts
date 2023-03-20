@@ -118,7 +118,7 @@ export const executeCommand = (
   );
 
   if (command) {
-    info('executeCommand', `Executing interaction ${command.name}`);
+    info('executeCommand', `Executing interaction: ${command.name}`);
     return command.action(message, config);
   }
 
