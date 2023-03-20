@@ -55,35 +55,33 @@ export const findMatchId = (message: Message) =>
     .map(getMatchIdFromEmbed)
     .find((matchId) => Boolean(matchId));
 
-export const getMatchCopyWithPlayer = (
-  match: MatchesJoined,
-  player: PlayersRow
-): MatchesJoined => ({
-  ...match,
-  players: [...match.players, player],
-  teams: [
-    ...match.teams,
-    {
-      match_id: match.id,
-      player_id: player.id,
-      team: null,
-      expire_at: '',
-      ready: false,
-      source: '',
-      captain: false,
-      updated_at: new Date().toISOString(),
-    },
-  ],
-});
+export const getMatchCopyWithPlayer =
+  (player: PlayersRow) =>
+  (match: MatchesJoined): MatchesJoined => ({
+    ...match,
+    players: [...match.players, player],
+    teams: [
+      ...match.teams,
+      {
+        match_id: match.id,
+        player_id: player.id,
+        team: null,
+        expire_at: '',
+        ready: false,
+        source: '',
+        captain: false,
+        updated_at: new Date().toISOString(),
+      },
+    ],
+  });
 
-export const getMatchCopyWithoutPlayer = (
-  match: MatchesJoined,
-  playerId: string
-): MatchesJoined => ({
-  ...match,
-  players: match.players.filter((player) => player.id !== playerId),
-  teams: match.teams.filter((player) => player.player_id !== playerId),
-});
+export const getMatchCopyWithoutPlayer =
+  (playerId: string) =>
+  (match: MatchesJoined): MatchesJoined => ({
+    ...match,
+    players: match.players.filter((player) => player.id !== playerId),
+    teams: match.teams.filter((player) => player.player_id !== playerId),
+  });
 
 export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
   Boolean(channel && channel.isTextBased());

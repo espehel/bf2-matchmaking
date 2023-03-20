@@ -1,8 +1,13 @@
 import { error, info } from '@bf2-matchmaking/logging';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { getDraftStep, isAssignedTeam } from '@bf2-matchmaking/utils';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import {
+  getDraftStep,
+  hasPlayer,
+  isAssignedTeam,
+  notHasPlayer,
+} from '@bf2-matchmaking/utils';
 import { getMatchEmbed } from '@bf2-matchmaking/discord';
-import { MatchStatus } from '@bf2-matchmaking/types';
+import { DiscordConfig } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
 import moment from 'moment';
 import { getMatchCopyWithoutPlayer, getMatchCopyWithPlayer } from './utils';
@@ -28,6 +33,13 @@ export const getOrCreatePlayer = async ({
   return data;
 };
 
+export const getOpenMatchesOrCreate = async (config: DiscordConfig) => {
+  const { data } = await client().getOpenMatchByChannelId(config.channel);
+  return data?.length
+    ? data
+    : [await client().createMatchFromConfig(config).then(verifySingleResult)];
+};
+
 export const getMatchInfoByChannel = async (channel: string) => {
   const match = await client()
     .getStagingMatchesByChannel(channel)
@@ -36,38 +48,50 @@ export const getMatchInfoByChannel = async (channel: string) => {
   return getMatchEmbed(match);
 };
 
-export const addPlayer = async (
-  channelId: string,
-  user: User | APIUser,
-  playerExpire: number | null
-) => {
-  const { data: match } = await client().getOpenMatchByChannelId(channelId);
+export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => {
+  const matches = await getOpenMatchesOrCreate(config);
   const player = await getOrCreatePlayer(user);
+  const expireAt = moment().add(config.player_expire, 'ms').toISOString();
 
-  if (!match) {
-    return { content: 'No open match currently in channel' };
+  const matchesWithoutPlayer = matches.filter(notHasPlayer(player.id));
+  if (!matchesWithoutPlayer.length) {
+    return { content: 'Already joined all open matches in this channel.' };
   }
-  const expireAt = playerExpire ? moment().add(playerExpire, 'ms').toISOString() : null;
-  await client()
-    .createMatchPlayer(match.id, player.id, 'bot', expireAt)
-    .then(verifySingleResult);
-  const matchWithPlayer = getMatchCopyWithPlayer(match, player);
-  return { embeds: [getMatchEmbed(matchWithPlayer, `${player.full_name} joined`)] };
+
+  await Promise.all(
+    matchesWithoutPlayer.map((match) =>
+      client()
+        .createMatchPlayer(match.id, player.id, 'bot', expireAt)
+        .then(verifySingleResult)
+    )
+  );
+
+  const embeds = matchesWithoutPlayer
+    .map(getMatchCopyWithPlayer(player))
+    .map((match) => getMatchEmbed(match, `${player.full_name} joined`));
+  return { embeds };
 };
 
 export const removePlayer = async (channelId: string, user: User | APIUser) => {
-  const match = await client()
-    .getOpenMatchByChannelId(channelId)
-    .then(verifySingleResult);
   const player = await getOrCreatePlayer(user);
 
-  if (match.status !== MatchStatus.Open) {
-    return { content: 'Can only leave Open matches.' };
-  }
+  const matches = await client().getOpenMatchByChannelId(channelId).then(verifyResult);
+  const matchesWithPlayer = matches.filter(hasPlayer(user.id));
 
-  await client().deleteMatchPlayer(match.id, player.id).then(verifySingleResult);
-  const matchWithoutPlayer = getMatchCopyWithoutPlayer(match, player.id);
-  return { embeds: [getMatchEmbed(matchWithoutPlayer, `${player.full_name} left`)] };
+  if (!matchesWithPlayer.length) {
+    return { content: 'You have joined no open matches in this channel.' };
+  }
+  await Promise.all(
+    matchesWithPlayer.map((match) =>
+      client().deleteMatchPlayer(match.id, player.id).then(verifySingleResult)
+    )
+  );
+
+  const embeds = matchesWithPlayer
+    .map(getMatchCopyWithoutPlayer(player.id))
+    .map((match) => getMatchEmbed(match, `${player.full_name} left`));
+
+  return { embeds };
 };
 
 export const pickMatchPlayer = async (
@@ -103,8 +127,8 @@ export const pickMatchPlayer = async (
 };
 
 export const getPlayerExpiration = async (channelId: string, user: User | APIUser) => {
-  const { data: match } = await client().getOpenMatchByChannelId(channelId);
-  const expireAt = match?.teams.find((p) => p.player_id === user.id)?.expire_at;
+  const { data } = await client().getOpenMatchByChannelId(channelId);
+  const expireAt = data?.at(0)?.teams.find((p) => p.player_id === user.id)?.expire_at;
   if (expireAt) {
     return { content: `Your queue expires ${moment().to(expireAt)}` };
   }

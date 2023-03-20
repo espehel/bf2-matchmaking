@@ -5,7 +5,7 @@ import {
 } from 'discord-api-types/v10';
 import { error, info } from '@bf2-matchmaking/logging';
 import { Message } from 'discord.js';
-import { MatchConfigsRow } from '@bf2-matchmaking/types';
+import { DiscordConfig, MatchConfigsRow } from '@bf2-matchmaking/types';
 import { onExpire, onHelp, onJoin, onLeave, onPick, onWho } from './message-interactions';
 
 export async function HasGuildCommands(
@@ -93,7 +93,7 @@ export interface ConfigCommand extends Omit<BaseCommand, 'action'> {
   name: 'join' | 'expire';
   action: (
     msg: Message,
-    matchConfig: MatchConfigsRow | null
+    matchConfig: DiscordConfig
   ) => Promise<RESTPostAPIChannelMessageJSONBody>;
 }
 
@@ -111,7 +111,7 @@ export const isCommand = (message: Message) =>
   commands.some((interaction) => message.content.startsWith(interaction.command));
 export const executeCommand = (
   message: Message,
-  config: MatchConfigsRow
+  config: DiscordConfig
 ): Promise<RESTPostAPIChannelMessageJSONBody | null> => {
   const command = commands.find((interaction) =>
     message.content.startsWith(interaction.command)

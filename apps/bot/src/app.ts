@@ -131,7 +131,7 @@ app.post('/interactions', async (req, res) => {
       const { name, options } = data;
       if (name === 'join') {
         invariant(member, 'Could not get user data from request.');
-        await addPlayer(channel_id, member.user, null);
+        // await addPlayer(channel_id, member.user, null);
       }
       if (name === 'leave') {
         invariant(member, 'Could not get user data from request.');

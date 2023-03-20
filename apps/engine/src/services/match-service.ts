@@ -29,17 +29,20 @@ export const setMatchStatusOngoing = async (match: MatchesJoined) => {
 
 export const createNextMatchFromConfig = async (match: DiscordMatch) => {
   try {
-    info('handleNewMatch', `Fetching match ${match.id} config.`);
+    info('createNextMatchFromConfig', `Fetching match ${match.id} config.`);
     const stagingMatches = await client()
       .getStagingMatchesByConfig(match.config.id)
       .then(verifyResult);
 
     if (stagingMatches.length === 0) {
-      info('handleNewMatch', `No matches for config ${match.config.id}, creating new!`);
-      await client().services.createMatchFromConfig(match.config);
+      info(
+        'createNextMatchFromConfig',
+        `No matches for config ${match.config.id}, creating new!`
+      );
+      await client().createMatchFromConfig(match.config).then(verifySingleResult);
     }
   } catch (err) {
-    error('handleNewMatch', err);
+    error('createNextMatchFromConfig', err);
   }
 };
 

@@ -5,6 +5,7 @@ import {
   MatchStatus,
   PlayersRow,
 } from '@bf2-matchmaking/types';
+import { match } from 'assert';
 
 export const isAssignedTeam = (
   match: MatchesJoined,
@@ -50,3 +51,8 @@ export const isCaptain = (match: MatchesJoined, userId?: string) => {
   const playerId = match.players.find((player) => player.user_id === userId)?.id;
   return match.teams.some((player) => player.player_id === playerId && player.captain);
 };
+
+export const hasPlayer = (playerId: string) => (match: MatchesJoined) =>
+  match.players.some((player) => player.id === playerId);
+export const notHasPlayer = (playerId: string) => (match: MatchesJoined) =>
+  !match.players.some((player) => player.id === playerId);

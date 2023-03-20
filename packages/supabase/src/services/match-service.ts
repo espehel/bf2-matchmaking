@@ -35,9 +35,7 @@ export default (api: ReturnType<typeof supabaseApi>) => ({
     const match = stagingMatches.at(0);
 
     if (!match) {
-      const { data: newMatch } = await api.createMatch({
-        config: config.id,
-      });
+      const { data: newMatch } = await api.createMatchFromConfig(config);
       return [config, newMatch];
     }
 
@@ -46,12 +44,5 @@ export default (api: ReturnType<typeof supabaseApi>) => ({
     }
 
     return [config, match];
-  },
-  createMatchFromConfig: async (config: MatchConfigsRow) => {
-    return await api
-      .createMatch({
-        config: config.id,
-      })
-      .then(verifySingleResult);
   },
 });

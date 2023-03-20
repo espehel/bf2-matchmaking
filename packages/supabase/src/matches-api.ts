@@ -1,7 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   Database,
-  MatchesInsert,
+  MatchConfigsRow,
   MatchesJoined,
   MatchesUpdate,
   MatchPlayersRow,
@@ -12,14 +12,11 @@ const MATCHES_JOINED_QUERY =
   '*, players(*), maps(*), config(*), teams:match_players(*), server(*)';
 
 export default (client: SupabaseClient<Database>) => ({
-  createMatch: (values: MatchesInsert) =>
+  createMatchFromConfig: (config: MatchConfigsRow) =>
     client
       .from('matches')
-      .insert([values])
-      .select<
-        '*, players(*), maps(*), channel(*), teams:match_players(*), server(*)',
-        MatchesJoined
-      >('*, players(*), maps(*), channel(*), teams:match_players(*), server(*)')
+      .insert([{ config: config.id }])
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
   getMatches: () => client.from('matches').select('*'),
   getOpenMatches: () =>
@@ -52,8 +49,7 @@ export default (client: SupabaseClient<Database>) => ({
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .eq('channel.channel_id', channelId)
-      .or(`status.eq.${MatchStatus.Open}`)
-      .single(),
+      .or(`status.eq.${MatchStatus.Open}`),
   getDraftingMatchByChannelId: (channelId: string) =>
     client
       .from('matches')
