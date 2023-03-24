@@ -5,7 +5,12 @@ pub async fn run() {
 
     let routes = api.with(warp::log("events"));
 
-    warp::serve(routes).run(([127, 0, 0, 1], 5006)).await;
+    let addr = ([127, 0, 0, 1], 5006);
+
+    let server = warp::serve(routes).run(addr);
+
+    println!("Listening on http://{:?}", addr);
+    server.await;
 }
 
 mod filters {

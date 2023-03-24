@@ -2,6 +2,7 @@ use std::{env, result};
 
 mod http_client;
 mod http_server;
+mod tcp_client;
 
 #[tokio::main]
 async fn main() {
@@ -11,6 +12,9 @@ async fn main() {
         env::set_var("RUST_LOG", "events=info");
     }
     pretty_env_logger::init();
+
+    let res = tcp_client::setup_connection().await;
+    println!("{:#?}", res);
 
     let result = http_client::register().await;
     println!("{:#?}", result);
