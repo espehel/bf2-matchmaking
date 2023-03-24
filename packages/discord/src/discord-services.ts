@@ -48,10 +48,12 @@ export const replaceChannelMessage = async (match: DiscordMatch, embed: APIEmbed
   const lastMessage = messages?.at(0);
 
   if (
+    messages &&
     lastMessage &&
     hasEmbeds(lastMessage) &&
     lastMessage.embeds.some((embed) => isMatchTitle(match, embed.title))
   ) {
+    await removeEmbeds(messages?.slice(1), [match]);
     return editChannelMessage(lastMessage.channel_id, lastMessage.id, {
       embeds: [...lastMessage.embeds.filter(notSomeMatch([match])), embed],
     });
