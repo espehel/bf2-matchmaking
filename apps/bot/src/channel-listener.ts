@@ -84,10 +84,7 @@ export const listenToChannel = async (config: DiscordConfig) => {
     }
 
     try {
-      const result = await executeCommand(message, config);
-      if (result) {
-        await sendChannelMessage(config.channel, result);
-      }
+      await executeCommand(message, config);
     } catch (e) {
       if (e instanceof Error) {
         error('discord-gateway', e.message);

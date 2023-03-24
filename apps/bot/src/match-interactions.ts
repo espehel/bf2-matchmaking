@@ -6,7 +6,11 @@ import {
   isAssignedTeam,
   notHasPlayer,
 } from '@bf2-matchmaking/utils';
-import { getMatchEmbed } from '@bf2-matchmaking/discord';
+import {
+  getMatchEmbed,
+  removeExistingMatchEmbeds,
+  sendChannelMessage,
+} from '@bf2-matchmaking/discord';
 import { DiscordConfig } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
 import moment from 'moment';
@@ -55,7 +59,9 @@ export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => 
 
   const matchesWithoutPlayer = matches.filter(notHasPlayer(player.id));
   if (!matchesWithoutPlayer.length) {
-    return { content: 'Already joined all open matches in this channel.' };
+    return sendChannelMessage(config.channel, {
+      content: 'Already joined all open matches in this channel.',
+    });
   }
 
   await Promise.all(
@@ -69,7 +75,8 @@ export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => 
   const embeds = matchesWithoutPlayer
     .map(getMatchCopyWithPlayer(player))
     .map((match) => getMatchEmbed(match, `${player.full_name} joined`));
-  return { embeds };
+  await sendChannelMessage(config.channel, { embeds });
+  return removeExistingMatchEmbeds(config.channel, matchesWithoutPlayer);
 };
 
 export const removePlayer = async (channelId: string, user: User | APIUser) => {
@@ -79,8 +86,11 @@ export const removePlayer = async (channelId: string, user: User | APIUser) => {
   const matchesWithPlayer = matches.filter(hasPlayer(user.id));
 
   if (!matchesWithPlayer.length) {
-    return { content: 'You have joined no open matches in this channel.' };
+    return sendChannelMessage(channelId, {
+      content: 'You have joined no open matches in this channel.',
+    });
   }
+
   await Promise.all(
     matchesWithPlayer.map((match) =>
       client().deleteMatchPlayer(match.id, player.id).then(verifySingleResult)
@@ -91,7 +101,8 @@ export const removePlayer = async (channelId: string, user: User | APIUser) => {
     .map(getMatchCopyWithoutPlayer(player.id))
     .map((match) => getMatchEmbed(match, `${player.full_name} left`));
 
-  return { embeds };
+  await sendChannelMessage(channelId, { embeds });
+  return removeExistingMatchEmbeds(channelId, matchesWithPlayer);
 };
 
 export const pickMatchPlayer = async (
