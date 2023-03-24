@@ -9,7 +9,7 @@ import {
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
-  '*, players(*), maps(*), config(*), teams:match_players(*), server(*)';
+  '*, players(*), maps(*), config!inner(*), teams:match_players(*), server(*)';
 
 export default (client: SupabaseClient<Database>) => ({
   createMatchFromConfig: (config: MatchConfigsRow) =>
@@ -19,17 +19,6 @@ export default (client: SupabaseClient<Database>) => ({
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
   getMatches: () => client.from('matches').select('*'),
-  getOpenMatches: () =>
-    client
-      .from('matches')
-      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
-      .eq('status', MatchStatus.Open),
-  getOpenMatchesByChannel: (channel: number) =>
-    client
-      .from('matches')
-      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
-      .eq('status', MatchStatus.Open)
-      .eq('channel.id', channel),
   getStagingMatchesByChannel: (channel: string) =>
     client
       .from('matches')
@@ -48,20 +37,20 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
-      .eq('channel.channel_id', channelId)
+      .eq('config.channel', channelId)
       .or(`status.eq.${MatchStatus.Open}`),
   getDraftingMatchByChannelId: (channelId: string) =>
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
-      .eq('channel.channel_id', channelId)
+      .eq('config.channel', channelId)
       .or(`status.eq.${MatchStatus.Drafting}`)
       .single(),
   getStagingMatchesByConfig: (configId: number) =>
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
-      .eq('config.id', configId)
+      .eq('config', configId)
       .or(
         `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
       ),
