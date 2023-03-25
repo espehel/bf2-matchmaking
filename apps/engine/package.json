@@ -31,6 +31,7 @@
     "@bf2-matchmaking/utils": "*",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "fastq": "^1.15.0",
     "moment": "^2.29.4"
   }
 }

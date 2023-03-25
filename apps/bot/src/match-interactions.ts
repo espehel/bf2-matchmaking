@@ -6,11 +6,7 @@ import {
   isAssignedTeam,
   notHasPlayer,
 } from '@bf2-matchmaking/utils';
-import {
-  getMatchEmbed,
-  removeExistingMatchEmbeds,
-  sendChannelMessage,
-} from '@bf2-matchmaking/discord';
+import { getMatchEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
 import { DiscordConfig } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
 import moment from 'moment';
@@ -64,24 +60,34 @@ export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => 
     });
   }
 
+  const embeds = matchesWithoutPlayer
+    .map(getMatchCopyWithPlayer(player))
+    .map((match) => getMatchEmbed(match, `${player.full_name} joined`));
+  sendChannelMessage(config.channel, { embeds });
+
   await Promise.all(
     matchesWithoutPlayer.map((match) =>
       client()
         .createMatchPlayer(match.id, player.id, 'bot', expireAt)
         .then(verifySingleResult)
     )
-  );
-
-  const embeds = matchesWithoutPlayer
-    .map(getMatchCopyWithPlayer(player))
-    .map((match) => getMatchEmbed(match, `${player.full_name} joined`));
-  await sendChannelMessage(config.channel, { embeds });
-  return removeExistingMatchEmbeds(config.channel, matchesWithoutPlayer);
+  )
+    .then(() => {
+      info(
+        'addPlayer',
+        `Added player ${player.full_name} to ${matchesWithoutPlayer.length} matches.`
+      );
+    })
+    .catch((err) => {
+      error('addPlayer', err);
+      sendChannelMessage(config.channel, {
+        content: 'Something went wrong while adding player.',
+      });
+    });
 };
 
 export const removePlayer = async (channelId: string, user: User | APIUser) => {
   const player = await getOrCreatePlayer(user);
-
   const matches = await client().getOpenMatchByChannelId(channelId).then(verifyResult);
   const matchesWithPlayer = matches.filter(hasPlayer(user.id));
 
@@ -91,18 +97,28 @@ export const removePlayer = async (channelId: string, user: User | APIUser) => {
     });
   }
 
+  const embeds = matchesWithPlayer
+    .map(getMatchCopyWithoutPlayer(player.id))
+    .map((match) => getMatchEmbed(match, `${player.full_name} left`));
+  sendChannelMessage(channelId, { embeds });
+
   await Promise.all(
     matchesWithPlayer.map((match) =>
       client().deleteMatchPlayer(match.id, player.id).then(verifySingleResult)
     )
-  );
-
-  const embeds = matchesWithPlayer
-    .map(getMatchCopyWithoutPlayer(player.id))
-    .map((match) => getMatchEmbed(match, `${player.full_name} left`));
-
-  await sendChannelMessage(channelId, { embeds });
-  return removeExistingMatchEmbeds(channelId, matchesWithPlayer);
+  )
+    .then(() => {
+      info(
+        'removePlayer',
+        `Removed player ${player.full_name} from ${matchesWithPlayer.length} matches.`
+      );
+    })
+    .catch((err) => {
+      error('removePlayer', err);
+      sendChannelMessage(channelId, {
+        content: 'Something went wrong while removing player.',
+      });
+    });
 };
 
 export const pickMatchPlayer = async (

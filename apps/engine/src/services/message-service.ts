@@ -8,15 +8,18 @@ import {
 } from '@bf2-matchmaking/discord';
 import { getMatchEmbed } from '@bf2-matchmaking/discord';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { pushQueue } from '../utils/message-queue';
 
 export const sendMatchJoinMessage = async (
   { player_id, source }: MatchPlayersRow,
   match: DiscordMatch
 ) => {
   const player = match.players.find((p) => p.id === player_id);
-  await replaceChannelMessage(
-    match,
-    getMatchEmbed(match, `${player?.full_name || 'Player'} joined`)
+  pushQueue(() =>
+    replaceChannelMessage(
+      match,
+      getMatchEmbed(match, `${player?.full_name || 'Player'} joined`)
+    )
   );
 };
 
@@ -25,25 +28,31 @@ export const sendMatchLeaveMessage = async (
   match: DiscordMatch
 ) => {
   const player = await client().getPlayer(player_id).then(verifySingleResult);
-  await replaceChannelMessage(match, getMatchEmbed(match, `${player.full_name} left`));
+  pushQueue(() =>
+    replaceChannelMessage(match, getMatchEmbed(match, `${player.full_name} left`))
+  );
 };
 
 export const sendMatchSummoningMessage = async (match: DiscordMatch) => {
   const playerMentions = match.teams.map((player) => `<@${player.player_id}>`).join(', ');
 
-  await removeExistingMatchEmbeds(match.config.channel, [match]);
-  const { data: message } = await sendChannelMessage(match.config.channel, {
-    embeds: [getMatchEmbed(match, `Ready up! ${playerMentions}`)],
-  });
+  pushQueue(() => removeExistingMatchEmbeds(match.config.channel, [match]));
+  pushQueue(async () => {
+    const { data: message } = await sendChannelMessage(match.config.channel, {
+      embeds: [getMatchEmbed(match, `Ready up! ${playerMentions}`)],
+    });
 
-  if (message) {
-    await createMessageReaction(match.config.channel, message.id, '✅');
-  }
+    if (message) {
+      await createMessageReaction(match.config.channel, message.id, '✅');
+    }
+  });
 };
 
 export const sendMatchInfoMessage = async (match: DiscordMatch) => {
   const embed = getMatchEmbed(match);
-  return await replaceChannelMessage(match, embed);
+  pushQueue(() => {
+    replaceChannelMessage(match, embed);
+  });
 };
 
 export const sendSummoningDM = (match: DiscordMatch) => {
