@@ -72,11 +72,19 @@ export const setPlayerReadyTimer = (match: MatchesJoined) => {
     const timedOutMatch = await client().getMatch(match.id).then(verifySingleResult);
     if (timedOutMatch.status === MatchStatus.Summoning) {
       info('handleMatchSummon', `Match ${match.id} timed out while summoning`);
-      await client().deleteMatchPlayers(
+      await client().deleteMatchPlayersByMatchId(
         timedOutMatch.id,
         timedOutMatch.teams.filter((player) => !player.ready)
       );
       await reopenMatch(timedOutMatch);
     }
   }, moment(match.ready_at).diff(moment()));
+};
+
+export const removePlayerFromOtherMatches = async (player: MatchPlayersRow) => {
+  const openMatches = await client().getStagingMatches().then(verifyResult);
+  await client().deleteMatchPlayersByPlayerId(
+    player.player_id,
+    openMatches.filter((m) => m.id !== player.match_id)
+  );
 };

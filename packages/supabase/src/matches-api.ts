@@ -3,6 +3,7 @@ import {
   Database,
   MatchConfigsRow,
   MatchesJoined,
+  MatchesRow,
   MatchesUpdate,
   MatchPlayersRow,
   MatchStatus,
@@ -33,7 +34,7 @@ export default (client: SupabaseClient<Database>) => ({
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .eq('id', matchId)
       .single(),
-  getOpenMatchByChannelId: (channelId: string) =>
+  getOpenMatchesByChannelId: (channelId: string) =>
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
@@ -46,6 +47,13 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('config.channel', channelId)
       .or(`status.eq.${MatchStatus.Drafting}`)
       .single(),
+  getStagingMatches: () =>
+    client
+      .from('matches')
+      .select('*')
+      .or(
+        `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
+      ),
   getStagingMatchesByConfig: (configId: number) =>
     client
       .from('matches')
@@ -70,7 +78,7 @@ export default (client: SupabaseClient<Database>) => ({
       .delete()
       .eq('match_id', matchId)
       .eq('player_id', playerId),
-  deleteMatchPlayers: (matchId: number, players: Array<MatchPlayersRow>) =>
+  deleteMatchPlayersByMatchId: (matchId: number, players: Array<MatchPlayersRow>) =>
     client
       .from('match_players')
       .delete()
@@ -78,6 +86,15 @@ export default (client: SupabaseClient<Database>) => ({
       .in(
         'player_id',
         players.map((mp) => mp.player_id)
+      ),
+  deleteMatchPlayersByPlayerId: (playerId: string, matches: Array<MatchesRow>) =>
+    client
+      .from('match_players')
+      .delete()
+      .eq('player_id', playerId)
+      .in(
+        'match_id',
+        matches.map((m) => m.id)
       ),
   updateMatchPlayer: async (
     matchId: number,

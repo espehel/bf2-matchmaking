@@ -15,11 +15,15 @@ import {
 } from './services/message-service';
 import { getDraftStep } from '@bf2-matchmaking/utils';
 import {
+  reopenMatch,
   setMatchDrafting,
   setMatchStatusOngoing,
   setMatchSummoning,
 } from './services/match-service';
-import { setPlayerExpireTimer } from './services/match-player-service';
+import {
+  removePlayerFromOtherMatches,
+  setPlayerExpireTimer,
+} from './services/match-player-service';
 import { createMessageReaction } from '@bf2-matchmaking/discord';
 
 export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) => {
@@ -75,6 +79,10 @@ export const handleDeletedMatchPlayer = async (
   info('handleDeletedMatchPlayer', `Player ${oldMatchPlayer.player_id} left.`);
 
   const match = await client().getMatch(oldMatchPlayer.match_id).then(verifySingleResult);
+
+  if (match.status === MatchStatus.Summoning) {
+    await reopenMatch(match);
+  }
 
   if (isDiscordMatch(match)) {
     return await sendMatchLeaveMessage(oldMatchPlayer, match);
@@ -133,13 +141,11 @@ const handlePlayerPicked = async (
 const handlePlayerReady = async (
   payload: WebhookPostgresUpdatePayload<MatchPlayersRow>
 ) => {
+  await removePlayerFromOtherMatches(payload.record);
   const match = await client().getMatch(payload.record.match_id).then(verifySingleResult);
   if (isReadyMatch(match)) {
     await setMatchDrafting(match);
   } else if (isDiscordMatch(match)) {
-    const { data: message } = await sendMatchInfoMessage(match);
-    if (message) {
-      await createMessageReaction(match.config.channel, message.id, '✅');
-    }
+    await sendMatchInfoMessage(match);
   }
 };

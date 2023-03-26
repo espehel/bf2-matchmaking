@@ -1,10 +1,11 @@
 import {
+  createMessageReaction,
   editChannelMessage,
   getChannelMessages,
   removeChannelMessage,
   sendChannelMessage,
 } from './discord-rest';
-import { DiscordMatch, MatchesJoined } from '@bf2-matchmaking/types';
+import { DiscordMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { isMatchTitle } from './embed-utils';
 import { APIEmbed, APIMessage } from 'discord-api-types/v10';
 import { info } from '@bf2-matchmaking/logging';
@@ -62,5 +63,12 @@ export const replaceChannelMessage = async (match: DiscordMatch, embed: APIEmbed
   if (messages) {
     await removeEmbeds(messages, [match]);
   }
-  return await sendChannelMessage(match.config.channel, { embeds: [embed] });
+
+  const res = await sendChannelMessage(match.config.channel, { embeds: [embed] });
+
+  if (res.data && match.status === MatchStatus.Summoning) {
+    await createMessageReaction(match.config.channel, res.data.id, '✅');
+  }
+
+  return res;
 };

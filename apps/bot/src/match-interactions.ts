@@ -7,7 +7,7 @@ import {
   notHasPlayer,
 } from '@bf2-matchmaking/utils';
 import { getMatchEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
-import { DiscordConfig } from '@bf2-matchmaking/types';
+import { DiscordConfig, MatchStatus } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
 import moment from 'moment';
 import { getMatchCopyWithoutPlayer, getMatchCopyWithPlayer } from './utils';
@@ -34,7 +34,7 @@ export const getOrCreatePlayer = async ({
 };
 
 export const getOpenMatchesOrCreate = async (config: DiscordConfig) => {
-  const { data } = await client().getOpenMatchByChannelId(config.channel);
+  const { data } = await client().getOpenMatchesByChannelId(config.channel);
   return data?.length
     ? data
     : [await client().createMatchFromConfig(config).then(verifySingleResult)];
@@ -88,8 +88,12 @@ export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => 
 
 export const removePlayer = async (channelId: string, user: User | APIUser) => {
   const player = await getOrCreatePlayer(user);
-  const matches = await client().getOpenMatchByChannelId(channelId).then(verifyResult);
-  const matchesWithPlayer = matches.filter(hasPlayer(user.id));
+  const stagingMatches = await client()
+    .getStagingMatchesByChannel(channelId)
+    .then(verifyResult);
+  const matchesWithPlayer = stagingMatches
+    .filter((m) => m.status !== MatchStatus.Drafting)
+    .filter(hasPlayer(user.id));
 
   if (!matchesWithPlayer.length) {
     return sendChannelMessage(channelId, {
@@ -154,7 +158,7 @@ export const pickMatchPlayer = async (
 };
 
 export const getPlayerExpiration = async (channelId: string, user: User | APIUser) => {
-  const { data } = await client().getOpenMatchByChannelId(channelId);
+  const { data } = await client().getOpenMatchesByChannelId(channelId);
   const expireAt = data?.at(0)?.teams.find((p) => p.player_id === user.id)?.expire_at;
   if (expireAt) {
     return { content: `Your queue expires ${moment().to(expireAt)}` };
