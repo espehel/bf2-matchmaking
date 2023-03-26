@@ -4,6 +4,7 @@ import { RoundsJoined } from '@bf2-matchmaking/types';
 import { UnmountClosed } from 'react-collapse';
 import RoundSummary from '~/components/round/RoundSummary';
 import { useUser } from '@supabase/auth-helpers-react';
+import { useNavigate } from '@remix-run/react';
 
 interface Props {
   round: RoundsJoined;
@@ -11,10 +12,19 @@ interface Props {
 
 const RoundItem: FC<Props> = ({ round }) => {
   const user = useUser();
+  const navigate = useNavigate();
   const [isSummaryOpen, setSummaryOpen] = useState(false);
   const date = useFirstRenderDefault(round.created_at, () =>
     new Date(round.created_at).toLocaleTimeString()
   );
+
+  const onRoundClick = () => {
+    if (user) {
+      setSummaryOpen(!isSummaryOpen);
+    } else {
+      navigate('signin');
+    }
+  };
 
   if (!round.si || !round.pl) {
     return null;
@@ -22,11 +32,7 @@ const RoundItem: FC<Props> = ({ round }) => {
 
   return (
     <li className="border rounded w-full">
-      <button
-        className="flex gap-4 p-4 w-full"
-        onClick={() => setSummaryOpen(!isSummaryOpen)}
-        disabled={!user}
-      >
+      <button className="flex gap-4 p-4 w-full" onClick={onRoundClick}>
         <div className="mr-auto text-left">
           <p className="text-xl">{round.map.name}</p>
           <p className="text-sm">{date}</p>
@@ -41,7 +47,8 @@ const RoundItem: FC<Props> = ({ round }) => {
         </div>
       </button>
       <UnmountClosed isOpened={isSummaryOpen}>
-        <RoundSummary round={round} />
+        {user && <RoundSummary round={round} />}
+        {!user && <p className="p-4">Sign in to see player scores.</p>}
       </UnmountClosed>
     </li>
   );

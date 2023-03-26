@@ -1,6 +1,6 @@
 import React from 'react';
 import { json, LoaderArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { Outlet, useLoaderData } from '@remix-run/react';
 import { groupRoundsByDate } from '~/utils/round-utils';
 import { remixClient } from '@bf2-matchmaking/supabase';
 import ServerRoundList from '~/components/round/ServerRoundList';
@@ -21,11 +21,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   );
 };
 
-const formatDate = (isodate: string) => {
-  return new Date(isodate).toDateString();
-};
-
-export default function Index() {
+export default function Rounds() {
   const { rounds } = useLoaderData<typeof loader>();
   const groupedByDate = Object.entries(groupRoundsByDate(rounds));
   return (
@@ -37,6 +33,7 @@ export default function Index() {
           <ServerRoundList rounds={dateRounds} />
         </section>
       ))}
+      <Outlet />
     </article>
   );
 }

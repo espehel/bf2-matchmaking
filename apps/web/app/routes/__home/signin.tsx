@@ -1,9 +1,9 @@
 import { ActionArgs, json, redirect } from '@remix-run/node';
 import { remixClient } from '@bf2-matchmaking/supabase';
-import { Dialog } from '@headlessui/react';
-import { Form, useNavigate } from '@remix-run/react';
+import { useNavigate } from '@remix-run/react';
 import { useUser } from '@supabase/auth-helpers-react';
 import { useEffect } from 'react';
+import SigninDialog from '~/components/SigninDialog';
 
 const baseRedirect =
   process.env.NODE_ENV === 'production'
@@ -36,24 +36,12 @@ export default function Signin() {
   }, [user]);
 
   return (
-    <Dialog
-      open={true}
+    <SigninDialog
       onClose={() => {
         navigate('/');
       }}
-    >
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-8 text-center">
-          <Dialog.Title className="text-4xl font-bold mb-4">Sign in</Dialog.Title>
-          <p className="text-xl mb-4">You must sign in with your discord user to join a match</p>
-          <Form method="post" action="/signin">
-            <button type="submit" className="filled-button">
-              Sign in
-            </button>
-          </Form>
-        </Dialog.Panel>
-      </div>
-    </Dialog>
+      text="You must sign in with your discord user to join a match"
+      redirectPath="/"
+    />
   );
 }
