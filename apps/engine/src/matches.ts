@@ -42,8 +42,9 @@ export const handleUpdatedMatch = async (
   if (isDraftingUpdate(payload)) {
     return await handleMatchDraft(match);
   }
+
   if (isReopenUpdate(payload)) {
-    return await handleMatchReopen(match);
+    await handleMatchReopen(match);
   }
   if (
     isDiscordMatch(match) &&
