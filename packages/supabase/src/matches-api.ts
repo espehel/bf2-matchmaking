@@ -78,7 +78,7 @@ export default (client: SupabaseClient<Database>) => ({
       .delete()
       .eq('match_id', matchId)
       .eq('player_id', playerId),
-  deleteMatchPlayersByMatchId: (matchId: number, players: Array<MatchPlayersRow>) =>
+  deleteMatchPlayersForMatchId: (matchId: number, players: Array<MatchPlayersRow>) =>
     client
       .from('match_players')
       .delete()
@@ -87,7 +87,7 @@ export default (client: SupabaseClient<Database>) => ({
         'player_id',
         players.map((mp) => mp.player_id)
       ),
-  deleteMatchPlayersByPlayerId: (playerId: string, matches: Array<MatchesRow>) =>
+  deleteMatchPlayersForPlayerId: (playerId: string, matches: Array<MatchesRow>) =>
     client
       .from('match_players')
       .delete()
@@ -107,7 +107,7 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('match_id', matchId)
       .eq('player_id', playerId)
       .select(),
-  updateMatchPlayers: async (
+  updateMatchPlayersForMatchId: async (
     matchId: number,
     players: Array<{ player_id: string }>,
     values: Partial<MatchPlayersRow>
@@ -121,6 +121,19 @@ export default (client: SupabaseClient<Database>) => ({
         players.map((mp) => mp.player_id)
       )
       .select(),
+  updateMatchPlayersForPlayerId: (
+    playerId: string,
+    matches: Array<MatchesRow | MatchesJoined>,
+    values: Partial<MatchPlayersRow>
+  ) =>
+    client
+      .from('match_players')
+      .update(values)
+      .eq('player_id', playerId)
+      .in(
+        'match_id',
+        matches.map((m) => m.id)
+      ),
 
   createMatchMaps: (match_id: number, ...maps: Array<number>) =>
     client.from('match_maps').insert(maps.map((mapId) => ({ match_id, map_id: mapId }))),

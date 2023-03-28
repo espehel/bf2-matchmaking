@@ -86,15 +86,12 @@ export const PICK_COMMAND: Partial<APIApplicationCommand> = {
 export interface BaseCommand {
   name: string;
   command: string;
-  action: (msg: Message) => Promise<RESTPostAPIChannelMessageJSONBody | null>;
+  action: (msg: Message) => Promise<unknown>;
 }
 
 export interface ConfigCommand extends Omit<BaseCommand, 'action'> {
   name: 'join' | 'expire';
-  action: (
-    msg: Message,
-    matchConfig: DiscordConfig
-  ) => Promise<RESTPostAPIChannelMessageJSONBody>;
+  action: (msg: Message, matchConfig: DiscordConfig) => Promise<unknown>;
 }
 
 export type GatewayCommand = BaseCommand | ConfigCommand;
@@ -112,7 +109,7 @@ export const isCommand = (message: Message) =>
 export const executeCommand = (
   message: Message,
   config: DiscordConfig
-): Promise<RESTPostAPIChannelMessageJSONBody | null> => {
+): Promise<unknown> => {
   const command = commands.find((interaction) =>
     message.content.startsWith(interaction.command)
   );
@@ -122,5 +119,5 @@ export const executeCommand = (
     return command.action(message, config);
   }
 
-  return Promise.resolve(null);
+  return Promise.resolve();
 };

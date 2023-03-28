@@ -161,7 +161,7 @@ export const getPlayerExpiration = async (channelId: string, user: User | APIUse
   const { data } = await client().getOpenMatchesByChannelId(channelId);
   const expireAt = data?.at(0)?.teams.find((p) => p.player_id === user.id)?.expire_at;
   if (expireAt) {
-    return { content: `Your queue expires ${moment().to(expireAt)}` };
+    return { content: `Your queue expires <t:${moment().to(expireAt)}:R>` };
   }
   return { content: 'No expire time found' };
 };

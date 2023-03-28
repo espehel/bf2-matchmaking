@@ -1,19 +1,21 @@
-import { error, info } from '@bf2-matchmaking/logging';
+import { error } from '@bf2-matchmaking/logging';
 import {
   addPlayer,
   getPlayerExpiration,
   pickMatchPlayer,
   removePlayer,
 } from './match-interactions';
-import { client } from '@bf2-matchmaking/supabase';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
   getMatchEmbed,
   removeExistingMatchEmbeds,
   sendChannelMessage,
 } from '@bf2-matchmaking/discord';
 import { Message } from 'discord.js';
-import { DiscordConfig, MatchConfigsRow } from '@bf2-matchmaking/types';
-import { createHelpContent } from './command-utils';
+import { DiscordConfig, MatchConfigsRow, MatchStatus } from '@bf2-matchmaking/types';
+import { createHelpContent, parseDurationArg } from './command-utils';
+import moment from 'moment/moment';
+import { hasPlayer } from '@bf2-matchmaking/utils';
 
 export const onHelp = (msg: Message) => {
   return sendChannelMessage(msg.channelId, {
@@ -66,7 +68,43 @@ export const onPick = async (msg: Message) => {
     : null;
 };
 
-export const onExpire = async (msg: Message, matchConfig: MatchConfigsRow | null) => {
-  const reply = await getPlayerExpiration(msg.channel.id, msg.author);
-  return sendChannelMessage(msg.channelId, reply);
+export const onExpire = async (msg: Message, matchConfig: MatchConfigsRow) => {
+  const durationArg = msg.content.split(' ')[1];
+
+  if (!durationArg) {
+    const reply = await getPlayerExpiration(msg.channelId, msg.author);
+    return sendChannelMessage(msg.channelId, reply);
+  }
+
+  const { duration, error } = parseDurationArg(durationArg);
+  if (error) {
+    return sendChannelMessage(msg.channelId, { content: error });
+  }
+
+  const matches = await client()
+    .getStagingMatchesByChannel(msg.channelId)
+    .then(verifyResult);
+  const matchesWithPlayer = matches.filter(hasPlayer(msg.author.id));
+
+  if (duration!.asMilliseconds() > matchConfig.player_expire) {
+    const expireAt = moment().add(matchConfig.player_expire, 'ms');
+    await client()
+      .updateMatchPlayersForPlayerId(msg.author.id, matchesWithPlayer, {
+        expire_at: expireAt.toISOString(),
+      })
+      .then(verifySingleResult);
+    return sendChannelMessage(msg.channelId, {
+      content: `Duration exceeds maximum, new expire time set to expire <t:${expireAt.unix()}:R>`,
+    });
+  }
+
+  const expireAt = moment().add(duration);
+  await client()
+    .updateMatchPlayersForPlayerId(msg.author.id, matchesWithPlayer, {
+      expire_at: expireAt.toISOString(),
+    })
+    .then(verifySingleResult);
+  return sendChannelMessage(msg.channelId, {
+    content: `New expire time set to expire <t:${expireAt.unix()}:R>`,
+  });
 };

@@ -8,12 +8,12 @@ import { reopenMatch } from './match-service';
 export const setRandomTeams = async (match: MatchesJoined) => {
   const matchPlayers = assignMatchPlayerTeams(match.players);
   await Promise.all([
-    client().updateMatchPlayers(
+    client().updateMatchPlayersForMatchId(
       match.id,
       matchPlayers.filter((mp) => mp.team === 'a'),
       { team: 'a' }
     ),
-    client().updateMatchPlayers(
+    client().updateMatchPlayersForMatchId(
       match.id,
       matchPlayers.filter((mp) => mp.team === 'b'),
       { team: 'b' }
@@ -72,7 +72,7 @@ export const setPlayerReadyTimer = (match: MatchesJoined) => {
     const timedOutMatch = await client().getMatch(match.id).then(verifySingleResult);
     if (timedOutMatch.status === MatchStatus.Summoning) {
       info('handleMatchSummon', `Match ${match.id} timed out while summoning`);
-      await client().deleteMatchPlayersByMatchId(
+      await client().deleteMatchPlayersForMatchId(
         timedOutMatch.id,
         timedOutMatch.teams.filter((player) => !player.ready)
       );
@@ -83,7 +83,7 @@ export const setPlayerReadyTimer = (match: MatchesJoined) => {
 
 export const removePlayerFromOtherMatches = async (player: MatchPlayersRow) => {
   const openMatches = await client().getStagingMatches().then(verifyResult);
-  await client().deleteMatchPlayersByPlayerId(
+  await client().deleteMatchPlayersForPlayerId(
     player.player_id,
     openMatches.filter((m) => m.id !== player.match_id)
   );

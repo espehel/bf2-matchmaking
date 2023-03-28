@@ -27,12 +27,12 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (match.config.draft === DraftType.Random) {
       const matchPlayers = assignMatchPlayerTeams(match.players);
-      client.updateMatchPlayers(
+      client.updateMatchPlayersForMatchId(
         match.id,
         matchPlayers.filter((mp) => mp.team === 'a'),
         { team: 'a' }
       );
-      client.updateMatchPlayers(
+      client.updateMatchPlayersForMatchId(
         match.id,
         matchPlayers.filter((mp) => mp.team === 'b'),
         { team: 'b' }

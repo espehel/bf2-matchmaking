@@ -63,7 +63,7 @@ export const handleDeletedMatch = (oldMatch: Partial<MatchesRow>) => {
 
 export const handleMatchReopen = async (match: MatchesJoined) => {
   info('handleMatchReopen', `Match ${match.id} reopened`);
-  await client().updateMatchPlayers(match.id, match.teams, {
+  await client().updateMatchPlayersForMatchId(match.id, match.teams, {
     team: null,
     captain: false,
     ready: false,
