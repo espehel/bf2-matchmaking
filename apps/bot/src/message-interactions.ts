@@ -94,7 +94,7 @@ export const onExpire = async (msg: Message, matchConfig: MatchConfigsRow) => {
       })
       .then(verifySingleResult);
     return sendChannelMessage(msg.channelId, {
-      content: `Duration exceeds maximum, new expire time set to expire <t:${expireAt.unix()}:R>`,
+      content: `Duration exceeds maximum, your queue expires at <t:${expireAt.unix()}>`,
     });
   }
 
@@ -105,6 +105,6 @@ export const onExpire = async (msg: Message, matchConfig: MatchConfigsRow) => {
     })
     .then(verifySingleResult);
   return sendChannelMessage(msg.channelId, {
-    content: `New expire time set to expire <t:${expireAt.unix()}:R>`,
+    content: `New expire time set to <t:${expireAt.unix()}>`,
   });
 };
