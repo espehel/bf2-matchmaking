@@ -2,10 +2,10 @@ import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
   compareFullName,
+  compareIsCaptain,
   compareUpdatedAt,
   getDraftStep,
   getPlayerName,
-  getPlayersReadyStatus,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
 import moment from 'moment';
@@ -35,14 +35,16 @@ const getMatchFields = (match: MatchesJoined) =>
     .concat(createTeamFields(match))
     .concat(createServerFields(match));
 
-const createCurrentPlayersFields = ({ status, players, teams, config }: MatchesJoined) =>
-  status === MatchStatus.Open
+const createCurrentPlayersFields = (match: MatchesJoined) =>
+  match.status === MatchStatus.Open
     ? [
         {
           name: 'Players',
-          value: `${players.length}/${config.size} | ${teams
+          value: `${match.players.length}/${match.config.size} | ${[
+            ...getTeamPlayers(match),
+          ]
             .sort(compareUpdatedAt)
-            .map(getPlayerName(players))
+            .map(getPlayerName)
             .join(', ')}`,
         },
       ]
@@ -53,9 +55,9 @@ const createSummoningFields = (match: MatchesJoined) =>
     ? [
         {
           name: 'Ready players',
-          value: getPlayersReadyStatus(match)
+          value: [...getTeamPlayers(match)]
             .sort(compareFullName)
-            .map(({ full_name, ready }) => `${ready ? '✅' : '❌'}  ${full_name}`)
+            .map(({ player, ready }) => `${ready ? '✅' : '❌'}  ${player.full_name}`)
             .join('\n'),
         },
       ]
@@ -66,9 +68,9 @@ const createPoolFields = (match: MatchesJoined) =>
     ? [
         {
           name: 'Pool',
-          value: getTeamPlayers(match, null)
+          value: [...getTeamPlayers(match, null)]
             .sort(compareFullName)
-            .map((player) => player.full_name)
+            .map(getPlayerName)
             .join(', '),
         },
       ]
@@ -81,16 +83,17 @@ const createTeamFields = (match: MatchesJoined) =>
     ? [
         {
           name: 'Team A',
-          value: getTeamPlayers(match, 'a')
+          value: [...getTeamPlayers(match, 'a')]
             .sort(compareFullName)
-            .map((player) => player.full_name)
+            .sort(compareIsCaptain)
+            .map(getPlayerName)
             .join(', '),
         },
         {
           name: 'Team B',
-          value: getTeamPlayers(match, 'b')
+          value: [...getTeamPlayers(match, 'b')]
             .sort(compareFullName)
-            .map((player) => player.full_name)
+            .map(getPlayerName)
             .join(', '),
         },
       ]

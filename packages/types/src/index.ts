@@ -1,4 +1,4 @@
-import { PlayersRow } from './database-types';
+import { MatchPlayersRow, PlayersRow } from './database-types';
 
 export * from './database-types.generated';
 export * from './api-types';
@@ -138,4 +138,8 @@ export interface DraftStep {
   pool: Array<PlayersRow>;
   team: 'a' | 'b' | null;
   captain: PlayersRow | null;
+}
+
+export interface TeamPlayer extends MatchPlayersRow {
+  player: PlayersRow;
 }

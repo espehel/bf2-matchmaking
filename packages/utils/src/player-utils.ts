@@ -1,4 +1,9 @@
-import { MatchesJoined, MatchPlayersRow, PlayersRow } from '@bf2-matchmaking/types';
+import {
+  isTeamPlayer,
+  MatchesJoined,
+  PlayersRow,
+  TeamPlayer,
+} from '@bf2-matchmaking/types';
 import { shuffleArray } from './array-utils';
 
 export const assignMatchPlayerTeams = (players: Array<PlayersRow>) =>
@@ -7,25 +12,17 @@ export const assignMatchPlayerTeams = (players: Array<PlayersRow>) =>
     team: i % 2 === 1 ? 'a' : 'b',
   }));
 
-export const getTeamPlayers = (match: MatchesJoined, team: 'a' | 'b' | null) =>
+export const getTeamPlayers = (
+  match: MatchesJoined,
+  team?: 'a' | 'b' | null
+): Array<TeamPlayer> =>
   match.teams
-    .filter((player) => player.team === team)
-    .map((teamPlayer) =>
-      match.players.find((player) => player.id === teamPlayer.player_id)
-    )
-    .filter((player): player is PlayersRow => player !== undefined);
+    .filter((player) => (typeof team === 'undefined' ? true : player.team === team))
+    .map((matchPlayer) => ({
+      ...matchPlayer,
+      player: match.players.find((player) => player.id === matchPlayer.player_id),
+    }))
+    .filter(isTeamPlayer);
 
-export const getPlayersReadyStatus = (match: MatchesJoined) =>
-  match.teams.map((teamPlayer) => {
-    const player = match.players.find((player) => player.id === teamPlayer.player_id);
-    return {
-      id: teamPlayer.player_id,
-      ready: teamPlayer.ready,
-      full_name: player?.full_name || '-',
-    };
-  });
-
-export const getPlayerName =
-  (players: Array<PlayersRow>) =>
-  ({ player_id }: MatchPlayersRow) =>
-    players.find((p) => p.id === player_id)?.full_name || 'player';
+export const getPlayerName = (tp: TeamPlayer) =>
+  tp.captain ? `**${tp.player.full_name}**` : tp.player.full_name;

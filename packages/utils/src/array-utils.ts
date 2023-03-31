@@ -1,4 +1,4 @@
-import { PlayersRow } from '@bf2-matchmaking/types';
+import { MatchPlayersRow, TeamPlayer } from '@bf2-matchmaking/types';
 
 export const shuffleArray = <T = unknown>(array: Array<T>) => {
   const clonedArray = [...array];
@@ -9,11 +9,10 @@ export const shuffleArray = <T = unknown>(array: Array<T>) => {
   return clonedArray;
 };
 
-interface FullName {
-  full_name: string;
-}
-export const compareFullName = (nameA: FullName, nameB: FullName) =>
-  nameA.full_name.localeCompare(nameB.full_name);
+export const compareFullName = (nameA: TeamPlayer, nameB: TeamPlayer) =>
+  nameA.player.full_name.localeCompare(nameB.player.full_name);
+export const compareIsCaptain = (mpA: MatchPlayersRow, mpB: MatchPlayersRow) =>
+  Number(mpB.captain) - Number(mpA.captain);
 
 interface UpdatedAt {
   updated_at: string;
