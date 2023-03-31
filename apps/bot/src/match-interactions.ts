@@ -1,15 +1,22 @@
 import { error, info } from '@bf2-matchmaking/logging';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
+  getAssignedTeam,
+  getCurrentTeam,
   getDraftStep,
   hasPlayer,
   isAssignedTeam,
   notHasPlayer,
 } from '@bf2-matchmaking/utils';
 import { getMatchEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
-import { DiscordConfig, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  DiscordConfig,
+  MatchConfigsRow,
+  MatchesJoined,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
-import moment from 'moment';
+import moment, { Duration } from 'moment';
 import { getMatchCopyWithoutPlayer, getMatchCopyWithPlayer } from './utils';
 
 export const getOrCreatePlayer = async ({
@@ -161,7 +168,65 @@ export const getPlayerExpiration = async (channelId: string, user: User | APIUse
   const { data } = await client().getOpenMatchesByChannelId(channelId);
   const expireAt = data?.at(0)?.teams.find((p) => p.player_id === user.id)?.expire_at;
   if (expireAt) {
-    return { content: `Your queue expires at <t:${moment().to(expireAt)}>` };
+    return `Your queue expires at <t:${moment().to(expireAt)}>`;
   }
-  return { content: 'No expire time found' };
+  return 'No expire time found';
+};
+
+export const updateExpiration = async (
+  channelId: string,
+  player: User,
+  matchConfig: MatchConfigsRow,
+  duration: Duration
+) => {
+  const matches = await client().getStagingMatchesByChannel(channelId).then(verifyResult);
+  const matchesWithPlayer = matches.filter(hasPlayer(player.id));
+
+  if (duration.asMilliseconds() > matchConfig.player_expire) {
+    const expireAt = moment().add(matchConfig.player_expire, 'ms');
+    await client()
+      .updateMatchPlayersForPlayerId(player.id, matchesWithPlayer, {
+        expire_at: expireAt.toISOString(),
+      })
+      .then(verifySingleResult);
+    return sendChannelMessage(channelId, {
+      content: `Duration exceeds maximum, your queue expires at <t:${expireAt.unix()}>`,
+    });
+  }
+
+  const expireAt = moment().add(duration);
+  await client()
+    .updateMatchPlayersForPlayerId(player.id, matchesWithPlayer, {
+      expire_at: expireAt.toISOString(),
+    })
+    .then(verifySingleResult);
+  return sendChannelMessage(channelId, {
+    content: `New expire time set to <t:${expireAt.unix()}>`,
+  });
+};
+
+export const changeMatchCaptain = async (
+  match: MatchesJoined,
+  author: User,
+  captainId: string
+) => {
+  const removeCaptain = await client().updateMatchPlayer(match.id, captainId, {
+    captain: false,
+    team: null,
+  });
+
+  if (removeCaptain.error) {
+    error('changeMatchCaptain', removeCaptain.error);
+    return removeCaptain;
+  }
+
+  const addCaptain = await client().updateMatchPlayer(match.id, author.id, {
+    captain: true,
+    team: getAssignedTeam(match, captainId),
+  });
+
+  if (addCaptain.error) {
+    error('changeMatchCaptain', addCaptain.error);
+  }
+  return addCaptain;
 };

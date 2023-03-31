@@ -2,7 +2,7 @@ import { commands, GatewayCommand } from './commands';
 import moment, { Duration } from 'moment';
 
 export const createHelpContent = () => {
-  const usage = 'Usage: \n\n'.concat(commands.map(getUsage).join('\n'));
+  const usage = 'Usage: \n\n'.concat(commands.map(getUsage).flat().join('\n'));
 
   const allCommands = 'All commands: \n\n'.concat(
     commands.map((cmd) => cmd.command).join(', ')
@@ -13,20 +13,24 @@ export const createHelpContent = () => {
 
 const getUsage = (command: GatewayCommand) => {
   switch (command.name) {
-    case 'help: ':
+    case 'help':
       return ['!help\tlist commands and how to use them'];
-    case 'info: ':
+    case 'info':
       return ['!who\tdisplay active matches'];
-    case 'join: ':
+    case 'join':
       return ['++\tjoin an open match'];
-    case 'leave: ':
+    case 'leave':
       return ['--\tleave current match'];
-    case 'pick: ':
+    case 'pick':
       return [`!pick <@player>\tas captain pick a player`];
-    case 'expire: ':
+    case 'expire':
       return [
         '!expire\tdisplay time until your queue expire',
         '!expire <duration>\t set duration until queue expire in m(minutes) or h(hours)',
+      ];
+    case 'capfor':
+      return [
+        "!capfor <@player>\t assign yourself as captain for mentioned captain's team",
       ];
     default:
       return [];

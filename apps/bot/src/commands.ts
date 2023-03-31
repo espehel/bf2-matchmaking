@@ -1,12 +1,17 @@
 import { getCommands, postCommand } from '@bf2-matchmaking/discord';
-import {
-  APIApplicationCommand,
-  RESTPostAPIChannelMessageJSONBody,
-} from 'discord-api-types/v10';
+import { APIApplicationCommand } from 'discord-api-types/v10';
 import { error, info } from '@bf2-matchmaking/logging';
 import { Message } from 'discord.js';
-import { DiscordConfig, MatchConfigsRow } from '@bf2-matchmaking/types';
-import { onExpire, onHelp, onJoin, onLeave, onPick, onWho } from './message-interactions';
+import { DiscordConfig } from '@bf2-matchmaking/types';
+import {
+  onCapfor,
+  onExpire,
+  onHelp,
+  onJoin,
+  onLeave,
+  onPick,
+  onWho,
+} from './message-interactions';
 
 export async function HasGuildCommands(
   appId: string,
@@ -102,6 +107,7 @@ export const commands: Array<GatewayCommand> = [
   { name: 'leave', command: '--', action: onLeave },
   { name: 'pick', command: '!pick', action: onPick },
   { name: 'expire', command: '!expire', action: onExpire },
+  { name: 'capfor', command: '!capfor', action: onCapfor },
 ];
 
 export const isCommand = (message: Message) =>

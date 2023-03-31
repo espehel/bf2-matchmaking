@@ -13,6 +13,12 @@ export const isAssignedTeam = (
   team: 'a' | 'b' | null
 ) => match.teams.some((player) => player.player_id === playerId && player.team === team);
 
+export const getAssignedTeam = (
+  match: MatchesJoined,
+  playerId: string
+): string | null | undefined =>
+  match.teams.find((player) => player.player_id === playerId)?.team;
+
 export const isOpen = (match: MatchesRow) => match.status === MatchStatus.Open;
 export const isStarted = (match: MatchesRow) =>
   match.status === MatchStatus.Ongoing || match.status === MatchStatus.Closed;
