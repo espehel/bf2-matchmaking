@@ -2,9 +2,11 @@ import { error } from '@bf2-matchmaking/logging';
 import {
   addPlayer,
   changeMatchCaptain,
+  getOrCreatePlayer,
   getPlayerExpiration,
   pickMatchPlayer,
   removePlayer,
+  swapPlayer,
   updateExpiration,
 } from './match-interactions';
 import { client } from '@bf2-matchmaking/supabase';
@@ -95,5 +97,33 @@ export const onCapfor = async (msg: Message) => {
   const { error } = await changeMatchCaptain(match, msg.author, captainId);
   if (error) {
     return reply(msg, 'Failed to change team captain');
+  }
+};
+
+export const onSubFor = async (msg: Message) => {
+  const playerId = msg.mentions.users.first()?.id || msg.content.split(' ')[1];
+
+  if (!playerId) {
+    return reply(msg, 'No player mentioned');
+  }
+
+  const { data: matches } = await client().getDraftingMatchesByChannelId(msg.channelId);
+
+  const match = matches?.find((m) =>
+    m.teams.some((mp) => mp.player_id === playerId && mp.captain)
+  );
+  const prevPlayer = match?.teams.find((mp) => mp.player_id === playerId);
+
+  if (!prevPlayer || !match) {
+    return reply(msg, 'Mentioned player is not part of any drafting matches');
+  }
+
+  if (hasPlayer(msg.author.id)(match)) {
+    return reply(msg, 'You can not be part of same match as player you are subbing for');
+  }
+
+  const { error } = await swapPlayer(match, msg.author, prevPlayer);
+  if (error) {
+    return reply(msg, 'Failed to sub for player');
   }
 };

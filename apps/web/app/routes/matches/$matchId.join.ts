@@ -23,14 +23,12 @@ export const action: ActionFunction = async ({ request, params }) => {
     const matchId = params['matchId'] ? parseInt(params['matchId']) : undefined;
     invariant(matchId, 'No matchId');
     const { config } = await client.getMatch(matchId).then(verifySingleResult);
-    const expireAt = moment().add(config.player_expire, 'ms').toISOString();
+    const expire_at = moment().add(config.player_expire, 'ms').toISOString();
 
-    const { error: err, status } = await client.createMatchPlayer(
-      matchId,
-      player.id,
-      'web',
-      expireAt
-    );
+    const { error: err, status } = await client.createMatchPlayer(matchId, player.id, {
+      source: 'web',
+      expire_at,
+    });
 
     if (err) {
       console.error(err);

@@ -11,15 +11,16 @@ export const action: ActionFunction = async ({ request, params }) => {
     invariant(matchId, 'No matchId');
 
     const formData = await request.formData();
-    console.log(formData);
     const playerId = formData.get('playerId')?.toString();
-    console.log(playerId);
     invariant(playerId, 'playerId not defined');
 
     const { config } = await client.getMatch(matchId).then(verifySingleResult);
-    const expireAt = moment().add(config.player_expire, 'ms').toISOString();
+    const expire_at = moment().add(config.player_expire, 'ms').toISOString();
 
-    const { error, status } = await client.createMatchPlayer(matchId, playerId, 'web', expireAt);
+    const { error, status } = await client.createMatchPlayer(matchId, playerId, {
+      source: 'web',
+      expire_at,
+    });
 
     if (error) {
       return json(error, { status });

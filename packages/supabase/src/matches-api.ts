@@ -74,9 +74,8 @@ export default (client: SupabaseClient<Database>) => ({
   createMatchPlayer: (
     match_id: number,
     player_id: string,
-    source: 'web' | 'bot',
-    expire_at: string | null
-  ) => client.from('match_players').insert([{ match_id, player_id, source, expire_at }]),
+    values: Partial<MatchPlayersRow>
+  ) => client.from('match_players').insert([{ match_id, player_id, ...values }]),
 
   deleteMatchPlayer: (matchId: number, playerId: string) =>
     client

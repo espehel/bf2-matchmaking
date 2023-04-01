@@ -32,6 +32,8 @@ const getUsage = (command: GatewayCommand) => {
       return [
         "!capfor <@player>\t assign yourself as captain for mentioned captain's team",
       ];
+    case 'subfor':
+      return ['!subfor <@player>\t take another players place in the match'];
     default:
       return [];
   }

@@ -13,6 +13,7 @@ import {
   DiscordConfig,
   MatchConfigsRow,
   MatchesJoined,
+  MatchPlayersRow,
   MatchStatus,
 } from '@bf2-matchmaking/types';
 import { APIUser, User } from 'discord.js';
@@ -58,7 +59,7 @@ export const getMatchInfoByChannel = async (channel: string) => {
 export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => {
   const matches = await getOpenMatchesOrCreate(config);
   const player = await getOrCreatePlayer(user);
-  const expireAt = moment().add(config.player_expire, 'ms').toISOString();
+  const expire_at = moment().add(config.player_expire, 'ms').toISOString();
 
   const matchesWithoutPlayer = matches.filter(notHasPlayer(player.id));
   if (!matchesWithoutPlayer.length) {
@@ -75,7 +76,7 @@ export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => 
   await Promise.all(
     matchesWithoutPlayer.map((match) =>
       client()
-        .createMatchPlayer(match.id, player.id, 'bot', expireAt)
+        .createMatchPlayer(match.id, player.id, { source: 'bot', expire_at })
         .then(verifySingleResult)
     )
   )
@@ -229,4 +230,29 @@ export const changeMatchCaptain = async (
     error('changeMatchCaptain', addCaptain.error);
   }
   return addCaptain;
+};
+
+export const swapPlayer = async (
+  match: MatchesJoined,
+  author: User,
+  prevPlayer: MatchPlayersRow
+) => {
+  const newPlayer = await getOrCreatePlayer(author);
+
+  const removePlayer = await client().deleteMatchPlayer(match.id, prevPlayer.player_id);
+
+  if (removePlayer.error) {
+    error('swapPlayer', removePlayer.error);
+    return removePlayer;
+  }
+
+  const addPlayer = await client().createMatchPlayer(match.id, newPlayer.id, {
+    team: prevPlayer.team,
+    captain: prevPlayer.captain,
+  });
+
+  if (addPlayer.error) {
+    error('swapPlayer', addPlayer.error);
+  }
+  return addPlayer;
 };
