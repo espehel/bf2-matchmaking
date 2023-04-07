@@ -93,6 +93,7 @@ const createTeamFields = (match: MatchesJoined) =>
           name: 'Team B',
           value: [...getTeamPlayers(match, 'b')]
             .sort(compareFullName)
+            .sort(compareIsCaptain)
             .map(getPlayerName)
             .join(', '),
         },
