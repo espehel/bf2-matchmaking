@@ -9,6 +9,7 @@ import {
 import { getMatchEmbed } from '@bf2-matchmaking/discord';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { pushQueue } from '../utils/message-queue';
+import { info } from '@bf2-matchmaking/logging';
 
 export const sendMatchJoinMessage = async (
   { player_id, source }: MatchPlayersRow,
@@ -38,19 +39,26 @@ export const sendMatchSummoningMessage = async (match: DiscordMatch) => {
 
   pushQueue(() => removeExistingMatchEmbeds(match.config.channel, [match]));
   pushQueue(async () => {
+    info('sendMatchSummoningMessage', 'Sending match summoning message');
     const { data: message } = await sendChannelMessage(match.config.channel, {
       embeds: [getMatchEmbed(match, `Ready up! ${playerMentions}`)],
     });
 
     if (message) {
+      info('sendMatchSummoningMessage', 'Creating message reaction');
       await createMessageReaction(match.config.channel, message.id, '✅');
     }
   });
 };
 
 export const sendMatchInfoMessage = async (match: DiscordMatch) => {
+  info(
+    'sendMatchInfoMessage',
+    `Info for match ${match.id} with config ${match.config.name}`
+  );
   const embed = getMatchEmbed(match);
   pushQueue(() => {
+    info('sendMatchInfoMessage', `Executing queue`);
     replaceChannelMessage(match, embed);
   });
 };

@@ -1,7 +1,10 @@
 import { promise as fastq } from 'fastq';
-import { error } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 
-const queue = fastq<Function>((fn: Function) => fn(), 1);
+const queue = fastq<Function>((fn: Function) => {
+  info('fastq', 'Executing queue');
+  return fn();
+}, 1);
 
 queue.error((e) => error('message-queue', e));
 

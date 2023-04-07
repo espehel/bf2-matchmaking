@@ -106,6 +106,7 @@ export const handleMatchDraft = async (match: MatchesJoined) => {
     await setMatchCaptains(match);
     const matchWithCaptains = await client().getMatch(match.id).then(verifySingleResult);
     if (isDiscordMatch(matchWithCaptains)) {
+      info('handleMatchDraft', 'Sending match info for drafting match with captains.');
       await sendMatchInfoMessage(matchWithCaptains);
     }
   }
