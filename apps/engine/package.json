@@ -29,6 +29,8 @@
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
+    "@types/better-queue": "^3.8.3",
+    "better-queue": "^3.8.12",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "fastq": "^1.15.0",
