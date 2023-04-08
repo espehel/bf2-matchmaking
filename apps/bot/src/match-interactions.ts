@@ -169,7 +169,7 @@ export const getPlayerExpiration = async (channelId: string, user: User | APIUse
   const { data } = await client().getOpenMatchesByChannelId(channelId);
   const expireAt = data?.at(0)?.teams.find((p) => p.player_id === user.id)?.expire_at;
   if (expireAt) {
-    return `Your queue expires at <t:${moment().to(expireAt)}>`;
+    return `Your queue expires at <t:${moment(expireAt).unix()}:T>`;
   }
   return 'No expire time found';
 };
@@ -183,6 +183,12 @@ export const updateExpiration = async (
   const matches = await client().getStagingMatchesByChannel(channelId).then(verifyResult);
   const matchesWithPlayer = matches.filter(hasPlayer(player.id));
 
+  if (matchesWithPlayer.length === 0) {
+    return sendChannelMessage(channelId, {
+      content: 'You have joined no open matches in this channel.',
+    });
+  }
+
   if (duration.asMilliseconds() > matchConfig.player_expire) {
     const expireAt = moment().add(matchConfig.player_expire, 'ms');
     await client()
@@ -191,7 +197,7 @@ export const updateExpiration = async (
       })
       .then(verifySingleResult);
     return sendChannelMessage(channelId, {
-      content: `Duration exceeds maximum, your queue expires at <t:${expireAt.unix()}>`,
+      content: `Duration exceeds maximum, your queue expires at <t:${expireAt.unix()}:T>`,
     });
   }
 
@@ -202,7 +208,7 @@ export const updateExpiration = async (
     })
     .then(verifySingleResult);
   return sendChannelMessage(channelId, {
-    content: `New expire time set to <t:${expireAt.unix()}>`,
+    content: `New expire time set to expire at <t:${expireAt.unix()}:T>`,
   });
 };
 
