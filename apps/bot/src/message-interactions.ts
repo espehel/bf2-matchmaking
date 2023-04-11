@@ -108,9 +108,7 @@ export const onSubFor = async (msg: Message) => {
 
   const { data: matches } = await client().getDraftingMatchesByChannelId(msg.channelId);
 
-  const match = matches?.find((m) =>
-    m.teams.some((mp) => mp.player_id === playerId && mp.captain)
-  );
+  const match = matches?.find((m) => m.teams.some((mp) => mp.player_id === playerId));
   const prevPlayer = match?.teams.find((mp) => mp.player_id === playerId);
 
   if (!prevPlayer || !match) {
