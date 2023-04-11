@@ -36,7 +36,7 @@ export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) =>
     );
   }
 
-  if (match.players.length === match.config.size) {
+  if (match.status === MatchStatus.Open && match.players.length === match.config.size) {
     info('handleInsertedMatchPlayer', `Setting match ${match.id} status to "summoning".`);
     return await setMatchSummoning(match);
   }
@@ -70,6 +70,15 @@ export const handleUpdatedMatchPlayer = async (
   if (isPickEvent(payload)) {
     return handlePlayerPicked(payload);
   }
+
+  const match = await client().getMatch(payload.record.match_id).then(verifySingleResult);
+  if (
+    isDiscordMatch(match) &&
+    match.status === MatchStatus.Drafting &&
+    isCaptainChangeEvent(payload)
+  ) {
+    return pushInfoMessage(match);
+  }
 };
 
 export const handleDeletedMatchPlayer = async (
@@ -94,7 +103,10 @@ const isRenewExpireEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRo
     : false;
 const isPickEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
   payload.old_record.team === null &&
+  !isCaptainChangeEvent(payload) &&
   (payload.record.team === 'a' || payload.record.team === 'b');
+const isCaptainChangeEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
+  !payload.old_record.captain && payload.record.captain;
 const isReadyEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
   !payload.old_record.ready && payload.record.ready;
 
