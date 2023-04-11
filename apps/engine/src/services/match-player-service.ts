@@ -88,3 +88,13 @@ export const removePlayerFromOtherMatches = async (player: MatchPlayersRow) => {
     openMatches.filter((m) => m.id !== player.match_id)
   );
 };
+
+export const fetchPlayerName = async (playerId: string | undefined) => {
+  if (playerId) {
+    const { data } = await client().getPlayer(playerId);
+    if (data) {
+      return data.full_name;
+    }
+  }
+  return 'Player';
+};

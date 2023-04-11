@@ -14,3 +14,6 @@ export const getMatchIdFromEmbed = (embed: {
   title: string | null | undefined;
 }): number | undefined =>
   embed.title ? parseInt(embed.title.slice(6, embed.title.indexOf(': '))) : undefined;
+
+export const createPlayerMentions = (match: MatchesJoined) =>
+  match.teams.map((player) => `<@${player.player_id}>`).join(', ');

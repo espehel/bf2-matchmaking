@@ -2,7 +2,6 @@ import { error } from '@bf2-matchmaking/logging';
 import {
   addPlayer,
   changeMatchCaptain,
-  getOrCreatePlayer,
   getPlayerExpiration,
   pickMatchPlayer,
   removePlayer,

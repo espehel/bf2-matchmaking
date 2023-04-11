@@ -8,11 +8,6 @@ import {
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import {
-  sendMatchInfoMessage,
-  sendMatchJoinMessage,
-  sendMatchLeaveMessage,
-} from './services/message-service';
 import { getDraftStep } from '@bf2-matchmaking/utils';
 import {
   reopenMatch,
@@ -24,7 +19,11 @@ import {
   removePlayerFromOtherMatches,
   setPlayerExpireTimer,
 } from './services/match-player-service';
-import { createMessageReaction } from '@bf2-matchmaking/discord';
+import {
+  pushInfoMessage,
+  pushJoinMessage,
+  pushLeaveMessage,
+} from './utils/message-queue';
 
 export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) => {
   info('handleInsertedMatchPlayer', `Player ${matchPlayer.player_id} joined.`);
@@ -55,7 +54,7 @@ export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) =>
   }
 
   if (isDiscordMatch(match)) {
-    return await sendMatchJoinMessage(matchPlayer, match);
+    return pushJoinMessage(match, matchPlayer.player_id);
   }
 };
 
@@ -85,7 +84,7 @@ export const handleDeletedMatchPlayer = async (
   }
 
   if (isDiscordMatch(match)) {
-    return await sendMatchLeaveMessage(oldMatchPlayer, match);
+    return pushLeaveMessage(match, oldMatchPlayer.player_id);
   }
 };
 
@@ -134,7 +133,7 @@ const handlePlayerPicked = async (
     !payload.record.captain &&
     match.config.draft === DraftType.Captain
   ) {
-    return sendMatchInfoMessage(match);
+    return pushInfoMessage(match);
   }
 };
 
@@ -146,6 +145,6 @@ const handlePlayerReady = async (
   if (isReadyMatch(match)) {
     await setMatchDrafting(match);
   } else if (isDiscordMatch(match)) {
-    await sendMatchInfoMessage(match);
+    await pushInfoMessage(match);
   }
 };

@@ -16,18 +16,35 @@ const someMatch = (embed: APIEmbed, matches: Array<MatchesJoined>) =>
 const notSomeMatch = (matches: Array<MatchesJoined>) => (embed: APIEmbed) =>
   !someMatch(embed, matches);
 
-const removeEmbeds = (messages: Array<APIMessage>, matches: Array<MatchesJoined>) =>
+export const replaceEmbed = (
+  message: APIMessage,
+  embed: APIEmbed,
+  matches: Array<MatchesJoined>
+) => [...message.embeds.filter(notSomeMatch(matches)), embed];
+
+export const getLastMatchMessage = (
+  messages: Array<APIMessage>,
+  matches: Array<MatchesJoined>
+) =>
+  messages.at(0)?.embeds.some((embed) => someMatch(embed, matches))
+    ? messages.at(0)
+    : undefined;
+
+export const removeEmbeds = (
+  messages: Array<APIMessage>,
+  matches: Array<MatchesJoined>
+) =>
   Promise.all(
     messages.filter(hasEmbeds).map(async (message) => {
-      const embedsWithoutExistingMatches = message.embeds.filter(notSomeMatch(matches));
+      const embedsWithoutMatches = message.embeds.filter(notSomeMatch(matches));
 
-      if (embedsWithoutExistingMatches.length === 0) {
-        info('removeExistingMatchEmbeds', `Removing channel message ${message.id}`);
+      if (embedsWithoutMatches.length === 0) {
+        info('removeEmbeds', `Removing channel message ${message.id}`);
         return await removeChannelMessage(message.channel_id, message.id);
-      } else if (embedsWithoutExistingMatches.length !== message.embeds.length) {
-        info('removeExistingMatchEmbeds', `Editing channel message ${message.id}`);
+      } else if (embedsWithoutMatches.length !== message.embeds.length) {
+        info('removeEmbeds', `Editing channel message ${message.id}`);
         return await editChannelMessage(message.channel_id, message.id, {
-          embeds: embedsWithoutExistingMatches,
+          embeds: embedsWithoutMatches,
         });
       }
     })

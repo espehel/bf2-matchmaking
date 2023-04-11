@@ -102,6 +102,6 @@ export const listenToChannel = async (config: DiscordConfig) => {
       `Stopped listening to ${config.name} channel, after collecting ${collected.size} messages, because ${reason}.`
     );
   });
-
+  info('listenToChannel', `Listening to ${config.name}`);
   return collector;
 };

@@ -8,23 +8,20 @@ import {
   MatchStatus,
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
-import {
-  sendMatchInfoMessage,
-  sendMatchSummoningMessage,
-  sendSummoningDM,
-} from './services/message-service';
+import { sendSummoningDM } from './services/message-service';
 import { createNextMatchFromConfig } from './services/match-service';
 import {
   setMatchCaptains,
   setPlayerReadyTimer,
   setRandomTeams,
 } from './services/match-player-service';
+import { pushInfoMessage, pushSummonMessage } from './utils/message-queue';
 
 export const handleInsertedMatch = async (match: MatchesRow) => {
   info('handleInsertedMatch', `New match ${match.id}`);
   const matchJoined = await client().getMatch(match.id).then(verifySingleResult);
   if (isDiscordMatch(matchJoined)) {
-    return sendMatchInfoMessage(matchJoined);
+    return pushInfoMessage(matchJoined);
   }
 };
 
@@ -53,7 +50,7 @@ export const handleUpdatedMatch = async (
     await createNextMatchFromConfig(match);
   }
   if (isDiscordMatch(match)) {
-    return sendMatchInfoMessage(match);
+    return pushInfoMessage(match);
   }
 };
 
@@ -76,7 +73,7 @@ export const handleMatchSummon = async (match: MatchesJoined) => {
   setPlayerReadyTimer(match);
 
   if (isDiscordMatch(match)) {
-    await sendMatchSummoningMessage(match);
+    pushSummonMessage(match);
     await sendSummoningDM(match);
 
     // TODO: Create channel per match
@@ -107,7 +104,7 @@ export const handleMatchDraft = async (match: MatchesJoined) => {
     const matchWithCaptains = await client().getMatch(match.id).then(verifySingleResult);
     if (isDiscordMatch(matchWithCaptains)) {
       info('handleMatchDraft', 'Sending match info for drafting match with captains.');
-      await sendMatchInfoMessage(matchWithCaptains);
+      pushInfoMessage(matchWithCaptains);
     }
   }
 };

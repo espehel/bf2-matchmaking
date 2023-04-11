@@ -26,3 +26,9 @@ export const getTeamPlayers = (
 
 export const getPlayerName = (tp: TeamPlayer) =>
   tp.captain ? `**${tp.player.full_name}**` : tp.player.full_name;
+
+export const findPlayerName = (
+  match: MatchesJoined,
+  playerId: string | undefined
+): string | undefined =>
+  playerId && match.players.find((p) => p.id === playerId)?.full_name;
