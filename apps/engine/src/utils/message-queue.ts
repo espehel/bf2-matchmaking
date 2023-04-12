@@ -4,6 +4,7 @@ import { DiscordMatch, MatchStatus } from '@bf2-matchmaking/types';
 import {
   createMessageReaction,
   createPlayerMentions,
+  createSummonedReactions,
   editChannelMessage,
   getChannelMessages,
   getLastMatchMessage,
@@ -72,8 +73,9 @@ const processTask = async (task: MessageTask | PlayerMessageTask) => {
 
   if (task.match.status === MatchStatus.Summoning) {
     info('message-queue', `Reacting to message for match ${task.match.id}`);
-    await createMessageReaction(task.match.config.channel, sentMessage.id, '✅');
+    await createSummonedReactions(task.match.config.channel, sentMessage);
   }
+
   return { data: sentMessage };
 };
 

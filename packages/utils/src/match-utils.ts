@@ -62,3 +62,6 @@ export const hasPlayer = (playerId: string) => (match: MatchesJoined) =>
   match.players.some((player) => player.id === playerId);
 export const notHasPlayer = (playerId: string) => (match: MatchesJoined) =>
   !match.players.some((player) => player.id === playerId);
+
+export const isSummoning = (match: { status: MatchStatus }) =>
+  match.status === MatchStatus.Summoning;

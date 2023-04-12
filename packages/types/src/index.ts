@@ -143,3 +143,8 @@ export interface DraftStep {
 export interface TeamPlayer extends MatchPlayersRow {
   player: PlayersRow;
 }
+
+export enum MatchReaction {
+  READY = '✅',
+  CANCEL = '⛔',
+}

@@ -5,7 +5,12 @@ import {
   removeChannelMessage,
   sendChannelMessage,
 } from './discord-rest';
-import { DiscordMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  DiscordMatch,
+  MatchesJoined,
+  MatchReaction,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { isMatchTitle } from './embed-utils';
 import { APIEmbed, APIMessage } from 'discord-api-types/v10';
 import { info } from '@bf2-matchmaking/logging';
@@ -60,32 +65,8 @@ export const removeExistingMatchEmbeds = async (
   }
 };
 
-export const replaceChannelMessage = async (match: DiscordMatch, embed: APIEmbed) => {
-  info('replaceChannelMessage', `Replacing match message for match ${match.id}`);
-  const { data: messages } = await getChannelMessages(match.config.channel);
-  const lastMessage = messages?.at(0);
-
-  if (
-    messages &&
-    lastMessage &&
-    hasEmbeds(lastMessage) &&
-    lastMessage.embeds.some((embed) => isMatchTitle(match, embed.title))
-  ) {
-    await removeEmbeds(messages?.slice(1), [match]);
-    return editChannelMessage(lastMessage.channel_id, lastMessage.id, {
-      embeds: [...lastMessage.embeds.filter(notSomeMatch([match])), embed],
-    });
-  }
-
-  if (messages) {
-    await removeEmbeds(messages, [match]);
-  }
-
-  const res = await sendChannelMessage(match.config.channel, { embeds: [embed] });
-
-  if (res.data && match.status === MatchStatus.Summoning) {
-    await createMessageReaction(match.config.channel, res.data.id, '✅');
-  }
-
-  return res;
-};
+export const createSummonedReactions = (channelId: string, message: APIMessage) =>
+  Promise.all([
+    createMessageReaction(channelId, message.id, MatchReaction.READY),
+    createMessageReaction(channelId, message.id, MatchReaction.CANCEL),
+  ]);

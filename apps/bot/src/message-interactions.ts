@@ -9,12 +9,17 @@ import {
   updateExpiration,
 } from './match-interactions';
 import { client } from '@bf2-matchmaking/supabase';
-import { getMatchEmbed, removeExistingMatchEmbeds } from '@bf2-matchmaking/discord';
+import {
+  createMessageReaction,
+  createSummonedReactions,
+  getMatchEmbed,
+  removeExistingMatchEmbeds,
+} from '@bf2-matchmaking/discord';
 import { Message } from 'discord.js';
 import { DiscordConfig, MatchConfigsRow } from '@bf2-matchmaking/types';
 import { createHelpContent, parseDurationArg } from './command-utils';
 import { reply, replyEmbeds } from './message-utils';
-import { hasPlayer, notHasPlayer } from '@bf2-matchmaking/utils';
+import { hasPlayer, isSummoning, notHasPlayer } from '@bf2-matchmaking/utils';
 
 export const onHelp = (msg: Message) => {
   return reply(msg, createHelpContent());
@@ -32,11 +37,17 @@ export const onWho = async (msg: Message) => {
 
   await removeExistingMatchEmbeds(msg.channel.id, matches);
   const embeds = matches.map((match) => getMatchEmbed(match));
-  if (embeds.length) {
-    return replyEmbeds(msg, embeds);
+
+  if (!embeds.length) {
+    return reply(msg, 'No active matches in channel.');
+  }
+  const response = await replyEmbeds(msg, embeds);
+
+  if (matches.some(isSummoning) && response.data) {
+    createSummonedReactions(msg.channelId, response.data);
   }
 
-  return reply(msg, 'No active matches in channel.');
+  return response;
 };
 
 export const onLeave = (msg: Message) => {
