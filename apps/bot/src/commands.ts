@@ -1,6 +1,6 @@
 import { getCommands, postCommand } from '@bf2-matchmaking/discord';
 import { APIApplicationCommand } from 'discord-api-types/v10';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logCommandEvent } from '@bf2-matchmaking/logging';
 import { Message } from 'discord.js';
 import { DiscordConfig } from '@bf2-matchmaking/types';
 import {
@@ -124,6 +124,7 @@ export const executeCommand = (
 
   if (command) {
     info('executeCommand', `Executing interaction: ${command.name}`);
+    logCommandEvent(command.name, message.content, message.author.id, config);
     return command.action(message, config);
   }
 

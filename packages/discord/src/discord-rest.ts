@@ -13,7 +13,11 @@ import {
   RESTDeleteAPIChannelAllMessageReactionsResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
-import { error } from '@bf2-matchmaking/logging';
+import {
+  error,
+  logCreateChannelMessage,
+  logEditChannelMessage,
+} from '@bf2-matchmaking/logging';
 import { RESTDeleteAPIChannelMessageResult } from 'discord-api-types/rest/v10/channel';
 
 invariant(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
@@ -99,13 +103,19 @@ export const getChannelMessages = (channelId: string) =>
     `${Routes.channelMessages(channelId)}?limit=50`
   );
 
-export const sendChannelMessage = (
+export const sendChannelMessage = async (
   channelId: string,
   body: RESTPostAPIChannelMessageJSONBody
-) =>
-  postDiscordRoute<RESTPostAPIChannelMessageResult>(Routes.channelMessages(channelId), {
-    body,
-  });
+) => {
+  const res = await postDiscordRoute<RESTPostAPIChannelMessageResult>(
+    Routes.channelMessages(channelId),
+    {
+      body,
+    }
+  );
+  logCreateChannelMessage(channelId, res.data?.id, body.content, body.embeds);
+  return res;
+};
 
 export const sendDirectMessage = async (
   playerId: string,
@@ -124,15 +134,18 @@ export const sendDirectMessage = async (
   return { error } as ErrorResponse;
 };
 
-export const editChannelMessage = (
+export const editChannelMessage = async (
   channelId: string,
   messageId: string,
   body: RESTPatchAPIChannelMessageJSONBody
-) =>
-  patchDiscordRoute<RESTPatchAPIChannelMessageResult>(
+) => {
+  const res = await patchDiscordRoute<RESTPatchAPIChannelMessageResult>(
     Routes.channelMessage(channelId, messageId),
     { body }
   );
+  logEditChannelMessage(channelId, messageId, body.content, body.embeds);
+  return res;
+};
 
 export const removeChannelMessage = (channelId: string, messageId: string) =>
   deleteDiscordRoute<RESTDeleteAPIChannelMessageResult>(

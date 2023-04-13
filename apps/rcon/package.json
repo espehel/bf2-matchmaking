@@ -9,7 +9,7 @@
     "verify": "tsc --noEmit"
   },
   "engines": {
-    "node": "18"
+    "node": "18 || 19"
   },
   "devDependencies": {
     "@types/express": "^4.17.14",

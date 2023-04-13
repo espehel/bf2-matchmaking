@@ -1,5 +1,5 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { info } from '@bf2-matchmaking/logging';
+import { info, logMatchEvent } from '@bf2-matchmaking/logging';
 import {
   DraftType,
   isDiscordMatch,
@@ -38,19 +38,23 @@ export const handleUpdatedMatch = async (
   );
   const match = await client().getMatch(payload.record.id).then(verifySingleResult);
   if (isSummoningUpdate(payload)) {
+    logMatchEvent('summon', payload.record);
     return await handleMatchSummon(match);
   }
   if (isDraftingUpdate(payload)) {
+    logMatchEvent('draft', payload.record);
     return await handleMatchDraft(match);
   }
 
   if (isReopenUpdate(payload)) {
+    logMatchEvent('reopen', payload.record);
     await handleMatchReopen(match);
   }
   if (
     isDiscordMatch(match) &&
     (isOngoingUpdate(payload) || isClosedUpdate(payload) || isDeletedUpdate(payload))
   ) {
+    logMatchEvent('next', payload.record);
     await createNextMatchFromConfig(match);
   }
   if (isDiscordMatch(match)) {

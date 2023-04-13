@@ -1,4 +1,4 @@
-import { info, warn } from '@bf2-matchmaking/logging';
+import { info, logMatchPlayerEvent, warn } from '@bf2-matchmaking/logging';
 import {
   DraftType,
   isDiscordMatch,
@@ -27,6 +27,7 @@ import {
 
 export const handleInsertedMatchPlayer = async (matchPlayer: MatchPlayersRow) => {
   info('handleInsertedMatchPlayer', `Player ${matchPlayer.player_id} joined.`);
+  logMatchPlayerEvent('join', matchPlayer);
   const match = await client().getMatch(matchPlayer.match_id).then(verifySingleResult);
 
   if (match.status !== MatchStatus.Open) {
@@ -65,9 +66,11 @@ export const handleUpdatedMatchPlayer = async (
     setPlayerExpireTimer(payload.record);
   }
   if (isReadyEvent(payload)) {
+    logMatchPlayerEvent('ready', payload.record);
     return handlePlayerReady(payload);
   }
   if (isPickEvent(payload)) {
+    logMatchPlayerEvent('pick', payload.record);
     return handlePlayerPicked(payload);
   }
 
@@ -85,6 +88,7 @@ export const handleDeletedMatchPlayer = async (
   oldMatchPlayer: Partial<MatchPlayersRow>
 ) => {
   info('handleDeletedMatchPlayer', `Player ${oldMatchPlayer.player_id} left.`);
+  logMatchPlayerEvent('leave', oldMatchPlayer);
 
   const match = await client().getMatch(oldMatchPlayer.match_id).then(verifySingleResult);
 
