@@ -5,6 +5,7 @@ import {
   createMessageReaction,
   createPlayerMentions,
   createSummonedReactions,
+  deleteAllReactions,
   editChannelMessage,
   getChannelMessages,
   getLastMatchMessage,
@@ -15,10 +16,11 @@ import {
 } from '@bf2-matchmaking/discord';
 import { findPlayerName } from '@bf2-matchmaking/utils';
 import { fetchPlayerName } from '../services/match-player-service';
+import { match } from 'assert';
 
 interface MessageTask {
   id: number;
-  type: 'summon' | 'info';
+  type: 'summon' | 'draft' | 'info';
   match: DiscordMatch;
 }
 
@@ -56,9 +58,14 @@ const processTask = async (task: MessageTask | PlayerMessageTask) => {
 
   if (lastMessage && task.type !== 'summon') {
     info('message-queue', `Editing message for match ${task.match.id}`);
-    return editChannelMessage(lastMessage.channel_id, lastMessage.id, {
+    const result = await editChannelMessage(lastMessage.channel_id, lastMessage.id, {
       embeds: replaceEmbed(lastMessage, embed, [task.match]),
     });
+
+    if (task.type === 'draft' && result.data) {
+      await deleteAllReactions(result.data.channel_id, result.data.id);
+    }
+    return result;
   }
 
   info('message-queue', `Sending message for match ${task.match.id}`);
@@ -103,6 +110,8 @@ export const pushInfoMessage = (match: DiscordMatch) =>
   queue.push({ id: match.id, match, type: 'info' });
 export const pushSummonMessage = (match: DiscordMatch) =>
   queue.push({ id: match.id, match, type: 'summon' });
+export const pushDraftMessage = (match: DiscordMatch) =>
+  queue.push({ id: match.id, match, type: 'draft' });
 export const pushJoinMessage = (match: DiscordMatch, playerId: string) =>
   queue.push({ id: match.id, match, playerId, type: 'join' });
 export const pushLeaveMessage = (match: DiscordMatch, playerId: string | undefined) =>

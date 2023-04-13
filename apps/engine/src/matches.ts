@@ -15,7 +15,11 @@ import {
   setPlayerReadyTimer,
   setRandomTeams,
 } from './services/match-player-service';
-import { pushInfoMessage, pushSummonMessage } from './utils/message-queue';
+import {
+  pushDraftMessage,
+  pushInfoMessage,
+  pushSummonMessage,
+} from './utils/message-queue';
 
 export const handleInsertedMatch = async (match: MatchesRow) => {
   info('handleInsertedMatch', `New match ${match.id}`);
@@ -102,9 +106,10 @@ export const handleMatchDraft = async (match: MatchesJoined) => {
   if (match.config.draft === DraftType.Captain) {
     await setMatchCaptains(match);
     const matchWithCaptains = await client().getMatch(match.id).then(verifySingleResult);
+
     if (isDiscordMatch(matchWithCaptains)) {
       info('handleMatchDraft', 'Sending match info for drafting match with captains.');
-      pushInfoMessage(matchWithCaptains);
+      pushDraftMessage(matchWithCaptains);
     }
   }
 };

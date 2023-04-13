@@ -10,6 +10,7 @@ import {
   RESTPatchAPIChannelMessageResult,
   RESTPostAPICurrentUserCreateDMChannelResult,
   RESTPutAPIChannelMessageReactionResult,
+  RESTDeleteAPIChannelAllMessageReactionsResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
 import { error } from '@bf2-matchmaking/logging';
@@ -145,6 +146,11 @@ export const createMessageReaction = (
 ) =>
   putDiscordRoute<RESTPutAPIChannelMessageReactionResult>(
     Routes.channelMessageOwnReaction(channelId, messageId, emoji)
+  );
+
+export const deleteAllReactions = (channelId: string, messageId: string) =>
+  deleteDiscordRoute<RESTDeleteAPIChannelAllMessageReactionsResult>(
+    Routes.channelMessageAllReactions(channelId, messageId)
   );
 
 export const postCommand = (
