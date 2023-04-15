@@ -33,6 +33,12 @@ export default (client: SupabaseClient<Database>) => ({
       .or(`status.eq.${MatchStatus.Drafting},status.eq.${MatchStatus.Ongoing}`, {
         foreignTable: 'matches',
       }),
+  getServer: (ip: string) =>
+    client
+      .from('servers')
+      .select<'*, matches(id, status)', ServersJoined>('*, matches(id, status)')
+      .eq('ip', ip)
+      .single(),
   getServerRoundsByTimestampRange: (
     serverIp: string,
     timestampFrom: string,

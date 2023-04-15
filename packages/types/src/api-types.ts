@@ -1,3 +1,6 @@
+import { ServersRow } from './database-types';
+import { ServerInfo } from './index';
+
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
   NoMatchStagingChannel = 'NO_MATCH_STAGING_CHANNEL',
@@ -39,4 +42,8 @@ export enum MatchConfigEvent {
 export interface PostMatchConfigEventRequestBody {
   event: MatchConfigEvent;
   channelId: string;
+}
+
+export interface RconBf2Server extends ServersRow {
+  info: ServerInfo | null;
 }

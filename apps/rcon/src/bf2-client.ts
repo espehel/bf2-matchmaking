@@ -1,27 +1,46 @@
 import net from 'net';
 import crypto from 'crypto';
-import { info } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 
 interface Options {
   host: string;
   port: number;
   password: string;
+  timeout?: number | undefined;
 }
 
 interface Bf2Client {
+  connected: boolean;
+  error: unknown;
   send: (message: string) => Promise<string>;
 }
 
-export const createClient = ({ host, port, password }: Options) => {
-  return new Promise<Bf2Client>((resolve) => {
+export const createClient = ({ host, port, password, timeout = 0 }: Options) => {
+  return new Promise<Bf2Client>((resolve, reject) => {
+    let connected = false;
     const client = net.connect({
       host,
       port,
+      timeout,
     });
     info('client', 'Initialized');
 
     client.on('connect', () => {
       info('client', 'Connected');
+      connected = true;
+      client.setTimeout(0);
+    });
+
+    client.setTimeout(timeout);
+    client.on('timeout', () => {
+      error('createClient', `Socket timed out during connection ${host}:${port}`);
+      client.end();
+      resolve({ ...api, connected, error: 'Connection Timeout' });
+    });
+
+    client.once('error', (err) => {
+      error('createClient', err);
+      resolve({ ...api, connected, error: err });
     });
 
     client.on('data', (data) => {
@@ -41,19 +60,21 @@ export const createClient = ({ host, port, password }: Options) => {
 
       if (sent.indexOf('Authentication successful') != -1) {
         info('client', 'Authenticated');
-        resolve({
-          send: (message: string) =>
-            new Promise((resolve, reject) => {
-              info('client', `sending message: ${message}`);
-
-              client.write(message + '\n');
-              client.once('data', (response) => {
-                info('client', 'Received response');
-                resolve(response.toString());
-              });
-            }),
-        });
+        resolve({ ...api, connected, error });
       }
     });
+
+    const api = {
+      send: (message: string) =>
+        new Promise<string>((resolveSend, reject) => {
+          info('client', `sending message: ${message}`);
+
+          client.write(message + '\n');
+          client.once('data', (response) => {
+            info('client', 'Received response');
+            resolveSend(response.toString());
+          });
+        }),
+    };
   });
 };

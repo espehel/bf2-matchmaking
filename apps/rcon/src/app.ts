@@ -6,6 +6,7 @@ import { createClient } from './bf2-client';
 import { mapListPlayers, mapServerInfo } from './mappers';
 import { error, info } from '@bf2-matchmaking/logging';
 import { client } from '@bf2-matchmaking/supabase';
+import { api } from '@bf2-matchmaking/utils';
 
 const app = express();
 
@@ -156,11 +157,70 @@ app.post('/servers', async (req, res) => {
   const { data: server, error: err } = await client().upsertServer(ip, serverName);
 
   if (err) {
-    error('POST /servers', err.message);
+    error('POST /servers', err);
     res.status(502).send(err.message);
   } else {
     res.status(201).send(server);
   }
+});
+
+app.get('/servers', async (req, res) => {
+  const { data, error: err } = await client().getServers();
+
+  if (err) {
+    error('GET /servers', err);
+    return res.status(502).send(err.message);
+  }
+
+  invariant(process.env.RCON_PORT, 'PORT not defined in .env');
+  invariant(process.env.RCON_PASSWORD, 'PASSWORD not defined in .env');
+  const port = parseInt(process.env.RCON_PORT);
+  const password = process.env.RCON_PASSWORD;
+
+  const servers = await Promise.all(
+    data.map(async (server) => {
+      const rconClient = await createClient({
+        host: server.ip,
+        port,
+        password,
+        timeout: 2000,
+      });
+      if (rconClient.connected) {
+        const si = await rconClient.send('bf2cc si');
+        return { ...server, info: mapServerInfo(si) };
+      }
+      return { ...server, info: null };
+    })
+  );
+  res.send(servers);
+});
+
+app.get('/servers/:ip', async (req, res) => {
+  const { data, error: err } = await client().getServer(req.params.ip);
+
+  if (err) {
+    error('GET /servers', err);
+    return res.status(502).send(err.message);
+  }
+
+  invariant(process.env.RCON_PORT, 'PORT not defined in .env');
+  invariant(process.env.RCON_PASSWORD, 'PASSWORD not defined in .env');
+  const port = parseInt(process.env.RCON_PORT);
+  const password = process.env.RCON_PASSWORD;
+
+  const rconClient = await createClient({
+    host: data.ip,
+    port,
+    password,
+  });
+
+  if (!rconClient.connected) {
+    return res.status(502).send(rconClient.error);
+  }
+
+  const si = await rconClient.send('bf2cc si');
+
+  res.send({ ...data, info: mapServerInfo(si) });
 });
 
 app.get('/health', (req, res) => {
