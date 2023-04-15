@@ -31,6 +31,7 @@ export const addChannelListener = async (channelId: string) => {
     .getMatchConfigByChannelId(channelId)
     .then(verifySingleResult);
   const listener = await listenToChannel(config);
+
   if (listener) {
     listenerMap.set(listener.channel.id, listener);
     info('addChannelListener', `Initialized listener for channel ${listener.channel.id}`);
@@ -62,11 +63,15 @@ export const updateChannelListener = async (channelId: string) => {
 };
 
 export const listenToChannel = async (config: DiscordConfig) => {
+  if (!config.active) {
+    return null;
+  }
+
   const discordClient = await getDiscordClient();
   const channel = await discordClient.channels.fetch(config.channel);
 
   if (!isTextBasedChannel(channel)) {
-    return;
+    return null;
   }
 
   const collector = channel.createMessageCollector({

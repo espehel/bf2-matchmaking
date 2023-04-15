@@ -8,6 +8,7 @@ import { ErrorRequestHandler, Request } from 'express';
 import { ApiError, MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
 import { Channel, Message, TextChannel } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
+import { api } from '@bf2-matchmaking/utils';
 
 export const getOption = (
   key: string,
@@ -19,7 +20,7 @@ export const getOption = (
   return option?.value;
 };
 
-const WHITELIST = ['/api/match_events', '/health'];
+const WHITELIST = Object.values(api.bot().paths).concat(['/health']);
 export const VerifyDiscordRequest = (clientKey: string) => {
   return function (req: Request, res: any, buf: any, encoding: any) {
     if (WHITELIST.includes(req.url)) {

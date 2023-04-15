@@ -38,6 +38,7 @@ import {
   updateChannelListener,
 } from './channel-listener';
 import { removeChannel } from './member-listener';
+import { api } from '@bf2-matchmaking/utils';
 
 // Create an express app
 const app = express();
@@ -54,7 +55,7 @@ app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 })();
 
 app.post(
-  '/api/match_events',
+  api.bot().paths.matchEvent,
   async (req: Request<{}, {}, PostMatchEventRequestBody>, res, next) => {
     try {
       const { event, matchId } = req.body;
@@ -79,7 +80,7 @@ app.post(
 );
 
 app.post(
-  '/api/match_config_events',
+  api.bot().paths.matchConfigEvent,
   async (req: Request<{}, {}, PostMatchConfigEventRequestBody>, res, next) => {
     try {
       const { event, channelId } = req.body;

@@ -2,13 +2,18 @@ import { MatchConfigEvent, MatchEvent } from '@bf2-matchmaking/types';
 
 export const bot = () => {
   const basePath = 'https://bot.bf2-matchmaking-production.up.railway.app';
+  const paths = {
+    matchEvent: '/api/match_events',
+    matchConfigEvent: '/api/match_config_events',
+  };
   return {
+    paths,
     postMatchEvent: async (matchId: number, event: MatchEvent) => {
       const headers = {
         'Content-Type': 'application/json',
       };
       try {
-        const res = await fetch(`${basePath}/api/match_events`, {
+        const res = await fetch(`${basePath}${paths.matchEvent}`, {
           headers,
           method: 'POST',
           body: JSON.stringify({ matchId, event }),
@@ -28,7 +33,7 @@ export const bot = () => {
         'Content-Type': 'application/json',
       };
       try {
-        const res = await fetch(`${basePath}/api/match_config_events`, {
+        const res = await fetch(`${basePath}${paths.matchConfigEvent}`, {
           headers,
           method: 'POST',
           body: JSON.stringify({ channelId, event }),
