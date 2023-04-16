@@ -3,9 +3,8 @@ import { DiscordConfig, isDiscordConfig } from '@bf2-matchmaking/types';
 
 import { error, info } from '@bf2-matchmaking/logging';
 import { hasSummonEmbed, isTextBasedChannel } from './utils';
-import { sendChannelMessage } from '@bf2-matchmaking/discord';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { listenForMessageReaction } from './reaction-listener';
+import { listenForMatchMessageReaction } from './reaction-listener';
 import { MessageCollector } from 'discord.js';
 import { executeCommand, isCommand } from './commands';
 
@@ -85,7 +84,7 @@ export const listenToChannel = async (config: DiscordConfig) => {
     );
 
     if (hasSummonEmbed(message)) {
-      listenForMessageReaction(message);
+      listenForMatchMessageReaction(message);
     }
 
     try {

@@ -148,3 +148,7 @@ export enum MatchReaction {
   READY = '✅',
   CANCEL = '⛔',
 }
+
+export enum ServerReaction {
+  ACCEPT = '✅',
+}

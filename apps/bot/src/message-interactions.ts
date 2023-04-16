@@ -10,16 +10,34 @@ import {
 } from './match-interactions';
 import { client } from '@bf2-matchmaking/supabase';
 import {
-  createMessageReaction,
   createSummonedReactions,
   getMatchEmbed,
   removeExistingMatchEmbeds,
 } from '@bf2-matchmaking/discord';
 import { Message } from 'discord.js';
-import { DiscordConfig, MatchConfigsRow } from '@bf2-matchmaking/types';
+import {
+  DiscordConfig,
+  isDiscordMatch,
+  MatchConfigsRow,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { createHelpContent, parseDurationArg } from './command-utils';
-import { reply, replyEmbeds } from './message-utils';
-import { hasPlayer, isSummoning, notHasPlayer } from '@bf2-matchmaking/utils';
+import { getChannelMessage, reply, replyEmbeds } from './message-utils';
+import {
+  api,
+  getPlayerTeam,
+  hasPlayer,
+  isSummoning,
+  notHasPlayer,
+} from '@bf2-matchmaking/utils';
+import {
+  getServerDescription,
+  getServerList,
+  isValidServer,
+} from './server-interactions';
+import * as repl from 'repl';
+import { listenForServerMessageReaction } from './reaction-listener';
+import { getDiscordClient } from './client';
 
 export const onHelp = (msg: Message) => {
   return reply(msg, createHelpContent());
@@ -134,4 +152,66 @@ export const onSubFor = async (msg: Message) => {
   if (error) {
     return reply(msg, 'Failed to sub for player');
   }
+};
+
+export const onServer = async (msg: Message) => {
+  const [, matchId, serverName] = msg.content.split(' ');
+
+  if (!matchId) {
+    return reply(msg, await getServerList());
+  }
+
+  const { data: match } = await client().getMatch(parseInt(matchId));
+
+  if (!match || !isDiscordMatch(match) || match.config.channel !== msg.channelId) {
+    return reply(msg, 'Invalid match id');
+  }
+
+  if (match.status !== MatchStatus.Drafting && match.status !== MatchStatus.Ongoing) {
+    return reply(msg, 'Match must either be drafting or ongoing.');
+  }
+
+  const authorTeam = getPlayerTeam(msg.author.id, match);
+  if (!authorTeam) {
+    return reply(msg, 'You must be part of a team to choose server.');
+  }
+
+  const { data: servers, error: err } = await client().getServerByNameSearch(serverName);
+  if (err) {
+    error('onServer', err);
+    return reply(msg, 'Failed to get server');
+  }
+
+  if (servers.length > 1) {
+    return reply(
+      msg,
+      `Multiple servers matched server name: ${servers
+        .map(({ name }) => name)
+        .join(', ')}`
+    );
+  }
+
+  const server = servers.at(0);
+  if (!server) {
+    return reply(msg, 'Server name matched no servers.');
+  }
+
+  const { data: bf2Server } = await api.rcon().getServer(server.ip);
+
+  if (!bf2Server || !isValidServer(bf2Server)) {
+    return reply(msg, 'Invalid server chosen');
+  }
+
+  const { data: replyMessage } = await reply(
+    msg,
+    `Team ${authorTeam} proposes following server. React to message or propose new server: 
+    ${await getServerDescription(bf2Server)}`
+  );
+
+  const channelMessage = await getChannelMessage(match.config, replyMessage?.id);
+  if (!channelMessage) {
+    return reply(msg, 'Something went wrong sending discord message');
+  }
+
+  listenForServerMessageReaction(channelMessage, server, match, authorTeam);
 };

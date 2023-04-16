@@ -10,6 +10,7 @@ import {
   onJoin,
   onLeave,
   onPick,
+  onServer,
   onSubFor,
   onWho,
 } from './message-interactions';
@@ -110,6 +111,7 @@ export const commands: Array<GatewayCommand> = [
   { name: 'expire', command: '!expire', action: onExpire },
   { name: 'capfor', command: '!capfor', action: onCapfor },
   { name: 'subfor', command: '!subfor', action: onSubFor },
+  { name: 'server', command: '!server', action: onServer },
 ];
 
 export const isCommand = (message: Message) =>

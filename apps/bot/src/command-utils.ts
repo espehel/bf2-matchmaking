@@ -34,6 +34,11 @@ const getUsage = (command: GatewayCommand) => {
       ];
     case 'subfor':
       return ['!subfor <@player>\t take another players place in the match'];
+    case 'server':
+      return [
+        '!server\t List all servers',
+        '!server <match> <server>\t Propose server(name) for match(id)',
+      ];
     default:
       return [];
   }

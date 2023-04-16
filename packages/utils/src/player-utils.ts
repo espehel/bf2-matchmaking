@@ -32,3 +32,6 @@ export const findPlayerName = (
   playerId: string | undefined
 ): string | undefined =>
   playerId && match.players.find((p) => p.id === playerId)?.full_name;
+
+export const getPlayerTeam = (playerId: string, match: MatchesJoined): string | null =>
+  match.teams.find((mp) => mp.player_id === playerId)?.team || null;

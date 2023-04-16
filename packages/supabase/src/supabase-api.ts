@@ -39,6 +39,11 @@ export default (client: SupabaseClient<Database>) => ({
       .select<'*, matches(id, status)', ServersJoined>('*, matches(id, status)')
       .eq('ip', ip)
       .single(),
+  getServerByNameSearch: (name: string) =>
+    client.from('servers').select('*').textSearch('name', name, {
+      type: 'websearch',
+      config: 'english',
+    }),
   getServerRoundsByTimestampRange: (
     serverIp: string,
     timestampFrom: string,

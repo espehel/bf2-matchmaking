@@ -5,7 +5,6 @@ import {
   MatchStatus,
   PlayersRow,
 } from '@bf2-matchmaking/types';
-import { match } from 'assert';
 
 export const isAssignedTeam = (
   match: MatchesJoined,

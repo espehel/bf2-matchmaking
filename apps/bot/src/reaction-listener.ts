@@ -2,18 +2,26 @@ import { Message, MessageReaction, User } from 'discord.js';
 import { findMatchId } from './utils';
 import { client } from '@bf2-matchmaking/supabase';
 import { error, info } from '@bf2-matchmaking/logging';
-import { MatchReaction } from '@bf2-matchmaking/types';
+import {
+  DiscordMatch,
+  MatchReaction,
+  ServerReaction,
+  ServersRow,
+} from '@bf2-matchmaking/types';
+import { getPlayerTeam } from '@bf2-matchmaking/utils';
 
 const LISTENER_RUNTIME = 600000; // 10 min
 
 const isMatchReaction = (reaction: MessageReaction) =>
   Object.values(MatchReaction).some((mr) => mr === reaction.emoji.name);
-export const listenForMessageReaction = (message: Message) => {
+const isServerReaction = (reaction: MessageReaction) =>
+  reaction.emoji.name === ServerReaction.ACCEPT;
+export const listenForMatchMessageReaction = (message: Message) => {
   const matchId = findMatchId(message);
   if (!matchId) {
     return;
   }
-  info('reaction-listener', `Creating listener for match ${matchId}`);
+  info('listenForMatchMessageReaction', `Creating listener for match ${matchId}`);
   const listener = message.createReactionCollector({
     filter: isMatchReaction,
     time: LISTENER_RUNTIME,
@@ -30,8 +38,37 @@ export const listenForMessageReaction = (message: Message) => {
 
   listener.on('end', (collected, reason) => {
     info(
-      'reaction-listener',
+      'listenForMatchMessageReaction',
       `Stopped listening to match ${matchId}, after collecting ${collected.size} reactions, because ${reason}.`
+    );
+  });
+};
+
+export const listenForServerMessageReaction = (
+  message: Message,
+  server: ServersRow,
+  match: DiscordMatch,
+  team: string
+) => {
+  info(
+    'listenForServerMessageReaction',
+    `Creating listener for proposed server ${server.name}`
+  );
+  const listener = message.createReactionCollector({
+    filter: isServerReaction,
+    time: LISTENER_RUNTIME,
+  });
+
+  listener.on('collect', async (reaction, user) => {
+    if (getPlayerTeam(user.id, match) !== team) {
+      await client().updateMatch(match.id, { server: server.ip });
+    }
+  });
+
+  listener.on('end', (collected, reason) => {
+    info(
+      'listenForServerMessageReaction',
+      `Stopped listening to proposed server ${server.name}, after collecting ${collected.size} reactions, because ${reason}.`
     );
   });
 };

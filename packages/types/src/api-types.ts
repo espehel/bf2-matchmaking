@@ -1,4 +1,4 @@
-import { ServersRow } from './database-types';
+import { ServersJoined, ServersRow } from './database-types';
 import { ServerInfo } from './index';
 
 export enum ApiErrorType {
@@ -44,6 +44,6 @@ export interface PostMatchConfigEventRequestBody {
   channelId: string;
 }
 
-export interface RconBf2Server extends ServersRow {
+export interface RconBf2Server extends ServersJoined {
   info: ServerInfo | null;
 }

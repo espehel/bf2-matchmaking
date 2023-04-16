@@ -2,7 +2,6 @@ import { error, info } from '@bf2-matchmaking/logging';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
   getAssignedTeam,
-  getCurrentTeam,
   getDraftStep,
   hasPlayer,
   isAssignedTeam,
