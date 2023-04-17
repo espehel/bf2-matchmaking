@@ -1,9 +1,15 @@
-import { MatchesJoined, MatchPlayersRow, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  isDiscordMatch,
+  MatchesJoined,
+  MatchPlayersRow,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { assignMatchPlayerTeams, shuffleArray } from '@bf2-matchmaking/utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
 import moment from 'moment/moment';
 import { reopenMatch } from './match-service';
+import { sendChannelMessage } from '@bf2-matchmaking/discord';
 
 export const setRandomTeams = async (match: MatchesJoined) => {
   const matchPlayers = assignMatchPlayerTeams(match.players);
@@ -62,6 +68,11 @@ export const setPlayerExpireTimer = (player: MatchPlayersRow) => {
         `Player ${player.player_id} expired for match ${match.id}`
       );
       await client().deleteMatchPlayer(match.id, player.player_id);
+      if (isDiscordMatch(match)) {
+        await sendChannelMessage(match.config.channel, {
+          content: `<@${player.player_id}> were removed from match ${match.id} (expire time ran off).`,
+        });
+      }
     }
   }, moment(player.expire_at).diff(moment()));
   matchPlayerTimeouts.set(matchPlayerId, timeout);
