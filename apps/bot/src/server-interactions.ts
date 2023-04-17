@@ -1,5 +1,6 @@
 import { api, externalApi } from '@bf2-matchmaking/utils';
 import { RconBf2Server } from '@bf2-matchmaking/types';
+import { error } from '@bf2-matchmaking/logging';
 
 const getServerStatus = (server: RconBf2Server) => {
   if (server.matches.length > 0) {
@@ -26,9 +27,10 @@ export const getServerDescription = async (server: RconBf2Server) =>
   `${getServerStatus(server)}: ${server.name} (${await getServerLocation(server)})`;
 
 export const getServerList = async () => {
-  const { data } = await api.rcon().getServers();
+  const { data, error: err } = await api.rcon().getServers();
 
   if (!data) {
+    error('getServerList', err);
     return 'Failed to get server list';
   }
   return (await Promise.all(data.map(getServerDescription))).join('\n');

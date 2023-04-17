@@ -60,7 +60,12 @@ export const listenForServerMessageReaction = (
   });
 
   listener.on('collect', async (reaction, user) => {
-    if (getPlayerTeam(user.id, match) !== team) {
+    const playerTeam = getPlayerTeam(user.id, match);
+    info(
+      'listenForServerMessageReaction',
+      `Received reaction from ${user.id} in team ${playerTeam?.toLocaleUpperCase()}`
+    );
+    if (playerTeam && playerTeam !== team) {
       await client().updateMatch(match.id, { server: server.ip });
     }
   });

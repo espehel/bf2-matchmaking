@@ -10,6 +10,7 @@ import {
 } from './match-interactions';
 import { client } from '@bf2-matchmaking/supabase';
 import {
+  createMessageReaction,
   createSummonedReactions,
   getMatchEmbed,
   removeExistingMatchEmbeds,
@@ -20,6 +21,7 @@ import {
   isDiscordMatch,
   MatchConfigsRow,
   MatchStatus,
+  ServerReaction,
 } from '@bf2-matchmaking/types';
 import { createHelpContent, parseDurationArg } from './command-utils';
 import { getChannelMessage, reply, replyEmbeds } from './message-utils';
@@ -204,7 +206,7 @@ export const onServer = async (msg: Message) => {
 
   const { data: replyMessage } = await reply(
     msg,
-    `Team ${authorTeam} proposes following server. React to message or propose new server: 
+    `Team ${authorTeam.toLocaleUpperCase()} proposes following server. React to message or propose new server: 
     ${await getServerDescription(bf2Server)}`
   );
 
@@ -212,6 +214,10 @@ export const onServer = async (msg: Message) => {
   if (!channelMessage) {
     return reply(msg, 'Something went wrong sending discord message');
   }
-
+  await createMessageReaction(
+    match.config.channel,
+    channelMessage.id,
+    ServerReaction.ACCEPT
+  );
   listenForServerMessageReaction(channelMessage, server, match, authorTeam);
 };
