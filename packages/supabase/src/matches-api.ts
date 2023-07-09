@@ -5,6 +5,7 @@ import {
   MatchesJoined,
   MatchesRow,
   MatchesUpdate,
+  MatchPlayersInsert,
   MatchPlayersRow,
   MatchStatus,
 } from '@bf2-matchmaking/types';
@@ -13,10 +14,10 @@ const MATCHES_JOINED_QUERY =
   '*, players(*), maps(*), config!inner(*), teams:match_players(*), server(*)';
 
 export default (client: SupabaseClient<Database>) => ({
-  createMatchFromConfig: (config: MatchConfigsRow) =>
+  createMatchFromConfig: (config: number) =>
     client
       .from('matches')
-      .insert([{ config: config.id }])
+      .insert([{ config }])
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
   getMatches: () => client.from('matches').select('*'),
@@ -69,14 +70,19 @@ export default (client: SupabaseClient<Database>) => ({
         `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
       ),
   updateMatch: (matchId: number | undefined, values: MatchesUpdate) =>
-    client.from('matches').update(values).eq('id', matchId),
-
+    client
+      .from('matches')
+      .update(values)
+      .eq('id', matchId)
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
+      .single(),
   createMatchPlayer: (
     match_id: number,
     player_id: string,
     values: Partial<MatchPlayersRow>
   ) => client.from('match_players').insert([{ match_id, player_id, ...values }]),
-
+  createMatchPlayers: (players: Array<MatchPlayersInsert>) =>
+    client.from('match_players').insert(players),
   deleteMatchPlayer: (matchId: number, playerId: string) =>
     client
       .from('match_players')

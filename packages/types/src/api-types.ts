@@ -1,5 +1,5 @@
-import { ServersJoined, ServersRow } from './database-types';
-import { ServerInfo } from './index';
+import { MatchesJoined, ServersJoined, ServersRow } from './database-types';
+import { ServerInfo, User } from './index';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -47,3 +47,11 @@ export interface PostMatchConfigEventRequestBody {
 export interface RconBf2Server extends ServersJoined {
   info: ServerInfo | null;
 }
+
+export interface PostMatchesRequestBody {
+  config: number;
+  team1: Array<User>;
+  team2: Array<User>;
+}
+
+export type PostMatchResult = MatchesJoined;

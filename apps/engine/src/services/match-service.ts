@@ -39,7 +39,7 @@ export const createNextMatchFromConfig = async (match: DiscordMatch) => {
         'createNextMatchFromConfig',
         `No matches for config ${match.config.id}, creating new!`
       );
-      await client().createMatchFromConfig(match.config).then(verifySingleResult);
+      await client().createMatchFromConfig(match.config.id).then(verifySingleResult);
     }
   } catch (err) {
     error('createNextMatchFromConfig', err);

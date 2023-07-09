@@ -1,12 +1,17 @@
-import { getDiscordClient } from './client';
-import { DiscordConfig, isDiscordConfig } from '@bf2-matchmaking/types';
+import { getDiscordClient } from '../client';
+import {
+  DiscordConfig,
+  isDiscordConfig,
+  MatchConfigModeType,
+} from '@bf2-matchmaking/types';
 
 import { error, info } from '@bf2-matchmaking/logging';
-import { hasSummonEmbed, isTextBasedChannel } from './utils';
+import { hasSummonEmbed, isPubobotMatchStarted, isTextBasedChannel } from '../utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { listenForMatchMessageReaction } from './reaction-listener';
-import { MessageCollector } from 'discord.js';
-import { executeCommand, isCommand } from './commands';
+import { Client, Message, MessageCollector } from 'discord.js';
+import { executeCommand, isCommand } from '../commands';
+import { createMatch } from '../pubobot-service';
 
 const listenerMap = new Map<string, MessageCollector>();
 export const initChannelListener = async () => {
@@ -62,7 +67,7 @@ export const updateChannelListener = async (channelId: string) => {
 };
 
 export const listenToChannel = async (config: DiscordConfig) => {
-  if (!config.active) {
+  if (config.mode === MatchConfigModeType.Inactive) {
     return null;
   }
 
@@ -77,28 +82,12 @@ export const listenToChannel = async (config: DiscordConfig) => {
     filter: (m) => isCommand(m) || hasSummonEmbed(m),
   });
 
-  collector.on('collect', async (message) => {
-    info(
-      'listenToChannel',
-      `Received command "${message.content}" in ${config.name} channel`
-    );
-
-    if (hasSummonEmbed(message)) {
-      listenForMatchMessageReaction(message);
-    }
-
-    try {
-      await executeCommand(message, config);
-    } catch (e) {
-      if (e instanceof Error) {
-        error('discord-gateway', e.message);
-      } else if (typeof e === 'string') {
-        error('discord-gateway', e);
-      } else {
-        error('discord-gateway', JSON.stringify(e));
-      }
-    }
-  });
+  if (config.mode === MatchConfigModeType.Active) {
+    collector.on('collect', activeCollector(config));
+  }
+  if (config.mode === MatchConfigModeType.Passive) {
+    collector.on('collect', passiveCollector(config, discordClient));
+  }
 
   collector.on('end', (collected, reason) => {
     info(
@@ -106,6 +95,55 @@ export const listenToChannel = async (config: DiscordConfig) => {
       `Stopped listening to ${config.name} channel, after collecting ${collected.size} messages, because ${reason}.`
     );
   });
-  info('listenToChannel', `Listening to ${config.name}`);
+  info('listenToChannel', `Listening to ${config.name} with mode ${config.mode}`);
   return collector;
 };
+
+const activeCollector = (config: DiscordConfig) => async (message: Message) => {
+  info(
+    'activeCollector',
+    `Received command "${message.content}" in ${config.name} channel`
+  );
+
+  if (hasSummonEmbed(message)) {
+    listenForMatchMessageReaction(message);
+  }
+
+  try {
+    await executeCommand(message, config);
+  } catch (e) {
+    if (e instanceof Error) {
+      error('discord-gateway', e.message);
+    } else if (typeof e === 'string') {
+      error('discord-gateway', e);
+    } else {
+      error('discord-gateway', JSON.stringify(e));
+    }
+  }
+};
+
+const passiveCollector =
+  (config: DiscordConfig, discordClient: Client<true>) => async (message: Message) => {
+    info(
+      'passiveCollector',
+      `Received command "${message.content}" in ${config.name} channel`
+    );
+    if (isPubobotMatchStarted(message.embeds[0])) {
+      const { data, error: e } = await createMatch(
+        message.embeds[0],
+        discordClient.users,
+        config
+      );
+
+      if (e) {
+        if (e instanceof Error) {
+          error('discord-gateway', e.message);
+        } else if (typeof e === 'string') {
+          error('discord-gateway', e);
+        } else {
+          error('discord-gateway', JSON.stringify(e));
+        }
+      }
+      info('passiveCollector', `Created match ${data?.id} for ${config.name} channel`);
+    }
+  };

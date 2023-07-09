@@ -44,7 +44,7 @@ export const getOpenMatchesOrCreate = async (config: DiscordConfig) => {
   const { data } = await client().getOpenMatchesByChannelId(config.channel);
   return data?.length
     ? data
-    : [await client().createMatchFromConfig(config).then(verifySingleResult)];
+    : [await client().createMatchFromConfig(config.id).then(verifySingleResult)];
 };
 
 export const getMatchInfoByChannel = async (channel: string) => {

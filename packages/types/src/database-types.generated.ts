@@ -3,7 +3,7 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json }
+  | { [key: string]: Json | undefined }
   | Json[]
 
 export interface Database {
@@ -28,6 +28,14 @@ export interface Database {
           player_id?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "admin_roles_player_id_fkey"
+            columns: ["player_id"]
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       discord_channels: {
         Row: {
@@ -60,6 +68,14 @@ export interface Database {
           staging_channel?: string | null
           uri?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "discord_channels_match_config_fkey"
+            columns: ["match_config"]
+            referencedRelation: "match_configs"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       maps: {
         Row: {
@@ -77,15 +93,16 @@ export interface Database {
           id?: number
           name?: string | null
         }
+        Relationships: []
       }
       match_configs: {
         Row: {
-          active: boolean
           channel: string | null
           created_at: string
           draft: string
           id: number
           map_draft: string
+          mode: string
           name: string
           owner: string
           permanent: boolean
@@ -94,12 +111,12 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          active?: boolean
           channel?: string | null
           created_at?: string
           draft: string
           id?: number
           map_draft: string
+          mode?: string
           name: string
           owner: string
           permanent?: boolean
@@ -108,12 +125,12 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          active?: boolean
           channel?: string | null
           created_at?: string
           draft?: string
           id?: number
           map_draft?: string
+          mode?: string
           name?: string
           owner?: string
           permanent?: boolean
@@ -121,6 +138,14 @@ export interface Database {
           size?: number
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "match_configs_owner_fkey"
+            columns: ["owner"]
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       match_maps: {
         Row: {
@@ -138,6 +163,20 @@ export interface Database {
           map_id?: number
           match_id?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: "match_maps_map_id_fkey"
+            columns: ["map_id"]
+            referencedRelation: "maps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_maps_match_id_fkey"
+            columns: ["match_id"]
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       match_players: {
         Row: {
@@ -170,6 +209,20 @@ export interface Database {
           team?: string | null
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "match_players_match_id_fkey"
+            columns: ["match_id"]
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_players_player_id_fkey"
+            columns: ["player_id"]
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       matches: {
         Row: {
@@ -202,6 +255,20 @@ export interface Database {
           started_at?: string | null
           status?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "matches_config_fkey"
+            columns: ["config"]
+            referencedRelation: "match_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_server_fkey"
+            columns: ["server"]
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          }
+        ]
       }
       matches_duplicate: {
         Row: {
@@ -246,6 +313,26 @@ export interface Database {
           started_at?: string | null
           status?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "matches_duplicate_channel_fkey"
+            columns: ["channel"]
+            referencedRelation: "discord_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_duplicate_host_fkey"
+            columns: ["host"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_duplicate_server_fkey"
+            columns: ["server"]
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          }
+        ]
       }
       players: {
         Row: {
@@ -275,6 +362,14 @@ export interface Database {
           user_id?: string | null
           username?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "players_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       rounds: {
         Row: {
@@ -313,6 +408,20 @@ export interface Database {
           team2_name?: string
           team2_tickets?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "rounds_map_fkey"
+            columns: ["map"]
+            referencedRelation: "maps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rounds_server_fkey"
+            columns: ["server"]
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          }
+        ]
       }
       servers: {
         Row: {
@@ -333,6 +442,7 @@ export interface Database {
           port?: string
           updated_at?: string
         }
+        Relationships: []
       }
     }
     Views: {

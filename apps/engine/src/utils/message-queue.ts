@@ -2,7 +2,6 @@ import { error, info } from '@bf2-matchmaking/logging';
 import Queue from 'better-queue';
 import { DiscordMatch, MatchStatus } from '@bf2-matchmaking/types';
 import {
-  createMessageReaction,
   createPlayerMentions,
   createSummonedReactions,
   deleteAllReactions,
@@ -16,7 +15,6 @@ import {
 } from '@bf2-matchmaking/discord';
 import { findPlayerName } from '@bf2-matchmaking/utils';
 import { fetchPlayerName } from '../services/match-player-service';
-import { match } from 'assert';
 
 interface MessageTask {
   id: number;

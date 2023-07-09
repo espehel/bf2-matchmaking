@@ -1,16 +1,25 @@
-import { MatchConfigEvent, MatchEvent, RconBf2Server } from '@bf2-matchmaking/types';
-import { getJSON } from './fetcher';
+import {
+  MatchConfigEvent,
+  MatchEvent,
+  PostMatchesRequestBody,
+  PostMatchResult,
+  RconBf2Server,
+} from '@bf2-matchmaking/types';
+import { getJSON, postJSON } from './fetcher';
 
 export const rcon = () => {
   const basePath = 'https://bf2-rcon-api-production.up.railway.app';
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
+    matches: () => '/matches',
   };
   return {
     paths,
     getServers: () => getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers())),
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
+    postMatch: (body: PostMatchesRequestBody) =>
+      postJSON<PostMatchResult>(basePath.concat(paths.matches()), body),
   };
 };
 export const bot = () => {

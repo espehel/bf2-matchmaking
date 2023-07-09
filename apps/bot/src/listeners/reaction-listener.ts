@@ -1,5 +1,5 @@
 import { Message, MessageReaction, User } from 'discord.js';
-import { findMatchId } from './utils';
+import { findMatchId } from '../utils';
 import { client } from '@bf2-matchmaking/supabase';
 import { error, info } from '@bf2-matchmaking/logging';
 import {

@@ -38,7 +38,7 @@ import {
   isValidServer,
 } from './server-interactions';
 import * as repl from 'repl';
-import { listenForServerMessageReaction } from './reaction-listener';
+import { listenForServerMessageReaction } from './listeners/reaction-listener';
 import { getDiscordClient } from './client';
 
 export const onHelp = (msg: Message) => {

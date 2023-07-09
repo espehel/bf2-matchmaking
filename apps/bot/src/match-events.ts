@@ -1,4 +1,4 @@
-import { addChannel, getVoiceMembers, removeChannel } from './member-listener';
+import { addChannel, getVoiceMembers, removeChannel } from './listeners/member-listener';
 import { DiscordMatch } from '@bf2-matchmaking/types';
 import { client } from '@bf2-matchmaking/supabase';
 import { toMatchPlayerId } from './utils';

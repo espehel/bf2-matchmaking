@@ -1,4 +1,4 @@
-import { getDiscordClient } from './client';
+import { getDiscordClient } from '../client';
 import { ApiError, ApiErrorType, DiscordMatch } from '@bf2-matchmaking/types';
 import { error, info } from '@bf2-matchmaking/logging';
 import { client } from '@bf2-matchmaking/supabase';

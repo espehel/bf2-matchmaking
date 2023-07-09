@@ -6,7 +6,7 @@ import {
 import { verifyKey } from 'discord-interactions';
 import { ErrorRequestHandler, Request } from 'express';
 import { ApiError, MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
-import { Channel, Message, TextChannel } from 'discord.js';
+import { Channel, Embed, Message, TextChannel } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 import { api } from '@bf2-matchmaking/utils';
 
@@ -86,3 +86,6 @@ export const getMatchCopyWithoutPlayer =
 
 export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
   Boolean(channel && channel.isTextBased());
+
+export const isPubobotMatchStarted = (embed?: Embed) =>
+  embed?.title?.includes('has started!') || false;

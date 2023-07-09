@@ -1,4 +1,4 @@
-import {PlayerListItem, ServerInfo} from "@bf2-matchmaking/types";
+import { PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
 
 export const mapServerInfo = (data?: string): ServerInfo | null => {
   if (!data) {

@@ -4,6 +4,7 @@ export type PlayersRow = Database['public']['Tables']['players']['Row'];
 export type MapsRow = Database['public']['Tables']['maps']['Row'];
 export type MatchesRow = Database['public']['Tables']['matches']['Row'];
 export type MatchPlayersRow = Database['public']['Tables']['match_players']['Row'];
+export type MatchPlayersInsert = Database['public']['Tables']['match_players']['Insert'];
 export type RoundsRow = Database['public']['Tables']['rounds']['Row'];
 export type ServersRow = Database['public']['Tables']['servers']['Row'];
 export type AdminRolesRow = Database['public']['Tables']['admin_roles']['Row'];
@@ -31,13 +32,20 @@ export enum MapDraftType {
   Random = 'random',
 }
 
+export enum MatchConfigModeType {
+  Inactive = 'inactive',
+  Passive = 'passive',
+  Active = 'active',
+}
+
 export interface MatchConfigsRow
   extends Omit<
     Database['public']['Tables']['match_configs']['Row'],
-    'draft' | 'map_draft'
+    'draft' | 'map_draft' | 'mode'
   > {
   draft: DraftType;
   map_draft: MapDraftType;
+  mode: MatchConfigModeType;
 }
 export interface MatchesJoined extends Omit<MatchesRow, 'config' | 'server' | 'status'> {
   maps: Array<MapsRow>;

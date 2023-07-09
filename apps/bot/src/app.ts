@@ -16,7 +16,6 @@ import {
   InteractionType,
 } from 'discord-api-types/v10';
 import {
-  addPlayer,
   getMatchInfoByChannel,
   pickMatchPlayer,
   removePlayer,
@@ -36,8 +35,8 @@ import {
   addChannelListener,
   initChannelListener,
   updateChannelListener,
-} from './channel-listener';
-import { removeChannel } from './member-listener';
+} from './listeners/channel-listener';
+import { removeChannel } from './listeners/member-listener';
 import { api } from '@bf2-matchmaking/utils';
 
 // Create an express app
