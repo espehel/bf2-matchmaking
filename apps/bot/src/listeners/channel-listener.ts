@@ -78,14 +78,15 @@ export const listenToChannel = async (config: DiscordConfig) => {
     return null;
   }
 
-  const collector = channel.createMessageCollector({
-    filter: (m) => isCommand(m) || hasSummonEmbed(m),
-  });
+  const collector = channel.createMessageCollector();
 
   if (config.mode === MatchConfigModeType.Active) {
+    collector.filter = (m) => isCommand(m) || hasSummonEmbed(m);
     collector.on('collect', activeCollector(config));
   }
+
   if (config.mode === MatchConfigModeType.Passive) {
+    collector.filter = (m) => isPubobotMatchStarted(m.embeds[0]);
     collector.on('collect', passiveCollector(config, discordClient));
   }
 
@@ -126,8 +127,9 @@ const passiveCollector =
   (config: DiscordConfig, discordClient: Client<true>) => async (message: Message) => {
     info(
       'passiveCollector',
-      `Received command "${message.content}" in ${config.name} channel`
+      `Received embed with title "${message.embeds[0]?.title}" in ${config.name} channel`
     );
+
     if (isPubobotMatchStarted(message.embeds[0])) {
       const { data, error: e } = await createMatch(
         message.embeds[0],
