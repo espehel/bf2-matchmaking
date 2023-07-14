@@ -19,3 +19,6 @@ interface UpdatedAt {
 }
 export const compareUpdatedAt = (dateA: UpdatedAt, dateB: UpdatedAt) =>
   dateA.updated_at.localeCompare(dateB.updated_at);
+
+export const mapIndexToEmoji = (index: number) =>
+  ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'].at(index) || '0️⃣';

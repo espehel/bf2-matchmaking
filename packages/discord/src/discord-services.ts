@@ -3,14 +3,8 @@ import {
   editChannelMessage,
   getChannelMessages,
   removeChannelMessage,
-  sendChannelMessage,
 } from './discord-rest';
-import {
-  DiscordMatch,
-  MatchesJoined,
-  MatchReaction,
-  MatchStatus,
-} from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchReaction } from '@bf2-matchmaking/types';
 import { isMatchTitle } from './embed-utils';
 import { APIEmbed, APIMessage } from 'discord-api-types/v10';
 import { info } from '@bf2-matchmaking/logging';

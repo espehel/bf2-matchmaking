@@ -1,4 +1,4 @@
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus, RconBf2Server } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
   compareFullName,
@@ -8,13 +8,24 @@ import {
   getPlayerName,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import { getEmbedTitle } from './embed-utils';
 
 export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEmbed => ({
   title: getEmbedTitle(match),
   description: description || getMatchDescription(match),
   fields: getMatchFields(match),
+  url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
+});
+
+export const getServerPollEmbed = (
+  match: MatchesJoined,
+  servers: Array<[RconBf2Server, string, string]>,
+  endTime: Moment
+): APIEmbed => ({
+  title: getEmbedTitle(match),
+  description: getServerPollDescription(match, endTime),
+  fields: createServerPollFields(match, servers),
   url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
 });
 
@@ -107,6 +118,27 @@ const createServerFields = (match: MatchesJoined) =>
         {
           name: match.server.name,
           value: `https://joinme.click/g/bf2/${match.server.ip}:${match.server.port}`,
+        },
+      ]
+    : [];
+
+const getServerPollDescription = (match: MatchesJoined, endTime: Moment) => {
+  if (!match.server) {
+    return `Vote for match server, poll ends <t:${endTime.unix()}:R>`;
+  }
+  return undefined;
+};
+const createServerPollFields = (
+  match: MatchesJoined,
+  servers: Array<[RconBf2Server, string, string]>
+) =>
+  !match.server
+    ? [
+        {
+          name: 'Servers',
+          value: servers
+            .map(([, description, emoji]) => `${emoji}  ${description}`)
+            .join('\n'),
         },
       ]
     : [];

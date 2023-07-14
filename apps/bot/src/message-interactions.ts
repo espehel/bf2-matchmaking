@@ -15,7 +15,7 @@ import {
   getMatchEmbed,
   removeExistingMatchEmbeds,
 } from '@bf2-matchmaking/discord';
-import { Message } from 'discord.js';
+import { APIMessage, Message } from 'discord.js';
 import {
   DiscordConfig,
   isDiscordMatch,
@@ -30,6 +30,7 @@ import {
   getPlayerTeam,
   hasPlayer,
   isSummoning,
+  mapIndexToEmoji,
   notHasPlayer,
 } from '@bf2-matchmaking/utils';
 import {
@@ -37,9 +38,7 @@ import {
   getServerList,
   isValidServer,
 } from './server-interactions';
-import * as repl from 'repl';
 import { listenForServerMessageReaction } from './listeners/reaction-listener';
-import { getDiscordClient } from './client';
 
 export const onHelp = (msg: Message) => {
   return reply(msg, createHelpContent());
@@ -160,7 +159,11 @@ export const onServer = async (msg: Message) => {
   const [, matchId, serverName] = msg.content.split(' ');
 
   if (!matchId) {
-    return reply(msg, await getServerList());
+    const serverlist = await getServerList();
+    return reply(
+      msg,
+      typeof serverlist === 'string' ? serverlist : serverlist.join('\n')
+    );
   }
 
   const { data: match } = await client().getMatch(parseInt(matchId));
@@ -220,4 +223,13 @@ export const onServer = async (msg: Message) => {
     ServerReaction.ACCEPT
   );
   listenForServerMessageReaction(channelMessage, server, match, authorTeam);
+};
+
+export const addServerPollMessageReactions = (
+  message: APIMessage,
+  servers: Array<string>
+) => {
+  servers.map((server, i) =>
+    createMessageReaction(message.channel_id, message.id, mapIndexToEmoji(i))
+  );
 };

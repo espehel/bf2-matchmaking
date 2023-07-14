@@ -6,7 +6,7 @@ import {
 import { verifyKey } from 'discord-interactions';
 import { ErrorRequestHandler, Request } from 'express';
 import { ApiError, MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
-import { Channel, Embed, Message, TextChannel } from 'discord.js';
+import { Channel, Embed, Message, MessageReaction, TextChannel } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 import { api } from '@bf2-matchmaking/utils';
 
@@ -89,3 +89,8 @@ export const isTextBasedChannel = (channel: Channel | null): channel is TextChan
 
 export const isPubobotMatchStarted = (embed?: Embed) =>
   embed?.title?.includes('has started!') || false;
+
+export const compareMessageReactionCount = (
+  firstValue: MessageReaction,
+  secondValue: MessageReaction
+) => secondValue.count - firstValue.count;

@@ -1,4 +1,4 @@
-import { api, externalApi } from '@bf2-matchmaking/utils';
+import { api, externalApi, mapIndexToEmoji } from '@bf2-matchmaking/utils';
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { error } from '@bf2-matchmaking/logging';
 
@@ -33,7 +33,34 @@ export const getServerList = async () => {
     error('getServerList', err);
     return 'Failed to get server list';
   }
-  return (await Promise.all(data.map(getServerDescription))).join('\n');
+  return (await Promise.all(data.map(getServerDescription))).sort();
+};
+
+export const getServerTupleList = async (): Promise<
+  Array<[RconBf2Server, string, string]>
+> => {
+  const { data, error: err } = await api.rcon().getServers();
+  if (!data) {
+    error('getServerTupleList', err);
+    return [];
+  }
+  return (await Promise.all(data.map(withDescription))).sort(compareTuple).map(withEmoji);
+};
+const withDescription = async (
+  server: RconBf2Server
+): Promise<[RconBf2Server, string]> => {
+  return [server, await getServerDescription(server)];
+};
+const compareTuple = (
+  [, descriptionA]: [RconBf2Server, string],
+  [, descriptionB]: [RconBf2Server, string]
+) => descriptionA.localeCompare(descriptionB);
+
+const withEmoji = (
+  tuple: [RconBf2Server, string],
+  index: number
+): [RconBf2Server, string, string] => {
+  return [...tuple, mapIndexToEmoji(index)];
 };
 
 export const isValidServer = (server: RconBf2Server) =>

@@ -1,5 +1,5 @@
 import express, { Request } from 'express';
-import { PostMatchesRequestBody } from '@bf2-matchmaking/types';
+import { MatchStatus, PostMatchesRequestBody } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getPlayerFromDatabase } from '../services/players';
 import { toMatchPlayer } from '../mappers/player';
@@ -16,7 +16,7 @@ router.post('/', async (req: Request<{}, {}, PostMatchesRequestBody>, res) => {
     await client().createMatchPlayers(dbPlayers1.map(toMatchPlayer(match.id, 'a')));
     await client().createMatchPlayers(dbPlayers2.map(toMatchPlayer(match.id, 'b')));
     const updatedMatch = await client()
-      .updateMatch(match.id, { status: 'ongoing' })
+      .updateMatch(match.id, { status: MatchStatus.Ongoing })
       .then(verifySingleResult);
     info('POST /matches', `Created match ${updatedMatch.id}`);
     res.status(201).send(updatedMatch);

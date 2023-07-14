@@ -1,6 +1,6 @@
 import { sendChannelMessage } from '@bf2-matchmaking/discord';
 import { APIEmbed, Message } from 'discord.js';
-import { DiscordConfig, isDiscordConfig, MatchConfigsRow } from '@bf2-matchmaking/types';
+import { DiscordConfig } from '@bf2-matchmaking/types';
 import { getDiscordClient } from './client';
 import { isTextBasedChannel } from './utils';
 

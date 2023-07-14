@@ -9,9 +9,14 @@ import { error, info } from '@bf2-matchmaking/logging';
 import { hasSummonEmbed, isPubobotMatchStarted, isTextBasedChannel } from '../utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { listenForMatchMessageReaction } from './reaction-listener';
-import { Client, Message, MessageCollector } from 'discord.js';
+import { Client, Message, MessageCollector, TextChannel } from 'discord.js';
 import { executeCommand, isCommand } from '../commands';
-import { createMatch } from '../pubobot-service';
+import {
+  createMatchFromPubobotEmbed,
+  sendServerPollMessage,
+} from '../match-tracking-service';
+import { channel } from 'diagnostics_channel';
+import { removeChannelMessage } from '@bf2-matchmaking/discord';
 
 const listenerMap = new Map<string, MessageCollector>();
 export const initChannelListener = async () => {
@@ -86,7 +91,8 @@ export const listenToChannel = async (config: DiscordConfig) => {
   }
 
   if (config.mode === MatchConfigModeType.Passive) {
-    collector.filter = (m) => isPubobotMatchStarted(m.embeds[0]);
+    collector.filter = (m) =>
+      isPubobotMatchStarted(m.embeds[0]) || m.content === 'test embed';
     collector.on('collect', passiveCollector(config, discordClient));
   }
 
@@ -125,27 +131,38 @@ const activeCollector = (config: DiscordConfig) => async (message: Message) => {
 
 const passiveCollector =
   (config: DiscordConfig, discordClient: Client<true>) => async (message: Message) => {
+    const originalChannel = message.channel;
+    const channel = await discordClient.channels.fetch('597415520337133571');
+    if (!isTextBasedChannel(channel)) {
+      return;
+    }
+    if (message.content === 'test embed') {
+      const newMessage = await channel.messages.fetch('1129157830939771040');
+      if (newMessage) {
+        message = newMessage;
+      }
+    }
+
     info(
       'passiveCollector',
       `Received embed with title "${message.embeds[0]?.title}" in ${config.name} channel`
     );
 
     if (isPubobotMatchStarted(message.embeds[0])) {
-      const { data, error: e } = await createMatch(
+      const { data, error: e } = await createMatchFromPubobotEmbed(
         message.embeds[0],
         discordClient.users,
         config
       );
 
       if (e) {
-        if (e instanceof Error) {
-          error('discord-gateway', e.message);
-        } else if (typeof e === 'string') {
-          error('discord-gateway', e);
-        } else {
-          error('discord-gateway', JSON.stringify(e));
-        }
+        error('passiveCollector', e);
       }
+      if (!data) {
+        return;
+      }
+
       info('passiveCollector', `Created match ${data?.id} for ${config.name} channel`);
+      await sendServerPollMessage(data, config, originalChannel as TextChannel);
     }
   };

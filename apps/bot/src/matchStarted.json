@@ -1,0 +1,75 @@
+{
+  "id": "1127319906430496908",
+  "type": 0,
+  "content": "",
+  "channel_id": "597415520337133571",
+  "author": {
+    "id": "871494052120510484",
+    "username": "Pubobot-backup",
+    "avatar": "b2b4f68784a9568df3c93af953022c25",
+    "discriminator": "2440",
+    "public_flags": 0,
+    "flags": 0,
+    "bot": true,
+    "banner": null,
+    "accent_color": null,
+    "global_name": null,
+    "avatar_decoration": null,
+    "display_name": null,
+    "banner_color": null
+  },
+  "attachments": [],
+  "embeds": [
+    {
+      "type": "rich",
+      "title": "__**4v4** has started!__",
+      "color": 2602846,
+      "fields": [
+        {
+          "name": "🇺🇸 ​ **USMC**",
+          "value": "​ <@886021301007949865> ​ <@707886054853705779> ​ <@802446276514807858> ​ <@294135049316466688>",
+          "inline": false
+        },
+        {
+          "name": "<:MEC:782748763949105152> ​ **MEC**",
+          "value": "​ <@193564813023117312> ​ <@426454006878175234> ​ <@176080250277462016> ​ <@145938875708080138>\n​",
+          "inline": false
+        },
+        {
+          "name": "Captains",
+          "value": "​ <@886021301007949865> & <@193564813023117312>",
+          "inline": false
+        },
+        {
+          "name": "Map",
+          "value": "**Strike At Karkand**",
+          "inline": true
+        },
+        {
+          "name": "—",
+          "value": "**TEAMS READY:**\r\njoin one of the match servers and ts.\r\nUse mister249's great https://joinme.click client to quickly connect to bf2. (includes deleting favorites for faster launch)\n​",
+          "inline": false
+        },
+        {
+          "name": "Use Joinme.click to join one of the servers restarted to Strike At Karkand:",
+          "value": "**Name:** [PBase FRA discord.gg/bf2pb](https://joinme.click/g/bf2/95.179.167.83:16567) **IP:** `pbase.4e.fi` **PORT:** `16567`\n**Name:** [Pan-Atlantic mix FLZ discord.gg/bf2pb](https://joinme.click/g/bf2/5.252.24.122:16567) **IP:** `flz.4e.fi` **PORT:** `16567`",
+          "inline": false
+        }
+      ],
+      "footer": {
+        "text": "Match id: 3746",
+        "icon_url": "https://cdn.discordapp.com/avatars/871494052120510484/b2b4f68784a9568df3c93af953022c25.png?size=64",
+        "proxy_icon_url": "https://images-ext-2.discordapp.net/external/Jk2Ri5T10_Uo1kCCptS6NidCcc2Uu17H271Qf7yM2Yw/%3Fsize%3D64/https/cdn.discordapp.com/avatars/871494052120510484/b2b4f68784a9568df3c93af953022c25.png"
+      }
+    }
+  ],
+  "mentions": [],
+  "mention_roles": [],
+  "pinned": false,
+  "mention_everyone": false,
+  "tts": false,
+  "timestamp": "2023-07-08T19:26:50.284000+00:00",
+  "edited_timestamp": null,
+  "flags": 0,
+  "components": []
+}
