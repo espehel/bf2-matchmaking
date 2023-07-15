@@ -28,7 +28,15 @@ export const getServerPollEmbed = (
   fields: createServerPollFields(match, servers),
   url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
 });
-
+export const getServerEmbed = (match: MatchesJoined, server: RconBf2Server) => ({
+  title: getEmbedTitle(match),
+  description: `Join [${server.name}](https://joinme.click/g/bf2/${server.ip}:${server.port})`,
+  fields: [
+    { name: 'ip', value: server.ip, inline: true },
+    { name: 'port', value: server.port, inline: true },
+  ],
+  url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
+});
 const getMatchDescription = (match: MatchesJoined): string | undefined => {
   if (match.status === MatchStatus.Summoning && match.ready_at) {
     return `Ready check ends <t:${moment(match.ready_at).unix()}:R>`;

@@ -1,10 +1,11 @@
 import { DiscordConfig, MatchesJoined, User } from '@bf2-matchmaking/types';
 import { Embed, TextChannel, User as DiscordUser, UserManager } from 'discord.js';
 import { api } from '@bf2-matchmaking/utils';
-import { getServerPollEmbed } from '@bf2-matchmaking/discord';
+import { getServerEmbed, getServerPollEmbed } from '@bf2-matchmaking/discord';
 import { getServerTupleList } from './server-interactions';
 import { compareMessageReactionCount } from './utils';
 import moment from 'moment';
+import { client } from '@bf2-matchmaking/supabase';
 
 export const createMatchFromPubobotEmbed = async (
   embed: Embed,
@@ -59,7 +60,14 @@ export const sendServerPollMessage = async (
     if (!topServer) {
       return await channel.send('Failed to add match server');
     }
+    const [selectedServer] = topServer;
 
-    await channel.send(topServer[1]); // TODO: Add server to match and replace message with join server info
+    await Promise.all([
+      client().updateMatch(match.id, {
+        server: selectedServer.ip,
+      }),
+      message.reactions.removeAll(),
+      message.edit({ embeds: [getServerEmbed(match, selectedServer)] }),
+    ]);
   }, pollEndTime.diff(moment()));
 };
