@@ -8,7 +8,6 @@ import { createServerClient } from '@supabase/auth-helpers-remix';
 import supabaseApi from './supabase-api';
 import matchServices from './services/match-service';
 import { Database } from '@bf2-matchmaking/types';
-import { json } from '@remix-run/node';
 
 export const client = () => {
   invariant(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');

@@ -59,9 +59,10 @@ export default function Home() {
     }
   });
 
-  if (!quickMatches) {
+  if (!quickMatches || quickMatches.length === 0) {
     return (
       <article className="route text-center">
+        <h1 className="text-xl mb-4">No quick matches active</h1>
         <Link className="filled-button" to="/matches">
           Go to matches
         </Link>

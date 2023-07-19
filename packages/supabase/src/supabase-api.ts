@@ -3,6 +3,7 @@ import matches from './matches-api';
 import {
   Database,
   DiscordConfig,
+  MatchConfigModeType,
   MatchConfigsRow,
   MatchStatus,
   PlayersInsert,
@@ -56,7 +57,10 @@ export default (client: SupabaseClient<Database>) => ({
       .lt('created_at', timestampTo)
       .eq('server.ip', serverIp),
   getActiveMatchConfigs: () =>
-    client.from('match_configs').select<'*', MatchConfigsRow>('*').eq('active', true),
+    client
+      .from('match_configs')
+      .select<'*', MatchConfigsRow>('*')
+      .eq('mode', MatchConfigModeType.Active),
   getMatchConfigByChannelId: (channelId: string) =>
     client
       .from('match_configs')

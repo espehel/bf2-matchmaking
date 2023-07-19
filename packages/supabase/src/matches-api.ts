@@ -1,7 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   Database,
-  MatchConfigsRow,
   MatchesJoined,
   MatchesRow,
   MatchesUpdate,
