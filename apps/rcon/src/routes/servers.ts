@@ -2,7 +2,7 @@ import express from 'express';
 import { error, info } from '@bf2-matchmaking/logging';
 import { client } from '@bf2-matchmaking/supabase';
 import invariant from 'tiny-invariant';
-import { createClient } from '../bf2-client';
+import { createClient } from '../net/rcon-client';
 import { mapServerInfo } from '../mappers/rcon';
 
 const router = express.Router();

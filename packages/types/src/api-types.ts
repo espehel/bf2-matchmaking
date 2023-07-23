@@ -52,6 +52,7 @@ export interface PostMatchesRequestBody {
   config: number;
   team1: Array<User>;
   team2: Array<User>;
+  serverIp: string;
 }
 
 export type PostMatchResult = MatchesJoined;

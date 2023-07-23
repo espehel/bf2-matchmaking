@@ -1,6 +1,6 @@
 import express from 'express';
 import invariant from 'tiny-invariant';
-import { createClient } from '../bf2-client';
+import { createClient } from '../net/rcon-client';
 import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
 
 const router = express.Router();

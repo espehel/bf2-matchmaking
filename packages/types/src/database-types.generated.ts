@@ -312,6 +312,7 @@ export interface Database {
           created_at: string
           id: number
           map: number
+          match: number | null
           pl: Json | null
           server: string
           si: Json | null
@@ -324,6 +325,7 @@ export interface Database {
           created_at?: string
           id?: number
           map: number
+          match?: number | null
           pl?: Json | null
           server: string
           si?: Json | null
@@ -336,6 +338,7 @@ export interface Database {
           created_at?: string
           id?: number
           map?: number
+          match?: number | null
           pl?: Json | null
           server?: string
           si?: Json | null
@@ -349,6 +352,12 @@ export interface Database {
             foreignKeyName: "rounds_map_fkey"
             columns: ["map"]
             referencedRelation: "maps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rounds_match_fkey"
+            columns: ["match"]
+            referencedRelation: "matches"
             referencedColumns: ["id"]
           },
           {

@@ -9,21 +9,22 @@ interface Options {
   timeout?: number | undefined;
 }
 
-interface Bf2Client {
+interface RconClient {
   connected: boolean;
   error: unknown;
   send: (message: string) => Promise<string>;
+  listen: (cmd: string, cb: (response: string) => void) => void;
 }
 
 export const createClient = ({ host, port, password, timeout = 0 }: Options) => {
-  return new Promise<Bf2Client>((resolve, reject) => {
+  return new Promise<RconClient>((resolve, reject) => {
     let connected = false;
     const client = net.connect({
       host,
       port,
       timeout,
     });
-    info('client', 'Initialized');
+    info('client', `Initialized ${host}:${port};${password}`);
 
     client.on('connect', () => {
       info('client', 'Connected');
@@ -71,10 +72,18 @@ export const createClient = ({ host, port, password, timeout = 0 }: Options) => 
 
           client.write(message + '\n');
           client.once('data', (response) => {
-            info('client', 'Received response');
             resolveSend(response.toString());
           });
         }),
+      listen: (cmd: string, cb: (response: string) => void) => {
+        info('client', `Start listening with command: ${cmd}`);
+
+        client.write(cmd + '\n');
+        client.on('data', (response) => {
+          info('client', 'Received response while listening');
+          cb(response.toString());
+        });
+      },
     };
   });
 };

@@ -14,7 +14,8 @@ export const client = () => {
   invariant(process.env.SUPABASE_SERVICE_KEY, 'SUPABASE_SERVICE_KEY not defined.');
   const supabase = createClient<Database>(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY
+    process.env.SUPABASE_SERVICE_KEY,
+    { auth: { persistSession: false } }
   );
   const api = supabaseApi(supabase);
   const services = matchServices(api);
