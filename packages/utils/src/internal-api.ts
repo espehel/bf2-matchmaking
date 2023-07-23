@@ -8,7 +8,7 @@ import {
 import { getJSON, postJSON } from './fetcher';
 
 export const rcon = () => {
-  const basePath = 'https://bf2-rcon-api-production.up.railway.app';
+  const basePath = 'http://localhost:5002'; //'https://bf2-rcon-api-production.up.railway.app';
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,

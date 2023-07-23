@@ -3,6 +3,7 @@ import {
   DiscordConfig,
   isDiscordConfig,
   MatchConfigModeType,
+  RconBf2Server,
 } from '@bf2-matchmaking/types';
 
 import { error, info } from '@bf2-matchmaking/logging';
@@ -15,8 +16,6 @@ import {
   createMatchFromPubobotEmbed,
   sendServerPollMessage,
 } from '../match-tracking-service';
-import { channel } from 'diagnostics_channel';
-import { removeChannelMessage } from '@bf2-matchmaking/discord';
 
 const listenerMap = new Map<string, MessageCollector>();
 export const initChannelListener = async () => {
@@ -148,21 +147,27 @@ const passiveCollector =
       `Received embed with title "${message.embeds[0]?.title}" in ${config.name} channel`
     );
 
-    if (isPubobotMatchStarted(message.embeds[0])) {
+    if (!isPubobotMatchStarted(message.embeds[0])) {
+      return;
+    }
+
+    await sendServerPollMessage(
+      config,
+      originalChannel as TextChannel,
+      handleServerSelected
+    );
+    async function handleServerSelected(server: RconBf2Server) {
       const { data, error: e } = await createMatchFromPubobotEmbed(
         message.embeds[0],
         discordClient.users,
-        config
+        config,
+        server
       );
-
       if (e) {
         error('passiveCollector', e);
       }
-      if (!data) {
-        return;
+      if (data) {
+        info('passiveCollector', `Created match ${data.id} for ${config.name} channel`);
       }
-
-      info('passiveCollector', `Created match ${data?.id} for ${config.name} channel`);
-      await sendServerPollMessage(data, config, originalChannel as TextChannel);
     }
   };

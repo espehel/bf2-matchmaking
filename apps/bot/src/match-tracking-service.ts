@@ -1,16 +1,16 @@
-import { DiscordConfig, MatchesJoined, User } from '@bf2-matchmaking/types';
+import { DiscordConfig, RconBf2Server, User } from '@bf2-matchmaking/types';
 import { Embed, TextChannel, User as DiscordUser, UserManager } from 'discord.js';
 import { api } from '@bf2-matchmaking/utils';
 import { getServerEmbed, getServerPollEmbed } from '@bf2-matchmaking/discord';
 import { getServerTupleList } from './server-interactions';
 import { compareMessageReactionCount } from './utils';
 import moment from 'moment';
-import { client } from '@bf2-matchmaking/supabase';
 
 export const createMatchFromPubobotEmbed = async (
   embed: Embed,
   users: UserManager,
-  config: DiscordConfig
+  config: DiscordConfig,
+  server: RconBf2Server
 ) => {
   const team1 = (
     await Promise.all(
@@ -22,7 +22,7 @@ export const createMatchFromPubobotEmbed = async (
       getUserIds(embed, 'MEC')?.map((player) => users.fetch(player)) || []
     )
   ).map(toPlayer);
-  return api.rcon().postMatch({ team1, team2, config: config.id });
+  return api.rcon().postMatch({ team1, team2, config: config.id, serverIp: server.ip });
 };
 
 const getUserIds = (embed: Embed, name: string) =>
@@ -38,15 +38,15 @@ const toPlayer = ({ id, avatar, username, discriminator }: DiscordUser): User =>
 });
 
 export const sendServerPollMessage = async (
-  match: MatchesJoined,
   config: DiscordConfig,
-  channel: TextChannel
+  channel: TextChannel,
+  onServerChosen: (server: RconBf2Server) => void
 ) => {
   const servers = await getServerTupleList();
 
   const pollEndTime = moment().add(1, 'minute');
   const message = await channel.send({
-    embeds: [getServerPollEmbed(match, servers, pollEndTime)],
+    embeds: [getServerPollEmbed(servers, pollEndTime)],
   });
   await Promise.all(servers.map(([, , emoji]) => message.react(emoji)));
 
@@ -63,11 +63,9 @@ export const sendServerPollMessage = async (
     const [selectedServer] = topServer;
 
     await Promise.all([
-      client().updateMatch(match.id, {
-        server: selectedServer.ip,
-      }),
       message.reactions.removeAll(),
-      message.edit({ embeds: [getServerEmbed(match, selectedServer)] }),
+      message.edit({ embeds: [getServerEmbed(selectedServer)] }),
     ]);
+    onServerChosen(selectedServer);
   }, pollEndTime.diff(moment()));
 };

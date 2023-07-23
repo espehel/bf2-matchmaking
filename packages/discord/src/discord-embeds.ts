@@ -19,23 +19,18 @@ export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEm
 });
 
 export const getServerPollEmbed = (
-  match: MatchesJoined,
   servers: Array<[RconBf2Server, string, string]>,
   endTime: Moment
 ): APIEmbed => ({
-  title: getEmbedTitle(match),
-  description: getServerPollDescription(match, endTime),
-  fields: createServerPollFields(match, servers),
-  url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
+  description: `Vote for match server, poll ends <t:${endTime.unix()}:R>`,
+  fields: createServerPollFields(servers),
 });
-export const getServerEmbed = (match: MatchesJoined, server: RconBf2Server) => ({
-  title: getEmbedTitle(match),
+export const getServerEmbed = (server: RconBf2Server) => ({
   description: `Join [${server.name}](https://joinme.click/g/bf2/${server.ip}:${server.port})`,
   fields: [
     { name: 'ip', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
   ],
-  url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
 });
 const getMatchDescription = (match: MatchesJoined): string | undefined => {
   if (match.status === MatchStatus.Summoning && match.ready_at) {
@@ -129,24 +124,9 @@ const createServerFields = (match: MatchesJoined) =>
         },
       ]
     : [];
-
-const getServerPollDescription = (match: MatchesJoined, endTime: Moment) => {
-  if (!match.server) {
-    return `Vote for match server, poll ends <t:${endTime.unix()}:R>`;
-  }
-  return undefined;
-};
-const createServerPollFields = (
-  match: MatchesJoined,
-  servers: Array<[RconBf2Server, string, string]>
-) =>
-  !match.server
-    ? [
-        {
-          name: 'Servers',
-          value: servers
-            .map(([, description, emoji]) => `${emoji}  ${description}`)
-            .join('\n'),
-        },
-      ]
-    : [];
+const createServerPollFields = (servers: Array<[RconBf2Server, string, string]>) => [
+  {
+    name: 'Servers',
+    value: servers.map(([, description, emoji]) => `${emoji}  ${description}`).join('\n'),
+  },
+];
