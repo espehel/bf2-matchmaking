@@ -130,16 +130,8 @@ const activeCollector = (config: DiscordConfig) => async (message: Message) => {
 
 const passiveCollector =
   (config: DiscordConfig, discordClient: Client<true>) => async (message: Message) => {
-    const originalChannel = message.channel;
-    const channel = await discordClient.channels.fetch('597415520337133571');
-    if (!isTextBasedChannel(channel)) {
+    if (!isTextBasedChannel(message.channel)) {
       return;
-    }
-    if (message.content === 'test embed') {
-      const newMessage = await channel.messages.fetch('1129157830939771040');
-      if (newMessage) {
-        message = newMessage;
-      }
     }
 
     info(
@@ -151,11 +143,7 @@ const passiveCollector =
       return;
     }
 
-    await sendServerPollMessage(
-      config,
-      originalChannel as TextChannel,
-      handleServerSelected
-    );
+    await sendServerPollMessage(config, message.channel, handleServerSelected);
     async function handleServerSelected(server: RconBf2Server) {
       const { data, error: e } = await createMatchFromPubobotEmbed(
         message.embeds[0],
