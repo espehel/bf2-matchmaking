@@ -93,6 +93,18 @@ export const listenForMatchRounds = async (match: MatchesJoined) => {
       clearInterval(interval);
       clearTimeout(timeout);
     }
+
+    if (rounds.length > 0 && si.connectedPlayers === '0') {
+      const { data: updatedMatch } = await client().updateMatch(match.id, {
+        status: MatchStatus.Closed,
+      });
+      info(
+        'listenForMatchRounds',
+        `Closed match ${updatedMatch?.id} after server emptied`
+      );
+      clearInterval(interval);
+      clearTimeout(timeout);
+    }
   }
   async function stopPolling() {
     const { data: updatedMatch } = await client().updateMatch(match.id, {
