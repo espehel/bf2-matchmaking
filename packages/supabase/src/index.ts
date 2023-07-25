@@ -2,13 +2,19 @@ import {
   createClient,
   PostgrestResponse,
   PostgrestSingleResponse,
+  SupabaseClient,
 } from '@supabase/supabase-js';
 import invariant from 'tiny-invariant';
 import { createServerClient } from '@supabase/auth-helpers-remix';
-import supabaseApi from './supabase-api';
 import matchServices from './services/match-service';
 import { Database } from '@bf2-matchmaking/types';
+import supabaseApi from './supabase-api';
 
+export const getSupabaseApi = (client: SupabaseClient<Database>) => {
+  const api = supabaseApi(client);
+  const services = matchServices(api);
+  return { ...api, services };
+};
 export const client = () => {
   invariant(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
   invariant(process.env.SUPABASE_SERVICE_KEY, 'SUPABASE_SERVICE_KEY not defined.');
@@ -17,9 +23,8 @@ export const client = () => {
     process.env.SUPABASE_SERVICE_KEY,
     { auth: { persistSession: false } }
   );
-  const api = supabaseApi(supabase);
-  const services = matchServices(api);
-  return { ...api, services };
+
+  return getSupabaseApi(supabase);
 };
 
 export const remixClient = (request: Request) => {

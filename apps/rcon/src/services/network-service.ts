@@ -11,6 +11,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
 import { client } from '@bf2-matchmaking/supabase';
+import { formatSecToMin } from '@bf2-matchmaking/utils';
 
 export const startWebAdminListener = async (host: string) => {
   const port = 8002;
@@ -60,7 +61,7 @@ export const listenForMatchRounds = async (match: MatchesJoined) => {
     if (!isEndOfRound(si)) {
       info(
         'listenForMatchRounds',
-        `${formatTime(si.roundTime)} ${si.team1_Name} [${si.team1_tickets} - ${
+        `${formatSecToMin(si.roundTime)} ${si.team1_Name} [${si.team1_tickets} - ${
           si.team2_tickets
         }] ${si.team2_Name}`
       );
@@ -136,14 +137,4 @@ const createRound = async (
     si: JSON.stringify(si),
     pl: JSON.stringify(pl),
   };
-};
-
-const formatTime = (seconds: string) => {
-  const mm = Math.floor(parseInt(seconds) / 60)
-    .toString()
-    .padStart(2, '0');
-  const ss = Math.floor(parseInt(seconds) % 60)
-    .toString()
-    .padStart(2, '0');
-  return `${mm}:${ss}`;
 };

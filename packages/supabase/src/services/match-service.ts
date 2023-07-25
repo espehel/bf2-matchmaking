@@ -7,7 +7,6 @@ import {
 } from '@bf2-matchmaking/types';
 import supabaseApi from '../supabase-api';
 import { verifyResult, verifySingleResult } from '../index';
-import { info } from '@bf2-matchmaking/logging';
 
 export default (api: ReturnType<typeof supabaseApi>) => ({
   getMatchRounds: async (match: MatchesJoined) => {
@@ -50,7 +49,7 @@ export default (api: ReturnType<typeof supabaseApi>) => ({
   getOrCreatePlayer: async ({ id, username, discriminator, avatar }: User) => {
     const { error, data } = await api.getPlayer(id);
     if (error) {
-      info('getOrCreatePlayer', `Inserting Player <${username}> with id ${id}`);
+      console.log('getOrCreatePlayer', `Inserting Player <${username}> with id ${id}`);
       return api
         .createPlayer({
           id,

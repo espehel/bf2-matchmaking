@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .header {
+    @apply flex items-center justify-between h-20 m-auto px-4 border-b border-gray-300 bg-white;
+  }
+
+  .main {
+    @apply p-4 w-full;
+  }
+}
+
+@layer base {
+  html,
+  body {
+    @apply h-full bg-base-200;
+  }
+  h1 {
+    @apply text-3xl;
+  }
+}
+
+.ReactCollapse--collapse {
+  transition: height 300ms;
+}
