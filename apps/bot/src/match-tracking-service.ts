@@ -5,6 +5,7 @@ import { getServerEmbed, getServerPollEmbed } from '@bf2-matchmaking/discord';
 import { getServerTupleList } from './server-interactions';
 import { compareMessageReactionCount } from './utils';
 import moment from 'moment';
+import { logCreateChannelMessage, logEditChannelMessage } from '@bf2-matchmaking/logging';
 
 export const createMatchFromPubobotEmbed = async (
   embed: Embed,
@@ -49,6 +50,12 @@ export const sendServerPollMessage = async (
     embeds: [getServerPollEmbed(servers, pollEndTime)],
   });
   await Promise.all(servers.map(([, , emoji]) => message.react(emoji)));
+  logCreateChannelMessage(
+    channel.id,
+    message.id,
+    message.embeds[0].description,
+    message.embeds[0]
+  );
 
   setTimeout(async () => {
     const topEmoji = message.reactions.cache.sort(compareMessageReactionCount).at(0);
@@ -62,10 +69,16 @@ export const sendServerPollMessage = async (
     }
     const [selectedServer] = topServer;
 
-    await Promise.all([
+    const [, editedMessage] = await Promise.all([
       message.reactions.removeAll(),
       message.edit({ embeds: [getServerEmbed(selectedServer)] }),
     ]);
+    logEditChannelMessage(
+      channel.id,
+      editedMessage.id,
+      editedMessage.embeds[0].description,
+      editedMessage.embeds[0]
+    );
     onServerChosen(selectedServer);
   }, pollEndTime.diff(moment()));
 };
