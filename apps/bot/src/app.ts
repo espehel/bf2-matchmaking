@@ -1,25 +1,8 @@
 import 'dotenv/config';
 import express, { Request } from 'express';
-import { InteractionResponseType } from 'discord-interactions';
-import { errorHandler, getOption, VerifyDiscordRequest } from './utils';
+import { errorHandler, VerifyDiscordRequest } from './utils';
 import invariant from 'tiny-invariant';
-import {
-  HasGuildCommands,
-  INFO_COMMAND,
-  JOIN_COMMAND,
-  LEAVE_COMMAND,
-  PICK_COMMAND,
-} from './commands';
-import {
-  APIInteraction,
-  ApplicationCommandType,
-  InteractionType,
-} from 'discord-api-types/v10';
-import {
-  getMatchInfoByChannel,
-  pickMatchPlayer,
-  removePlayer,
-} from './match-interactions';
+import { HasGuildCommands, REGISTER_COMMAND } from './commands';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
   ApiError,
@@ -38,6 +21,7 @@ import {
 } from './listeners/channel-listener';
 import { removeChannel } from './listeners/member-listener';
 import { api } from '@bf2-matchmaking/utils';
+import interactionRouter from './routes/interaction-router';
 
 // Create an express app
 const app = express();
@@ -108,82 +92,7 @@ app.post(
 /**
  * Interactions endpoint URL where Discord will send HTTP requests
  */
-app.post('/interactions', async (req, res) => {
-  // Interaction type and data
-  const { type, id, data, member, channel_id } = req.body as APIInteraction;
-
-  /**
-   * Handle verification requests
-   */
-  if (type === InteractionType.Ping) {
-    return res.send({ type: InteractionResponseType.PONG });
-  }
-
-  /**
-   * Handle slash command requests
-   * See https://discord.com/developers/docs/interactions/application-commands#slash-commands
-   */
-  if (
-    type === InteractionType.ApplicationCommand &&
-    data.type === ApplicationCommandType.ChatInput
-  ) {
-    try {
-      const { name, options } = data;
-      if (name === 'join') {
-        invariant(member, 'Could not get user data from request.');
-        // await addPlayer(channel_id, member.user, null);
-      }
-      if (name === 'leave') {
-        invariant(member, 'Could not get user data from request.');
-        await removePlayer(channel_id, member.user);
-      }
-      if (name === 'info') {
-        const info = await getMatchInfoByChannel(channel_id);
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            embeds: [info],
-          },
-        });
-      }
-      if (name === 'pick') {
-        const pickedPlayer = getOption('player', options);
-        invariant(member, 'Could not get user data from request.');
-        if (!pickedPlayer) {
-          return 'No player mentioned';
-        }
-        const message = await pickMatchPlayer(channel_id, member.user.id, pickedPlayer);
-
-        if (message) {
-          return res.send({
-            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-            data: {
-              content: pickedPlayer,
-            },
-          });
-        }
-      }
-    } catch (e) {
-      if (e instanceof Error) {
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: e.message,
-          },
-        });
-      } else {
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: JSON.stringify(e),
-          },
-        });
-      }
-    }
-  }
-  res.end();
-});
-
+app.use('/interactions', interactionRouter);
 app.get('/health', (req, res) => {
   res.status(200).send('Ok');
 });
@@ -195,10 +104,5 @@ app.listen(PORT, () => {
   // Check if guild commands from commands.js are installed (if not, install them)
   invariant(process.env.APP_ID, 'APP_ID not defined');
   invariant(process.env.GUILD_ID, 'GUILD_ID not defined');
-  HasGuildCommands(process.env.APP_ID, process.env.GUILD_ID, [
-    JOIN_COMMAND,
-    LEAVE_COMMAND,
-    INFO_COMMAND,
-    PICK_COMMAND,
-  ]);
+  HasGuildCommands(process.env.APP_ID, process.env.GUILD_ID, [REGISTER_COMMAND]);
 });

@@ -7,6 +7,7 @@ import {
   MatchConfigsRow,
   MatchStatus,
   PlayersInsert,
+  PlayersUpdate,
   RoundsInsert,
   RoundsJoined,
   ServersJoined,
@@ -21,6 +22,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('players').select('*').eq('id', playerId).single(),
   createPlayer: (player: PlayersInsert) =>
     client.from('players').insert([player]).select().single(),
+  updatePlayer: (playerId: string, values: PlayersUpdate) =>
+    client.from('players').update(values).eq('id', playerId).select('*').single(),
   getRounds: (limit?: number) =>
     client
       .from('rounds')

@@ -1,5 +1,9 @@
 import { getCommands, postCommand } from '@bf2-matchmaking/discord';
-import { APIApplicationCommand } from 'discord-api-types/v10';
+import {
+  APIApplicationCommand,
+  ApplicationCommandType,
+  ApplicationCommandOptionType,
+} from 'discord-api-types/v10';
 import { error, info, logCommandEvent } from '@bf2-matchmaking/logging';
 import { Message } from 'discord.js';
 import { DiscordConfig } from '@bf2-matchmaking/types';
@@ -58,6 +62,10 @@ export async function InstallGuildCommand(
   }
 }
 
+export enum ApplicationCommandName {
+  Register = 'register',
+}
+
 export const JOIN_COMMAND: Partial<APIApplicationCommand> = {
   name: 'join',
   description: 'Join a match',
@@ -85,6 +93,21 @@ export const PICK_COMMAND: Partial<APIApplicationCommand> = {
       name: 'player',
       description: 'User to be picked',
       type: 1,
+    },
+  ],
+};
+
+export const REGISTER_COMMAND: Partial<APIApplicationCommand> = {
+  name: ApplicationCommandName.Register,
+  description: 'Register your key hash to be used in rating and match making',
+  type: ApplicationCommandType.ChatInput,
+  options: [
+    {
+      name: 'key',
+      description: 'key hash for your bf2 account, 32 characters long',
+      type: ApplicationCommandOptionType.String,
+      max_length: 32,
+      min_length: 32,
     },
   ],
 };

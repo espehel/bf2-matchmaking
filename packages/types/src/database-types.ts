@@ -14,6 +14,7 @@ export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
 export type MatchesInsert = Database['public']['Tables']['matches']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
+export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
 
 export enum MatchStatus {
   Open = 'Open',

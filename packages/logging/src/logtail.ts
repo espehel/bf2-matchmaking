@@ -7,6 +7,8 @@ import {
   MatchPlayersRow,
   MatchStatus,
   PlayerListItem,
+  PlayersRow,
+  PlayersUpdate,
   PostgrestError,
   RoundsInsert,
   ServerInfo,
@@ -130,4 +132,17 @@ export const logSupabaseError = (message: string, err: PostgrestError) =>
   logger
     .error(message, { ...err })
     .then((log) => error('logtail', log.message))
+    .catch((e) => error('logtail', e));
+
+export const logPlayerUpdated = (
+  message: string,
+  player: PlayersRow,
+  values: PlayersUpdate
+) =>
+  logger
+    .info(`Updated player ${player.id}`, {
+      player: JSON.stringify(player),
+      ...values,
+    })
+    .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e));

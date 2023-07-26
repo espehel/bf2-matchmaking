@@ -276,6 +276,7 @@ export interface Database {
           created_at: string
           full_name: string
           id: string
+          keyhash: string | null
           updated_at: string
           user_id: string | null
           username: string
@@ -285,6 +286,7 @@ export interface Database {
           created_at?: string
           full_name: string
           id: string
+          keyhash?: string | null
           updated_at?: string
           user_id?: string | null
           username: string
@@ -294,6 +296,7 @@ export interface Database {
           created_at?: string
           full_name?: string
           id?: string
+          keyhash?: string | null
           updated_at?: string
           user_id?: string | null
           username?: string
