@@ -1,7 +1,17 @@
 import { Logtail } from '@logtail/node';
 import invariant from 'tiny-invariant';
-import { MatchConfigsRow, MatchesRow, MatchPlayersRow } from '@bf2-matchmaking/types';
-import { error } from './winston';
+import {
+  MatchConfigsRow,
+  MatchesJoined,
+  MatchesRow,
+  MatchPlayersRow,
+  MatchStatus,
+  PlayerListItem,
+  PostgrestError,
+  RoundsInsert,
+  ServerInfo,
+} from '@bf2-matchmaking/types';
+import { error, info } from './winston';
 
 invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
 const logger = new Logtail(process.env.LOGTAIL_SOURCE);
@@ -75,3 +85,49 @@ export const logEditChannelMessage = (
     })
     .catch((e) => error('logtail', e));
 };
+
+export const logOngoingMatchCreated = (match: MatchesJoined) =>
+  logger
+    .info(`Created ongoing Match ${match.id}`, {
+      match: JSON.stringify(match),
+    })
+    .then((log) => info('logtail', log.message))
+    .catch((e) => error('logtail', e));
+
+export const logChangeMatchStatus = (
+  status: MatchStatus,
+  reason: string,
+  match: MatchesJoined,
+  si: ServerInfo | null,
+  pl: Array<PlayerListItem> | null
+) =>
+  logger
+    .info(`Changing status for Match ${match.id} to ${status} because "${reason}"`, {
+      match: JSON.stringify(match),
+      si: JSON.stringify(si),
+      pl: JSON.stringify(pl),
+    })
+    .then((log) => info('logtail', log.message))
+    .catch((e) => error('logtail', e));
+
+export const logAddMatchRound = (
+  round: RoundsInsert,
+  match: MatchesJoined,
+  si: ServerInfo | null,
+  pl: Array<PlayerListItem> | null
+) =>
+  logger
+    .info(`Adding round to Match ${match.id}`, {
+      round: JSON.stringify(round),
+      match: JSON.stringify(match),
+      si: JSON.stringify(si),
+      pl: JSON.stringify(pl),
+    })
+    .then((log) => info('logtail', log.message))
+    .catch((e) => error('logtail', e));
+
+export const logSupabaseError = (message: string, err: PostgrestError) =>
+  logger
+    .error(message, { ...err })
+    .then((log) => error('logtail', log.message))
+    .catch((e) => error('logtail', e));

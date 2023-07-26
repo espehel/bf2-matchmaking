@@ -3,10 +3,9 @@ import { MatchStatus, PostMatchesRequestBody } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getPlayerFromDatabase } from '../services/players';
 import { toMatchPlayer } from '../mappers/player';
-import { error, info } from '@bf2-matchmaking/logging';
-import { createClient } from '../net/rcon-client';
-import invariant from 'tiny-invariant';
-import { listenForMatchRounds, startWebAdminListener } from '../services/network-service';
+import { error, info, logOngoingMatchCreated } from '@bf2-matchmaking/logging';
+import { listenForMatchRounds } from '../services/network-service';
+import moment from 'moment';
 
 const router = express.Router();
 
@@ -23,9 +22,12 @@ router.post('/', async (req: Request<{}, {}, PostMatchesRequestBody>, res) => {
       client().updateMatch(match.id, { server: serverIp }),
     ]);
     const updatedMatch = await client()
-      .updateMatch(match.id, { status: MatchStatus.Ongoing })
+      .updateMatch(match.id, {
+        status: MatchStatus.Ongoing,
+        started_at: moment().toISOString(),
+      })
       .then(verifySingleResult);
-    info('POST /matches', `Created match ${updatedMatch.id}`);
+    logOngoingMatchCreated(updatedMatch);
 
     await listenForMatchRounds(updatedMatch);
 
