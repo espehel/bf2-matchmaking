@@ -7,14 +7,10 @@ import {
 import { InteractionResponseType } from 'discord-interactions';
 import { getOption } from '../utils';
 import { ApplicationCommandName } from '../commands';
-import { client } from '@bf2-matchmaking/supabase';
-import {
-  logInternalApiError,
-  logPlayerUpdated,
-  logSupabaseError,
-} from '@bf2-matchmaking/logging';
+import { logInternalApiError, logSupabaseError } from '@bf2-matchmaking/logging';
 import { rcon } from '@bf2-matchmaking/utils/src/internal-api';
 import { updatePlayerKeyHash } from './interaction-service';
+import { getServerInfoList } from '../server-interactions';
 
 const router = express.Router();
 
@@ -78,6 +74,13 @@ router.post('/', async (req, res) => {
       return res.send(reply('Something went wrong while trying to update your keyhash'));
     }
     return res.send(reply('Keyhash successfully updated.'));
+  }
+
+  if (name === ApplicationCommandName.Servers) {
+    const serverInfo = await getServerInfoList();
+    return res.send(
+      reply(typeof serverInfo === 'string' ? serverInfo : serverInfo.join('\n'))
+    );
   }
 });
 

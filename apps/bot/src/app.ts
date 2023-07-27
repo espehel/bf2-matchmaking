@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express, { Request } from 'express';
 import { errorHandler, VerifyDiscordRequest } from './utils';
 import invariant from 'tiny-invariant';
-import { HasGuildCommands, REGISTER_COMMAND } from './commands';
+import { HasGuildCommands, REGISTER_COMMAND, SERVERS_COMMAND } from './commands';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
   ApiError,
@@ -104,5 +104,8 @@ app.listen(PORT, () => {
   // Check if guild commands from commands.js are installed (if not, install them)
   invariant(process.env.APP_ID, 'APP_ID not defined');
   invariant(process.env.GUILD_ID, 'GUILD_ID not defined');
-  HasGuildCommands(process.env.APP_ID, process.env.GUILD_ID, [REGISTER_COMMAND]);
+  HasGuildCommands(process.env.APP_ID, process.env.GUILD_ID, [
+    REGISTER_COMMAND,
+    SERVERS_COMMAND,
+  ]);
 });

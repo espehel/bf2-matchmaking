@@ -64,6 +64,7 @@ export async function InstallGuildCommand(
 
 export enum ApplicationCommandName {
   Register = 'register',
+  Servers = 'servers',
 }
 
 export const JOIN_COMMAND: Partial<APIApplicationCommand> = {
@@ -95,6 +96,12 @@ export const PICK_COMMAND: Partial<APIApplicationCommand> = {
       type: 1,
     },
   ],
+};
+
+export const SERVERS_COMMAND: Partial<APIApplicationCommand> = {
+  name: ApplicationCommandName.Servers,
+  description: 'Get list of registered servers',
+  type: 1,
 };
 
 export const REGISTER_COMMAND: Partial<APIApplicationCommand> = {
