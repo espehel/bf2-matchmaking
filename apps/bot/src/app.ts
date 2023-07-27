@@ -21,7 +21,7 @@ import {
 } from './listeners/channel-listener';
 import { removeChannel } from './listeners/member-listener';
 import { api } from '@bf2-matchmaking/utils';
-import interactionRouter from './routes/interaction-router';
+import interactionRouter from './interactions/interaction-router';
 
 // Create an express app
 const app = express();

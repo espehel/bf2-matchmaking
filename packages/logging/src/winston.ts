@@ -1,5 +1,8 @@
 import { createLogger, format, transports } from 'winston';
 import expressWinston from 'express-winston';
+import invariant from 'tiny-invariant';
+import { Logtail } from '@logtail/node';
+import { LogtailTransport } from '@logtail/winston';
 
 const { combine, timestamp, printf, colorize, json } = format;
 
@@ -29,9 +32,11 @@ export const warn = (label: string, message: string) =>
 export const info = (label: string, message: string) =>
   logger.log({ level: 'info', label, message });
 
+invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
+const logtail = new Logtail(process.env.LOGTAIL_SOURCE);
 export const getExpressAccessLogger = () =>
   expressWinston.logger({
-    transports: TRANSPORTS,
+    transports: [new transports.Console(), new LogtailTransport(logtail)],
     format: combine(timestamp(), EXPRESS_FORMAT, colorize()),
     meta: false, // optional: control whether you want to log the meta data about the request (default to true)
     msg: '{{req.method}} {{req.url}} {{res.statusCode}} - - {{res.responseTime}} ms', // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
@@ -47,6 +52,6 @@ export const getExpressAccessLogger = () =>
  */
 export const getExpressErrorLogger = () =>
   expressWinston.errorLogger({
-    transports: TRANSPORTS,
+    transports: [new transports.Console(), new LogtailTransport(logtail)],
     format: combine(json(), colorize()),
   });

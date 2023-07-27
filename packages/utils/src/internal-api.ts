@@ -1,6 +1,7 @@
 import {
   MatchConfigEvent,
   MatchEvent,
+  PlayerListItem,
   PostMatchesRequestBody,
   PostMatchResult,
   RconBf2Server,
@@ -13,6 +14,8 @@ export const rcon = () => {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
     matches: () => '/matches',
+    rconServerPlayer: (serverIp: string, playerId: string) =>
+      `/rcon/${serverIp}/${playerId}`,
   };
   return {
     paths,
@@ -20,6 +23,10 @@ export const rcon = () => {
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
     postMatch: (body: PostMatchesRequestBody) =>
       postJSON<PostMatchResult>(basePath.concat(paths.matches()), body),
+    getRconServerPlayer: (serverIp: string, playerId: string) =>
+      getJSON<PlayerListItem>(
+        basePath.concat(paths.rconServerPlayer(serverIp, playerId))
+      ),
   };
 };
 export const bot = () => {
