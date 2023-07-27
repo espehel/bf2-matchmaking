@@ -65,6 +65,20 @@ export const listenForMatchRounds = async (match: MatchesJoined) => {
     const si = await rconClient.send('bf2cc si').then(mapServerInfo);
     invariant(si, 'Failed to get server info');
 
+    if (!si && rounds.length > 0) {
+      closeMatch(match, 'Lost connection to server during ongoing match', si);
+      return clearTimers();
+    }
+
+    if (!si && rounds.length === 0) {
+      deleteMatch(
+        match,
+        'Lost connection to server before a round has been finished',
+        si
+      );
+      return clearTimers();
+    }
+
     if (isIdleServer(match, si, rounds)) {
       deleteMatch(match, 'Idle server', si);
       return clearTimers();
