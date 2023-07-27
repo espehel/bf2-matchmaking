@@ -44,9 +44,9 @@ router.post('/', async (req, res) => {
 
   const { name, options } = data;
   if (name === ApplicationCommandName.Register && member) {
-    let keyhash = getOption('key', options);
-    const serverIp = getOption('serverIp');
-    const playerId = getOption('playerId');
+    const keyhash = getOption('key', options);
+    const serverIp = getOption('serverip', options);
+    const playerId = getOption('playerid', options);
     let updateError;
 
     if (keyhash) {

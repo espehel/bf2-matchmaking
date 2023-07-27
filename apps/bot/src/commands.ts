@@ -110,13 +110,13 @@ export const REGISTER_COMMAND: Partial<APIApplicationCommand> = {
       min_length: 32,
     },
     {
-      name: 'serverIp',
+      name: 'serverip',
       description:
         'A server you are currently connected to. Use `/servers` to find a valid server',
       type: ApplicationCommandOptionType.String,
     },
     {
-      name: 'playerId',
+      name: 'playerid',
       description: 'Your players ID on the server you currently are connected to.',
       type: ApplicationCommandOptionType.String,
     },

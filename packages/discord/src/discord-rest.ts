@@ -176,6 +176,11 @@ export const postCommand = (
     { body: command }
   );
 
+export const deleteCommand = (appId: string, guildId: string, commandId: string) =>
+  deleteDiscordRoute<APIApplicationCommand>(
+    Routes.applicationGuildCommand(appId, guildId, commandId)
+  );
+
 export const getCommands = (appId: string, guildId: string) =>
   getDiscordRoute<Array<APIApplicationCommand>>(
     Routes.applicationGuildCommands(appId, guildId)
