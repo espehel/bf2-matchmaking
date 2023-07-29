@@ -166,7 +166,18 @@ export const deleteAllReactions = (channelId: string, messageId: string) =>
     Routes.channelMessageAllReactions(channelId, messageId)
   );
 
-export const postCommand = (
+export const postCommand = (appId: string, command: Partial<APIApplicationCommand>) =>
+  postDiscordRoute<APIApplicationCommand>(Routes.applicationCommands(appId), {
+    body: command,
+  });
+
+export const deleteCommand = (appId: string, commandId: string) =>
+  deleteDiscordRoute<APIApplicationCommand>(Routes.applicationCommand(appId, commandId));
+
+export const getCommands = (appId: string) =>
+  getDiscordRoute<Array<APIApplicationCommand>>(Routes.applicationCommands(appId));
+
+export const postGuildCommand = (
   appId: string,
   guildId: string,
   command: Partial<APIApplicationCommand>
@@ -176,12 +187,12 @@ export const postCommand = (
     { body: command }
   );
 
-export const deleteCommand = (appId: string, guildId: string, commandId: string) =>
+export const deleteGuildCommand = (appId: string, guildId: string, commandId: string) =>
   deleteDiscordRoute<APIApplicationCommand>(
     Routes.applicationGuildCommand(appId, guildId, commandId)
   );
 
-export const getCommands = (appId: string, guildId: string) =>
+export const getGuildCommands = (appId: string, guildId: string) =>
   getDiscordRoute<Array<APIApplicationCommand>>(
     Routes.applicationGuildCommands(appId, guildId)
   );

@@ -1,12 +1,19 @@
-import { getCommands, postCommand } from '@bf2-matchmaking/discord';
+import {
+  deleteCommand,
+  deleteGuildCommand,
+  getCommands,
+  getGuildCommands,
+  postCommand,
+  postGuildCommand,
+} from '@bf2-matchmaking/discord';
 import {
   APIApplicationCommand,
   ApplicationCommandType,
   ApplicationCommandOptionType,
 } from 'discord-api-types/v10';
-import { error, info, logCommandEvent } from '@bf2-matchmaking/logging';
+import { info, logCommandEvent } from '@bf2-matchmaking/logging';
 import { Message } from 'discord.js';
-import { DiscordConfig } from '@bf2-matchmaking/types';
+import { DiscordConfig, isDefined } from '@bf2-matchmaking/types';
 import {
   onCapfor,
   onExpire,
@@ -19,85 +26,10 @@ import {
   onWho,
 } from './message-interactions';
 
-export async function HasGuildCommands(
-  appId: string,
-  guildId: string,
-  commands: Array<Partial<APIApplicationCommand>>
-) {
-  if (guildId === '' || appId === '') return;
-
-  commands.forEach((c) => HasGuildCommand(appId, guildId, c));
-}
-
-// Checks for a command
-async function HasGuildCommand(
-  appId: string,
-  guildId: string,
-  command: Partial<APIApplicationCommand>
-) {
-  const { data, error: err } = await getCommands(appId, guildId);
-
-  if (data) {
-    const installedNames = data.map((c) => c.name);
-    if (!installedNames.some((c) => c === command.name)) {
-      info('HasGuildCommand', `Installing "${command.name}"`);
-      await InstallGuildCommand(appId, guildId, command);
-    } else {
-      info('HasGuildCommand', `"${command.name}" command already installed`);
-    }
-  }
-  if (err) {
-    error('HasGuildCommand', err);
-  }
-}
-
-export async function InstallGuildCommand(
-  appId: string,
-  guildId: string,
-  command: Partial<APIApplicationCommand>
-) {
-  const { error: err } = await postCommand(appId, guildId, command);
-  if (err) {
-    error('InstallGuildCommand', err);
-  }
-}
-
 export enum ApplicationCommandName {
   Register = 'register',
   Servers = 'servers',
 }
-
-export const JOIN_COMMAND: Partial<APIApplicationCommand> = {
-  name: 'join',
-  description: 'Join a match',
-  type: 1,
-};
-
-export const LEAVE_COMMAND: Partial<APIApplicationCommand> = {
-  name: 'leave',
-  description: 'Leave a match',
-  type: 1,
-};
-
-export const INFO_COMMAND: Partial<APIApplicationCommand> = {
-  name: 'info',
-  description: 'Get info for channels open match.',
-  type: 1,
-};
-
-export const PICK_COMMAND: Partial<APIApplicationCommand> = {
-  name: 'pick',
-  description: 'Leave a match',
-  type: 1,
-  options: [
-    {
-      name: 'player',
-      description: 'User to be picked',
-      type: 1,
-    },
-  ],
-};
-
 export const SERVERS_COMMAND: Partial<APIApplicationCommand> = {
   name: ApplicationCommandName.Servers,
   description: 'Get list of registered servers',
@@ -129,6 +61,51 @@ export const REGISTER_COMMAND: Partial<APIApplicationCommand> = {
     },
   ],
 };
+const ACTIVE_COMMANDS = new Map<ApplicationCommandName, Partial<APIApplicationCommand>>([
+  [ApplicationCommandName.Register, REGISTER_COMMAND],
+  [ApplicationCommandName.Servers, SERVERS_COMMAND],
+]);
+export async function deleteCommands(appId: string, guildId: string | null) {
+  if (guildId) {
+    info('deleteCommands', `Deleting commands for guild ${guildId}`);
+    const { data } = await getGuildCommands(appId, guildId);
+    if (data) {
+      await Promise.all(data.map((cmd) => deleteGuildCommand(appId, guildId, cmd.id)));
+    }
+  }
+  if (!guildId) {
+    info('deleteCommands', 'Deleting application commands');
+    const { data } = await getCommands(appId);
+    if (data) {
+      await Promise.all(data.map((cmd) => deleteCommand(appId, cmd.id)));
+    }
+  }
+}
+
+export async function installCommands(
+  appId: string,
+  guildId: string | null,
+  commands: Array<string>
+) {
+  if (guildId) {
+    info('installCommands', `Installing commands for guild ${guildId}`);
+    await Promise.all(
+      (commands as Array<ApplicationCommandName>)
+        .map((name) => ACTIVE_COMMANDS.get(name))
+        .filter(isDefined)
+        .map((cmd) => postGuildCommand(appId, guildId, cmd))
+    );
+  }
+  if (!guildId) {
+    info('installCommands', 'Installing application commands');
+    await Promise.all(
+      (commands as Array<ApplicationCommandName>)
+        .map((name) => ACTIVE_COMMANDS.get(name))
+        .filter(isDefined)
+        .map((cmd) => postCommand(appId, cmd))
+    );
+  }
+}
 
 // ------------------- GATEWAY COMMANDS -------------------------//
 export interface BaseCommand {

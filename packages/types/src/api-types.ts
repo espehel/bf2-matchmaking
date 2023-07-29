@@ -1,4 +1,4 @@
-import { MatchesJoined, ServersJoined, ServersRow } from './database-types';
+import { MatchesJoined, ServersJoined } from './database-types';
 import { ServerInfo, User } from './index';
 
 export enum ApiErrorType {
@@ -42,6 +42,11 @@ export enum MatchConfigEvent {
 export interface PostMatchConfigEventRequestBody {
   event: MatchConfigEvent;
   channelId: string;
+}
+
+export interface PostCommandsReinstallRequestBody {
+  guilds: Array<string>;
+  commands: Array<string>;
 }
 
 export interface RconBf2Server extends ServersJoined {
