@@ -6,6 +6,7 @@ import RoundTable from './RoundTable';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Image from 'next/image';
 import { supabaseImageLoader } from '@/lib/supabase-client';
+import Link from 'next/link';
 
 interface Props {
   round: RoundsJoined;
@@ -26,7 +27,6 @@ export default function RoundItem({ round }: Props) {
     () => (typeof round.pl === 'string' ? JSON.parse(round.pl) : null), //(mock as any) : null),
     [round]
   );
-  console.log(playerList);
 
   if (!serverInfo || !playerList) {
     return null;
@@ -66,6 +66,14 @@ export default function RoundItem({ round }: Props) {
       </div>
       <UnmountClosed isOpened={isSummaryOpen}>
         <RoundTable serverInfo={serverInfo} playerList={playerList} />
+        <div className="flex justify-end">
+          <Link
+            className="btn btn-secondary btn-sm mt-2 mr-2"
+            href={`/rounds/${round.id}/claim`}
+          >
+            Claim a player
+          </Link>
+        </div>
       </UnmountClosed>
     </li>
   );

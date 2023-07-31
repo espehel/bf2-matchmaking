@@ -4,5 +4,5 @@ import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adap
 import { getSupabaseApi } from '@bf2-matchmaking/supabase';
 export const supabase = (cookies: () => ReadonlyRequestCookies) => {
   const client = createServerComponentClient({ cookies });
-  return getSupabaseApi(client);
+  return { ...getSupabaseApi(client), auth: client.auth };
 };

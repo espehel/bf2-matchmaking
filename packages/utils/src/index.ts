@@ -5,3 +5,4 @@ export * as api from './internal-api';
 export * from './constants';
 export * from './date-utils';
 export * as externalApi from './ip-api';
+export * from './fetcher';

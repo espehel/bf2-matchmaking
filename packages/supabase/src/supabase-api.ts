@@ -24,6 +24,12 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('players').insert([player]).select().single(),
   updatePlayer: (playerId: string, values: PlayersUpdate) =>
     client.from('players').update(values).eq('id', playerId).select('*').single(),
+  getRound: (id: number) =>
+    client
+      .from('rounds')
+      .select<'*, map(*), server(*)', RoundsJoined>('*, map(*), server(*)')
+      .eq('id', id)
+      .single(),
   getRounds: (limit?: number) =>
     client
       .from('rounds')
