@@ -8,6 +8,8 @@ import AuthButton from '@/components/AuthButton';
 import { ClipboardIcon } from '@heroicons/react/24/solid';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid';
 import copy from 'copy-text-to-clipboard';
+import { updatePlayerByUserId } from '@/app/rounds/[round]/claim/actions';
+import { toast } from 'react-toastify';
 
 interface Props {
   playerList: Array<PlayerListItem>;
@@ -33,6 +35,20 @@ export default function PlayerClaimSection({ playerList, session }: Props) {
     publicIpv4().then(findAndSetPlayer);
   }, [findAndSetPlayer]);
 
+  const updatePlayerKeyHash = useCallback(
+    async (session: Session, rconPlayer: PlayerListItem) => {
+      const { data, error } = await updatePlayerByUserId(session.user.id, {
+        keyhash: rconPlayer.keyhash,
+      });
+      if (error) {
+        toast.error(error);
+      } else {
+        toast.success('Player hash updated');
+      }
+    },
+    []
+  );
+
   if (player === null) {
     return (
       <section className="mt-4">
@@ -52,9 +68,14 @@ export default function PlayerClaimSection({ playerList, session }: Props) {
   if (session) {
     return (
       <section className="mt-4">
-        <h2>{player.getName}</h2>
+        <h2 className="text-2xl bold mb-4">{player.getName}</h2>
         <p>We found a player matching with your public ip!</p>
-        <button className="btn btn-primary">Claim</button>
+        <button
+          onClick={() => updatePlayerKeyHash(session, player)}
+          className="btn btn-primary mt-4"
+        >
+          Claim
+        </button>
       </section>
     );
   }

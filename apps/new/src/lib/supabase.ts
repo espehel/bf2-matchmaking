@@ -4,5 +4,14 @@ import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adap
 import { getSupabaseApi } from '@bf2-matchmaking/supabase';
 export const supabase = (cookies: () => ReadonlyRequestCookies) => {
   const client = createServerComponentClient({ cookies });
-  return { ...getSupabaseApi(client), auth: client.auth };
+  const api = getSupabaseApi(client);
+  async function getSessionPlayer() {
+    const { data, error } = await client.auth.getSession();
+    if (data.session) {
+      return api.getPlayerByUserId(data.session.user.id);
+    }
+    return { data: null, error };
+  }
+
+  return { ...api, auth: client.auth, getSessionPlayer };
 };

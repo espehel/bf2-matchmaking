@@ -60,14 +60,14 @@ export const remixClient = (request: Request) => {
 
 export const verifyResult = <T>({ data, error }: PostgrestResponse<T>) => {
   if (error) {
-    throw error;
+    throw new Error(JSON.stringify(error));
   }
   return data;
 };
 
 export const verifySingleResult = <T>({ data, error }: PostgrestSingleResponse<T>) => {
   if (error) {
-    throw error;
+    throw new Error(JSON.stringify(error));
   }
   return data;
 };

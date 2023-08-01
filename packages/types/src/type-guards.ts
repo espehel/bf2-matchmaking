@@ -23,3 +23,5 @@ export const isPostgrestError = (error: unknown): error is PostgrestError => {
 
 export const isDefined = <T>(object: undefined | T): object is T =>
   typeof object !== 'undefined';
+
+export const isNotNull = <T>(object: null | T): object is T => object !== null;

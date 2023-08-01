@@ -159,3 +159,9 @@ export interface User {
   discriminator: string;
   avatar: string | null;
 }
+
+export interface MatchResult {
+  score: number;
+  kills: number;
+  deaths: number;
+}

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import PlayerClaimSection from '@/components/PlayerClaimSection';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import Link from 'next/link';
 
 interface Props {
   params: { round: string };
@@ -17,7 +18,7 @@ export default async function RoundClaimPage({ params }: Props) {
   if (!playerList) {
     return <main>No playerlist found for the round</main>;
   }
-
+  //TODO: use session to fetch player and give option to delete keyhash
   return (
     <main className="text-center">
       <h1>Connect player to discord user</h1>
@@ -27,6 +28,11 @@ export default async function RoundClaimPage({ params }: Props) {
           round.
         </p>
         <PlayerClaimSection playerList={playerList} session={session.session} />
+        {round.match && (
+          <Link className="link float-left" href={`/results/${round.match}`}>
+            Back to match result
+          </Link>
+        )}
       </div>
     </main>
   );

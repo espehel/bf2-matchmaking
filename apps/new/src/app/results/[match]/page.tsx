@@ -2,9 +2,23 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import RoundsList from '@/components/RoundsList';
-import { MatchPlayersRow } from '@bf2-matchmaking/types';
+import {
+  MatchPlayersRow,
+  MatchResult,
+  PlayerListItem,
+  PlayersRow,
+} from '@bf2-matchmaking/types';
+import { calculateMatchResults } from '@bf2-matchmaking/utils';
+import TeamResultTable from '@/components/TeamResultTable';
 
-type PlayerTuple = [MatchPlayersRow, string];
+const compareScore = (
+  [, playerA]: PlayerMatchResultTuple,
+  [, playerB]: PlayerMatchResultTuple
+) =>
+  (playerB ? playerB.score : Number.MIN_VALUE) -
+  (playerA ? playerA.score : Number.MIN_VALUE);
+
+type PlayerMatchResultTuple = [PlayersRow, MatchResult | null];
 interface Props {
   params: { match: string };
 }
@@ -13,16 +27,13 @@ export default async function ResultsMatch({ params }: Props) {
     .getMatch(parseInt(params.match))
     .then(verifySingleResult);
 
+  const matchResults: Array<PlayerMatchResultTuple> = calculateMatchResults(match);
+
   const isTeam =
     (team: string) =>
-    ([mp]: PlayerTuple) =>
-      mp.team === team;
+    ([player]: PlayerMatchResultTuple) =>
+      match.teams.find(({ player_id }) => player_id === player.id)?.team === team;
 
-  const toPlayerTuple = (mp: MatchPlayersRow, i: number): PlayerTuple => [
-    mp,
-    match.players.find((player) => player.id === mp.player_id)?.full_name ||
-      `Player ${i}`,
-  ];
   const teamATickets = match.rounds
     .map((round, i) => (i % 2 === 0 ? round.team1_tickets : round.team2_tickets))
     .reduce((acc, cur) => acc + parseInt(cur), 0);
@@ -38,33 +49,19 @@ export default async function ResultsMatch({ params }: Props) {
       ? 'Team A wins'
       : 'Team B wins';
 
+  console.log(matchResults);
+
   return (
-    <main className="main text-center">
+    <main className="main w-3/4 m-auto text-center">
       <h1 className="mb-8 text-accent font-bold">{`Match ${match.id} - ${winner}`}</h1>
-      <div className="flex w-full justify-around">
-        <div>
-          <div className="text-xl">Team A - {teamATickets}</div>
-          <ul>
-            {match.teams
-              .map(toPlayerTuple)
-              .filter(isTeam('a'))
-              .map(([mp, username]) => (
-                <li key={mp.player_id}>{username}</li>
-              ))}
-          </ul>
-        </div>
-        <div className="divider divider-horizontal">vs</div>
-        <div>
-          <div className="text-xl">Team B - {teamBTickets}</div>
-          <ul>
-            {match.teams
-              .map(toPlayerTuple)
-              .filter(isTeam('b'))
-              .map(([mp, username]) => (
-                <li key={mp.player_id}>{username}</li>
-              ))}
-          </ul>
-        </div>
+      <div className="flex flex-col justify-around">
+        <TeamResultTable
+          playerResults={matchResults.filter(isTeam('a')).sort(compareScore)}
+        />
+        <div className="divider">vs</div>
+        <TeamResultTable
+          playerResults={matchResults.filter(isTeam('b')).sort(compareScore)}
+        />
       </div>
       <div className="divider" />
       <RoundsList rounds={match.rounds} />

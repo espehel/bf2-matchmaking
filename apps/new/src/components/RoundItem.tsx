@@ -24,7 +24,7 @@ export default function RoundItem({ round }: Props) {
     [round]
   );
   const playerList: Array<PlayerListItem> = useMemo(
-    () => (typeof round.pl === 'string' ? JSON.parse(round.pl) : null), //(mock as any) : null),
+    () => (typeof round.pl === 'string' ? JSON.parse(round.pl) : null),
     [round]
   );
 

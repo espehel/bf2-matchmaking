@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 
 export default async function Header() {
   const { data: session } = await supabase(cookies).auth.getSession();
+  const { data: player } = await supabase(cookies).getSessionPlayer();
   return (
     <header className="navbar bg-primary text-primary-content">
       <div className="navbar-start">
@@ -13,6 +14,7 @@ export default async function Header() {
         </Link>
       </div>
       <div className="navbar-end">
+        {player && <div className="p-2">{player.full_name}</div>}
         <AuthButton className="btn" session={session.session} />
       </div>
     </header>
