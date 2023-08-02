@@ -69,9 +69,9 @@ export default function RoundItem({ round }: Props) {
         <div className="flex justify-end">
           <Link
             className="btn btn-secondary btn-sm mt-2 mr-2"
-            href={`/rounds/${round.id}/claim`}
+            href={`/rounds/${round.id}/connect`}
           >
-            Claim a player
+            Connect a player
           </Link>
         </div>
       </UnmountClosed>

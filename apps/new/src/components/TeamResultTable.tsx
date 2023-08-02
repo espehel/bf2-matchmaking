@@ -1,12 +1,15 @@
-import { MatchResult, PlayersRow } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchResult, PlayersRow } from '@bf2-matchmaking/types';
+import Link from 'next/link';
 
 interface Props {
   playerResults: Array<[PlayersRow, MatchResult | null]>;
+  match: MatchesJoined;
 }
 
-export default function TeamResultTable({ playerResults }: Props) {
+export default function TeamResultTable({ playerResults, match }: Props) {
+  const roundForConnect = match.rounds.at(0);
   return (
-    <table className="table mt-2 bg-base-100 shadow-xl">
+    <table className="table bg-base-100 shadow-xl">
       <thead>
         <tr>
           <th />
@@ -21,15 +24,27 @@ export default function TeamResultTable({ playerResults }: Props) {
           <tr key={player.id} className="hover">
             <th>{i + 1}</th>
             <td className="truncate">{player.full_name}</td>
-            {result ? (
+            {result && (
               <>
                 <td>{result.score}</td>
                 <td>{result.kills}</td>
                 <td>{result.deaths}</td>
               </>
-            ) : (
-              <td colSpan={3}>Unregistered player</td>
             )}
+            {!result && roundForConnect && (
+              <>
+                <td colSpan={2}>Unconnected</td>
+                <td>
+                  <Link
+                    className="btn btn-xs btn-secondary float-right"
+                    href={`/rounds/${roundForConnect.id}/connect`}
+                  >
+                    Connect
+                  </Link>
+                </td>
+              </>
+            )}
+            {!result && !roundForConnect && <td colSpan={3}>Unconnected</td>}
           </tr>
         ))}
       </tbody>

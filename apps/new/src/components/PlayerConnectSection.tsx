@@ -8,7 +8,7 @@ import AuthButton from '@/components/AuthButton';
 import { ClipboardIcon } from '@heroicons/react/24/solid';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid';
 import copy from 'copy-text-to-clipboard';
-import { updatePlayerByUserId } from '@/app/rounds/[round]/claim/actions';
+import { updatePlayerByUserId } from '@/app/rounds/[round]/connect/actions';
 import { toast } from 'react-toastify';
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
   session: Session | null;
 }
 
-export default function PlayerClaimSection({ playerList, session }: Props) {
+export default function PlayerConnectSection({ playerList, session }: Props) {
   const [player, setPlayer] = useState<PlayerListItem | null | undefined>();
 
   const findAndSetPlayer = useCallback(

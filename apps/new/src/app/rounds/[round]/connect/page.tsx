@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import PlayerClaimSection from '@/components/PlayerClaimSection';
+import PlayerConnectSection from '@/components/PlayerConnectSection';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
 
@@ -27,7 +27,7 @@ export default async function RoundClaimPage({ params }: Props) {
           Your current public ip address will be used to match a player from the chosen
           round.
         </p>
-        <PlayerClaimSection playerList={playerList} session={session.session} />
+        <PlayerConnectSection playerList={playerList} session={session.session} />
         {round.match && (
           <Link className="link float-left" href={`/results/${round.match}`}>
             Back to match result

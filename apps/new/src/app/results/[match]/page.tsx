@@ -2,14 +2,13 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import RoundsList from '@/components/RoundsList';
-import {
-  MatchPlayersRow,
-  MatchResult,
-  PlayerListItem,
-  PlayersRow,
-} from '@bf2-matchmaking/types';
-import { calculateMatchResults } from '@bf2-matchmaking/utils';
+import { MatchResult, PlayersRow } from '@bf2-matchmaking/types';
 import TeamResultTable from '@/components/TeamResultTable';
+import {
+  calculateMatchResults,
+  getTeamTickets,
+} from '@bf2-matchmaking/utils/src/results-utils';
+import TeamStats from '@/components/TeamStats';
 
 const compareScore = (
   [, playerA]: PlayerMatchResultTuple,
@@ -34,34 +33,28 @@ export default async function ResultsMatch({ params }: Props) {
     ([player]: PlayerMatchResultTuple) =>
       match.teams.find(({ player_id }) => player_id === player.id)?.team === team;
 
-  const teamATickets = match.rounds
-    .map((round, i) => (i % 2 === 0 ? round.team1_tickets : round.team2_tickets))
-    .reduce((acc, cur) => acc + parseInt(cur), 0);
-
-  const teamBTickets = match.rounds
-    .map((round, i) => (i % 2 === 1 ? round.team1_tickets : round.team2_tickets))
-    .reduce((acc, cur) => acc + parseInt(cur), 0);
-
-  const winner =
-    teamATickets === teamBTickets
-      ? 'Draw'
-      : teamATickets > teamBTickets
-      ? 'Team A wins'
-      : 'Team B wins';
-
-  console.log(matchResults);
+  const teamATickets = getTeamTickets(match, 'a');
+  const teamBTickets = getTeamTickets(match, 'b');
 
   return (
     <main className="main w-3/4 m-auto text-center">
-      <h1 className="mb-8 text-accent font-bold">{`Match ${match.id} - ${winner}`}</h1>
+      <h1 className="mb-8 text-accent font-bold">{`Match ${match.id}`}</h1>
       <div className="flex flex-col justify-around">
-        <TeamResultTable
-          playerResults={matchResults.filter(isTeam('a')).sort(compareScore)}
-        />
+        <div className="flex mt-2 gap-4">
+          <TeamStats team="a" match={match} isWinner={teamATickets > teamBTickets} />
+          <TeamResultTable
+            playerResults={matchResults.filter(isTeam('a')).sort(compareScore)}
+            match={match}
+          />
+        </div>
         <div className="divider">vs</div>
-        <TeamResultTable
-          playerResults={matchResults.filter(isTeam('b')).sort(compareScore)}
-        />
+        <div className="flex mt-2 gap-4">
+          <TeamStats team="b" match={match} isWinner={teamBTickets > teamATickets} />
+          <TeamResultTable
+            playerResults={matchResults.filter(isTeam('b')).sort(compareScore)}
+            match={match}
+          />
+        </div>
       </div>
       <div className="divider" />
       <RoundsList rounds={match.rounds} />
