@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express, { Request } from 'express';
-import { errorHandler, VerifyDiscordRequest } from './utils';
+import { errorHandler, isTextBasedChannel, VerifyDiscordRequest } from './utils';
 import invariant from 'tiny-invariant';
 import { deleteCommands, installCommands } from './commands';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -23,6 +23,9 @@ import {
 import { removeChannel } from './listeners/member-listener';
 import { api } from '@bf2-matchmaking/utils';
 import interactionRouter from './interactions/interaction-router';
+import { getChannelMessage } from '@bf2-matchmaking/discord';
+import { getDiscordClient } from './client';
+import { createMatchFromPubobotEmbed } from './match-tracking-service';
 
 // Create an express app
 const app = express();
@@ -89,6 +92,29 @@ app.post(
     }
   }
 );
+
+app.post('/matches', async (req, res) => {
+  const { channelId, messageId, configId, serverIp } = req.body;
+
+  const discordClient = await getDiscordClient();
+  const channel = await discordClient.channels.fetch(channelId);
+
+  if (!isTextBasedChannel(channel)) {
+    return res.send('Message does not belong to a text channel').sendStatus(400);
+  }
+  const message = await channel.messages.fetch(messageId);
+
+  const { data, error: e } = await createMatchFromPubobotEmbed(
+    message.embeds[0],
+    discordClient.users,
+    configId,
+    serverIp
+  );
+  if (e) {
+    return res.send(e).sendStatus(502);
+  }
+  return res.send(data).sendStatus(200);
+});
 
 app.post(
   '/commands/reinstall',

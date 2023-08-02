@@ -11,6 +11,7 @@ import {
   RESTPostAPICurrentUserCreateDMChannelResult,
   RESTPutAPIChannelMessageReactionResult,
   RESTDeleteAPIChannelAllMessageReactionsResult,
+  RESTGetAPIChannelMessageResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
 import {
@@ -101,6 +102,11 @@ const patchDiscordRoute = async <T>(
 export const getChannelMessages = (channelId: string) =>
   getDiscordRoute<RESTGetAPIChannelMessagesResult>(
     `${Routes.channelMessages(channelId)}?limit=50`
+  );
+
+export const getChannelMessage = (channelId: string, messageId: string) =>
+  getDiscordRoute<RESTGetAPIChannelMessageResult>(
+    `${Routes.channelMessage(channelId, messageId)}`
   );
 
 export const sendChannelMessage = async (

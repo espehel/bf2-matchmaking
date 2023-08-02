@@ -16,8 +16,8 @@ import { logCreateChannelMessage, logEditChannelMessage } from '@bf2-matchmaking
 export const createMatchFromPubobotEmbed = async (
   embed: Embed,
   users: UserManager,
-  config: DiscordConfig,
-  server: RconBf2Server
+  configId: number,
+  serverIp: string
 ) => {
   const team1 = (
     await Promise.all(
@@ -29,7 +29,7 @@ export const createMatchFromPubobotEmbed = async (
       getUserIds(embed, 'MEC')?.map((player) => users.fetch(player)) || []
     )
   ).map(toPlayer);
-  return api.rcon().postMatch({ team1, team2, config: config.id, serverIp: server.ip });
+  return api.rcon().postMatch({ team1, team2, config: configId, serverIp });
 };
 
 const getUserIds = (embed: Embed, name: string) =>

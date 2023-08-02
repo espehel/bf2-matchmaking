@@ -35,6 +35,7 @@ export const bot = () => {
     matchEvent: '/api/match_events',
     matchConfigEvent: '/api/match_config_events',
     commandsReinstall: '/commands/reinstall',
+    matches: '/matches',
   };
   return {
     paths,

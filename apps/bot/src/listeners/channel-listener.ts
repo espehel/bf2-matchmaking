@@ -148,8 +148,8 @@ const passiveCollector =
       const { data, error: e } = await createMatchFromPubobotEmbed(
         message.embeds[0],
         discordClient.users,
-        config,
-        server
+        config.id,
+        server.ip
       );
       if (e) {
         error('passiveCollector', e);
