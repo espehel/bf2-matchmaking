@@ -1,8 +1,14 @@
 import { DiscordConfig, RconBf2Server, User } from '@bf2-matchmaking/types';
-import { Embed, TextChannel, User as DiscordUser, UserManager } from 'discord.js';
+import {
+  Embed,
+  MessageReaction,
+  TextChannel,
+  User as DiscordUser,
+  UserManager,
+} from 'discord.js';
 import { api } from '@bf2-matchmaking/utils';
 import { getServerEmbed, getServerPollEmbed } from '@bf2-matchmaking/discord';
-import { getServerTupleList } from './server-interactions';
+import { getServerStatus, getServerTupleList } from './server-interactions';
 import { compareMessageReactionCount } from './utils';
 import moment from 'moment';
 import { logCreateChannelMessage, logEditChannelMessage } from '@bf2-matchmaking/logging';
@@ -59,19 +65,16 @@ export const sendServerPollMessage = async (
 
   setTimeout(async () => {
     const topEmoji = message.reactions.cache.sort(compareMessageReactionCount).at(0);
-    if (!topEmoji || topEmoji.count < 2) {
-      return await channel.send('No votes received.');
-    }
 
-    const topServer = servers.find(([, , emoji]) => topEmoji.emoji.name === emoji);
-    if (!topServer) {
-      return await channel.send('Failed to add match server');
+    const { server, error } = getTopServer(servers, topEmoji);
+
+    if (!server) {
+      return await channel.send(error);
     }
-    const [selectedServer] = topServer;
 
     const [, editedMessage] = await Promise.all([
       message.reactions.removeAll(),
-      message.edit({ embeds: [getServerEmbed(selectedServer)] }),
+      message.edit({ embeds: [getServerEmbed(server)] }),
     ]);
     logEditChannelMessage(
       channel.id,
@@ -79,6 +82,27 @@ export const sendServerPollMessage = async (
       editedMessage.embeds[0].description,
       editedMessage.embeds[0]
     );
-    onServerChosen(selectedServer);
+    onServerChosen(server);
   }, pollEndTime.diff(moment()));
 };
+
+// TODO: Automatically returns frankfurt server if available and no votes, to get some data going
+const PBASE_FRANKFURT = '95.179.167.83';
+function getTopServer(
+  servers: Array<[RconBf2Server, string, string]>,
+  topEmoji: MessageReaction | undefined
+) {
+  if (!topEmoji || topEmoji.count < 2) {
+    const frankFurtServer = servers.find(([server]) => server.ip === PBASE_FRANKFURT);
+    if (frankFurtServer && getServerStatus(frankFurtServer[0]) === 'available') {
+      return { error: null, server: frankFurtServer[0] };
+    }
+    return { error: 'No votes received.', server: null };
+  }
+
+  const topServer = servers.find(([, , emoji]) => topEmoji.emoji.name === emoji);
+  if (!topServer) {
+    return { error: 'Failed to add match server', server: null };
+  }
+  return { server: topServer[0], error: null };
+}

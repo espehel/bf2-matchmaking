@@ -2,7 +2,7 @@ import { api, externalApi, mapIndexToEmoji } from '@bf2-matchmaking/utils';
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { error, logInternalApiError } from '@bf2-matchmaking/logging';
 
-const getServerStatus = (server: RconBf2Server) => {
+export const getServerStatus = (server: RconBf2Server) => {
   if (server.matches.length > 0) {
     return 'unavailable';
   }
