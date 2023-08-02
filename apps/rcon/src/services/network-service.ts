@@ -128,7 +128,7 @@ export const listenForMatchRounds = async (match: MatchesJoined) => {
 };
 
 const isOngoingRound = (si: ServerInfo) => {
-  if (parseInt(si.timeLeft) <= 0) {
+  if (parseInt(si.roundTime) >= parseInt(si.timeLimit)) {
     return false;
   }
 
