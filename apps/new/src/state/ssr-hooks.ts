@@ -6,7 +6,7 @@ export const useFirstRenderDefault = <T>(defaultValue: T, valueFn: () => T) => {
 
   useEffect(() => {
     setValue(valueFn());
-  }, []);
+  }, [valueFn]);
 
   return value;
 };

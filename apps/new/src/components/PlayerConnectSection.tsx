@@ -52,7 +52,7 @@ export default function PlayerConnectSection({ playerList, session }: Props) {
   if (player === null) {
     return (
       <section className="mt-4">
-        <div>Can't find player with your current public ip address</div>
+        <div>Can&apos;t find player with your current public ip address</div>
       </section>
     );
   }
