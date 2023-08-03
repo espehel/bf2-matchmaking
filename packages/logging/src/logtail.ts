@@ -18,9 +18,7 @@ import { Context } from 'vm';
 
 invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
 const logger = new Logtail(process.env.LOGTAIL_SOURCE);
-export const flush = () => {
-  logger.flush();
-};
+export const flush = () => logger.flush();
 export const logMatchEvent = (
   event: 'summon' | 'draft' | 'reopen' | 'next',
   match: MatchesRow
@@ -97,7 +95,7 @@ export const logEditChannelMessage = (
     .finally(flush);
 };
 
-export const logOngoingMatchCreated = (match: MatchesJoined) =>
+export const logOngoingMatchCreated = (match: MatchesJoined) => {
   logger
     .info(`Created ongoing Match ${match.id}`, {
       match: JSON.stringify(match),
@@ -105,6 +103,7 @@ export const logOngoingMatchCreated = (match: MatchesJoined) =>
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
 
 export const logChangeMatchStatus = (
   status: MatchStatus,
@@ -112,7 +111,7 @@ export const logChangeMatchStatus = (
   match: MatchesJoined,
   si: ServerInfo | null,
   pl: Array<PlayerListItem> | null
-) =>
+) => {
   logger
     .info(`Changing status for Match ${match.id} to ${status} because "${reason}"`, {
       match: JSON.stringify(match),
@@ -122,13 +121,14 @@ export const logChangeMatchStatus = (
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
 
 export const logAddMatchRound = (
   round: RoundsInsert,
   match: MatchesJoined,
   si: ServerInfo | null,
   pl: Array<PlayerListItem> | null
-) =>
+) => {
   logger
     .info(`Adding round to Match ${match.id}`, {
       round: JSON.stringify(round),
@@ -139,26 +139,29 @@ export const logAddMatchRound = (
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
 
-export const logSupabaseError = (message: string, err: PostgrestError) =>
+export const logSupabaseError = (message: string, err: PostgrestError) => {
   logger
     .error(message, { ...err })
     .then((log) => error('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
 
-export const logInternalApiError = (message: string, err: unknown) =>
+export const logInternalApiError = (message: string, err: unknown) => {
   logger
     .error(message, { error: JSON.stringify(err) })
     .then((log) => error('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
 
 export const logPlayerUpdated = (
   message: string,
   player: PlayersRow,
   values: PlayersUpdate
-) =>
+) => {
   logger
     .info(`Updated player ${player.id}`, {
       player: JSON.stringify(player),
@@ -167,10 +170,12 @@ export const logPlayerUpdated = (
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
 
-export const logMessage = (msg: string, context?: Context) =>
+export const logMessage = (msg: string, context?: Context) => {
   logger
     .info(msg, context)
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
