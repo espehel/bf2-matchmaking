@@ -1,14 +1,9 @@
 import {
   DraftStep,
-  isDefined,
-  isNotNull,
   MatchesJoined,
   MatchesRow,
-  MatchResult,
   MatchStatus,
-  PlayerListItem,
   PlayersRow,
-  RoundsJoined,
 } from '@bf2-matchmaking/types';
 
 export const isAssignedTeam = (

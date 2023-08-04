@@ -19,7 +19,10 @@ export default (client: SupabaseClient<Database>) => ({
       .insert([{ config }])
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
-  getMatches: () => client.from('matches').select('*'),
+  getMatches: () =>
+    client
+      .from('matches')
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY),
   getStagingMatchesByChannel: (channel: string) =>
     client
       .from('matches')

@@ -13,7 +13,9 @@ export default async function Header() {
           BF2 Matchmaking
         </Link>
       </div>
-      <div className="navbar-end">
+      <div className="navbar-end gap-4">
+        <Link href="/matches">Matches</Link>
+        <Link href="/results">Results</Link>
         {player && <div className="p-2">{player.full_name}</div>}
         <AuthButton className="btn" session={session.session} />
       </div>

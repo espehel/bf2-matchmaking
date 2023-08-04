@@ -22,3 +22,9 @@ export const compareUpdatedAt = (dateA: UpdatedAt, dateB: UpdatedAt) =>
 
 export const mapIndexToEmoji = (index: number) =>
   ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'].at(index) || '0️⃣';
+
+export const isUniqueObject = <T extends { id: string | number }>(
+  value: T,
+  index: number,
+  self: Array<T>
+) => self.findIndex((o) => o.id === value.id) === index;
