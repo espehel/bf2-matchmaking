@@ -52,7 +52,7 @@ export default function RoundItem({ round }: Props) {
         <button className="card-body flex-row" onClick={onRoundClick}>
           <div className="mr-auto text-left">
             <p className="text-xl">{round.map.name}</p>
-            <p className="text-sm">{roundTime}</p>
+            <p className="text-sm">{`Round time: ${roundTime}`}</p>
           </div>
           <div>
             <p className="text-md font-bold">{round.team1_name}</p>

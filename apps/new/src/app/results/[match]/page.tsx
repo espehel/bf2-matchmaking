@@ -57,7 +57,11 @@ export default async function ResultsMatch({ params }: Props) {
         </div>
       </div>
       <div className="divider" />
-      <RoundsList rounds={match.rounds} />
+      <RoundsList
+        rounds={[...match.rounds].sort((a, b) =>
+          a.created_at.localeCompare(b.created_at)
+        )}
+      />
     </main>
   );
 }

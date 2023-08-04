@@ -28,7 +28,7 @@ export default function MatchResultCard({ match }: Props) {
       </div>
       <div className="flex mr-4 ml-auto">
         {maps.map((map) => (
-          <div className="relative -mr-16 w-44 h-28 overflow-hidden">
+          <div key={map.id} className="relative -mr-16 w-44 h-28 overflow-hidden">
             <Image
               className="mask mask-parallelogram object-cover"
               loader={supabaseImageLoader}
