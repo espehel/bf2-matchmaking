@@ -35,8 +35,12 @@ router.post('/pl', async (req, res) => {
       port,
       password,
     });
-    const data = await client.send('bf2cc pl');
-    res.send(mapListPlayers(data));
+    try {
+      const data = await client.send('bf2cc pl');
+      res.send(mapListPlayers(data));
+    } catch (e) {
+      res.status(502).send(e);
+    }
   } else {
     res.status(400).send('Missing host or port.');
   }

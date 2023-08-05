@@ -1,4 +1,4 @@
-import { PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import { GameStatus, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
 
 export const mapServerInfo = (data?: string): ServerInfo | null => {
   if (!data) {
@@ -34,7 +34,7 @@ export const mapServerInfo = (data?: string): ServerInfo | null => {
     joiningPlayers: array[4],
     connectedPlayers: array[3],
     maxPlayers: array[2],
-    currentGameStatus: array[1],
+    currentGameStatus: array[1] as GameStatus,
     version: array[0],
   };
 };

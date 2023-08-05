@@ -49,9 +49,18 @@ export interface PostgrestError {
   code: string;
 }
 
+export enum GameStatus {
+  Playing = '1',
+  EndGame = '2',
+  PreGame = '3',
+  Paused = '4',
+  RestartServer = '5',
+  NotConnected = '6',
+}
+
 export interface ServerInfo {
   version: string;
-  currentGameStatus: string;
+  currentGameStatus: GameStatus;
   maxPlayers: string;
   connectedPlayers: string;
   joiningPlayers: string;
