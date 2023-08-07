@@ -26,39 +26,45 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/pl', async (req, res) => {
-  const { host, port, password } = req.body;
+router.get('/:ip/pl', async (req, res) => {
+  const { data, error } = await client().getServerRcon(req.params.ip);
 
-  if (host && port) {
-    const client = await createClient({
-      host,
-      port,
-      password,
-    });
-    try {
-      const data = await client.send('bf2cc pl');
-      res.send(mapListPlayers(data));
-    } catch (e) {
-      res.status(502).send(e);
-    }
-  } else {
-    res.status(400).send('Missing host or port.');
+  if (error) {
+    return res.status(502).send(error);
+  }
+
+  const rconClient = await createClient({
+    host: data.id,
+    port: data.rcon_port,
+    password: data.rcon_pw,
+  });
+
+  try {
+    const pl = await rconClient.send('bf2cc pl').then(mapListPlayers);
+    res.send(pl);
+  } catch (e) {
+    res.status(502).send(e);
   }
 });
 
-router.post('/si', async (req, res) => {
-  const { host, port, password } = req.body;
+router.get('/:ip/si', async (req, res) => {
+  const { data, error } = await client().getServerRcon(req.params.ip);
 
-  if (host && port) {
-    const client = await createClient({
-      host,
-      port,
-      password,
-    });
-    const data = await client.send('bf2cc si');
-    res.send(mapServerInfo(data));
-  } else {
-    res.status(400).send('Missing host or port.');
+  if (error) {
+    return res.status(502).send(error);
+  }
+
+  const rconClient = await createClient({
+    host: data.id,
+    port: data.rcon_port,
+    password: data.rcon_pw,
+  });
+
+  try {
+    const si = await rconClient.send('bf2cc si').then(mapServerInfo);
+    res.send(si);
+  } catch (e) {
+    res.status(502).send(e);
   }
 });
 

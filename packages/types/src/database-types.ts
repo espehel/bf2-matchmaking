@@ -8,6 +8,7 @@ export type MatchPlayersInsert = Database['public']['Tables']['match_players']['
 export type RoundsRow = Database['public']['Tables']['rounds']['Row'];
 export type ServersRow = Database['public']['Tables']['servers']['Row'];
 export type AdminRolesRow = Database['public']['Tables']['admin_roles']['Row'];
+export type ServerRconsRow = Database['public']['Tables']['server_rcons']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -65,6 +66,8 @@ export interface RoundsJoined extends Omit<RoundsRow, 'map' | 'server'> {
 export interface ServersJoined extends ServersRow {
   matches: Array<{ id: number; status: string }>;
 }
+
+export type ServersWithRcon = ServerRconsRow & ServersRow;
 
 export type QuickMatch = [MatchConfigsRow, MatchesJoined | null];
 

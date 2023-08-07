@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import { PostgrestResponse, SupabaseClient } from '@supabase/supabase-js';
 import matches from './matches-api';
 import {
   Database,
@@ -10,11 +10,16 @@ import {
   PlayersUpdate,
   RoundsInsert,
   RoundsJoined,
+  ServerRconsRow,
   ServersJoined,
+  ServersRow,
 } from '@bf2-matchmaking/types';
+import { PostgrestSingleResponse } from '@supabase/postgrest-js/src/types';
 
 export default (client: SupabaseClient<Database>) => ({
   ...matches(client),
+  getServerRcon: (ip: string) =>
+    client.from('server_rcons').select('*').eq('id', ip).single(),
   getPlayerByUserId: (userId?: string) =>
     client.from('players').select('*').eq('user_id', userId).single(),
   getPlayers: () => client.from('players').select('*'),

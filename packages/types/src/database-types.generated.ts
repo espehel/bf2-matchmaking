@@ -14,18 +14,21 @@ export interface Database {
           created_at: string
           match_admin: boolean
           player_id: string
+          server_admin: boolean
           updated_at: string
         }
         Insert: {
           created_at?: string
           match_admin?: boolean
           player_id: string
+          server_admin?: boolean
           updated_at?: string
         }
         Update: {
           created_at?: string
           match_admin?: boolean
           player_id?: string
+          server_admin?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -366,6 +369,34 @@ export interface Database {
           {
             foreignKeyName: "rounds_server_fkey"
             columns: ["server"]
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          }
+        ]
+      }
+      server_rcons: {
+        Row: {
+          created_at: string | null
+          id: string
+          rcon_port: number
+          rcon_pw: string
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          rcon_port: number
+          rcon_pw: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rcon_port?: number
+          rcon_pw?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_rcons_id_fkey"
+            columns: ["id"]
             referencedRelation: "servers"
             referencedColumns: ["ip"]
           }
