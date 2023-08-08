@@ -3,41 +3,26 @@ import invariant from 'tiny-invariant';
 import { createClient } from '../net/rcon-client';
 import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
 import { client } from '@bf2-matchmaking/supabase';
-import { error, logSupabaseError } from '@bf2-matchmaking/logging';
+import { logSupabaseError } from '@bf2-matchmaking/logging';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  const { cmd } = req.query;
-  invariant(process.env.RCON_HOST, 'HOST not defined in .env');
-  invariant(process.env.RCON_PORT, 'PORT not defined in .env');
-  invariant(process.env.RCON_PASSWORD, 'PASSWORD not defined in .env');
+router.post('/pl', async (req, res) => {
+  const { host, port, password } = req.body;
 
-  const client = await createClient({
-    host: process.env.RCON_HOST,
-    port: parseInt(process.env.RCON_PORT),
-    password: process.env.RCON_PASSWORD,
-  });
-  if (cmd && cmd === 'bf2cc si') {
-    const data = await client.send(cmd.toString());
-    res.send(mapServerInfo(data));
-  } else {
-    res.send('No valid command defined.');
-  }
-});
-
-router.get('/:ip/pl', async (req, res) => {
-  const { data, error } = await client().getServerRcon(req.params.ip);
-
-  if (error) {
-    return res.status(502).send(error);
+  if (!(host || port || password)) {
+    return res.status(400).send('Missing host, port or password.');
   }
 
   const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
+    host,
+    port,
+    password,
   });
+
+  if (!rconClient.connected) {
+    return res.status(502).send(rconClient.error);
+  }
 
   try {
     const pl = await rconClient.send('bf2cc pl').then(mapListPlayers);
@@ -47,18 +32,22 @@ router.get('/:ip/pl', async (req, res) => {
   }
 });
 
-router.get('/:ip/si', async (req, res) => {
-  const { data, error } = await client().getServerRcon(req.params.ip);
+router.post('/si', async (req, res) => {
+  const { host, port, password } = req.body;
 
-  if (error) {
-    return res.status(502).send(error);
+  if (!(host || port || password)) {
+    return res.status(400).send('Missing host, port or password.');
   }
 
   const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
+    host,
+    port,
+    password,
   });
+
+  if (!rconClient.connected) {
+    return res.status(502).send(rconClient.error);
+  }
 
   try {
     const si = await rconClient.send('bf2cc si').then(mapServerInfo);
@@ -127,6 +116,25 @@ router.get('/:serverIp/:playerId', async (req, res) => {
     return res.status(200).send(player);
   }
   return res.status(404).send('Player not found.');
+});
+
+router.get('/', async (req, res) => {
+  const { cmd } = req.query;
+  invariant(process.env.RCON_HOST, 'HOST not defined in .env');
+  invariant(process.env.RCON_PORT, 'PORT not defined in .env');
+  invariant(process.env.RCON_PASSWORD, 'PASSWORD not defined in .env');
+
+  const client = await createClient({
+    host: process.env.RCON_HOST,
+    port: parseInt(process.env.RCON_PORT),
+    password: process.env.RCON_PASSWORD,
+  });
+  if (cmd && cmd === 'bf2cc si') {
+    const data = await client.send(cmd.toString());
+    res.send(mapServerInfo(data));
+  } else {
+    res.send('No valid command defined.');
+  }
 });
 
 export default router;

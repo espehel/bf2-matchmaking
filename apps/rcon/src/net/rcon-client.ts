@@ -15,8 +15,8 @@ interface RconClient {
   send: (message: string) => Promise<string>;
   listen: (cmd: string, cb: (response: string) => void) => void;
 }
-const SEND_TIMEOUT = 3000;
-export const createClient = ({ host, port, password, timeout = 0 }: Options) => {
+const TIMEOUT = 3000;
+export const createClient = ({ host, port, password, timeout = TIMEOUT }: Options) => {
   return new Promise<RconClient>((resolve, reject) => {
     let connected = false;
     const client = net.connect({
@@ -76,7 +76,7 @@ export const createClient = ({ host, port, password, timeout = 0 }: Options) => 
           });
           setTimeout(() => {
             reject(`Command ${message} timed out`);
-          }, SEND_TIMEOUT);
+          }, TIMEOUT);
         }),
       listen: (cmd: string, cb: (response: string) => void) => {
         info('client', `Start listening with command: ${cmd}`);

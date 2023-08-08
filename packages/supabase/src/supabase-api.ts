@@ -10,7 +10,9 @@ import {
   PlayersUpdate,
   RoundsInsert,
   RoundsJoined,
+  ServerRconsInsert,
   ServerRconsRow,
+  ServersInsert,
   ServersJoined,
   ServersRow,
 } from '@bf2-matchmaking/types';
@@ -41,6 +43,10 @@ export default (client: SupabaseClient<Database>) => ({
       .select<'*, map(*), server(*)', RoundsJoined>('*, map(*), server(*)')
       .order('id', { ascending: false })
       .limit(limit || 50),
+  createServer: (server: ServersInsert) =>
+    client.from('servers').insert([server]).select().single(),
+  createServerRcon: (server: ServerRconsInsert) =>
+    client.from('server_rcons').insert([server]),
   getServers: () =>
     client
       .from('servers')

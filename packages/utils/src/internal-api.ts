@@ -1,4 +1,5 @@
 import {
+  PostRconRequestBody,
   MatchConfigEvent,
   MatchEvent,
   PlayerListItem,
@@ -12,20 +13,26 @@ import { getJSON, postJSON } from './fetcher';
 export const rcon = () => {
   const basePath = 'https://bf2-rcon-api-production.up.railway.app';
   const paths = {
-    rconServerInfo: (ip: string) => `/rcon/${ip}/si`,
-    rconPlayerList: (ip: string) => `/rcon/${ip}/pl`,
+    rconServerInfo: () => '/rcon/si',
+    rconPlayerList: () => '/rcon/pl',
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
+    serverInfo: (ip: string) => `/servers/${ip}/si`,
+    serverPlayerList: (ip: string) => `/servers/${ip}/pl`,
     matches: () => '/matches',
     rconServerPlayer: (serverIp: string, playerId: string) =>
       `/rcon/${serverIp}/${playerId}`,
   };
   return {
     paths,
-    getRconServerInfo: (ip: string) =>
-      getJSON<ServerInfo>(basePath.concat(paths.rconServerInfo(ip))),
-    getRconPlayerList: (ip: string) =>
-      getJSON<Array<PlayerListItem>>(basePath.concat(paths.rconPlayerList(ip))),
+    postRconServerInfo: (body: PostRconRequestBody) =>
+      postJSON<ServerInfo>(basePath.concat(paths.rconServerInfo()), body),
+    postRconPlayerList: (body: PostRconRequestBody) =>
+      postJSON<ServerInfo>(basePath.concat(paths.rconPlayerList()), body),
+    getServerInfo: (ip: string) =>
+      getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip))),
+    getServerPlayerList: (ip: string) =>
+      getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip))),
     getServers: () => getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers())),
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
     postMatch: (body: PostMatchesRequestBody) =>
@@ -46,45 +53,9 @@ export const bot = () => {
   };
   return {
     paths,
-    postMatchEvent: async (matchId: number, event: MatchEvent) => {
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-      try {
-        const res = await fetch(`${basePath}${paths.matchEvent}`, {
-          headers,
-          method: 'POST',
-          body: JSON.stringify({ matchId, event }),
-        });
-        if (res.ok) {
-          return { data: res, error: null };
-        } else {
-          const error = await res.text();
-          return { data: null, error };
-        }
-      } catch (error) {
-        return { data: null, error };
-      }
-    },
-    postMatchConfigEvent: async (channelId: string, event: MatchConfigEvent) => {
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-      try {
-        const res = await fetch(`${basePath}${paths.matchConfigEvent}`, {
-          headers,
-          method: 'POST',
-          body: JSON.stringify({ channelId, event }),
-        });
-        if (res.ok) {
-          return { data: res, error: null };
-        } else {
-          const error = await res.text();
-          return { data: null, error };
-        }
-      } catch (error) {
-        return { data: null, error };
-      }
-    },
+    postMatchEvent: (matchId: number, event: MatchEvent) =>
+      postJSON(basePath.concat(paths.matchEvent), event),
+    postMatchConfigEvent: (channelId: string, event: MatchConfigEvent) =>
+      postJSON(basePath.concat(paths.matchConfigEvent), event),
   };
 };
