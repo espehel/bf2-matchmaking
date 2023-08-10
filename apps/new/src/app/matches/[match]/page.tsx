@@ -24,7 +24,7 @@ export default async function ResultsMatch({ params }: Props) {
   ];
 
   return (
-    <main className="main w-3/4 m-auto flex flex-col items-center text-center">
+    <main className="main flex flex-col items-center text-center">
       <h1 className="mb-8 text-accent font-bold">{`Match ${match.id}`}</h1>
       <div className="flex justify-center gap-8 border-2 border-primary rounded p-6 bg-base-100">
         <div>

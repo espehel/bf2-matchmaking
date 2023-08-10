@@ -12,9 +12,11 @@ import {
   RoundsJoined,
   ServerRconsInsert,
   ServerRconsRow,
+  ServerRconsUpdate,
   ServersInsert,
   ServersJoined,
   ServersRow,
+  ServersUpdate,
 } from '@bf2-matchmaking/types';
 import { PostgrestSingleResponse } from '@supabase/postgrest-js/src/types';
 
@@ -47,6 +49,10 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('servers').insert([server]).select().single(),
   createServerRcon: (server: ServerRconsInsert) =>
     client.from('server_rcons').insert([server]),
+  updateServer: (ip: string, values: ServersUpdate) =>
+    client.from('servers').update(values).eq('ip', ip).select().single(),
+  updateServerRcon: (id: string, values: ServerRconsUpdate) =>
+    client.from('server_rcons').update(values).eq('id', id).select(),
   getServers: () =>
     client
       .from('servers')

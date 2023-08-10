@@ -41,12 +41,13 @@ export const getJSON = async <T>(url: string): Promise<FetchResult<T>> => {
       headers,
       method: 'GET',
     });
-    const resultBody: T = await res.json();
     const { status, statusText } = res;
     if (res.ok) {
-      return { data: resultBody, error: null, status, statusText };
+      const data: T = await res.json();
+      return { data, error: null, status, statusText };
     } else {
-      return { data: null, error: parseError(resultBody), status, statusText };
+      const error = await res.text();
+      return { data: null, error: parseError(error), status, statusText };
     }
   } catch (error) {
     return { data: null, error: parseError(error), status: -1, statusText: '' };
@@ -68,12 +69,13 @@ export const postJSON = async <T>(
       method: 'POST',
       body: bodyInit,
     });
-    const resultBody: T = await res.json();
     const { status, statusText } = res;
     if (res.ok) {
-      return { data: resultBody, error: null, status, statusText };
+      const data: T = await res.json();
+      return { data, error: null, status, statusText };
     } else {
-      return { data: null, error: parseError(resultBody), status, statusText };
+      const error = await res.text();
+      return { data: null, error: parseError(error), status, statusText };
     }
   } catch (error) {
     return { data: null, error: parseError(error), status: -1, statusText: '' };
@@ -82,7 +84,9 @@ export const postJSON = async <T>(
 
 export const verify = <T>(result: FetchResult<T>): T => {
   if (result.error) {
-    throw new Error(JSON.stringify(result.error));
+    throw new Error(
+      `Message: ${result.error.message}, status: ${result.status} ${result.statusText}`
+    );
   }
   return result.data as T;
 };

@@ -40,7 +40,7 @@ export default function Index() {
   const user = useUser();
 
   const isAdmin = Boolean(
-    player && matchAdmins && matchAdmins.some((admin) => admin.player_id === player.id)
+    player && matchAdmins && matchAdmins.some((admin) => admin.user_id === player.user_id)
   );
 
   useSubscribeMatchPlayer(() => {

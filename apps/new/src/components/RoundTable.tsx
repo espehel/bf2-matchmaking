@@ -18,7 +18,7 @@ export default function RoundTable({ playerList, serverInfo }: Props) {
       <thead>
         <tr>
           <th />
-          <th className="">Name</th>
+          <th>Name</th>
           <th>Score</th>
           <th>Kills</th>
           <th>Deaths</th>

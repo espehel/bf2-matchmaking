@@ -13,9 +13,13 @@ export type ServerRconsRow = Database['public']['Tables']['server_rcons']['Row']
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
 export type MatchesInsert = Database['public']['Tables']['matches']['Insert'];
+export type ServersInsert = Database['public']['Tables']['servers']['Insert'];
+export type ServerRconsInsert = Database['public']['Tables']['server_rcons']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
+export type ServersUpdate = Database['public']['Tables']['servers']['Update'];
+export type ServerRconsUpdate = Database['public']['Tables']['server_rcons']['Update'];
 
 export enum MatchStatus {
   Open = 'Open',

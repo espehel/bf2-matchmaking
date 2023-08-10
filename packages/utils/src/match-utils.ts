@@ -18,8 +18,8 @@ export const getAssignedTeam = (
 ): string | null | undefined =>
   match.teams.find((player) => player.player_id === playerId)?.team;
 
-export const isOpen = (match: MatchesRow) => match.status === MatchStatus.Open;
-export const isStarted = (match: MatchesRow) =>
+export const isOpen = (match: MatchesJoined) => match.status === MatchStatus.Open;
+export const isStarted = (match: MatchesJoined) =>
   match.status === MatchStatus.Ongoing || match.status === MatchStatus.Closed;
 
 export const getTeamCaptain = (match: MatchesJoined, team: string): PlayersRow | null => {

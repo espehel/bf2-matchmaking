@@ -61,9 +61,9 @@ export interface PostMatchesRequestBody {
 }
 
 export interface PostRconRequestBody {
-  address: string;
-  rconPort: string;
-  rconPw: string;
+  host: string;
+  port: string;
+  password: string;
 }
 
 export type PostMatchResult = MatchesJoined;

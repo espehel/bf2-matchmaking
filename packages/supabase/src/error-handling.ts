@@ -13,3 +13,6 @@ export const verifySingleResult = <T>({ data, error }: PostgrestSingleResponse<T
   }
   return data;
 };
+
+export const hasError = (result: PostgrestSingleResponse<unknown>) =>
+  Boolean(result.error);

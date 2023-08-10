@@ -37,7 +37,7 @@ export default async function ResultsMatch({ params }: Props) {
   const teamBTickets = getTeamTickets(match, 'b');
 
   return (
-    <main className="main w-3/4 m-auto text-center">
+    <main className="main text-center">
       <h1 className="mb-8 text-accent font-bold">{`Match ${match.id}`}</h1>
       <div className="flex flex-col justify-around">
         <div className="flex mt-2 gap-4">
