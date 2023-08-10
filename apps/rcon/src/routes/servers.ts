@@ -20,6 +20,10 @@ router.get('/:ip/pl', async (req, res) => {
     password: data.rcon_pw,
   });
 
+  if (rconClient.error) {
+    return res.status(502).send(rconClient.error);
+  }
+
   try {
     const pl = await rconClient.send('bf2cc pl').then(mapListPlayers);
     res.send(pl);
@@ -40,6 +44,10 @@ router.get('/:ip/si', async (req, res) => {
     port: data.rcon_port,
     password: data.rcon_pw,
   });
+
+  if (rconClient.error) {
+    return res.status(502).send(rconClient.error);
+  }
 
   try {
     const si = await rconClient.send('bf2cc si').then(mapServerInfo);
@@ -68,7 +76,7 @@ router.get('/:ip', async (req, res) => {
     password,
   });
 
-  if (!rconClient.connected) {
+  if (rconClient.error) {
     return res.status(502).send(rconClient.error);
   }
 
@@ -111,7 +119,7 @@ router.get('/', async (req, res) => {
         password,
         timeout: 2000,
       });
-      if (rconClient.connected) {
+      if (!rconClient.error) {
         const si = await rconClient.send('bf2cc si');
         return { ...server, info: mapServerInfo(si) };
       }

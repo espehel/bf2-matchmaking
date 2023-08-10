@@ -11,13 +11,13 @@ interface Options {
 
 interface RconClient {
   connected: boolean;
-  error: unknown;
+  error: string | null;
   send: (message: string) => Promise<string>;
   listen: (cmd: string, cb: (response: string) => void) => void;
 }
 const TIMEOUT = 3000;
 export const createClient = ({ host, port, password, timeout = TIMEOUT }: Options) => {
-  return new Promise<RconClient>((resolve, reject) => {
+  return new Promise<RconClient>((resolve) => {
     let connected = false;
     const client = net.connect({
       host,
@@ -28,20 +28,19 @@ export const createClient = ({ host, port, password, timeout = TIMEOUT }: Option
 
     client.on('connect', () => {
       info('client', 'Connected');
-      connected = true;
       client.setTimeout(0);
     });
 
     client.setTimeout(timeout);
     client.on('timeout', () => {
       error('createClient', `Socket timed out during connection ${host}:${port}`);
-      client.end();
+      client.destroy();
       resolve({ ...api, connected, error: 'Connection Timeout' });
     });
 
     client.once('error', (err) => {
       error('createClient', err);
-      resolve({ ...api, connected, error: err });
+      resolve({ ...api, connected, error: err.message });
     });
 
     client.on('data', (data) => {
@@ -57,11 +56,23 @@ export const createClient = ({ host, port, password, timeout = TIMEOUT }: Option
               .digest('hex') +
             '\n'
         );
+
+        setTimeout(() => {
+          if (!connected) {
+            error(
+              'createClient',
+              `Socket timed out during authentication ${host}:${port}`
+            );
+            client.destroy();
+            resolve({ ...api, connected, error: 'Authentication Timeout' });
+          }
+        }, TIMEOUT);
       }
 
       if (sent.indexOf('Authentication successful') != -1) {
         info('client', 'Authenticated');
-        resolve({ ...api, connected, error });
+        connected = true;
+        resolve({ ...api, connected, error: null });
       }
     });
 
