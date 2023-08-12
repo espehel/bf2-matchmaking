@@ -31,7 +31,10 @@ const parseError = (error: any): FetchError => {
   }
   return { message: JSON.stringify(error) };
 };
-export const getJSON = async <T>(url: string): Promise<FetchResult<T>> => {
+export const getJSON = async <T>(
+  url: string,
+  options: Partial<RequestInit> = {}
+): Promise<FetchResult<T>> => {
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -40,6 +43,7 @@ export const getJSON = async <T>(url: string): Promise<FetchResult<T>> => {
     const res = await fetch(url, {
       headers,
       method: 'GET',
+      ...options,
     });
     const { status, statusText } = res;
     if (res.ok) {
@@ -56,7 +60,8 @@ export const getJSON = async <T>(url: string): Promise<FetchResult<T>> => {
 
 export const postJSON = async <T>(
   url: string,
-  body: unknown
+  body: unknown,
+  options: Partial<RequestInit> = {}
 ): Promise<FetchSuccessResponse<T> | FetchErrorResponse> => {
   const headers = {
     'Content-Type': 'application/json',
@@ -68,9 +73,12 @@ export const postJSON = async <T>(
       headers,
       method: 'POST',
       body: bodyInit,
+      cache: 'no-store',
     });
     const { status, statusText } = res;
-    if (res.ok) {
+    if (status === 204) {
+      return { data: {} as T, error: null, status, statusText };
+    } else if (res.ok) {
       const data: T = await res.json();
       return { data, error: null, status, statusText };
     } else {

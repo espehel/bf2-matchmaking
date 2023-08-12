@@ -27,8 +27,6 @@ export async function createServer(data: FormData) {
     port: portInput,
   });
 
-  console.log(serverError);
-
   if (serverError) {
     return { error: 'Failed to create server.', data: null };
   }

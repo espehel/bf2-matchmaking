@@ -67,7 +67,11 @@ export interface PostRconRequestBody {
 }
 
 export interface PostServerExecRequestBody {
-  cmd: 'admin.restartMap';
+  cmd: 'admin.restartMap' | 'quit';
+}
+
+export interface PostServerExecResponseBody {
+  reply: string;
 }
 
 export type PostMatchResult = MatchesJoined;

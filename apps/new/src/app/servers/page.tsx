@@ -14,8 +14,8 @@ export default async function Page() {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Port</th>
             <th>Address</th>
+            <th>Port</th>
             <th>In use</th>
             <th>Details</th>
           </tr>
@@ -24,8 +24,8 @@ export default async function Page() {
           {servers.map((server) => (
             <tr key={server.ip} className="hover">
               <td className="truncate">{server.name}</td>
-              <td>{server.port}</td>
               <td>{server.ip}</td>
+              <td>{server.port}</td>
               <td>
                 <MatchServer server={server} />
               </td>

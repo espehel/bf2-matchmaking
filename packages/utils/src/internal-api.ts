@@ -8,6 +8,7 @@ import {
   RconBf2Server,
   ServerInfo,
   PostServerExecRequestBody,
+  PostServerExecResponseBody,
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
 
@@ -34,14 +35,16 @@ export const rcon = () => {
     postRconPlayerList: (body: PostRconRequestBody) =>
       postJSON<ServerInfo>(basePath.concat(paths.rconPlayerList()), body),
     getServerInfo: (ip: string) =>
-      getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip))),
+      getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip)), { cache: 'no-store' }),
     postServerExec: (ip: string, body: PostServerExecRequestBody) =>
-      postJSON(basePath.concat(paths.serverExec(ip)), body),
-    postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverInfo(ip)), {}),
+      postJSON<PostServerExecResponseBody>(basePath.concat(paths.serverExec(ip)), body),
+    postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
     postServerUnpause: (ip: string) =>
-      postJSON(basePath.concat(paths.serverInfo(ip)), {}),
+      postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
     getServerPlayerList: (ip: string) =>
-      getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip))),
+      getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip)), {
+        cache: 'no-store',
+      }),
     getServers: () => getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers())),
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
     postMatch: (body: PostMatchesRequestBody) =>
