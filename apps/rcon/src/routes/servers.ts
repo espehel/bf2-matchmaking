@@ -7,6 +7,85 @@ import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
 
 const router = express.Router();
 
+router.post('/:ip/exec', async (req, res) => {
+  const { cmd } = req.body;
+
+  if (typeof cmd !== 'string') {
+    return res.status(400);
+  }
+
+  const { data, error } = await client().getServerRcon(req.params.ip);
+
+  if (error) {
+    return res.status(502).send(error);
+  }
+
+  const rconClient = await createClient({
+    host: data.id,
+    port: data.rcon_port,
+    password: data.rcon_pw,
+  });
+
+  if (rconClient.error) {
+    return res.status(502).send(rconClient.error);
+  }
+
+  try {
+    const result = await rconClient.send(`exec ${cmd}`);
+    res.send(result);
+  } catch (e) {
+    res.status(502).send(e);
+  }
+});
+router.post('/:ip/unpause', async (req, res) => {
+  const { data, error } = await client().getServerRcon(req.params.ip);
+
+  if (error) {
+    return res.status(502).send(error);
+  }
+
+  const rconClient = await createClient({
+    host: data.id,
+    port: data.rcon_port,
+    password: data.rcon_pw,
+  });
+
+  if (rconClient.error) {
+    return res.status(502).send(rconClient.error);
+  }
+
+  try {
+    const result = await rconClient.send('bf2cc unpause');
+    res.send(result);
+  } catch (e) {
+    res.status(502).send(e);
+  }
+});
+router.post('/:ip/pause', async (req, res) => {
+  const { data, error } = await client().getServerRcon(req.params.ip);
+
+  if (error) {
+    return res.status(502).send(error);
+  }
+
+  const rconClient = await createClient({
+    host: data.id,
+    port: data.rcon_port,
+    password: data.rcon_pw,
+  });
+
+  if (rconClient.error) {
+    return res.status(502).send(rconClient.error);
+  }
+
+  try {
+    const result = await rconClient.send('bf2cc pause');
+    res.send(result);
+  } catch (e) {
+    res.status(502).send(e);
+  }
+});
+
 router.get('/:ip/pl', async (req, res) => {
   const { data, error } = await client().getServerRcon(req.params.ip);
 

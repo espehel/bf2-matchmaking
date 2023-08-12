@@ -66,4 +66,8 @@ export interface PostRconRequestBody {
   password: string;
 }
 
+export interface PostServerExecRequestBody {
+  cmd: 'admin.restartMap';
+}
+
 export type PostMatchResult = MatchesJoined;
