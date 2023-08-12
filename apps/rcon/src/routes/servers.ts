@@ -31,8 +31,8 @@ router.post('/:ip/exec', async (req, res) => {
   }
 
   try {
-    const result = await rconClient.send(`exec ${cmd}`);
-    res.send(result);
+    const reply = await rconClient.send(`exec ${cmd}`);
+    res.send({ reply });
   } catch (e) {
     res.status(502).send(e);
   }
@@ -55,8 +55,8 @@ router.post('/:ip/unpause', async (req, res) => {
   }
 
   try {
-    const result = await rconClient.send('bf2cc unpause');
-    res.send(result);
+    await rconClient.send('bf2cc unpause');
+    res.sendStatus(204);
   } catch (e) {
     res.status(502).send(e);
   }
@@ -79,8 +79,8 @@ router.post('/:ip/pause', async (req, res) => {
   }
 
   try {
-    const result = await rconClient.send('bf2cc pause');
-    res.send(result);
+    await rconClient.send('bf2cc pause');
+    res.sendStatus(204);
   } catch (e) {
     res.status(502).send(e);
   }
