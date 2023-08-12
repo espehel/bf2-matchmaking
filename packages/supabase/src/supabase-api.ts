@@ -100,4 +100,6 @@ export default (client: SupabaseClient<Database>) => ({
   upsertServer: (ip: string, name: string) =>
     client.from('servers').upsert({ ip, name }).select().single(),
   getMatchAdmins: () => client.from('admin_roles').select('*').eq('match_admin', true),
+  getAdminRoles: (userId: string) =>
+    client.from('admin_roles').select('*').eq('user_id', userId).single(),
 });

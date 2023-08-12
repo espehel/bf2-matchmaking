@@ -1,7 +1,5 @@
 'use client';
 import { GameStatus, MatchesJoined, RconBf2Server } from '@bf2-matchmaking/types';
-import { formatSecToMin } from '@bf2-matchmaking/utils';
-import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/actions';
 import AsyncActionButton from '@/components/AsyncActionButton';
 import { useServerRestart } from '@/state/server-hooks';
@@ -24,12 +22,6 @@ export default function ServerActions({ match, server }: Props) {
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-x-2">
-        <div>{`Game status: ${getKey(GameStatus, server.info.currentGameStatus)}`}</div>
-        <div>{`Players: ${server.info.connectedPlayers}`}</div>
-        <div>{`Map: ${server.info.currentMapName}`}</div>
-        <div>{`Round time: ${formatSecToMin(server.info.roundTime)}`}</div>
-      </div>
       <div className="flex flex-wrap gap-2 mt-4">
         <AsyncActionButton
           action={handleRestartServerAction}

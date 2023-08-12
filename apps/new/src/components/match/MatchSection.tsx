@@ -3,10 +3,11 @@ import MatchActions from '@/components/match/MatchActions';
 
 interface Props {
   match: MatchesJoined;
+  isMatchAdmin: boolean;
 }
 type PlayerTuple = [MatchPlayersRow, string];
 
-export default function MatchSection({ match }: Props) {
+export default function MatchSection({ match, isMatchAdmin }: Props) {
   const isTeam =
     (team: string) =>
     ([mp]: PlayerTuple) =>
@@ -48,7 +49,7 @@ export default function MatchSection({ match }: Props) {
           </ul>
         </div>
       </div>
-      <MatchActions match={match} />
+      {isMatchAdmin && <MatchActions match={match} />}
     </section>
   );
 }

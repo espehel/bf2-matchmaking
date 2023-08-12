@@ -12,12 +12,14 @@ export default async function ResultsMatch({ params }: Props) {
     .getMatch(parseInt(params.match))
     .then(verifySingleResult);
 
+  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+
   return (
     <main className="main flex flex-col items-center text-center">
       <h1 className="mb-8 text-accent font-bold">{`Match ${match.id}`}</h1>
       <div className="flex gap-8 justify-around w-full">
-        <MatchSection match={match} />
-        <ServerSection match={match} />
+        <MatchSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
+        <ServerSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
       </div>
     </main>
   );

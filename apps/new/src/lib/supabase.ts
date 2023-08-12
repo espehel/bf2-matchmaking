@@ -12,6 +12,13 @@ export const supabase = (cookies: () => ReadonlyRequestCookies) => {
     }
     return { data: null, error };
   }
+  async function getAdminRoles() {
+    const { data, error } = await client.auth.getSession();
+    if (data.session) {
+      return api.getAdminRoles(data.session.user.id);
+    }
+    return { data: null, error };
+  }
 
-  return { ...api, auth: client.auth, getSessionPlayer };
+  return { ...api, auth: client.auth, getSessionPlayer, getAdminRoles };
 };
