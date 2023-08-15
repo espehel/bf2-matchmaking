@@ -1,6 +1,11 @@
 'use client';
 import { GameStatus, MatchesJoined, RconBf2Server } from '@bf2-matchmaking/types';
-import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/actions';
+import {
+  pauseRound,
+  restartRound,
+  setTeams,
+  unpauseRound,
+} from '@/app/matches/[match]/actions';
 import AsyncActionButton from '@/components/AsyncActionButton';
 import { useServerRestart } from '@/state/server-hooks';
 
@@ -58,9 +63,13 @@ export default function ServerActions({ match, server }: Props) {
         <button className="btn btn-primary w-fit" disabled>
           Change map
         </button>
-        <button className="btn btn-primary w-fit" disabled>
+        <AsyncActionButton
+          action={() => setTeams(match, server.ip)}
+          errorMessage="Failed to set teams"
+          successMessage="Teams set"
+        >
           Set teams
-        </button>
+        </AsyncActionButton>
       </div>
     </div>
   );

@@ -22,13 +22,13 @@ export function useServerRestart(
       setRestarted(true);
     }, 15000);
     return restartServer(match.id, server?.ip || '');
-  }, [match, server]);
+  }, [match, server, router]);
 
   useEffect(() => {
     if (isRestarting && isRestarted && server?.info) {
       setRestarting(false);
     }
-  }, [isRestarted, server]);
+  }, [isRestarted, isRestarting, server]);
 
   return [isRestarting, handleRestartServerAction];
 }

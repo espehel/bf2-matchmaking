@@ -7,6 +7,37 @@ import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
 
 const router = express.Router();
 
+router.post('/:ip/players/switch', async (req, res) => {
+  const { players } = req.body;
+  const { data, error } = await client().getServerRcon(req.params.ip);
+
+  if (error) {
+    return res.status(502).send(error);
+  }
+
+  const rconClient = await createClient({
+    host: data.id,
+    port: data.rcon_port,
+    password: data.rcon_pw,
+  });
+
+  if (rconClient.error) {
+    return res.status(502).send(rconClient.error);
+  }
+
+  try {
+    const resultArray = [];
+    for (const playerId of players) {
+      const result = await rconClient.send(`bf2cc switchplayer ${playerId} 3`);
+      resultArray.push(result);
+    }
+
+    res.send(resultArray);
+  } catch (e) {
+    res.status(502).send(e);
+  }
+});
+
 router.post('/:ip/exec', async (req, res) => {
   const { cmd } = req.body;
 
@@ -104,8 +135,13 @@ router.get('/:ip/pl', async (req, res) => {
   }
 
   try {
+    const si = await rconClient.send('bf2cc si').then(mapServerInfo);
+    if (si?.connectedPlayers === '0') {
+      return res.send([]);
+    }
+
     const pl = await rconClient.send('bf2cc pl').then(mapListPlayers);
-    res.send(pl);
+    return res.send(pl);
   } catch (e) {
     res.status(502).send(e);
   }

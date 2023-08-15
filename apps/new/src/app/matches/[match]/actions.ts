@@ -1,11 +1,11 @@
 'use server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import { MatchStatus } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import { revalidatePath } from 'next/cache';
 import { api } from '@bf2-matchmaking/utils';
-import { redirect } from 'next/navigation';
+import { getTeamMap } from '@bf2-matchmaking/utils/src/results-utils';
 
 export async function closeMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
@@ -54,6 +54,40 @@ export async function restartServer(matchId: number, serverIp: string) {
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}
+
+export async function setTeams(match: MatchesJoined, serverIp: string) {
+  const playersResult = await api.rcon().getServerPlayerList(serverIp);
+  const teamMap = getTeamMap(match.rounds.length);
+
+  if (playersResult.error) {
+    return playersResult;
+  }
+
+  const players = playersResult.data
+    .filter((sp) => {
+      const player = match.players.find((p) => p.keyhash === sp.keyhash);
+      if (!player) {
+        return false;
+      }
+      const team = match.teams.find((mp) => mp.player_id === player.id)?.team;
+      if (!team) {
+        return false;
+      }
+      if (teamMap[sp.getTeam] === team) {
+        return false;
+      }
+      return true;
+    })
+    .map(({ index }) => index);
+
+  const result = await api.rcon().postServerPlayersSwitch(serverIp, { players });
+
+  if (!result.error) {
+    revalidatePath(`/matches/${match.id}`);
   }
 
   return result;

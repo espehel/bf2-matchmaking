@@ -56,18 +56,21 @@ const toObject = <T = unknown>(acc: Record<string, T>, curr: Record<string, T>) 
   ...acc,
   ...curr,
 });
+export function getTeamMap(round: number): Record<string, 'a' | 'b'> {
+  return round % 2 === 0 ? { '1': 'a', '2': 'b' } : { '1': 'b', '2': 'a' };
+}
 export function getTeamTickets(match: MatchesJoined, team: 'a' | 'b') {
-  const teamModulo = team === 'a' ? 0 : 1;
   return match.rounds
-    .map((round, i) => (i % 2 === teamModulo ? round.team1_tickets : round.team2_tickets))
+    .map((round, i) =>
+      getTeamMap(i)['1'] === team ? round.team1_tickets : round.team2_tickets
+    )
     .reduce((acc, cur) => acc + parseInt(cur), 0);
 }
 
 export function getTeamRounds(match: MatchesJoined, team: 'a' | 'b') {
-  const teamModulo = team === 'a' ? 0 : 1;
   return match.rounds
     .map((round, i) =>
-      i % 2 === teamModulo
+      getTeamMap(i)['1'] === team
         ? parseInt(round.team1_tickets) - parseInt(round.team2_tickets)
         : parseInt(round.team2_tickets) - parseInt(round.team1_tickets)
     )

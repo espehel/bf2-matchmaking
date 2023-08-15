@@ -9,6 +9,7 @@ import {
   ServerInfo,
   PostServerExecRequestBody,
   PostServerExecResponseBody,
+  PostServerPlayersSwitchRequestBody,
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
 
@@ -24,6 +25,7 @@ export const rcon = () => {
     serverExec: (ip: string) => `/servers/${ip}/exec`,
     serverPause: (ip: string) => `/servers/${ip}/pause`,
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
+    serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     matches: () => '/matches',
     rconServerPlayer: (serverIp: string, playerId: string) =>
       `/rcon/${serverIp}/${playerId}`,
@@ -41,6 +43,8 @@ export const rcon = () => {
     postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
     postServerUnpause: (ip: string) =>
       postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
+    postServerPlayersSwitch: (ip: string, body: PostServerPlayersSwitchRequestBody) =>
+      postJSON(basePath.concat(paths.serverPlayersSwitch(ip)), body),
     getServerPlayerList: (ip: string) =>
       getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip)), {
         cache: 'no-store',

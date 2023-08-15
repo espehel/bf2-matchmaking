@@ -1,23 +1,35 @@
-import { MatchesJoined, MatchPlayersRow } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchPlayersRow, PlayerListItem } from '@bf2-matchmaking/types';
 import MatchActions from '@/components/match/MatchActions';
+import { api } from '@bf2-matchmaking/utils';
+import PlayerItem from '@/components/match/PlayerItem';
 
 interface Props {
   match: MatchesJoined;
   isMatchAdmin: boolean;
 }
-type PlayerTuple = [MatchPlayersRow, string];
+type PlayerTuple = [MatchPlayersRow, string, PlayerListItem | undefined];
 
-export default function MatchSection({ match, isMatchAdmin }: Props) {
-  const isTeam =
-    (team: string) =>
-    ([mp]: PlayerTuple) =>
-      mp.team === team;
+export default async function MatchSection({ match, isMatchAdmin }: Props) {
+  let playerInfo: PlayerListItem[] = [];
+  if (match.server) {
+    const { data } = await api.rcon().getServerPlayerList(match.server?.ip);
+    if (data) {
+      playerInfo = data;
+    }
+  }
 
-  const toPlayerTuple = (mp: MatchPlayersRow, i: number): PlayerTuple => [
-    mp,
-    match.players.find((player) => player.id === mp.player_id)?.full_name ||
-      `Player ${i}`,
-  ];
+  const isTeam = (team: string) => (mp: MatchPlayersRow) => mp.team === team;
+
+  const toPlayerTuple = (mp: MatchPlayersRow, i: number): PlayerTuple => {
+    const player = match.players.find((player) => player.id === mp.player_id);
+    return [
+      mp,
+      player?.full_name || `Player ${i}`,
+      playerInfo.find((info) => player?.keyhash === info.keyhash),
+    ];
+  };
+  const players = match.teams.map(toPlayerTuple);
+  const rounds = match.rounds.length;
 
   return (
     <section className="section">
@@ -28,24 +40,30 @@ export default function MatchSection({ match, isMatchAdmin }: Props) {
         <div>
           <div className="text-xl font-bold mb-2">Team A</div>
           <ul>
-            {match.teams
-              .map(toPlayerTuple)
-              .filter(isTeam('a'))
-              .map(([mp, username]) => (
-                <li key={mp.player_id}>{username}</li>
-              ))}
+            {match.teams.filter(isTeam('a')).map((mp) => (
+              <PlayerItem
+                key={mp.player_id}
+                match={match}
+                playerList={playerInfo}
+                mp={mp}
+                team="a"
+              />
+            ))}
           </ul>
         </div>
         <div className="divider divider-horizontal">vs</div>
         <div>
           <div className="text-xl font-bold mb-2">Team B</div>
           <ul>
-            {match.teams
-              .map(toPlayerTuple)
-              .filter(isTeam('b'))
-              .map(([mp, username]) => (
-                <li key={mp.player_id}>{username}</li>
-              ))}
+            {match.teams.filter(isTeam('b')).map((mp) => (
+              <PlayerItem
+                key={mp.player_id}
+                match={match}
+                playerList={playerInfo}
+                mp={mp}
+                team="b"
+              />
+            ))}
           </ul>
         </div>
       </div>

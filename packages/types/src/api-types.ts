@@ -74,4 +74,8 @@ export interface PostServerExecResponseBody {
   reply: string;
 }
 
+export interface PostServerPlayersSwitchRequestBody {
+  players: Array<string>;
+}
+
 export type PostMatchResult = MatchesJoined;

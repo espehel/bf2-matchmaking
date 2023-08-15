@@ -62,7 +62,13 @@ export const listenForMatchRounds = async (match: MatchesJoined) => {
   const timeout = setTimeout(stopPolling, 1000 * 3600 * 3);
 
   async function pollServerInfo() {
-    const si = await rconClient.send('bf2cc si').then(mapServerInfo);
+    const si = await rconClient
+      .send('bf2cc si')
+      .then(mapServerInfo)
+      .catch((e) => {
+        error('pollServerInfo', e);
+        return null;
+      });
     info('pollServerInfo', `Got server info with game status: ${si?.currentGameStatus}`);
 
     if (!si && rounds.length > 0) {
@@ -111,7 +117,13 @@ export const listenForMatchRounds = async (match: MatchesJoined) => {
     info('pollServerInfo', `Round finished`);
 
     try {
-      const pl = await rconClient.send('bf2cc pl').then(mapListPlayers);
+      const pl = await rconClient
+        .send('bf2cc pl')
+        .then(mapListPlayers)
+        .catch((e) => {
+          error('pollServerInfo', e);
+          return null;
+        });
       info(
         'pollServerInfo',
         `Got playerlist with following players: [${pl?.map((p) => p.getName).join(', ')}]`
