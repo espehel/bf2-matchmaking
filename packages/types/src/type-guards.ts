@@ -27,3 +27,5 @@ export const isDefined = <T>(object: undefined | T): object is T =>
 export const isNotNull = <T>(object: null | T): object is T => object !== null;
 
 export const isString = (text: unknown): text is string => typeof text === 'string';
+
+export const isTruthy = <T>(object: undefined | null | T): object is T => Boolean(object);

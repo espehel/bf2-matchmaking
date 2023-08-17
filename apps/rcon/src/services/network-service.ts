@@ -117,6 +117,7 @@ export const listenForMatchRounds = async (match: MatchesJoined) => {
     info('pollServerInfo', `Round finished`);
 
     try {
+      // TODO: Might be issue when getting PL for 16 players, maybe response is to long for buffer?
       const pl = await rconClient
         .send('bf2cc pl')
         .then(mapListPlayers)

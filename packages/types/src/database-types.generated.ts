@@ -13,6 +13,7 @@ export interface Database {
         Row: {
           created_at: string
           match_admin: boolean
+          player_admin: boolean
           server_admin: boolean
           updated_at: string
           user_id: string
@@ -20,6 +21,7 @@ export interface Database {
         Insert: {
           created_at?: string
           match_admin?: boolean
+          player_admin?: boolean
           server_admin?: boolean
           updated_at?: string
           user_id: string
@@ -27,6 +29,7 @@ export interface Database {
         Update: {
           created_at?: string
           match_admin?: boolean
+          player_admin?: boolean
           server_admin?: boolean
           updated_at?: string
           user_id?: string

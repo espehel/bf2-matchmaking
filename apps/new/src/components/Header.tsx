@@ -14,9 +14,10 @@ export default async function Header() {
         </Link>
       </div>
       <div className="navbar-end gap-4">
-        <Link href="/servers">Servers</Link>
         <Link href="/matches">Matches</Link>
         <Link href="/results">Results</Link>
+        <Link href="/rounds">Rounds</Link>
+        <Link href="/servers">Servers</Link>
         {player && <div className="p-2">{player.full_name}</div>}
         <AuthButton className="btn" session={session.session} />
       </div>
