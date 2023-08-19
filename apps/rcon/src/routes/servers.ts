@@ -1,34 +1,22 @@
 import express from 'express';
-import { error, info } from '@bf2-matchmaking/logging';
-import { client } from '@bf2-matchmaking/supabase';
-import invariant from 'tiny-invariant';
-import { createClient } from '../net/rcon-client';
-import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { rcon, getServerInfo, getPlayerList, exec } from '../net/RconManager';
 
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
   const { players } = req.body;
-  const { data, error } = await client().getServerRcon(req.params.ip);
-
-  if (error) {
-    return res.status(502).send(error);
-  }
-
-  const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
-  });
-
-  if (rconClient.error) {
-    return res.status(502).send(rconClient.error);
-  }
 
   try {
+    const { id, rcon_port, rcon_pw } = await client()
+      .getServerRcon(req.params.ip)
+      .then(verifySingleResult);
+
     const resultArray = [];
     for (const playerId of players) {
-      const result = await rconClient.send(`bf2cc switchplayer ${playerId} 3`);
+      const result = await rcon(id, rcon_port, rcon_pw).then(
+        exec(`bf2cc switchplayer ${playerId} 3`)
+      );
       resultArray.push(result);
     }
 
@@ -45,72 +33,36 @@ router.post('/:ip/exec', async (req, res) => {
     return res.status(400);
   }
 
-  const { data, error } = await client().getServerRcon(req.params.ip);
-
-  if (error) {
-    return res.status(502).send(error);
-  }
-
-  const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
-  });
-
-  if (rconClient.error) {
-    return res.status(502).send(rconClient.error);
-  }
-
   try {
-    const reply = await rconClient.send(`exec ${cmd}`);
+    const { id, rcon_port, rcon_pw } = await client()
+      .getServerRcon(req.params.ip)
+      .then(verifySingleResult);
+
+    const reply = await rcon(id, rcon_port, rcon_pw).then(exec(`exec ${cmd}`));
     res.send({ reply });
   } catch (e) {
     res.status(502).send(e);
   }
 });
 router.post('/:ip/unpause', async (req, res) => {
-  const { data, error } = await client().getServerRcon(req.params.ip);
-
-  if (error) {
-    return res.status(502).send(error);
-  }
-
-  const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
-  });
-
-  if (rconClient.error) {
-    return res.status(502).send(rconClient.error);
-  }
-
   try {
-    await rconClient.send('bf2cc unpause');
+    const { id, rcon_port, rcon_pw } = await client()
+      .getServerRcon(req.params.ip)
+      .then(verifySingleResult);
+
+    await rcon(id, rcon_port, rcon_pw).then(exec('bf2cc unpause'));
     res.sendStatus(204);
   } catch (e) {
     res.status(502).send(e);
   }
 });
 router.post('/:ip/pause', async (req, res) => {
-  const { data, error } = await client().getServerRcon(req.params.ip);
-
-  if (error) {
-    return res.status(502).send(error);
-  }
-
-  const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
-  });
-
-  if (rconClient.error) {
-    return res.status(502).send(rconClient.error);
-  }
-
   try {
-    await rconClient.send('bf2cc pause');
+    const { id, rcon_port, rcon_pw } = await client()
+      .getServerRcon(req.params.ip)
+      .then(verifySingleResult);
+
+    await rcon(id, rcon_port, rcon_pw).then(exec('bf2cc pause'));
     res.sendStatus(204);
   } catch (e) {
     res.status(502).send(e);
@@ -118,29 +70,12 @@ router.post('/:ip/pause', async (req, res) => {
 });
 
 router.get('/:ip/pl', async (req, res) => {
-  const { data, error } = await client().getServerRcon(req.params.ip);
-
-  if (error) {
-    return res.status(502).send(error);
-  }
-
-  const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
-  });
-
-  if (rconClient.error) {
-    return res.status(502).send(rconClient.error);
-  }
-
   try {
-    const si = await rconClient.send('bf2cc si').then(mapServerInfo);
-    if (si?.connectedPlayers === '0') {
-      return res.send([]);
-    }
+    const { id, rcon_port, rcon_pw } = await client()
+      .getServerRcon(req.params.ip)
+      .then(verifySingleResult);
 
-    const pl = await rconClient.send('bf2cc pl').then(mapListPlayers);
+    const pl = await rcon(id, rcon_port, rcon_pw).then(getPlayerList);
     return res.send(pl);
   } catch (e) {
     res.status(502).send(e);
@@ -148,24 +83,12 @@ router.get('/:ip/pl', async (req, res) => {
 });
 
 router.get('/:ip/si', async (req, res) => {
-  const { data, error } = await client().getServerRcon(req.params.ip);
-
-  if (error) {
-    return res.status(502).send(error);
-  }
-
-  const rconClient = await createClient({
-    host: data.id,
-    port: data.rcon_port,
-    password: data.rcon_pw,
-  });
-
-  if (rconClient.error) {
-    return res.status(502).send(rconClient.error);
-  }
-
   try {
-    const si = await rconClient.send('bf2cc si').then(mapServerInfo);
+    const { id, rcon_port, rcon_pw } = await client()
+      .getServerRcon(req.params.ip)
+      .then(verifySingleResult);
+
+    const si = await rcon(id, rcon_port, rcon_pw).then(getServerInfo);
     res.send(si);
   } catch (e) {
     res.status(502).send(e);
@@ -173,71 +96,39 @@ router.get('/:ip/si', async (req, res) => {
 });
 
 router.get('/:ip', async (req, res) => {
-  const { data, error: err } = await client().getServer(req.params.ip);
+  try {
+    const server = await client().getServer(req.params.ip).then(verifySingleResult);
+    const { id, rcon_port, rcon_pw } = await client()
+      .getServerRcon(req.params.ip)
+      .then(verifySingleResult);
 
-  if (err) {
-    error('GET /servers', err);
-    return res.status(502).send(err.message);
+    const info = await rcon(id, rcon_port, rcon_pw).then(getServerInfo);
+    res.send({ ...server, info });
+  } catch (e) {
+    res.status(502).send(e);
   }
-
-  invariant(process.env.RCON_PORT, 'PORT not defined in .env');
-  invariant(process.env.RCON_PASSWORD, 'PASSWORD not defined in .env');
-  const port = parseInt(process.env.RCON_PORT);
-  const password = process.env.RCON_PASSWORD;
-
-  const rconClient = await createClient({
-    host: data.ip,
-    port,
-    password,
-  });
-
-  if (rconClient.error) {
-    return res.status(502).send(rconClient.error);
-  }
-
-  const si = await rconClient.send('bf2cc si');
-
-  res.send({ ...data, info: mapServerInfo(si) });
 });
 
 router.post('/', async (req, res) => {
-  const { ip, serverName } = req.body;
-  info('POST /servers', 'Received request');
-  const { data: server, error: err } = await client().upsertServer(ip, serverName);
-
-  if (err) {
-    error('POST /servers', err);
-    res.status(502).send(err.message);
-  } else {
-    res.status(201).send(server);
-  }
+  res.sendStatus(410);
 });
 
 router.get('/', async (req, res) => {
   const { data, error: err } = await client().getServers();
 
   if (err) {
-    error('GET /servers', err);
     return res.status(502).send(err.message);
   }
 
-  invariant(process.env.RCON_PORT, 'PORT not defined in .env');
-  invariant(process.env.RCON_PASSWORD, 'PASSWORD not defined in .env');
-  const port = parseInt(process.env.RCON_PORT);
-  const password = process.env.RCON_PASSWORD;
-
   const servers = await Promise.all(
     data.map(async (server) => {
-      const rconClient = await createClient({
-        host: server.ip,
-        port,
-        password,
-        timeout: 2000,
-      });
-      if (!rconClient.error) {
-        const si = await rconClient.send('bf2cc si');
-        return { ...server, info: mapServerInfo(si) };
-      }
+      try {
+        const { id, rcon_port, rcon_pw } = await client()
+          .getServerRcon(server.ip)
+          .then(verifySingleResult);
+        const info = await rcon(id, rcon_port, rcon_pw).then(getServerInfo);
+        return { ...server, info };
+      } catch (e) {}
       return { ...server, info: null };
     })
   );
