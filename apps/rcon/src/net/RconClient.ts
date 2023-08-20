@@ -1,4 +1,4 @@
-import net, { AddressInfo } from 'net';
+import net from 'net';
 import { error, info } from '@bf2-matchmaking/logging';
 import crypto from 'crypto';
 
@@ -7,8 +7,15 @@ const TTL = 10 * 60 * 1000;
 
 export class RconClient {
   socket: net.Socket;
-  constructor(socket: net.Socket) {
+  ip: string;
+  port: number;
+  password: string;
+
+  constructor(socket: net.Socket, ip: string, port: number, password: string) {
     this.socket = socket;
+    this.ip = ip;
+    this.port = port;
+    this.password = password;
     this.socket.on('timeout', () => {
       this.socket.destroy();
     });
@@ -73,7 +80,7 @@ export class RconClient {
           info('RconClient', `Authenticated ${host}:${port}`);
           isAuthenticated = true;
           socket.removeAllListeners();
-          resolve(new RconClient(socket));
+          resolve(new RconClient(socket, host, port, password));
         }
       });
 

@@ -36,6 +36,7 @@ invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment
 const logtail = new Logtail(process.env.LOGTAIL_SOURCE);
 export const getExpressAccessLogger = () =>
   expressWinston.logger({
+    level: 'verbose',
     transports: [new transports.Console(), new LogtailTransport(logtail)],
     format: combine(timestamp(), EXPRESS_FORMAT),
     meta: false, // optional: control whether you want to log the meta data about the request (default to true)

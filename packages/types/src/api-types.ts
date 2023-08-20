@@ -1,5 +1,5 @@
-import { MatchesJoined, ServersJoined } from './database-types';
-import { ServerInfo, User } from './index';
+import { MatchesJoined, RoundsInsert, ServersJoined } from './database-types';
+import { PollServerStatus, ServerInfo, User } from './index';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -79,3 +79,8 @@ export interface PostServerPlayersSwitchRequestBody {
 }
 
 export type PostMatchResult = MatchesJoined;
+
+export type GetMatchLiveResponseBody = {
+  round: RoundsInsert | undefined;
+  status: PollServerStatus;
+};

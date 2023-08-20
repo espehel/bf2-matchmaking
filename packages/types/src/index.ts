@@ -174,3 +174,5 @@ export interface MatchResult {
   kills: number;
   deaths: number;
 }
+
+export type PollServerStatus = 'waiting' | 'ongoing' | 'finished';

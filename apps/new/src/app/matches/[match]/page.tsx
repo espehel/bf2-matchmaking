@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import MatchSection from '@/components/match/MatchSection';
 import ServerSection from '@/components/match/ServerSection';
+import LiveSection from '@/components/match/LiveSection';
 
 interface Props {
   params: { match: string };
@@ -20,6 +21,7 @@ export default async function ResultsMatch({ params }: Props) {
       <div className="flex gap-8 justify-around w-full">
         <MatchSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
         <ServerSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
+        <LiveSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
       </div>
     </main>
   );

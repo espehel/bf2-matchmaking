@@ -4,6 +4,7 @@ import {
   MatchConfigsRow,
   MatchesJoined,
   MatchPlayersRow,
+  ServerMatch,
 } from './database-types';
 import { PostgrestError, TeamPlayer } from './index';
 
@@ -12,6 +13,9 @@ export const isDiscordConfig = (
 ): config is DiscordConfig => Boolean(config.channel);
 export const isDiscordMatch = (match: MatchesJoined): match is DiscordMatch =>
   isDiscordConfig(match.config);
+
+export const isServerMatch = (match: MatchesJoined): match is ServerMatch =>
+  Boolean(match.server);
 
 export const isTeamPlayer = (mp: MatchPlayersRow): mp is TeamPlayer =>
   Boolean((mp as TeamPlayer).player);

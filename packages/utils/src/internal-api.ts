@@ -10,6 +10,8 @@ import {
   PostServerExecRequestBody,
   PostServerExecResponseBody,
   PostServerPlayersSwitchRequestBody,
+  RoundsInsert,
+  GetMatchLiveResponseBody,
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
 
@@ -27,6 +29,8 @@ export const rcon = () => {
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     matches: () => '/matches',
+    matchPoll: (matchId: number) => `/matches/${matchId}/poll`,
+    matchLive: (matchId: number) => `/matches/${matchId}/live`,
     rconServerPlayer: (serverIp: string, playerId: string) =>
       `/rcon/${serverIp}/${playerId}`,
   };
@@ -53,6 +57,10 @@ export const rcon = () => {
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
     postMatch: (body: PostMatchesRequestBody) =>
       postJSON<PostMatchResult>(basePath.concat(paths.matches()), body),
+    postMatchPoll: (matchId: number) =>
+      postJSON(basePath.concat(paths.matchPoll(matchId)), {}),
+    getMatchLive: (matchId: number) =>
+      getJSON<GetMatchLiveResponseBody>(basePath.concat(paths.matchLive(matchId))),
     getRconServerPlayer: (serverIp: string, playerId: string) =>
       getJSON<PlayerListItem>(
         basePath.concat(paths.rconServerPlayer(serverIp, playerId))

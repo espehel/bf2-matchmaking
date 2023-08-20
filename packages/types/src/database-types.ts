@@ -82,3 +82,7 @@ export interface DiscordConfig extends MatchConfigsRow {
 export interface DiscordMatch extends MatchesJoined {
   config: DiscordConfig;
 }
+
+export interface ServerMatch extends MatchesJoined {
+  server: ServersRow;
+}
