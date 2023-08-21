@@ -17,3 +17,6 @@ export const getMatchIdFromEmbed = (embed: {
 
 export const createPlayerMentions = (match: MatchesJoined) =>
   match.teams.map((player) => `<@${player.player_id}>`).join(', ');
+
+export const replaceDiscordGG = (text: string) =>
+  text.replace('discord.gg', '*discord.gg*');

@@ -9,7 +9,7 @@ import {
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
 import moment, { Moment } from 'moment';
-import { getEmbedTitle } from './embed-utils';
+import { getEmbedTitle, replaceDiscordGG } from './embed-utils';
 
 export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEmbed => ({
   title: getEmbedTitle(match),
@@ -26,7 +26,9 @@ export const getServerPollEmbed = (
   fields: createServerPollFields(servers),
 });
 export const getServerEmbed = (server: RconBf2Server) => ({
-  description: `Join [${server.name}](https://joinme.click/g/bf2/${server.ip}:${server.port})`,
+  description: `Join [${replaceDiscordGG(server.name)}](https://joinme.click/g/bf2/${
+    server.ip
+  }:${server.port})`,
   fields: [
     { name: 'ip', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },

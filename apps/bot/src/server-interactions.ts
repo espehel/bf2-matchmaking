@@ -2,17 +2,13 @@ import { api, externalApi, mapIndexToEmoji } from '@bf2-matchmaking/utils';
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { error, logInternalApiError } from '@bf2-matchmaking/logging';
 
-export const getServerStatus = (server: RconBf2Server) => {
-  if (server.matches.length > 0) {
-    return 'unavailable';
-  }
+export const getServerPlayerCount = (server: RconBf2Server) => {
   if (!server.info) {
-    return 'offline';
+    return '(0/0)';
   }
-  if (parseInt(server.info.connectedPlayers) > 0) {
-    return 'in use';
-  }
-  return 'available';
+  return `(${parseInt(server.info.connectedPlayers)}/${parseInt(
+    server.info.maxPlayers
+  )})`;
 };
 
 const getServerLocation = async (server: RconBf2Server) => {
@@ -24,11 +20,11 @@ const getServerLocation = async (server: RconBf2Server) => {
 };
 
 export const getServerDescription = async (server: RconBf2Server) =>
-  `${getServerStatus(server)}: ${server.name} (${await getServerLocation(server)})`;
+  `${getServerPlayerCount(server)} ${server.name} (${await getServerLocation(server)})`;
 export const getServerDescriptionWithIp = async (server: RconBf2Server) =>
-  `${getServerStatus(server)}: ${server.name} [${server.ip}] (${await getServerLocation(
-    server
-  )})`;
+  `${getServerPlayerCount(server)} ${server.name} [${
+    server.ip
+  }] (${await getServerLocation(server)})`;
 
 export const getServerList = async () => {
   const { data, error: err } = await api.rcon().getServers();
@@ -77,4 +73,4 @@ const withEmoji = (
 };
 
 export const isValidServer = (server: RconBf2Server) =>
-  getServerStatus(server) === 'available';
+  getServerPlayerCount(server) === 'available';

@@ -21,9 +21,8 @@ import {
   updateChannelListener,
 } from './listeners/channel-listener';
 import { removeChannel } from './listeners/member-listener';
-import { api } from '@bf2-matchmaking/utils';
+import { api, verify } from '@bf2-matchmaking/utils';
 import interactionRouter from './interactions/interaction-router';
-import { getChannelMessage } from '@bf2-matchmaking/discord';
 import { getDiscordClient } from './client';
 import { createMatchFromPubobotEmbed } from './match-tracking-service';
 
@@ -104,16 +103,18 @@ app.post('/matches', async (req, res) => {
   }
   const message = await channel.messages.fetch(messageId);
 
-  const { data, error: e } = await createMatchFromPubobotEmbed(
-    message.embeds[0],
-    discordClient.users,
-    configId,
-    serverIp
-  );
-  if (e) {
+  try {
+    const match = await createMatchFromPubobotEmbed(
+      message.embeds[0],
+      discordClient.users,
+      configId,
+      serverIp
+    );
+    await api.rcon().postMatchPoll(match.id).then(verify);
+    return res.send(match).sendStatus(200);
+  } catch (e) {
     return res.send(e).sendStatus(502);
   }
-  return res.send(data).sendStatus(200);
 });
 
 app.post(

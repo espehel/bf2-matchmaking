@@ -5,7 +5,12 @@ import {
 } from 'discord-api-types/v10';
 import { verifyKey } from 'discord-interactions';
 import { ErrorRequestHandler, Request } from 'express';
-import { ApiError, MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
+import {
+  ApiError,
+  MatchesJoined,
+  MatchPlayersInsert,
+  PlayersRow,
+} from '@bf2-matchmaking/types';
 import { Channel, Embed, Message, MessageReaction, TextChannel } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 import { api } from '@bf2-matchmaking/utils';
@@ -94,3 +99,11 @@ export const compareMessageReactionCount = (
   firstValue: MessageReaction,
   secondValue: MessageReaction
 ) => secondValue.count - firstValue.count;
+
+export const toMatchPlayer =
+  (matchId: number, team: 'a' | 'b') =>
+  (player: PlayersRow): MatchPlayersInsert => ({
+    match_id: matchId,
+    player_id: player.id,
+    team,
+  });

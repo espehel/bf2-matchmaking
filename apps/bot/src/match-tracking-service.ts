@@ -1,4 +1,4 @@
-import { DiscordConfig, RconBf2Server, User } from '@bf2-matchmaking/types';
+import { DiscordConfig, MatchStatus, RconBf2Server, User } from '@bf2-matchmaking/types';
 import {
   Embed,
   MessageReaction,
@@ -8,10 +8,16 @@ import {
 } from 'discord.js';
 import { api } from '@bf2-matchmaking/utils';
 import { getServerEmbed, getServerPollEmbed } from '@bf2-matchmaking/discord';
-import { getServerStatus, getServerTupleList } from './server-interactions';
-import { compareMessageReactionCount } from './utils';
+import { getServerPlayerCount, getServerTupleList } from './server-interactions';
+import { compareMessageReactionCount, toMatchPlayer } from './utils';
 import moment from 'moment';
-import { logCreateChannelMessage, logEditChannelMessage } from '@bf2-matchmaking/logging';
+import {
+  logCreateChannelMessage,
+  logEditChannelMessage,
+  logOngoingMatchCreated,
+} from '@bf2-matchmaking/logging';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { getOrCreatePlayer } from './match-interactions';
 
 export const createMatchFromPubobotEmbed = async (
   embed: Embed,
@@ -19,30 +25,36 @@ export const createMatchFromPubobotEmbed = async (
   configId: number,
   serverIp: string
 ) => {
-  const team1 = (
-    await Promise.all(
-      getUserIds(embed, 'USMC')?.map((player) => users.fetch(player)) || []
-    )
-  ).map(toPlayer);
-  const team2 = (
-    await Promise.all(
-      getUserIds(embed, 'MEC')?.map((player) => users.fetch(player)) || []
-    )
-  ).map(toPlayer);
-  return api.rcon().postMatch({ team1, team2, config: configId, serverIp });
+  const match = await client().createMatchFromConfig(configId).then(verifySingleResult);
+
+  const team1 = await Promise.all(
+    getUserIds(embed, 'USMC').map((player) => users.fetch(player).then(getOrCreatePlayer))
+  );
+  const team2 = await Promise.all(
+    getUserIds(embed, 'MEC').map((player) => users.fetch(player).then(getOrCreatePlayer))
+  );
+
+  await Promise.all([
+    client().createMatchPlayers(team1.map(toMatchPlayer(match.id, 'a'))),
+    client().createMatchPlayers(team2.map(toMatchPlayer(match.id, 'b'))),
+  ]);
+
+  const updatedMatch = await client()
+    .updateMatch(match.id, {
+      status: MatchStatus.Ongoing,
+      started_at: moment().toISOString(),
+      server: serverIp,
+    })
+    .then(verifySingleResult);
+
+  logOngoingMatchCreated(updatedMatch);
+  return updatedMatch;
 };
 
 const getUserIds = (embed: Embed, name: string) =>
   embed.fields
     ?.find((field) => field.name.includes(name))
-    ?.value.match(/(?<=<@)\d+(?=>)/g);
-
-const toPlayer = ({ id, avatar, username, discriminator }: DiscordUser): User => ({
-  id,
-  avatar: avatar || '',
-  username,
-  discriminator,
-});
+    ?.value.match(/(?<=<@)\d+(?=>)/g) || [];
 
 export const sendServerPollMessage = async (
   config: DiscordConfig,
@@ -72,15 +84,15 @@ export const sendServerPollMessage = async (
       return await channel.send(error);
     }
 
-    const [, editedMessage] = await Promise.all([
-      message.reactions.removeAll(),
-      message.edit({ embeds: [getServerEmbed(server)] }),
-    ]);
-    logEditChannelMessage(
+    const resultMessage = await channel.send({
+      embeds: [getServerEmbed(server)],
+    });
+
+    logCreateChannelMessage(
       channel.id,
-      editedMessage.id,
-      editedMessage.embeds[0].description,
-      editedMessage.embeds[0]
+      resultMessage.id,
+      resultMessage.embeds[0].description,
+      resultMessage.embeds[0]
     );
     onServerChosen(server);
   }, pollEndTime.diff(moment()));
@@ -94,7 +106,7 @@ function getTopServer(
 ) {
   if (!topEmoji || topEmoji.count < 2) {
     const frankFurtServer = servers.find(([server]) => server.ip === PBASE_FRANKFURT);
-    if (frankFurtServer && getServerStatus(frankFurtServer[0]) === 'available') {
+    if (frankFurtServer && getServerPlayerCount(frankFurtServer[0]) === 'available') {
       return { error: null, server: frankFurtServer[0] };
     }
     return { error: 'No votes received.', server: null };
