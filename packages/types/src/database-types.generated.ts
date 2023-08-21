@@ -323,7 +323,7 @@ export interface Database {
           map: number
           match: number | null
           pl: Json | null
-          server: string
+          server: string | null
           si: Json | null
           team1_name: string
           team1_tickets: string
@@ -336,7 +336,7 @@ export interface Database {
           map: number
           match?: number | null
           pl?: Json | null
-          server: string
+          server?: string | null
           si?: Json | null
           team1_name: string
           team1_tickets: string
@@ -349,7 +349,7 @@ export interface Database {
           map?: number
           match?: number | null
           pl?: Json | null
-          server?: string
+          server?: string | null
           si?: Json | null
           team1_name?: string
           team1_tickets?: string

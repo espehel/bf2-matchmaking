@@ -5,7 +5,7 @@ import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supab
 export const handleInsertedRound = async (round: RoundsRow) => {
   info('handleInsertedRound', `New round ${round.id}`);
   const matches = await client()
-    .getOngoingMatchesByServer(round.server)
+    .getOngoingMatchesByServer(round?.server || '')
     .then(verifyResult);
   if (matches.length === 0) {
     info('handleInsertedRound', `No ongoing match found for round ${round.id}`);

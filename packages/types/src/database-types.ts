@@ -64,7 +64,7 @@ export interface MatchesJoined extends Omit<MatchesRow, 'config' | 'server' | 's
 }
 export interface RoundsJoined extends Omit<RoundsRow, 'map' | 'server'> {
   map: MapsRow;
-  server: ServersRow;
+  server: ServersRow | null;
 }
 
 export interface ServersJoined extends ServersRow {

@@ -13,6 +13,9 @@ export const groupRoundsByDate = (rounds: Array<RoundsJoined>) =>
 
 export const groupRoundsByServer = (rounds: Array<RoundsJoined>) => {
   const groupedByServers = rounds.reduce<Record<string, Array<RoundsJoined>>>((acc, cur) => {
+    if (!cur.server) {
+      return acc;
+    }
     const serverRounds = acc[cur.server.name];
     if (serverRounds) {
       return { ...acc, [cur.server.name]: serverRounds.concat(cur) };

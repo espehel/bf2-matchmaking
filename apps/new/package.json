@@ -6,7 +6,7 @@
     "dev": "next dev -p 5005",
     "build": "next build",
     "start": "next start",
-    "verify": "next lint"
+    "verify": "next lint && tsc --noEmit"
   },
   "dependencies": {
     "@bf2-matchmaking/supabase": "^1.0.0",

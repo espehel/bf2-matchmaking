@@ -60,10 +60,12 @@ export default async function RoundPage({ params, searchParams }: Props) {
           <p>{`Map: ${round.map.name}`}</p>
           <p>{`Round time: ${roundTime}`}</p>
           <p>{`Connected players: ${serverInfo.connectedPlayers}`}</p>
-          <Link
-            className="link"
-            href={`/servers/${round.server.ip}`}
-          >{`Server: ${round.server.name}`}</Link>
+          {round.server && (
+            <Link
+              className="link"
+              href={`/servers/${round.server.ip}`}
+            >{`Server: ${round.server.name}`}</Link>
+          )}
           {round.match && (
             <Link
               className="link"

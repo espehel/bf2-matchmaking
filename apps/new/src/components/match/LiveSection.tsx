@@ -15,10 +15,12 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
   }
 
   const { round, status } = data;
-  const serverInfo: ServerInfo =
-    typeof round?.si === 'string' ? JSON.parse(round.si) : null;
-  const playerList: Array<PlayerListItem> =
-    typeof round?.pl === 'string' ? JSON.parse(round.pl) : null;
+  const serverInfo =
+    typeof round?.si === 'string' ? (JSON.parse(round.si) as ServerInfo) : null;
+  const playerList =
+    typeof round?.pl === 'string'
+      ? (JSON.parse(round.pl) as Array<PlayerListItem>)
+      : null;
 
   async function startPolling() {
     'use server';
