@@ -16,7 +16,7 @@ export default async function ServerSection({ match, isMatchAdmin }: Props) {
   const { data: server } = await api.rcon().getServer(match.server.ip);
 
   return (
-    <section className="section text-left">
+    <section className="section max-w-md text-left">
       <div>
         <div className="flex justify-between items-center">
           <h2 className="text-xl">{`Server: ${match.server.name}`}</h2>

@@ -1,4 +1,4 @@
-import { MatchPlayersInsert, PlayersRow, User } from '@bf2-matchmaking/types';
+import { MatchPlayersInsert, PlayersRow } from '@bf2-matchmaking/types';
 
 export const toMatchPlayer =
   (matchId: number, team: 'a' | 'b') =>

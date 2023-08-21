@@ -76,7 +76,7 @@ export const postJSON = async <T>(
       cache: 'no-store',
     });
     const { status, statusText } = res;
-    if (status === 204) {
+    if (status === 204 || status === 202) {
       return { data: {} as T, error: null, status, statusText };
     } else if (res.ok) {
       const data: T = await res.json();

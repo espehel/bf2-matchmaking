@@ -37,7 +37,7 @@ router.post('/:matchid/poll', async (req, res) => {
       .getServerRcon(match.server.ip)
       .then(verifySingleResult);
 
-    rcon(id, rcon_port, rcon_pw).then(pollServerInfo(onServerInfo(match)));
+    await rcon(id, rcon_port, rcon_pw).then(pollServerInfo(onServerInfo(match)));
     res.sendStatus(202);
   } catch (e) {
     res.status(500).send(e);

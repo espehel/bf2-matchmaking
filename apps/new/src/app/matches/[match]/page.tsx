@@ -18,7 +18,7 @@ export default async function ResultsMatch({ params }: Props) {
   return (
     <main className="main flex flex-col items-center text-center">
       <h1 className="mb-8 text-accent font-bold">{`Match ${match.id}`}</h1>
-      <div className="flex gap-8 justify-around w-full">
+      <div className="flex flex-wrap gap-8 justify-between w-full">
         <MatchSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
         <ServerSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
         <LiveSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />

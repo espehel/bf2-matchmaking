@@ -32,7 +32,7 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
   const rounds = match.rounds.length;
 
   return (
-    <section className="section">
+    <section className="section w-fit">
       <h2 className="text-xl">{`${match.config.size / 2}v${match.config.size / 2} - ${
         match.status
       }`}</h2>
