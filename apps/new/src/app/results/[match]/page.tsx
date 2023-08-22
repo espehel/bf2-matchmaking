@@ -27,7 +27,6 @@ export default async function ResultsMatch({ params }: Props) {
     .then(verifySingleResult);
 
   const matchResults: Array<PlayerMatchResultTuple> = calculateMatchResults(match);
-
   const isTeam =
     (team: string) =>
     ([player]: PlayerMatchResultTuple) =>

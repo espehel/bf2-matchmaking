@@ -14,6 +14,7 @@ export const calculateMatchResults = (
     .map(getRoundResults)
     .filter(isNotNull)
     .reduce(aggregateRound, {});
+
   return match.players.map((player) => [
     player,
     (player.keyhash && results[player.keyhash]) || null,
@@ -41,8 +42,9 @@ const getRoundResults = (round: RoundsJoined): Record<string, MatchResult> | nul
 const aggregateRound = (
   aggregated: Record<string, MatchResult>,
   current: Record<string, MatchResult>
-): Record<string, MatchResult> =>
-  Object.keys(current)
+): Record<string, MatchResult> => ({
+  ...aggregated,
+  ...Object.keys(current)
     .map((key) => ({
       [key]: {
         score: current[key].score + (aggregated[key]?.score || 0),
@@ -50,7 +52,8 @@ const aggregateRound = (
         kills: current[key].kills + (aggregated[key]?.kills || 0),
       },
     }))
-    .reduce(toObject);
+    .reduce(toObject),
+});
 
 const toObject = <T = unknown>(acc: Record<string, T>, curr: Record<string, T>) => ({
   ...acc,
