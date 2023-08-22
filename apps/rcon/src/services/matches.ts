@@ -1,5 +1,4 @@
 import {
-  error,
   info,
   logAddMatchRound,
   logChangeMatchStatus,
@@ -54,7 +53,7 @@ export const deleteMatch = async (
 const pollStatusMap = new Map<number, PollServerStatus>();
 export function onServerInfo(match: ServerMatch): PollServerInfoCb {
   const rounds: Array<RoundsRow> = [];
-  let isWaitingForNextRound = false;
+  let newRound = false;
 
   return async (si, rcon) => {
     if (hasPlayedAllRounds(rounds)) {
@@ -66,7 +65,13 @@ export function onServerInfo(match: ServerMatch): PollServerInfoCb {
     if (isServerEmptied(rounds, si)) {
       await closeMatch(match, 'Server emptied');
       pollStatusMap.set(match.id, 'finished');
+      removeLiveRound(match);
       return 'finished';
+    }
+
+    if (!newRound && si.roundTime === '0') {
+      info('onServerInfo', `New round`);
+      newRound = true;
     }
 
     if (si.connectedPlayers === '0') {
@@ -77,23 +82,23 @@ export function onServerInfo(match: ServerMatch): PollServerInfoCb {
     const pl = await getPlayerList(rcon);
     await updateLiveRound(match, si, pl);
 
+    if (!newRound) {
+      pollStatusMap.set(match.id, 'waiting');
+      return 'waiting';
+    }
+
     if (isOngoingRound(si)) {
-      isWaitingForNextRound = false;
       pollStatusMap.set(match.id, 'ongoing');
       return 'ongoing';
     }
 
-    if (isWaitingForNextRound) {
-      pollStatusMap.set(match.id, 'ongoing');
-      return 'ongoing';
-    }
-
-    isWaitingForNextRound = true;
+    newRound = false;
     info('onServerInfo', `Round finished`);
 
     const liveRound = getLiveRound(match);
     if (liveRound) {
       const round = await client().createRound(liveRound).then(verifySingleResult);
+      logAddMatchRound(round, match, si, pl);
       info('onServerInfo', `Created round ${round.id}`);
       rounds.push(round);
       removeLiveRound(match);
@@ -118,48 +123,6 @@ const isOngoingRound = (si: ServerInfo) => {
   }
 
   return true;
-};
-
-const createRound = async (
-  match: MatchesJoined,
-  si: ServerInfo,
-  pl: Array<PlayerListItem> | null
-): Promise<RoundsRow | null> => {
-  if (!match.server?.ip) {
-    error('createRound', `Match ${match.id} does not have assigned server`);
-    return null;
-  }
-
-  const { data: map, error: mapError } = await client()
-    .searchMap(si.currentMapName)
-    .single();
-
-  if (mapError) {
-    logSupabaseError('Failed to create round, map search failed.', mapError);
-    return null;
-  }
-
-  const newRound = {
-    team1_name: si.team1_Name,
-    team1_tickets: si.team1_tickets,
-    team2_name: si.team2_Name,
-    team2_tickets: si.team2_tickets,
-    map: map.id,
-    server: match.server.ip,
-    match: match.id,
-    si: JSON.stringify(si),
-    pl: JSON.stringify(pl),
-  };
-  logAddMatchRound(newRound, match, si, pl);
-  const { data: insertedRound, error: insertError } = await client().createRound(
-    newRound
-  );
-
-  if (insertError) {
-    logSupabaseError('Failed to insert round', insertError);
-  }
-
-  return insertedRound;
 };
 
 export function getPollStatus(matchId: number) {

@@ -8,7 +8,6 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getPlayerFromDatabase } from '../services/players';
 import { toMatchPlayer } from '../mappers/player';
 import { error, info, logOngoingMatchCreated } from '@bf2-matchmaking/logging';
-import { listenForMatchRounds } from '../services/network-service';
 import moment from 'moment';
 import { pollServerInfo, rcon } from '../net/RconManager';
 import { getPollStatus, onServerInfo } from '../services/matches';
@@ -63,8 +62,6 @@ router.post('/', async (req: Request<{}, {}, PostMatchesRequestBody>, res) => {
       })
       .then(verifySingleResult);
     logOngoingMatchCreated(updatedMatch);
-
-    await listenForMatchRounds(updatedMatch);
 
     res.status(201).send(updatedMatch);
   } catch (e) {
