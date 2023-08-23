@@ -92,3 +92,15 @@ export async function setTeams(match: MatchesJoined, serverIp: string) {
 
   return result;
 }
+
+export async function setServer(matchId: number, serverIp: string) {
+  const result = await supabase(cookies).updateMatch(matchId, {
+    server: serverIp,
+  });
+
+  if (!result.error) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}

@@ -2,12 +2,14 @@ import { MatchesJoined, MatchPlayersRow, PlayerListItem } from '@bf2-matchmaking
 import MatchActions from '@/components/match/MatchActions';
 import { api } from '@bf2-matchmaking/utils';
 import PlayerItem from '@/components/match/PlayerItem';
+import { client } from '@bf2-matchmaking/supabase';
+import { supabase } from '@/lib/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
   isMatchAdmin: boolean;
 }
-type PlayerTuple = [MatchPlayersRow, string, PlayerListItem | undefined];
 
 export default async function MatchSection({ match, isMatchAdmin }: Props) {
   let playerInfo: PlayerListItem[] = [];
@@ -18,18 +20,9 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
     }
   }
 
-  const isTeam = (team: string) => (mp: MatchPlayersRow) => mp.team === team;
+  const { data: servers } = await supabase(cookies).getServers();
 
-  const toPlayerTuple = (mp: MatchPlayersRow, i: number): PlayerTuple => {
-    const player = match.players.find((player) => player.id === mp.player_id);
-    return [
-      mp,
-      player?.full_name || `Player ${i}`,
-      playerInfo.find((info) => player?.keyhash === info.keyhash),
-    ];
-  };
-  const players = match.teams.map(toPlayerTuple);
-  const rounds = match.rounds.length;
+  const isTeam = (team: string) => (mp: MatchPlayersRow) => mp.team === team;
 
   return (
     <section className="section w-fit">
@@ -67,7 +60,7 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
           </ul>
         </div>
       </div>
-      {isMatchAdmin && <MatchActions match={match} />}
+      {isMatchAdmin && <MatchActions match={match} servers={servers} />}
     </section>
   );
 }

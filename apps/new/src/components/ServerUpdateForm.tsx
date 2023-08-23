@@ -38,7 +38,11 @@ export default function ServerUpdateForm({ server }: Props) {
       <label className="label" htmlFor="rconPwInput">
         Rcon password:
       </label>
-      <input className="input input-bordered" name="rconPwInput" placeholder="*****" />
+      <input
+        className="input input-bordered mb-2"
+        name="rconPwInput"
+        placeholder="*****"
+      />
       <FormSubmitButton>Update</FormSubmitButton>
     </form>
   );
