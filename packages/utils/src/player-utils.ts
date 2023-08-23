@@ -1,10 +1,12 @@
 import {
   isTeamPlayer,
   MatchesJoined,
+  PlayerListItem,
   PlayersRow,
   TeamPlayer,
 } from '@bf2-matchmaking/types';
 import { shuffleArray } from './array-utils';
+import { getTeamMap } from './results-utils';
 
 export const assignMatchPlayerTeams = (players: Array<PlayersRow>) =>
   shuffleArray(players).map((player, i) => ({
@@ -35,3 +37,27 @@ export const findPlayerName = (
 
 export const getPlayerTeam = (playerId: string, match: MatchesJoined): string | null =>
   match.teams.find((mp) => mp.player_id === playerId)?.team || null;
+
+export function getPlayersToSwitch(
+  match: MatchesJoined,
+  pl: Array<PlayerListItem>
+): Array<string> {
+  const teamMap = getTeamMap(match.rounds.length);
+
+  return pl
+    .filter((sp) => {
+      const player = match.players.find((p) => p.keyhash === sp.keyhash);
+      if (!player) {
+        return false;
+      }
+      const team = match.teams.find((mp) => mp.player_id === player.id)?.team;
+      if (!team) {
+        return false;
+      }
+      if (teamMap[sp.getTeam] === team) {
+        return false;
+      }
+      return true;
+    })
+    .map(({ index }) => index);
+}

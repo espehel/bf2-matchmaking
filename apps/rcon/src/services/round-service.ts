@@ -11,11 +11,11 @@ import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache
 
 const liveRoundMap = new Map<number, RoundsInsert>();
 
-export function getLiveRound(match: MatchesJoined | number) {
+export function getLiveRound(match: MatchesJoined | number): RoundsInsert | null {
   if (typeof match === 'number') {
-    return liveRoundMap.get(match);
+    return liveRoundMap.get(match) || null;
   }
-  return liveRoundMap.get(match.id);
+  return liveRoundMap.get(match.id) || null;
 }
 
 export function removeLiveRound(match: MatchesJoined) {
@@ -26,7 +26,7 @@ export async function updateLiveRound(
   match: ServerMatch,
   si: ServerInfo,
   pl: Array<PlayerListItem>
-) {
+): Promise<RoundsInsert | null> {
   const mapId = await getMapId(si);
 
   if (mapId === -1) {
@@ -46,6 +46,7 @@ export async function updateLiveRound(
   };
   info('updateLiveRound', `Players: [${pl?.map((p) => p.getName).join(', ')}]`);
   liveRoundMap.set(match.id, newRound);
+  return newRound;
 }
 
 async function getMapId(si: ServerInfo) {

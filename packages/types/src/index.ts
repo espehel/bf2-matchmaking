@@ -175,4 +175,10 @@ export interface MatchResult {
   deaths: number;
 }
 
-export type PollServerStatus = 'waiting' | 'ongoing' | 'finished';
+export type LiveServerState =
+  | 'waiting'
+  | 'warmup'
+  | 'prelive'
+  | 'live'
+  | 'endlive'
+  | 'finished';

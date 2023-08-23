@@ -7,24 +7,24 @@ import {
 import {
   MatchesJoined,
   MatchStatus,
-  PlayerListItem,
-  PollServerStatus,
+  LiveServerState,
   RoundsInsert,
   RoundsRow,
   ServerInfo,
   ServerMatch,
+  PlayerListItem,
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { getPlayerList, PollServerInfoCb } from '../net/RconManager';
+import { LiveServerUpdate, PollServerInfoCb } from '../net/RconManager';
 import { getLiveRound, removeLiveRound, updateLiveRound } from './round-service';
+import { getPlayersToSwitch } from '@bf2-matchmaking/utils';
 
 export const closeMatch = async (
   match: MatchesJoined,
   reason: string,
-  si: ServerInfo | null = null,
-  pl: Array<PlayerListItem> | null = null
+  rounds: Array<RoundsRow>
 ) => {
-  logChangeMatchStatus(MatchStatus.Closed, reason, match, si, pl);
+  logChangeMatchStatus(MatchStatus.Closed, reason, match, rounds, getLiveRound(match));
   const { data, error } = await client().updateMatch(match.id, {
     status: MatchStatus.Closed,
   });
@@ -37,10 +37,9 @@ export const closeMatch = async (
 export const deleteMatch = async (
   match: MatchesJoined,
   reason: string,
-  si: ServerInfo | null = null,
-  pl: Array<PlayerListItem> | null = null
+  rounds: Array<RoundsRow>
 ) => {
-  logChangeMatchStatus(MatchStatus.Deleted, reason, match, si, pl);
+  logChangeMatchStatus(MatchStatus.Deleted, reason, match, rounds, getLiveRound(match));
   const { data, error } = await client().updateMatch(match.id, {
     status: MatchStatus.Deleted,
   });
@@ -50,52 +49,42 @@ export const deleteMatch = async (
   return data;
 };
 
-const pollStatusMap = new Map<number, PollServerStatus>();
+const pollStatusMap = new Map<number, LiveServerState>();
 export function onServerInfo(match: ServerMatch): PollServerInfoCb {
   const rounds: Array<RoundsRow> = [];
-  let newRound = false;
+  let state: LiveServerState = 'waiting';
 
-  return async (si, rcon) => {
+  return async (si, pl) => {
+    const liveRound = await updateLiveRound(match, si, pl);
+
     if (hasPlayedAllRounds(rounds)) {
-      await closeMatch(match, 'All rounds played', si);
-      pollStatusMap.set(match.id, 'finished');
-      return 'finished';
+      return next('finished');
     }
 
     if (isServerEmptied(rounds, si)) {
-      await closeMatch(match, 'Server emptied');
-      pollStatusMap.set(match.id, 'finished');
-      removeLiveRound(match);
-      return 'finished';
+      return next('finished');
     }
 
-    if (!newRound && si.roundTime === '0') {
-      info('onServerInfo', `New round`);
-      newRound = true;
+    if (pl.length === 0) {
+      return next('waiting');
     }
 
-    if (si.connectedPlayers === '0') {
-      pollStatusMap.set(match.id, 'waiting');
-      return 'waiting';
+    if (state === 'waiting' || state === 'endlive') {
+      return next('warmup');
     }
 
-    const pl = await getPlayerList(rcon);
-    await updateLiveRound(match, si, pl);
+    if (state === 'warmup' && Number(si.connectedPlayers) === match.players.length) {
+      return next('prelive');
+    }
 
-    if (!newRound) {
-      pollStatusMap.set(match.id, 'waiting');
-      return 'waiting';
+    if (state === 'prelive' && si.roundTime === '0') {
+      return next('live');
     }
 
     if (isOngoingRound(si)) {
-      pollStatusMap.set(match.id, 'ongoing');
-      return 'ongoing';
+      return next('live');
     }
 
-    newRound = false;
-    info('onServerInfo', `Round finished`);
-
-    const liveRound = getLiveRound(match);
     if (liveRound) {
       const round = await client().createRound(liveRound).then(verifySingleResult);
       logAddMatchRound(round, match, si, pl);
@@ -103,9 +92,28 @@ export function onServerInfo(match: ServerMatch): PollServerInfoCb {
       rounds.push(round);
       removeLiveRound(match);
     }
-    pollStatusMap.set(match.id, 'ongoing');
-    return 'ongoing';
+    return next('endlive');
   };
+
+  async function next(
+    nextState: LiveServerState,
+    pl?: Array<PlayerListItem>
+  ): Promise<LiveServerUpdate> {
+    updateState(nextState);
+
+    if (nextState === 'finished') {
+      await closeMatch(match, `New live state ${nextState}`, rounds);
+    }
+    if (nextState === 'prelive') {
+      return { state: nextState, payload: pl ? getPlayersToSwitch(match, pl) : [] };
+    }
+    return { state: nextState, payload: null };
+  }
+
+  function updateState(nextState: LiveServerState) {
+    state = nextState;
+    pollStatusMap.set(match.id, nextState);
+  }
 }
 
 const hasPlayedAllRounds = (rounds: Array<RoundsInsert>) => rounds.length >= 4;

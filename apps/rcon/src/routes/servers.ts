@@ -1,6 +1,12 @@
 import express from 'express';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { rcon, getServerInfo, getPlayerList, exec } from '../net/RconManager';
+import {
+  rcon,
+  getServerInfo,
+  getPlayerList,
+  exec,
+  switchPlayers,
+} from '../net/RconManager';
 
 const router = express.Router();
 
@@ -12,15 +18,8 @@ router.post('/:ip/players/switch', async (req, res) => {
       .getServerRcon(req.params.ip)
       .then(verifySingleResult);
 
-    const resultArray = [];
-    for (const playerId of players) {
-      const result = await rcon(id, rcon_port, rcon_pw).then(
-        exec(`bf2cc switchplayer ${playerId} 3`)
-      );
-      resultArray.push(result);
-    }
-
-    res.send(resultArray);
+    const result = await rcon(id, rcon_port, rcon_pw).then(switchPlayers(players));
+    res.send(result);
   } catch (e) {
     res.status(502).send(e);
   }

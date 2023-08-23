@@ -11,6 +11,7 @@ import {
   PlayersUpdate,
   PostgrestError,
   RoundsInsert,
+  RoundsRow,
   ServerInfo,
 } from '@bf2-matchmaking/types';
 import { error, info } from './winston';
@@ -109,14 +110,14 @@ export const logChangeMatchStatus = (
   status: MatchStatus,
   reason: string,
   match: MatchesJoined,
-  si: ServerInfo | null,
-  pl: Array<PlayerListItem> | null
+  rounds: Array<RoundsRow>,
+  liveRound: RoundsInsert | null
 ) => {
   logger
     .info(`Changing status for Match ${match.id} to ${status} because "${reason}"`, {
       match: JSON.stringify(match),
-      si: JSON.stringify(si),
-      pl: JSON.stringify(pl),
+      rounds: JSON.stringify(rounds),
+      liveRound: JSON.stringify(liveRound),
     })
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))

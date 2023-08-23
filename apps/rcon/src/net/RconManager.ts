@@ -1,9 +1,10 @@
 import { RconClient } from './RconClient';
 import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
-import { PlayerListItem, PollServerStatus, ServerInfo } from '@bf2-matchmaking/types';
+import { PlayerListItem, LiveServerState, ServerInfo } from '@bf2-matchmaking/types';
 import { error, info } from '@bf2-matchmaking/logging';
 import moment, { Moment } from 'moment';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
+import Rcon from '../routes/rcon';
 
 const clients = new Map<string, RconClient>();
 const POLL_INTERVAL = 1000 * 10;
@@ -32,18 +33,44 @@ export async function getServerInfo(client: RconClient): Promise<ServerInfo> {
   if (!si) {
     throw new Error('Empty response');
   }
-
   return si;
 }
 
-export function exec(command: string) {
-  return async (client: RconClient) => client.send(command);
+export function switchPlayers(players: Array<string>) {
+  return async (client: RconClient) => {
+    const resultArray = [];
+    for (const playerId of players) {
+      const result = await client.send(`bf2cc switchplayer ${playerId} 3`);
+      resultArray.push(result);
+    }
+    return resultArray;
+  };
 }
+
+export function restartRound(client: RconClient) {
+  return client.send('admin.restartMap');
+}
+
+export function exec(command: string) {
+  return (client: RconClient) => client.send(command);
+}
+
+interface LiveServerBaseUpdate {
+  state: Exclude<LiveServerState, 'prelive'>;
+  payload: null;
+}
+
+interface LiveServerPreliveUpdate {
+  state: 'prelive';
+  payload: Array<string>;
+}
+
+export type LiveServerUpdate = LiveServerBaseUpdate | LiveServerPreliveUpdate;
 
 export type PollServerInfoCb = (
   serverInfo: ServerInfo,
-  client: RconClient
-) => Promise<PollServerStatus>;
+  playerList: Array<PlayerListItem>
+) => Promise<LiveServerUpdate>;
 export function pollServerInfo(callback: PollServerInfoCb) {
   return (client: RconClient) => {
     const interval = setInterval(intervalFn, POLL_INTERVAL);
@@ -59,25 +86,38 @@ export function pollServerInfo(callback: PollServerInfoCb) {
 
         const freshClient = await rcon(client.ip, client.port, client.password);
         const si = await getServerInfo(freshClient);
+        const pl = si.connectedPlayers !== '0' ? await getPlayerList(freshClient) : [];
         info(
           'pollServerInfo',
           `${formatSecToMin(si.roundTime)} ${si.team1_Name} [${si.team1_tickets} - ${
             si.team2_tickets
           }] ${si.team2_Name}`
         );
-        const status = await callback(si, freshClient);
-        info('pollServerInfo', `Callback finished with status: ${status}`);
 
-        if (status === 'ongoing') {
+        const { state, payload } = await callback(si, pl);
+        info('pollServerInfo', `New state: ${state}`);
+
+        if (state !== 'waiting') {
           errorAt = null;
           waitingSince = null;
         }
-        if (status === 'finished') {
-          return clearTimers();
+
+        if (state === 'prelive') {
+          const spRes = await switchPlayers(payload)(freshClient);
+          const rsRes = await restartRound(freshClient);
+          info(
+            'pollServerInfo',
+            `Prelive executed: switch: "${spRes.join(', ')}", rs: "${rsRes}"`
+          );
         }
-        if (status === 'waiting' && moment().diff(waitingSince, 'minutes') > 30) {
+
+        if (state === 'finished') {
+          clearTimers();
+        }
+
+        if (state === 'waiting' && moment().diff(waitingSince, 'minutes') > 30) {
           info('pollServerInfo', `Server is idle, stops polling`);
-          return clearTimers();
+          clearTimers();
         }
       } catch (e) {
         error('pollServerInfo', e);
