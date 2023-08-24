@@ -1,6 +1,7 @@
 import {
   info,
   logAddMatchRound,
+  logChangeLiveState,
   logChangeMatchStatus,
   logSupabaseError,
 } from '@bf2-matchmaking/logging';
@@ -73,7 +74,7 @@ export function onServerInfo(match: ServerMatch): PollServerInfoCb {
       return next('warmup');
     }
 
-    if (state === 'warmup' && Number(si.connectedPlayers) === match.players.length) {
+    if (state === 'warmup' && isFirstTimeFullServer(match, si, rounds)) {
       return next('prelive');
     }
 
@@ -97,16 +98,22 @@ export function onServerInfo(match: ServerMatch): PollServerInfoCb {
 
   async function next(
     nextState: LiveServerState,
-    pl?: Array<PlayerListItem>
+    pl?: Array<PlayerListItem>,
+    si?: ServerInfo
   ): Promise<LiveServerUpdate> {
-    updateState(nextState);
+    if (state !== nextState) {
+      logChangeLiveState(state, nextState, match, rounds, getLiveRound(match), si, pl);
+      updateState(nextState);
+    }
+
+    if (nextState === 'prelive') {
+      return { state: nextState, payload: pl ? getPlayersToSwitch(match, pl) : [] };
+    }
 
     if (nextState === 'finished') {
       await closeMatch(match, `New live state ${nextState}`, rounds);
     }
-    if (nextState === 'prelive') {
-      return { state: nextState, payload: pl ? getPlayersToSwitch(match, pl) : [] };
-    }
+
     return { state: nextState, payload: null };
   }
 
@@ -120,6 +127,12 @@ const hasPlayedAllRounds = (rounds: Array<RoundsInsert>) => rounds.length >= 4;
 
 const isServerEmptied = (rounds: Array<RoundsInsert>, si: ServerInfo) =>
   rounds.length > 0 && si.connectedPlayers === '0';
+
+const isFirstTimeFullServer = (
+  match: MatchesJoined,
+  si: ServerInfo,
+  rounds: Array<RoundsInsert>
+) => Number(si.connectedPlayers) === match.players.length && rounds.length === 0;
 
 const isOngoingRound = (si: ServerInfo) => {
   if (parseInt(si.roundTime) >= parseInt(si.timeLimit)) {

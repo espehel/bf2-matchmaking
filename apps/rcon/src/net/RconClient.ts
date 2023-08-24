@@ -28,8 +28,6 @@ export class RconClient {
 
   send(message: string) {
     return new Promise<string>((resolve, reject) => {
-      info('RconClient', `sending message: ${message}`);
-
       this.socket.write(message + '\n');
 
       this.socket.once('data', (response) => {

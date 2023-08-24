@@ -1,6 +1,7 @@
 import { Logtail } from '@logtail/node';
 import invariant from 'tiny-invariant';
 import {
+  LiveServerState,
   MatchConfigsRow,
   MatchesJoined,
   MatchesRow,
@@ -119,6 +120,31 @@ export const logChangeMatchStatus = (
       rounds: JSON.stringify(rounds),
       liveRound: JSON.stringify(liveRound),
     })
+    .then((log) => info('logtail', log.message))
+    .catch((e) => error('logtail', e))
+    .finally(flush);
+};
+
+export const logChangeLiveState = (
+  prevState: LiveServerState,
+  nextState: LiveServerState,
+  match: MatchesJoined,
+  rounds: Array<RoundsRow>,
+  liveRound: RoundsInsert | null,
+  si?: ServerInfo,
+  pl?: Array<PlayerListItem>
+) => {
+  logger
+    .info(
+      `Live state for Match ${match.id} changed from "${prevState}" to "${nextState}"`,
+      {
+        match: JSON.stringify(match),
+        rounds: JSON.stringify(rounds),
+        liveRound: JSON.stringify(liveRound),
+        si: JSON.stringify(si),
+        pl: JSON.stringify(pl),
+      }
+    )
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);

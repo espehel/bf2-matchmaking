@@ -4,7 +4,6 @@ import { PlayerListItem, LiveServerState, ServerInfo } from '@bf2-matchmaking/ty
 import { error, info } from '@bf2-matchmaking/logging';
 import moment, { Moment } from 'moment';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
-import Rcon from '../routes/rcon';
 
 const clients = new Map<string, RconClient>();
 const POLL_INTERVAL = 1000 * 10;
