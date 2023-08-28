@@ -7,11 +7,13 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
   ApiError,
   ApiErrorType,
+  isDiscordConfig,
   isDiscordMatch,
-  MatchConfigEvent,
+  MatchConfigsRow,
   PostCommandsReinstallRequestBody,
-  PostMatchConfigEventRequestBody,
   PostMatchEventRequestBody,
+  WEBHOOK_POSTGRES_CHANGES_TYPE,
+  WebhookPostgresChangesPayload,
 } from '@bf2-matchmaking/types';
 import { error, info } from '@bf2-matchmaking/logging';
 import { handleMatchDraft, handleMatchSummon } from './match-events';
@@ -30,9 +32,6 @@ import { createMatchFromPubobotEmbed } from './match-tracking-service';
 const app = express();
 // Get port, or default to 5001
 const PORT = process.env.PORT || 5001;
-// Parse request body and verifies incoming requests using discord-interactions package
-invariant(process.env.PUBLIC_KEY, 'PUBLIC_KEY not defined');
-app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
 (function () {
   initChannelListener()
@@ -60,34 +59,46 @@ app.post(
       res.end();
     } catch (e) {
       error('match_events', e);
-      next(e);
+      res.status(500).send(JSON.stringify(e));
     }
   }
 );
 
 app.post(
   api.bot().paths.matchConfigEvent,
-  async (req: Request<{}, {}, PostMatchConfigEventRequestBody>, res, next) => {
+  async (req: Request<{}, {}, WebhookPostgresChangesPayload<MatchConfigsRow>>, res) => {
+    info('POST /match_configs', `Request body: ${JSON.stringify(req.body)}`);
     try {
-      const { event, channelId } = req.body;
-      info(
-        '/api/match_config_events',
-        `Received event ${event} for channel ${channelId}`
-      );
-
-      if (event === MatchConfigEvent.INSERT) {
-        await addChannelListener(channelId);
+      switch (req.body.type) {
+        case WEBHOOK_POSTGRES_CHANGES_TYPE.INSERT: {
+          if (isDiscordConfig(req.body.record)) {
+            await addChannelListener(req.body.record.channel);
+          }
+          break;
+        }
+        case WEBHOOK_POSTGRES_CHANGES_TYPE.UPDATE: {
+          if (isDiscordConfig(req.body.record)) {
+            await updateChannelListener(req.body.record.channel);
+          }
+          break;
+        }
+        case WEBHOOK_POSTGRES_CHANGES_TYPE.DELETE: {
+          if (isDiscordConfig(req.body.old_record)) {
+            await removeChannel(req.body.old_record.channel);
+          }
+          break;
+        }
       }
-      if (event === MatchConfigEvent.UPDATE) {
-        await updateChannelListener(channelId);
-      }
-      if (event === MatchConfigEvent.DELETE) {
-        await removeChannel(channelId);
-      }
-      res.end();
     } catch (e) {
-      error('match_events', e);
-      next(e);
+      if (e instanceof Error) {
+        error('POST /match_configs', e.message);
+      } else if (typeof e === 'string') {
+        error('POST /match_configs', e);
+      } else {
+        error('POST /match_configs', JSON.stringify(e));
+      }
+    } finally {
+      res.send();
     }
   }
 );
@@ -111,9 +122,9 @@ app.post('/matches', async (req, res) => {
       serverIp
     );
     await api.rcon().postMatchPoll(match.id).then(verify);
-    return res.send(match).sendStatus(200);
+    return res.send(match);
   } catch (e) {
-    return res.send(e).sendStatus(502);
+    return res.status(502).send(e);
   }
 });
 

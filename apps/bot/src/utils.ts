@@ -14,6 +14,7 @@ import {
 import { Channel, Embed, Message, MessageReaction, TextChannel } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 import { api } from '@bf2-matchmaking/utils';
+import { error, info } from '@bf2-matchmaking/logging';
 
 export const getOption = (
   key: string,
@@ -33,11 +34,11 @@ export const VerifyDiscordRequest = (clientKey: string) => {
     }
     const signature = req.get('X-Signature-Ed25519') || '';
     const timestamp = req.get('X-Signature-Timestamp') || '';
-
+    info('VerifyDiscordRequest', `verifying ${req.url}`);
     const isValidRequest = verifyKey(buf, signature, timestamp, clientKey);
     if (!isValidRequest) {
+      error('VerifyDiscordRequest', 'Bad request signature');
       res.status(401).send('Bad request signature');
-      throw new Error('Bad request signature');
     }
   };
 };

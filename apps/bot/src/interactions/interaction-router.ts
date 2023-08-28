@@ -5,15 +5,18 @@ import {
   InteractionType,
 } from 'discord-api-types/v10';
 import { InteractionResponseType } from 'discord-interactions';
-import { getOption } from '../utils';
+import { getOption, VerifyDiscordRequest } from '../utils';
 import { ApplicationCommandName } from '../commands';
 import { logInternalApiError, logSupabaseError } from '@bf2-matchmaking/logging';
 import { rcon } from '@bf2-matchmaking/utils/src/internal-api';
 import { updatePlayerKeyHash } from './interaction-service';
 import { getServerInfoList } from '../server-interactions';
+import invariant from 'tiny-invariant';
 
 const router = express.Router();
-
+// Parse request body and verifies incoming requests using discord-interactions package
+invariant(process.env.PUBLIC_KEY, 'PUBLIC_KEY not defined');
+router.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 router.post('/', async (req, res) => {
   // Interaction type and data
   const { type, id, data, member, channel_id } = req.body as APIInteraction;
