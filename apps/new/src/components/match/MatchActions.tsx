@@ -20,14 +20,17 @@ export default function MatchActions({ match, servers }: Props) {
     }
   }, [match]);
 
-  const handleSetServer = useCallback(async (value: string) => {
-    const { error, data } = await setServer(match.id, value);
-    if (error) {
-      toast.error('Failed to set server');
-    } else {
-      toast.success(`Changed server to ${data.server?.name}`);
-    }
-  }, []);
+  const handleSetServer = useCallback(
+    async (value: string) => {
+      const { error, data } = await setServer(match.id, value);
+      if (error) {
+        toast.error('Failed to set server');
+      } else {
+        toast.success(`Changed server to ${data.server?.name}`);
+      }
+    },
+    [match.id]
+  );
 
   if (match.status === MatchStatus.Closed) {
     return null;

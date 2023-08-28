@@ -1,7 +1,7 @@
 import { RconClient } from './RconClient';
 import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
 import { PlayerListItem, LiveServerState, ServerInfo } from '@bf2-matchmaking/types';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logRconError } from '@bf2-matchmaking/logging';
 import moment, { Moment } from 'moment';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 
@@ -86,6 +86,7 @@ export function pollServerInfo(callback: PollServerInfoCb) {
         const freshClient = await rcon(client.ip, client.port, client.password);
         const si = await getServerInfo(freshClient);
         const pl = si.connectedPlayers !== '0' ? await getPlayerList(freshClient) : [];
+        verifyData(si, pl);
         info(
           'pollServerInfo',
           `${formatSecToMin(si.roundTime)} ${si.team1_Name} [${si.team1_tickets} - ${
@@ -119,7 +120,10 @@ export function pollServerInfo(callback: PollServerInfoCb) {
           clearTimers();
         }
       } catch (e) {
-        error('pollServerInfo', e);
+        if (e instanceof Error) {
+          logRconError(e.message, client.ip);
+        }
+        logRconError(JSON.stringify(e), client.ip);
         errorAt = moment();
       }
     }
@@ -132,4 +136,10 @@ export function pollServerInfo(callback: PollServerInfoCb) {
       clearTimeout(timeout);
     }
   };
+}
+
+function verifyData(si: ServerInfo, pl: Array<PlayerListItem>) {
+  if (Number(si.connectedPlayers) !== pl.length) {
+    throw new Error('Server info or player list have corrupt data.');
+  }
 }
