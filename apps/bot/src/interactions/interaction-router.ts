@@ -14,9 +14,6 @@ import { getServerInfoList } from '../server-interactions';
 import invariant from 'tiny-invariant';
 
 const router = express.Router();
-// Parse request body and verifies incoming requests using discord-interactions package
-invariant(process.env.PUBLIC_KEY, 'PUBLIC_KEY not defined');
-router.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 router.post('/', async (req, res) => {
   // Interaction type and data
   const { type, id, data, member, channel_id } = req.body as APIInteraction;

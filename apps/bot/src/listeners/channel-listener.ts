@@ -142,8 +142,11 @@ const passiveCollector =
     if (!isPubobotMatchStarted(message.embeds[0])) {
       return;
     }
-
-    await sendServerPollMessage(config, message.channel, handleServerSelected);
+    try {
+      await sendServerPollMessage(config, message.channel, handleServerSelected);
+    } catch (e) {
+      error('passiveCollector', e);
+    }
     async function handleServerSelected(server: RconBf2Server) {
       try {
         const match = await createMatchFromPubobotEmbed(
