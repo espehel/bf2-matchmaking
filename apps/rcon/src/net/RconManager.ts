@@ -1,7 +1,7 @@
 import { RconClient } from './RconClient';
 import { mapListPlayers, mapServerInfo } from '../mappers/rcon';
 import { PlayerListItem, LiveServerState, ServerInfo } from '@bf2-matchmaking/types';
-import { error, info, logRconError } from '@bf2-matchmaking/logging';
+import { info, logRconError } from '@bf2-matchmaking/logging';
 import moment, { Moment } from 'moment';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 
@@ -68,7 +68,8 @@ export type LiveServerUpdate = LiveServerBaseUpdate | LiveServerPreliveUpdate;
 
 export type PollServerInfoCb = (
   serverInfo: ServerInfo,
-  playerList: Array<PlayerListItem>
+  playerList: Array<PlayerListItem>,
+  ip: string
 ) => Promise<LiveServerUpdate>;
 export function pollServerInfo(callback: PollServerInfoCb) {
   return (client: RconClient) => {
@@ -94,7 +95,7 @@ export function pollServerInfo(callback: PollServerInfoCb) {
           }] ${si.team2_Name}`
         );
 
-        const { state, payload } = await callback(si, pl);
+        const { state, payload } = await callback(si, pl, freshClient.ip);
         info('pollServerInfo', `New state: ${state}`);
 
         if (state !== 'waiting') {
@@ -109,6 +110,10 @@ export function pollServerInfo(callback: PollServerInfoCb) {
             'pollServerInfo',
             `Prelive executed: switch: "${spRes.join(', ')}", rs: "${rsRes}"`
           );
+        }
+
+        if (state === 'new_server') {
+          clearTimers();
         }
 
         if (state === 'finished') {

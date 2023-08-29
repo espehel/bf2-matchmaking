@@ -181,4 +181,5 @@ export type LiveServerState =
   | 'prelive'
   | 'live'
   | 'endlive'
+  | 'new_server'
   | 'finished';

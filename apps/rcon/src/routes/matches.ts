@@ -9,17 +9,14 @@ import { getPlayerFromDatabase } from '../services/players';
 import { toMatchPlayer } from '../mappers/player';
 import { error, info, logOngoingMatchCreated } from '@bf2-matchmaking/logging';
 import moment from 'moment';
-import { pollServerInfo, rcon } from '../net/RconManager';
-import { getPollStatus, onServerInfo } from '../services/matches';
-import { getLiveRound } from '../services/round-service';
+import { findLiveMatch, startLiveMatch } from '../services/MatchManager';
 
 const router = express.Router();
 
 router.get('/:matchid/live', async (req, res) => {
   const matchId = parseInt(req.params.matchid);
-  const liveRound = getLiveRound(matchId);
-  const pollStatus = getPollStatus(matchId);
-  return res.send({ round: liveRound, status: pollStatus });
+  const matchClient = findLiveMatch(matchId);
+  return res.send({ round: matchClient?.liveRound, status: matchClient?.state });
 });
 
 router.post('/:matchid/poll', async (req, res) => {
@@ -32,11 +29,8 @@ router.post('/:matchid/poll', async (req, res) => {
       return res.status(400).send('Match is not linked to a server.');
     }
 
-    const { id, rcon_port, rcon_pw } = await client()
-      .getServerRcon(match.server.ip)
-      .then(verifySingleResult);
-
-    await rcon(id, rcon_port, rcon_pw).then(pollServerInfo(onServerInfo(match)));
+    const server = await client().getServerRcon(match.server.ip).then(verifySingleResult);
+    startLiveMatch(match, server);
     res.sendStatus(202);
   } catch (e) {
     res.status(500).send(e);

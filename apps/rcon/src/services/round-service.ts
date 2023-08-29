@@ -1,5 +1,4 @@
 import {
-  MatchesJoined,
   PlayerListItem,
   RoundsInsert,
   ServerInfo,
@@ -9,20 +8,7 @@ import { info, logSupabaseError } from '@bf2-matchmaking/logging';
 import { client } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 
-const liveRoundMap = new Map<number, RoundsInsert>();
-
-export function getLiveRound(match: MatchesJoined | number): RoundsInsert | null {
-  if (typeof match === 'number') {
-    return liveRoundMap.get(match) || null;
-  }
-  return liveRoundMap.get(match.id) || null;
-}
-
-export function removeLiveRound(match: MatchesJoined) {
-  liveRoundMap.delete(match.id);
-}
-
-export async function updateLiveRound(
+export async function createLiveRound(
   match: ServerMatch,
   si: ServerInfo,
   pl: Array<PlayerListItem>
@@ -44,12 +30,11 @@ export async function updateLiveRound(
     si: JSON.stringify(si),
     pl: JSON.stringify(pl),
   };
-  info('updateLiveRound', `Players: [${pl?.map((p) => p.getName).join(', ')}]`);
-  liveRoundMap.set(match.id, newRound);
+  info('createLiveRound', `Players: [${pl?.map((p) => p.getName).join(', ')}]`);
   return newRound;
 }
 
-async function getMapId(si: ServerInfo) {
+export async function getMapId(si: ServerInfo) {
   const cachedMap = getCachedValue<number>(si.currentMapName);
   if (cachedMap) {
     return cachedMap;
