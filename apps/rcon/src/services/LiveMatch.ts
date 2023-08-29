@@ -1,4 +1,5 @@
 import {
+  isServerMatch,
   LiveServerState,
   PlayerListItem,
   RoundsInsert,
@@ -19,6 +20,7 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
+import moment from 'moment';
 
 export class LiveMatch {
   rounds: Array<RoundsRow> = [];
@@ -105,6 +107,14 @@ export class LiveMatch {
     }
 
     if (nextState === 'prelive') {
+      if (!this.match.live_at) {
+        const { data } = await client().updateMatch(this.match.id, {
+          live_at: moment().toISOString(),
+        });
+        if (data && isServerMatch(data)) {
+          this.match = data;
+        }
+      }
       return { state: nextState, payload: pl ? getPlayersToSwitch(this.match, pl) : [] };
     }
 

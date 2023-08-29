@@ -236,6 +236,7 @@ export interface Database {
           config: number
           created_at: string | null
           id: number
+          live_at: string | null
           ready_at: string | null
           server: string | null
           started_at: string | null
@@ -246,6 +247,7 @@ export interface Database {
           config: number
           created_at?: string | null
           id?: number
+          live_at?: string | null
           ready_at?: string | null
           server?: string | null
           started_at?: string | null
@@ -256,6 +258,7 @@ export interface Database {
           config?: number
           created_at?: string | null
           id?: number
+          live_at?: string | null
           ready_at?: string | null
           server?: string | null
           started_at?: string | null
