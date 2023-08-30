@@ -5,7 +5,7 @@ import RoundsList from '@/components/RoundsList';
 import { MatchResult, PlayersRow } from '@bf2-matchmaking/types';
 import TeamResultTable from '@/components/TeamResultTable';
 import {
-  calculateMatchResults,
+  calculateMatchResultsOld,
   getTeamTickets,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import TeamStats from '@/components/TeamStats';
@@ -26,7 +26,7 @@ export default async function ResultsMatch({ params }: Props) {
     .getMatch(parseInt(params.match))
     .then(verifySingleResult);
 
-  const matchResults: Array<PlayerMatchResultTuple> = calculateMatchResults(match);
+  const matchResults: Array<PlayerMatchResultTuple> = calculateMatchResultsOld(match);
   const isTeam =
     (team: string) =>
     ([player]: PlayerMatchResultTuple) =>

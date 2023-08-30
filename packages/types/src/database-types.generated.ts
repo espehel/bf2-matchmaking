@@ -192,6 +192,7 @@ export interface Database {
           kills: number
           match_id: number
           player_id: string
+          rating_inc: number
           score: number
         }
         Insert: {
@@ -201,6 +202,7 @@ export interface Database {
           kills: number
           match_id?: number
           player_id: string
+          rating_inc: number
           score: number
         }
         Update: {
@@ -210,6 +212,7 @@ export interface Database {
           kills?: number
           match_id?: number
           player_id?: string
+          rating_inc?: number
           score?: number
         }
         Relationships: [
@@ -277,13 +280,17 @@ export interface Database {
         Row: {
           created_at: string
           id: number
+          is_winner: boolean
+          maps: number
           rounds: number
           team: string
           tickets: number
         }
         Insert: {
           created_at?: string
-          id?: number
+          id: number
+          is_winner: boolean
+          maps: number
           rounds: number
           team: string
           tickets: number
@@ -291,6 +298,8 @@ export interface Database {
         Update: {
           created_at?: string
           id?: number
+          is_winner?: boolean
+          maps?: number
           rounds?: number
           team?: string
           tickets?: number

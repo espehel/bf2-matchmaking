@@ -4,8 +4,10 @@ import {
   MatchesJoined,
   MatchesRow,
   MatchesUpdate,
+  MatchPlayerResultsInsert,
   MatchPlayersInsert,
   MatchPlayersRow,
+  MatchResultsInsert,
   MatchStatus,
 } from '@bf2-matchmaking/types';
 
@@ -156,4 +158,8 @@ export default (client: SupabaseClient<Database>) => ({
       .select('*')
       .eq('status', MatchStatus.Ongoing)
       .eq('server', serverIp),
+  createMatchResult: (...results: Array<MatchResultsInsert>) =>
+    client.from('match_results').insert(results).select(),
+  createMatchPlayerResults: (...results: Array<MatchPlayerResultsInsert>) =>
+    client.from('match_player_results').insert(results).select(),
 });

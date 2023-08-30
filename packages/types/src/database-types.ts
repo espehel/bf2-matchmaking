@@ -8,6 +8,9 @@ export type RoundsRow = Database['public']['Tables']['rounds']['Row'];
 export type ServersRow = Database['public']['Tables']['servers']['Row'];
 export type AdminRolesRow = Database['public']['Tables']['admin_roles']['Row'];
 export type ServerRconsRow = Database['public']['Tables']['server_rcons']['Row'];
+export type MatchResultsRow = Database['public']['Tables']['match_results']['Row'];
+export type MatchPlayerResultsRow =
+  Database['public']['Tables']['match_player_results']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -15,6 +18,7 @@ export type MatchesInsert = Database['public']['Tables']['matches']['Insert'];
 export type ServersInsert = Database['public']['Tables']['servers']['Insert'];
 export type ServerRconsInsert = Database['public']['Tables']['server_rcons']['Insert'];
 export type MatchPlayersInsert = Database['public']['Tables']['match_players']['Insert'];
+export type MatchResultsInsert = Database['public']['Tables']['match_results']['Insert'];
 export type MatchPlayerResultsInsert =
   Database['public']['Tables']['match_player_results']['Insert'];
 

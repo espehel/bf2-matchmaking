@@ -10,6 +10,7 @@ import {
 import { client } from '@bf2-matchmaking/supabase';
 import { LiveMatch } from './LiveMatch';
 import moment from 'moment/moment';
+import { calculateMatchResults } from '@bf2-matchmaking/utils/src/results-utils';
 
 export const closeMatch = async (
   liveMatch: LiveMatch,
@@ -28,7 +29,12 @@ export const closeMatch = async (
   });
   if (error) {
     logSupabaseError('Failed to close match', error);
+    return;
   }
+
+  /*const results = calculateMatchResults(liveMatch.match);
+  await client().createMatchResult(...results);*/
+
   return data;
 };
 
