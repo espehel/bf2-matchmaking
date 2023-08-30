@@ -184,6 +184,49 @@ export interface Database {
           }
         ]
       }
+      match_player_results: {
+        Row: {
+          created_at: string
+          deaths: number
+          info: Json
+          kills: number
+          match_id: number
+          player_id: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          deaths: number
+          info: Json
+          kills: number
+          match_id?: number
+          player_id: string
+          score: number
+        }
+        Update: {
+          created_at?: string
+          deaths?: number
+          info?: Json
+          kills?: number
+          match_id?: number
+          player_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_player_results_match_id_fkey"
+            columns: ["match_id"]
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_player_results_player_id_fkey"
+            columns: ["player_id"]
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       match_players: {
         Row: {
           captain: boolean
@@ -226,6 +269,37 @@ export interface Database {
             foreignKeyName: "match_players_player_id_fkey"
             columns: ["player_id"]
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      match_results: {
+        Row: {
+          created_at: string
+          id: number
+          rounds: number
+          team: string
+          tickets: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          rounds: number
+          team: string
+          tickets: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          rounds?: number
+          team?: string
+          tickets?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_results_id_fkey"
+            columns: ["id"]
+            referencedRelation: "matches"
             referencedColumns: ["id"]
           }
         ]
