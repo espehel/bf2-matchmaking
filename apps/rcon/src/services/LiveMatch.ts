@@ -15,6 +15,7 @@ import {
   isFirstTimeFullServer,
   isOngoingRound,
   isServerEmptied,
+  updateLiveAt,
 } from './matches';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
@@ -45,10 +46,11 @@ export class LiveMatch {
     ip: string
   ): Promise<LiveServerUpdate> {
     await this.#updateLiveRound(si, pl);
+    const next = (state: LiveServerState) => this.handleNextState(state, pl, si);
 
     if (this.nextServer && ip !== this.match.server.ip) {
       this.nextServer = false;
-      return this.next('new_server');
+      return next('new_server');
     }
 
     if (this.nextServer) {
@@ -56,35 +58,35 @@ export class LiveMatch {
     }
 
     if (this.state === 'new_server' && ip === this.match.server.ip) {
-      return this.next('waiting');
+      return next('waiting');
     }
 
     if (hasPlayedAllRounds(this.rounds)) {
-      return this.next('finished');
+      return next('finished');
     }
 
     if (isServerEmptied(this.rounds, si)) {
-      return this.next('finished');
+      return next('finished');
     }
 
     if (pl.length === 0) {
-      return this.next('waiting');
+      return next('waiting');
     }
 
     if (this.state === 'waiting' || this.state === 'endlive') {
-      return this.next('warmup');
+      return next('warmup');
     }
 
     if (this.state === 'warmup' && isFirstTimeFullServer(this.match, si, this.rounds)) {
-      return this.next('prelive');
+      return next('prelive');
     }
 
     if (this.state === 'prelive' && si.roundTime === '0') {
-      return this.next('live');
+      return next('live');
     }
 
     if (isOngoingRound(si)) {
-      return this.next('live');
+      return next('live');
     }
 
     if (this.liveRound) {
@@ -93,13 +95,13 @@ export class LiveMatch {
       info('onServerInfo', `Created round ${round.id}`);
       this.rounds.push(round);
     }
-    return this.next('endlive');
+    return next('endlive');
   }
 
-  async next(
+  async handleNextState(
     nextState: LiveServerState,
-    pl?: Array<PlayerListItem>,
-    si?: ServerInfo
+    pl: Array<PlayerListItem>,
+    si: ServerInfo
   ): Promise<LiveServerUpdate> {
     if (this.state !== nextState) {
       this.#logChangeLiveState(nextState, si, pl);
@@ -107,15 +109,8 @@ export class LiveMatch {
     }
 
     if (nextState === 'prelive') {
-      if (!this.match.live_at) {
-        const { data } = await client().updateMatch(this.match.id, {
-          live_at: moment().toISOString(),
-        });
-        if (data && isServerMatch(data)) {
-          this.match = data;
-        }
-      }
-      return { state: nextState, payload: pl ? getPlayersToSwitch(this.match, pl) : [] };
+      await updateLiveAt(this);
+      return { state: nextState, payload: getPlayersToSwitch(this.match, pl) };
     }
 
     if (nextState === 'finished') {

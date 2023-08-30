@@ -1,5 +1,6 @@
 import { logChangeMatchStatus, logSupabaseError } from '@bf2-matchmaking/logging';
 import {
+  isServerMatch,
   MatchesJoined,
   MatchStatus,
   RoundsInsert,
@@ -8,6 +9,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { client } from '@bf2-matchmaking/supabase';
 import { LiveMatch } from './LiveMatch';
+import moment from 'moment/moment';
 
 export const closeMatch = async (
   liveMatch: LiveMatch,
@@ -73,3 +75,14 @@ export const isOngoingRound = (si: ServerInfo) => {
 
   return true;
 };
+
+export async function updateLiveAt(liveMatch: LiveMatch) {
+  if (!liveMatch.match.live_at) {
+    const { data } = await client().updateMatch(liveMatch.match.id, {
+      live_at: moment().toISOString(),
+    });
+    if (data && isServerMatch(data)) {
+      liveMatch.match = data;
+    }
+  }
+}
