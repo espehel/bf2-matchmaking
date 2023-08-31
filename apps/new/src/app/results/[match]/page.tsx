@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import RoundsList from '@/components/RoundsList';
-import { MatchResult, PlayersRow } from '@bf2-matchmaking/types';
+import { RoundStats, PlayersRow } from '@bf2-matchmaking/types';
 import TeamResultTable from '@/components/TeamResultTable';
 import {
   calculateMatchResultsOld,
@@ -17,7 +17,7 @@ const compareScore = (
   (playerB ? playerB.score : Number.MIN_VALUE) -
   (playerA ? playerA.score : Number.MIN_VALUE);
 
-type PlayerMatchResultTuple = [PlayersRow, MatchResult | null];
+type PlayerMatchResultTuple = [PlayersRow, RoundStats | null];
 interface Props {
   params: { match: string };
 }
@@ -32,8 +32,8 @@ export default async function ResultsMatch({ params }: Props) {
     ([player]: PlayerMatchResultTuple) =>
       match.teams.find(({ player_id }) => player_id === player.id)?.team === team;
 
-  const teamATickets = getTeamTickets(match, 'a');
-  const teamBTickets = getTeamTickets(match, 'b');
+  const teamATickets = getTeamTickets(match.rounds, 'a');
+  const teamBTickets = getTeamTickets(match.rounds, 'b');
 
   return (
     <main className="main text-center">

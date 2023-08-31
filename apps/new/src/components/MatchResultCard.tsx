@@ -17,13 +17,19 @@ export default function MatchResultCard({ match }: Props) {
       <div className="flex">
         <div className="stat">
           <div className="stat-title">Team A</div>
-          <div className="stat-value">{getTeamRounds(match, 'a')}</div>
-          <div className="stat-desc">{`Tickets: ${getTeamTickets(match, 'a')}`}</div>
+          <div className="stat-value">{getTeamRounds(match.rounds, 'a')}</div>
+          <div className="stat-desc">{`Tickets: ${getTeamTickets(
+            match.rounds,
+            'a'
+          )}`}</div>
         </div>
         <div className="stat">
           <div className="stat-title">Team B</div>
-          <div className="stat-value">{getTeamRounds(match, 'b')}</div>
-          <div className="stat-desc">{`Tickets: ${getTeamTickets(match, 'b')}`}</div>
+          <div className="stat-value">{getTeamRounds(match.rounds, 'b')}</div>
+          <div className="stat-desc">{`Tickets: ${getTeamTickets(
+            match.rounds,
+            'b'
+          )}`}</div>
         </div>
       </div>
       <div className="flex mr-4 ml-auto">

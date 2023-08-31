@@ -169,7 +169,7 @@ export interface User {
   avatar: string | null;
 }
 
-export interface MatchResult {
+export interface RoundStats {
   score: number;
   kills: number;
   deaths: number;

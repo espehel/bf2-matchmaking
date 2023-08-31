@@ -7,6 +7,7 @@ import {
   MatchConfigsRow,
   MatchStatus,
   PlayersInsert,
+  PlayersRow,
   PlayersUpdate,
   RoundsInsert,
   RoundsJoined,
@@ -26,6 +27,8 @@ export default (client: SupabaseClient<Database>) => ({
   getPlayersByKeyhashList: (keyhashes: Array<string>) =>
     client.from('players').select('*').in('keyhash', keyhashes),
   getPlayers: () => client.from('players').select('*'),
+  getPlayersByIdList: (idList: Array<string>) =>
+    client.from('players').select('*').in('id', idList),
   searchPlayers: (query: string) =>
     client.from('players').select('*').ilike('username', `%${query}%`).limit(10),
   getPlayer: (playerId: string | undefined) =>
@@ -34,6 +37,11 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('players').insert([player]).select().single(),
   updatePlayer: (playerId: string, values: PlayersUpdate) =>
     client.from('players').update(values).eq('id', playerId).select('*').single(),
+  updatePlayers: (values: Array<PlayersUpdate>) =>
+    client
+      .from('players')
+      .upsert(values as Array<PlayersInsert>)
+      .select('*'),
   getRound: (id: number) =>
     client
       .from('rounds')

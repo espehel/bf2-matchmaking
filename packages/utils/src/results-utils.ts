@@ -1,19 +1,23 @@
 import {
   isNotNull,
   MatchesJoined,
-  MatchResult,
+  RoundStats,
   MatchResultsInsert,
   MatchResultsRow,
   PlayerListItem,
   PlayersRow,
   RoundsJoined,
+  MatchPlayerResultsInsert,
+  isDefined,
+  PlayersUpdate,
+  PlayersInsert,
 } from '@bf2-matchmaking/types';
 
 export const calculateMatchResultsOld = (
   match: MatchesJoined
-): Array<[PlayersRow, MatchResult | null]> => {
+): Array<[PlayersRow, RoundStats | null]> => {
   const results = match.rounds
-    .map(getRoundResults)
+    .map(getPlayerRoundStats)
     .filter(isNotNull)
     .reduce(aggregateRound, {});
 
@@ -23,7 +27,7 @@ export const calculateMatchResultsOld = (
   ]);
 };
 
-const getRoundResults = (round: RoundsJoined): Record<string, MatchResult> | null => {
+const getPlayerRoundStats = (round: RoundsJoined): Record<string, RoundStats> | null => {
   const playerList: Array<PlayerListItem> =
     typeof round.pl === 'string' ? JSON.parse(round.pl) : null;
 
@@ -42,9 +46,9 @@ const getRoundResults = (round: RoundsJoined): Record<string, MatchResult> | nul
 };
 
 const aggregateRound = (
-  aggregated: Record<string, MatchResult>,
-  current: Record<string, MatchResult>
-): Record<string, MatchResult> => ({
+  aggregated: Record<string, RoundStats>,
+  current: Record<string, RoundStats>
+): Record<string, RoundStats> => ({
   ...aggregated,
   ...Object.keys(current)
     .map((key) => ({
@@ -112,22 +116,69 @@ export function calculateMatchResults(
   const scoreB = mapsB * 100 + roundsB * 10 + ticketsB;
   return [
     {
-      id: match.id,
-      team: 'a',
+      match_id: match.id,
+      team: 1,
       maps: mapsA,
       rounds: roundsA,
       tickets: ticketsA,
       is_winner: scoreA > scoreB,
     },
     {
-      id: match.id,
-      team: 'b',
-      maps: mapsA,
-      rounds: roundsA,
-      tickets: ticketsA,
+      match_id: match.id,
+      team: 2,
+      maps: mapsB,
+      rounds: roundsB,
+      tickets: ticketsB,
       is_winner: scoreB > scoreA,
     },
   ];
 }
 
-export function calculatePlayerResults(match: MatchesJoined) {}
+export function calculatePlayerResults(
+  match: MatchesJoined
+): Array<MatchPlayerResultsInsert> {
+  const results = match.rounds
+    .map(getPlayerRoundStats)
+    .filter(isNotNull)
+    .reduce(aggregateRound, {});
+
+  return match.players
+    .map((player) =>
+      player.keyhash
+        ? {
+            match_id: match.id,
+            player_id: player.id,
+            score: results[player.keyhash]?.score || 0,
+            deaths: results[player.keyhash]?.deaths || 0,
+            kills: results[player.keyhash]?.kills || 0,
+            rating_inc: 0,
+          }
+        : null
+    )
+    .filter(isNotNull);
+}
+
+export function withRatingIncrement(match: MatchesJoined, winnerTeam: 'a' | 'b') {
+  return (playerResult: MatchPlayerResultsInsert) => {
+    const isWinner = match.teams.some(
+      (mp) => mp.player_id === playerResult.player_id && mp.team === winnerTeam
+    );
+    return {
+      ...playerResult,
+      rating_inc: isWinner ? 1 : -1,
+    };
+  };
+}
+
+export function toPlayerRatingUpdate(players: Array<PlayersRow>) {
+  return (playerResult: MatchPlayerResultsInsert): PlayersInsert | null => {
+    const player = players.find((p) => p.id === playerResult.player_id);
+    if (!player) {
+      return null;
+    }
+    return {
+      ...player,
+      rating: player.rating + playerResult.rating_inc,
+    };
+  };
+}

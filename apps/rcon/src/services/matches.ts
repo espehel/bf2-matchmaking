@@ -1,5 +1,10 @@
-import { logChangeMatchStatus, logSupabaseError } from '@bf2-matchmaking/logging';
 import {
+  logChangeMatchStatus,
+  logErrorMessage,
+  logSupabaseError,
+} from '@bf2-matchmaking/logging';
+import {
+  isNotNull,
   isServerMatch,
   MatchesJoined,
   MatchStatus,
@@ -7,10 +12,16 @@ import {
   RoundsRow,
   ServerInfo,
 } from '@bf2-matchmaking/types';
-import { client } from '@bf2-matchmaking/supabase';
+import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { LiveMatch } from './LiveMatch';
 import moment from 'moment/moment';
-import { calculateMatchResults } from '@bf2-matchmaking/utils/src/results-utils';
+import {
+  calculateMatchResults,
+  calculatePlayerResults,
+  toPlayerRatingUpdate,
+  withRatingIncrement,
+} from '@bf2-matchmaking/utils/src/results-utils';
+import { updatePlayerRatings } from './players';
 
 export const closeMatch = async (
   liveMatch: LiveMatch,
@@ -32,11 +43,28 @@ export const closeMatch = async (
     return;
   }
 
-  /*const results = calculateMatchResults(liveMatch.match);
-  await client().createMatchResult(...results);*/
+  try {
+    await processResults(data);
+  } catch (e) {
+    logErrorMessage('Failed to process results', e);
+  }
 
   return data;
 };
+
+export async function processResults(match: MatchesJoined) {
+  const [resultsA, resultsB] = calculateMatchResults(match);
+  await client().createMatchResult(resultsA, resultsB).then(verifyResult);
+
+  const playerResults = calculatePlayerResults(match).map(
+    withRatingIncrement(match, resultsA.is_winner ? 'a' : 'b')
+  );
+  await client()
+    .createMatchPlayerResults(...playerResults)
+    .then(verifyResult);
+
+  await updatePlayerRatings(playerResults);
+}
 
 export const deleteMatch = async (
   liveMatch: LiveMatch,

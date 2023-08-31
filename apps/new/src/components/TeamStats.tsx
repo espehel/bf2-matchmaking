@@ -8,8 +8,8 @@ interface Props {
 }
 
 export default function TeamStats({ team, match, isWinner }: Props) {
-  const tickets = getTeamTickets(match, team);
-  const rounds = getTeamRounds(match, team);
+  const tickets = getTeamTickets(match.rounds, team);
+  const rounds = getTeamRounds(match.rounds, team);
 
   return (
     <div className="stats stats-vertical shadow h-fit">

@@ -188,7 +188,6 @@ export interface Database {
         Row: {
           created_at: string
           deaths: number
-          info: Json
           kills: number
           match_id: number
           player_id: string
@@ -198,7 +197,6 @@ export interface Database {
         Insert: {
           created_at?: string
           deaths: number
-          info: Json
           kills: number
           match_id?: number
           player_id: string
@@ -208,7 +206,6 @@ export interface Database {
         Update: {
           created_at?: string
           deaths?: number
-          info?: Json
           kills?: number
           match_id?: number
           player_id?: string
@@ -279,36 +276,42 @@ export interface Database {
       match_results: {
         Row: {
           created_at: string
-          id: number
           is_winner: boolean
           maps: number
+          match_id: number
           rounds: number
-          team: string
+          team: number
           tickets: number
         }
         Insert: {
           created_at?: string
-          id: number
           is_winner: boolean
           maps: number
+          match_id: number
           rounds: number
-          team: string
+          team: number
           tickets: number
         }
         Update: {
           created_at?: string
-          id?: number
           is_winner?: boolean
           maps?: number
+          match_id?: number
           rounds?: number
-          team?: string
+          team?: number
           tickets?: number
         }
         Relationships: [
           {
-            foreignKeyName: "match_results_id_fkey"
-            columns: ["id"]
+            foreignKeyName: "match_results_match_id_fkey"
+            columns: ["match_id"]
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_results_team_fkey"
+            columns: ["team"]
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           }
         ]
@@ -369,6 +372,7 @@ export interface Database {
           full_name: string
           id: string
           keyhash: string | null
+          rating: number
           updated_at: string
           user_id: string | null
           username: string
@@ -379,6 +383,7 @@ export interface Database {
           full_name: string
           id: string
           keyhash?: string | null
+          rating?: number
           updated_at?: string
           user_id?: string | null
           username: string
@@ -389,6 +394,7 @@ export interface Database {
           full_name?: string
           id?: string
           keyhash?: string | null
+          rating?: number
           updated_at?: string
           user_id?: string | null
           username?: string
@@ -509,6 +515,24 @@ export interface Database {
           name?: string
           port?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
         }
         Relationships: []
       }

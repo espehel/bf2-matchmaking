@@ -1,8 +1,8 @@
-import { MatchesJoined, MatchResult, PlayersRow } from '@bf2-matchmaking/types';
+import { MatchesJoined, RoundStats, PlayersRow } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 
 interface Props {
-  playerResults: Array<[PlayersRow, MatchResult | null]>;
+  playerResults: Array<[PlayersRow, RoundStats | null]>;
   match: MatchesJoined;
 }
 

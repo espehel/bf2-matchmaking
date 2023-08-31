@@ -10,8 +10,27 @@ import { toMatchPlayer } from '../mappers/player';
 import { error, info, logOngoingMatchCreated } from '@bf2-matchmaking/logging';
 import moment from 'moment';
 import { findLiveMatch, startLiveMatch } from '../services/MatchManager';
+import { processResults } from '../services/matches';
 
 const router = express.Router();
+
+router.post('/:matchid/results', async (req, res) => {
+  try {
+    const match = await client()
+      .getMatch(parseInt(req.params.matchid))
+      .then(verifySingleResult);
+
+    await processResults(match);
+
+    return res.sendStatus(201);
+  } catch (e) {
+    error('POST /matches/:matchid/results', e);
+    if (e instanceof Error) {
+      return res.status(500).send(e.message);
+    }
+    return res.status(500).send(JSON.stringify(e));
+  }
+});
 
 router.get('/:matchid/live', async (req, res) => {
   const matchId = parseInt(req.params.matchid);
@@ -31,9 +50,12 @@ router.post('/:matchid/poll', async (req, res) => {
 
     const server = await client().getServerRcon(match.server.ip).then(verifySingleResult);
     startLiveMatch(match, server);
-    res.sendStatus(202);
+    return res.sendStatus(202);
   } catch (e) {
-    res.status(500).send(e);
+    if (e instanceof Error) {
+      return res.status(500).send(e.message);
+    }
+    return res.status(500).send(JSON.stringify(e));
   }
 });
 
@@ -60,6 +82,9 @@ router.post('/', async (req: Request<{}, {}, PostMatchesRequestBody>, res) => {
     res.status(201).send(updatedMatch);
   } catch (e) {
     error('POST /matches', e);
+    if (e instanceof Error) {
+      res.status(500).send(e.message);
+    }
     res.status(500).send(JSON.stringify(e));
   }
 });
