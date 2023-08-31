@@ -4,6 +4,7 @@ import { PlayerListItem, LiveServerState, ServerInfo } from '@bf2-matchmaking/ty
 import { info, logRconError } from '@bf2-matchmaking/logging';
 import moment, { Moment } from 'moment';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
+import { LiveMatch } from '../services/LiveMatch';
 
 const clients = new Map<string, RconClient>();
 const POLL_INTERVAL = 1000 * 10;
@@ -71,7 +72,7 @@ export type PollServerInfoCb = (
   playerList: Array<PlayerListItem>,
   ip: string
 ) => Promise<LiveServerUpdate>;
-export function pollServerInfo(callback: PollServerInfoCb) {
+export function pollServerInfo(liveMatch: LiveMatch) {
   return (client: RconClient) => {
     const interval = setInterval(intervalFn, POLL_INTERVAL);
     const timeout = setTimeout(stopPolling, POLL_MAX_DURATION);
@@ -95,7 +96,11 @@ export function pollServerInfo(callback: PollServerInfoCb) {
           }] ${si.team2_Name}`
         );
 
-        const { state, payload } = await callback(si, pl, freshClient.ip);
+        const { state, payload } = await liveMatch.onLiveServerUpdate(
+          si,
+          pl,
+          freshClient.ip
+        );
         info('pollServerInfo', `New state: ${state}`);
 
         if (state !== 'waiting') {
@@ -127,8 +132,9 @@ export function pollServerInfo(callback: PollServerInfoCb) {
       } catch (e) {
         if (e instanceof Error) {
           logRconError(e.message, e, client.ip);
+        } else {
+          logRconError(JSON.stringify(e), e, client.ip);
         }
-        logRconError(JSON.stringify(e), e, client.ip);
         errorAt = moment();
       }
     }

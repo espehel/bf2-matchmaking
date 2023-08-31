@@ -39,7 +39,5 @@ export function startLiveMatch(match: ServerMatch, server: ServerRconsRow) {
       match: JSON.stringify(match),
     });
   }
-  rcon(server.id, server.rcon_port, server.rcon_pw).then(
-    pollServerInfo(liveMatch.onLiveServerUpdate)
-  );
+  rcon(server.id, server.rcon_port, server.rcon_pw).then(pollServerInfo(liveMatch));
 }
