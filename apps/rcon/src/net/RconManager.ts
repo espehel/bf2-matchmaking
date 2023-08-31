@@ -126,9 +126,9 @@ export function pollServerInfo(callback: PollServerInfoCb) {
         }
       } catch (e) {
         if (e instanceof Error) {
-          logRconError(e.message, client.ip);
+          logRconError(e.message, e, client.ip);
         }
-        logRconError(JSON.stringify(e), client.ip);
+        logRconError(JSON.stringify(e), e, client.ip);
         errorAt = moment();
       }
     }

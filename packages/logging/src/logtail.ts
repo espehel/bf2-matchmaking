@@ -186,12 +186,18 @@ export const logInternalApiError = (message: string, err: unknown) => {
 
 export const logRconError = (
   message: string,
+  err: unknown,
   ip: string,
   si?: ServerInfo,
   pl?: Array<PlayerListItem>
 ) => {
   logger
-    .error(message, { si: JSON.stringify(si), pl: JSON.stringify(pl), ip })
+    .error(message, {
+      error: JSON.stringify(err),
+      si: JSON.stringify(si),
+      pl: JSON.stringify(pl),
+      ip,
+    })
     .then((log) => error('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
@@ -212,6 +218,13 @@ export const logPlayerUpdated = (
     .finally(flush);
 };
 
+export const logErrorMessage = (msg: string, err: unknown, context?: Context) => {
+  logger
+    .error(msg, { error: JSON.stringify(err), ...context })
+    .then((log) => info('logtail', log.message))
+    .catch((e) => error('logtail', e))
+    .finally(flush);
+};
 export const logMessage = (msg: string, context?: Context) => {
   logger
     .info(msg, context)
