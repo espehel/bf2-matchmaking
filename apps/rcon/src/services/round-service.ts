@@ -11,7 +11,9 @@ export function createLiveRound(
 ): LiveRound {
   const mergedPl = pl
     .concat(liveMatch.liveRound?.pl || [])
-    .filter((p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash));
+    .filter(
+      (p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash) === i
+    );
 
   const newRound = {
     team1_name: si.team1_Name,
