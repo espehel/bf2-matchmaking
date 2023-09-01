@@ -1,8 +1,14 @@
-import { MatchesJoined, RoundStats, PlayersRow } from '@bf2-matchmaking/types';
+import {
+  MatchesJoined,
+  RoundStats,
+  PlayersRow,
+  MatchPlayerResultsRow,
+  MatchPlayerResultsJoined,
+} from '@bf2-matchmaking/types';
 import Link from 'next/link';
 
 interface Props {
-  playerResults: Array<[PlayersRow, RoundStats | null]>;
+  playerResults: Array<MatchPlayerResultsJoined>;
   match: MatchesJoined;
 }
 
@@ -20,10 +26,10 @@ export default function TeamResultTable({ playerResults, match }: Props) {
         </tr>
       </thead>
       <tbody>
-        {playerResults.map(([player, result], i) => (
-          <tr key={player.id} className="hover">
+        {playerResults.map((result, i) => (
+          <tr key={result.player.id} className="hover">
             <th>{i + 1}</th>
-            <td className="truncate">{player.full_name}</td>
+            <td className="truncate">{result.player.full_name}</td>
             {result && (
               <>
                 <td>{result.score}</td>

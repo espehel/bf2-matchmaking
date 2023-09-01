@@ -1,56 +1,48 @@
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import RoundsList from '@/components/RoundsList';
-import { RoundStats, PlayersRow } from '@bf2-matchmaking/types';
+import { MatchPlayerResultsRow } from '@bf2-matchmaking/types';
 import TeamResultTable from '@/components/TeamResultTable';
-import {
-  calculateMatchResultsOld,
-  getTeamTickets,
-} from '@bf2-matchmaking/utils/src/results-utils';
 import TeamStats from '@/components/TeamStats';
+import { assertObj, toTuple } from '@bf2-matchmaking/utils';
 
-const compareScore = (
-  [, playerA]: PlayerMatchResultTuple,
-  [, playerB]: PlayerMatchResultTuple
-) =>
-  (playerB ? playerB.score : Number.MIN_VALUE) -
-  (playerA ? playerA.score : Number.MIN_VALUE);
-
-type PlayerMatchResultTuple = [PlayersRow, RoundStats | null];
+const isTeam = (team: number) => (playerResult: MatchPlayerResultsRow) =>
+  playerResult.team === team;
 interface Props {
   params: { match: string };
 }
 export default async function ResultsMatch({ params }: Props) {
   const match = await supabase(cookies)
-    .getMatch(parseInt(params.match))
+    .getMatch(Number(params.match))
     .then(verifySingleResult);
+  const matchResult = await supabase(cookies)
+    .getMatchResultsByMatchId(Number(params.match))
+    .then(verifyResult)
+    .then(toTuple);
+  assertObj(matchResult);
+  const playerResults = await supabase(cookies)
+    .getPlayerMatchResultsByMatchId(Number(params.match))
+    .then(verifyResult);
 
-  const matchResults: Array<PlayerMatchResultTuple> = calculateMatchResultsOld(match);
-  const isTeam =
-    (team: string) =>
-    ([player]: PlayerMatchResultTuple) =>
-      match.teams.find(({ player_id }) => player_id === player.id)?.team === team;
-
-  const teamATickets = getTeamTickets(match.rounds, 'a');
-  const teamBTickets = getTeamTickets(match.rounds, 'b');
+  const [team1Result, team2Result] = matchResult;
 
   return (
     <main className="main text-center">
       <h1 className="mb-8 text-accent font-bold">{`Match ${match.id}`}</h1>
-      <div className="flex flex-col justify-around">
-        <div className="flex mt-2 gap-4">
-          <TeamStats team="a" match={match} isWinner={teamATickets > teamBTickets} />
+      <div className="flex flex-col xl:flex-row justify-around w-full">
+        <div className="flex flex-col mt-2 gap-4">
+          <TeamStats matchResult={team1Result} />
           <TeamResultTable
-            playerResults={matchResults.filter(isTeam('a')).sort(compareScore)}
+            playerResults={playerResults.filter(isTeam(team1Result.team))}
             match={match}
           />
         </div>
-        <div className="divider">vs</div>
-        <div className="flex mt-2 gap-4">
-          <TeamStats team="b" match={match} isWinner={teamBTickets > teamATickets} />
+        <div className="divider xl:divider-horizontal">vs</div>
+        <div className="flex flex-col mt-2 gap-4">
+          <TeamStats matchResult={team2Result} />
           <TeamResultTable
-            playerResults={matchResults.filter(isTeam('b')).sort(compareScore)}
+            playerResults={playerResults.filter(isTeam(team2Result.team))}
             match={match}
           />
         </div>

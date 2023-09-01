@@ -2,23 +2,39 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
-import { MatchStatus } from '@bf2-matchmaking/types';
+import { MatchResultsRow } from '@bf2-matchmaking/types';
 import MatchResultCard from '@/components/MatchResultCard';
+import { toTuple } from '@bf2-matchmaking/utils';
 
 export default async function Results() {
-  const matches = await supabase(cookies).getMatches().then(verifyResult);
-  const displayMatches = matches
-    .filter((m) => m.status === MatchStatus.Closed)
-    .sort((a, b) => b.id - a.id);
+  const results = await supabase(cookies).getMatchResults().then(verifyResult);
+  const matches = await supabase(cookies)
+    .getMatchesInIdList(results.map((m) => m.match_id))
+    .then(verifyResult);
+
+  const groupedByMatchid = results.reduce<Record<number, Array<MatchResultsRow>>>(
+    (acc, cur) => {
+      return { ...acc, [cur.match_id]: [...(acc[cur.match_id] || []), cur] };
+    },
+    {}
+  );
+
+  function getMatchRounds(matchId: string) {
+    return matches.find((m) => m.id === Number(matchId))?.rounds || [];
+  }
 
   return (
     <main className="main text-center">
       <h1 className="mb-8">Match Results</h1>
       <ul className="grid justify-center gap-4">
-        {displayMatches.map((match) => (
-          <li className="" key={match.id}>
-            <Link href={`/results/${match.id}`}>
-              <MatchResultCard match={match} />
+        {Object.entries(groupedByMatchid).map(([matchId, match]) => (
+          <li className="" key={matchId}>
+            <Link href={`/results/${matchId}`}>
+              <MatchResultCard
+                matchId={matchId}
+                matchResult={toTuple(match)}
+                rounds={getMatchRounds(matchId)}
+              />
             </Link>
           </li>
         ))}

@@ -5,6 +5,7 @@ import {
   MatchesRow,
   MatchesUpdate,
   MatchPlayerResultsInsert,
+  MatchPlayerResultsJoined,
   MatchPlayersInsert,
   MatchPlayersRow,
   MatchResultsInsert,
@@ -25,6 +26,11 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY),
+  getMatchesInIdList: (idList: Array<number>) =>
+    client
+      .from('matches')
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
+      .in('id', idList),
   getStagingMatchesByChannel: (channel: string) =>
     client
       .from('matches')
@@ -162,4 +168,13 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('match_results').insert(results).select(),
   createMatchPlayerResults: (...results: Array<MatchPlayerResultsInsert>) =>
     client.from('match_player_results').insert(results).select(),
+  getMatchResults: () => client.from('match_results').select(),
+  getMatchResultsByMatchId: (matchId: number) =>
+    client.from('match_results').select().eq('match_id', matchId),
+  getPlayerMatchResultsByMatchId: (matchId: number) =>
+    client
+      .from('match_player_results')
+      .select<'*, player:players(*)', MatchPlayerResultsJoined>('*, player:players(*)')
+      .eq('match_id', matchId)
+      .order('score', { ascending: false }),
 });

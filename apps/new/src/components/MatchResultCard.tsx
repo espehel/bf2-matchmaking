@@ -1,35 +1,35 @@
-import { MatchesJoined } from '@bf2-matchmaking/types';
-import { getTeamRounds, getTeamTickets } from '@bf2-matchmaking/utils/src/results-utils';
+import { MatchResultsRow, RoundsJoined } from '@bf2-matchmaking/types';
 import { isUniqueObject } from '@bf2-matchmaking/utils';
 import { supabaseImageLoader } from '@/lib/supabase-client';
 import Image from 'next/image';
 
 interface Props {
-  match: MatchesJoined;
+  matchResult: [MatchResultsRow, MatchResultsRow] | null;
+  rounds: Array<RoundsJoined>;
+  matchId: string;
 }
 
-export default function MatchResultCard({ match }: Props) {
-  const maps = match.rounds.map((r) => r.map).filter(isUniqueObject);
+export default function MatchResultCard({ matchId, matchResult, rounds }: Props) {
+  if (!matchResult) {
+    return null;
+  }
+  const [team1, team2] = matchResult;
+
+  const maps = rounds.map((r) => r.map).filter(isUniqueObject);
 
   return (
     <section className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100">
-      <h2 className="text-xl">{`Match ${match.id}`}</h2>
+      <h2 className="text-xl">{`Match ${matchId}`}</h2>
       <div className="flex">
         <div className="stat">
-          <div className="stat-title">Team A</div>
-          <div className="stat-value">{getTeamRounds(match.rounds, 'a')}</div>
-          <div className="stat-desc">{`Tickets: ${getTeamTickets(
-            match.rounds,
-            'a'
-          )}`}</div>
+          <div className="stat-title">{`Team ${team1.team}`}</div>
+          <div className="stat-value">{team1.rounds}</div>
+          <div className="stat-desc">{`Tickets: ${team1.tickets}`}</div>
         </div>
         <div className="stat">
-          <div className="stat-title">Team B</div>
-          <div className="stat-value">{getTeamRounds(match.rounds, 'b')}</div>
-          <div className="stat-desc">{`Tickets: ${getTeamTickets(
-            match.rounds,
-            'b'
-          )}`}</div>
+          <div className="stat-title">{`Team ${team2.team}`}</div>
+          <div className="stat-value">{team2.rounds}</div>
+          <div className="stat-desc">{`Tickets: ${team2.tickets}`}</div>
         </div>
       </div>
       <div className="flex mr-4 ml-auto">

@@ -92,3 +92,7 @@ export interface DiscordMatch extends MatchesJoined {
 export interface ServerMatch extends MatchesJoined {
   server: ServersRow;
 }
+
+export interface MatchPlayerResultsJoined extends MatchPlayerResultsRow {
+  player: PlayersRow;
+}

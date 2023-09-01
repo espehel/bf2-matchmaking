@@ -160,12 +160,16 @@ export function calculatePlayerResults(
 
 export function withRatingIncrement(match: MatchesJoined, winnerTeam: 'a' | 'b') {
   return (playerResult: MatchPlayerResultsInsert) => {
-    const isWinner = match.teams.some(
-      (mp) => mp.player_id === playerResult.player_id && mp.team === winnerTeam
-    );
+    const mp = match.teams.find((mp) => mp.player_id === playerResult.player_id);
+
+    if (!mp) {
+      return playerResult;
+    }
+
     return {
       ...playerResult,
-      rating_inc: isWinner ? 1 : -1,
+      team: mp.team === 'a' ? 1 : 2,
+      rating_inc: mp.team === winnerTeam ? 1 : -1,
     };
   };
 }

@@ -193,6 +193,7 @@ export interface Database {
           player_id: string
           rating_inc: number
           score: number
+          team: number
         }
         Insert: {
           created_at?: string
@@ -202,6 +203,7 @@ export interface Database {
           player_id: string
           rating_inc: number
           score: number
+          team?: number
         }
         Update: {
           created_at?: string
@@ -211,6 +213,7 @@ export interface Database {
           player_id?: string
           rating_inc?: number
           score?: number
+          team?: number
         }
         Relationships: [
           {
@@ -223,6 +226,12 @@ export interface Database {
             foreignKeyName: "match_player_results_player_id_fkey"
             columns: ["player_id"]
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_player_results_team_fkey"
+            columns: ["team"]
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           }
         ]
