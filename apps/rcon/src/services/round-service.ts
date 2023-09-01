@@ -1,37 +1,42 @@
-import {
-  PlayerListItem,
-  RoundsInsert,
-  ServerInfo,
-  ServerMatch,
-} from '@bf2-matchmaking/types';
+import { LiveRound, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
 import { info, logSupabaseError } from '@bf2-matchmaking/logging';
-import { client } from '@bf2-matchmaking/supabase';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
+import { LiveMatch } from './LiveMatch';
 
-export async function createLiveRound(
-  match: ServerMatch,
+export function createLiveRound(
+  liveMatch: LiveMatch,
   si: ServerInfo,
   pl: Array<PlayerListItem>
-): Promise<RoundsInsert | null> {
-  const mapId = await getMapId(si);
+): LiveRound {
+  const mergedPl = pl
+    .concat(liveMatch.liveRound?.pl || [])
+    .filter((p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash));
 
-  if (mapId === -1) {
-    return null;
-  }
-
-  const newRound: RoundsInsert = {
+  const newRound = {
     team1_name: si.team1_Name,
     team1_tickets: si.team1_tickets,
     team2_name: si.team2_Name,
     team2_tickets: si.team2_tickets,
-    map: mapId,
-    server: match.server.ip,
-    match: match.id,
-    si: JSON.stringify(si),
-    pl: JSON.stringify(pl),
+    map: si.currentMapName,
+    server: liveMatch.match.server.ip,
+    match: liveMatch.match.id,
+    si,
+    pl: mergedPl,
   };
-  info('createLiveRound', `Players: [${pl?.map((p) => p.getName).join(', ')}]`);
+
+  info('createLiveRound', `Players: [${mergedPl?.map((p) => p.getName).join(', ')}]`);
   return newRound;
+}
+
+export async function insertRound(liveRound: LiveRound) {
+  const round = {
+    ...liveRound,
+    si: JSON.stringify(liveRound.si),
+    pl: JSON.stringify(liveRound.pl),
+    map: await getMapId(liveRound.si),
+  };
+  return client().createRound(round).then(verifySingleResult);
 }
 
 export async function getMapId(si: ServerInfo) {

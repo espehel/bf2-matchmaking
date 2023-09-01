@@ -1,6 +1,7 @@
 import { Logtail } from '@logtail/node';
 import invariant from 'tiny-invariant';
 import {
+  LiveRound,
   LiveServerState,
   MatchConfigsRow,
   MatchesJoined,
@@ -112,7 +113,7 @@ export const logChangeMatchStatus = (
   reason: string,
   match: MatchesJoined,
   rounds: Array<RoundsRow>,
-  liveRound: RoundsInsert | null
+  liveRound: LiveRound | null
 ) => {
   logger
     .info(`Changing status for Match ${match.id} to ${status} because "${reason}"`, {
@@ -130,7 +131,7 @@ export const logChangeLiveState = (
   nextState: LiveServerState,
   match: MatchesJoined,
   rounds: Array<RoundsRow>,
-  liveRound: RoundsInsert | null,
+  liveRound: LiveRound | null,
   si?: ServerInfo,
   pl?: Array<PlayerListItem>
 ) => {

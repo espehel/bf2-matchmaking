@@ -4,7 +4,6 @@ import {
   logSupabaseError,
 } from '@bf2-matchmaking/logging';
 import {
-  isNotNull,
   isServerMatch,
   MatchesJoined,
   MatchStatus,
@@ -18,7 +17,6 @@ import moment from 'moment/moment';
 import {
   calculateMatchResults,
   calculatePlayerResults,
-  toPlayerRatingUpdate,
   withRatingIncrement,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';

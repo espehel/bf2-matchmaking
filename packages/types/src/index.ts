@@ -1,4 +1,4 @@
-import { MatchPlayersRow, PlayersRow } from './database-types';
+import { MatchPlayersRow, PlayersRow, RoundsInsert } from './database-types';
 
 export * from './database-types.generated';
 export * from './api-types';
@@ -183,3 +183,9 @@ export type LiveServerState =
   | 'endlive'
   | 'new_server'
   | 'finished';
+
+export interface LiveRound extends Omit<RoundsInsert, 'si' | 'pl' | 'map'> {
+  si: ServerInfo;
+  pl: Array<PlayerListItem>;
+  map: string;
+}

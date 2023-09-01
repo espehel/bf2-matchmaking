@@ -1,13 +1,12 @@
 import {
-  isServerMatch,
+  LiveRound,
   LiveServerState,
   PlayerListItem,
-  RoundsInsert,
   RoundsRow,
   ServerInfo,
   ServerMatch,
 } from '@bf2-matchmaking/types';
-import { createLiveRound } from './round-service';
+import { createLiveRound, insertRound } from './round-service';
 import { LiveServerUpdate } from '../net/RconManager';
 import {
   closeMatch,
@@ -17,17 +16,15 @@ import {
   isServerEmptied,
   updateLiveAt,
 } from './matches';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
-import moment from 'moment';
 
 export class LiveMatch {
   rounds: Array<RoundsRow> = [];
   state: LiveServerState = 'waiting';
   match: ServerMatch;
-  liveRound: RoundsInsert | null = null;
+  liveRound: LiveRound | null = null;
   nextServer: boolean = false;
   constructor(match: ServerMatch) {
     this.match = match;
@@ -36,8 +33,8 @@ export class LiveMatch {
   setMatch(match: ServerMatch) {
     this.match = match;
   }
-  async #updateLiveRound(si: ServerInfo, pl: Array<PlayerListItem>) {
-    this.liveRound = await createLiveRound(this.match, si, pl);
+  #updateLiveRound(si: ServerInfo, pl: Array<PlayerListItem>) {
+    this.liveRound = createLiveRound(this, si, pl);
   }
 
   async onLiveServerUpdate(
@@ -45,7 +42,7 @@ export class LiveMatch {
     pl: Array<PlayerListItem>,
     ip: string
   ): Promise<LiveServerUpdate> {
-    await this.#updateLiveRound(si, pl);
+    this.#updateLiveRound(si, pl);
     const next = (state: LiveServerState) => this.handleNextState(state, pl, si);
 
     if (this.nextServer && ip !== this.match.server.ip) {
@@ -90,7 +87,7 @@ export class LiveMatch {
     }
 
     if (this.liveRound) {
-      const round = await client().createRound(this.liveRound).then(verifySingleResult);
+      const round = await insertRound(this.liveRound);
       logAddMatchRound(round, this.match, si, pl);
       info('onServerInfo', `Created round ${round.id}`);
       this.rounds.push(round);
