@@ -27,17 +27,19 @@ export default async function Results() {
     <main className="main text-center">
       <h1 className="mb-8">Match Results</h1>
       <ul className="grid justify-center gap-4">
-        {Object.entries(groupedByMatchid).map(([matchId, match]) => (
-          <li className="" key={matchId}>
-            <Link href={`/results/${matchId}`}>
-              <MatchResultCard
-                matchId={matchId}
-                matchResult={toTuple(match)}
-                rounds={getMatchRounds(matchId)}
-              />
-            </Link>
-          </li>
-        ))}
+        {Object.entries(groupedByMatchid)
+          .sort(([a], [b]) => b.localeCompare(a))
+          .map(([matchId, match]) => (
+            <li className="" key={matchId}>
+              <Link href={`/results/${matchId}`}>
+                <MatchResultCard
+                  matchId={matchId}
+                  matchResult={toTuple(match)}
+                  rounds={getMatchRounds(matchId)}
+                />
+              </Link>
+            </li>
+          ))}
       </ul>
     </main>
   );
