@@ -35,6 +35,7 @@ export function startLiveMatch(match: ServerMatch, server: ServerRconsRow) {
     liveMatch.setMatch(match);
   } else {
     liveMatch = new LiveMatch(match);
+    liveMatches.set(match.id, liveMatch);
     logMessage(`Match ${match.id}: Starting live match on server ${server.id}`, {
       match: JSON.stringify(match),
     });

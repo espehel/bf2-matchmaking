@@ -89,19 +89,13 @@ export function pollServerInfo(liveMatch: LiveMatch) {
         const si = await getServerInfo(freshClient);
         const pl = si.connectedPlayers !== '0' ? await getPlayerList(freshClient) : [];
         verifyData(si, pl);
-        info(
-          'pollServerInfo',
-          `${formatSecToMin(si.roundTime)} ${si.team1_Name} [${si.team1_tickets} - ${
-            si.team2_tickets
-          }] ${si.team2_Name}`
-        );
 
         const { state, payload } = await liveMatch.onLiveServerUpdate(
           si,
           pl,
           freshClient.ip
         );
-        info('pollServerInfo', `New state: ${state}`);
+        info('pollServerInfo', `State: ${state}`);
 
         if (state !== 'waiting') {
           errorAt = null;

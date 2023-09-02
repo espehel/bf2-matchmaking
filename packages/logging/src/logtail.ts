@@ -158,7 +158,7 @@ export const logAddMatchRound = (
   pl: Array<PlayerListItem> | null
 ) => {
   logger
-    .info(`Adding round to Match ${match.id}`, {
+    .info(`Adding Round ${round.id} to Match ${match.id}`, {
       round: JSON.stringify(round),
       match: JSON.stringify(match),
       si: JSON.stringify(si),

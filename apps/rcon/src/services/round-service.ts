@@ -1,5 +1,5 @@
 import { LiveRound, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
-import { info, logSupabaseError } from '@bf2-matchmaking/logging';
+import { logSupabaseError } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 import { LiveMatch } from './LiveMatch';
@@ -15,7 +15,7 @@ export function createLiveRound(
       (p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash) === i
     );
 
-  const newRound = {
+  return {
     team1_name: si.team1_Name,
     team1_tickets: si.team1_tickets,
     team2_name: si.team2_Name,
@@ -26,9 +26,6 @@ export function createLiveRound(
     si,
     pl: mergedPl,
   };
-
-  info('createLiveRound', `Players: [${mergedPl?.map((p) => p.getName).join(', ')}]`);
-  return newRound;
 }
 
 export async function insertRound(liveRound: LiveRound) {

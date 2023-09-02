@@ -2,6 +2,7 @@ import {
   LiveRound,
   LiveServerState,
   PlayerListItem,
+  RoundsJoined,
   RoundsRow,
   ServerInfo,
   ServerMatch,
@@ -17,7 +18,7 @@ import {
   updateLiveAt,
 } from './matches';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
-import { getPlayersToSwitch } from '@bf2-matchmaking/utils';
+import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
 
 export class LiveMatch {
@@ -35,6 +36,12 @@ export class LiveMatch {
   }
   #updateLiveRound(si: ServerInfo, pl: Array<PlayerListItem>) {
     this.liveRound = createLiveRound(this, si, pl);
+    info(
+      'updateLiveRound',
+      `${formatSecToMin(si.roundTime)} (${this.liveRound.pl.length}/${
+        this.match.config.size
+      }) ${si.team1_Name} [${si.team1_tickets} - ${si.team2_tickets}] ${si.team2_Name}`
+    );
   }
 
   async onLiveServerUpdate(
