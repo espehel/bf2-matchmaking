@@ -1,18 +1,25 @@
-import { GameStatus, MatchesJoined } from '@bf2-matchmaking/types';
-import { api, formatSecToMin } from '@bf2-matchmaking/utils';
+import { GameStatus, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { api, formatSecToMin, getJoinmeHref } from '@bf2-matchmaking/utils';
 import ServerActions from '@/components/match/ServerActions';
 import RevalidateForm from '@/components/RevalidateForm';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
+import Link from 'next/link';
 
 interface Props {
   match: MatchesJoined;
   isMatchAdmin: boolean;
+  isMatchPlayer: boolean;
 }
 
-export default async function ServerSection({ match, isMatchAdmin }: Props) {
+export default async function ServerSection({
+  match,
+  isMatchAdmin,
+  isMatchPlayer,
+}: Props) {
   if (!match.server) {
     return null;
   }
+
   const { data: server } = await api.rcon().getServer(match.server.ip);
 
   return (
@@ -34,8 +41,22 @@ export default async function ServerSection({ match, isMatchAdmin }: Props) {
             <div>{`Round time: ${formatSecToMin(server.info.roundTime)}`}</div>
           </div>
         )}
-        {isMatchAdmin && <ServerActions match={match} server={server} />}
       </div>
+      {server && isMatchPlayer && (
+        <Link
+          className="btn btn-primary btn-lg btn-wide m-auto"
+          href={server.joinmeHref}
+          target="_blank"
+        >
+          Join match
+        </Link>
+      )}
+      {isMatchAdmin && match.status !== MatchStatus.Closed && (
+        <div>
+          <div className="divider mt-0" />
+          <ServerActions match={match} server={server} />
+        </div>
+      )}
     </section>
   );
 }

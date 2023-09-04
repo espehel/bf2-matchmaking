@@ -51,6 +51,7 @@ export interface PostCommandsReinstallRequestBody {
 
 export interface RconBf2Server extends ServersJoined {
   info: ServerInfo | null;
+  joinmeHref: string;
 }
 
 export interface PostMatchesRequestBody {

@@ -11,6 +11,7 @@ export type ServerRconsRow = Database['public']['Tables']['server_rcons']['Row']
 export type MatchResultsRow = Database['public']['Tables']['match_results']['Row'];
 export type MatchPlayerResultsRow =
   Database['public']['Tables']['match_player_results']['Row'];
+export type TeamsRow = Database['public']['Tables']['teams']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -91,6 +92,10 @@ export interface DiscordMatch extends MatchesJoined {
 
 export interface ServerMatch extends MatchesJoined {
   server: ServersRow;
+}
+
+export interface MatchResultsJoined extends Omit<MatchResultsRow, 'team'> {
+  team: TeamsRow;
 }
 
 export interface MatchPlayerResultsJoined extends MatchPlayerResultsRow {

@@ -1,6 +1,7 @@
 import {
   logChangeMatchStatus,
   logErrorMessage,
+  logMessage,
   logSupabaseError,
 } from '@bf2-matchmaking/logging';
 import {
@@ -20,6 +21,7 @@ import {
   withRatingIncrement,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
+import { getMatchResultsEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
 
 export const closeMatch = async (
   liveMatch: LiveMatch,
@@ -41,6 +43,11 @@ export const closeMatch = async (
     return;
   }
 
+  if (!validateMatch(data)) {
+    logMessage(`Match ${data.id} is not valid, no results created.`, { match: data });
+    return;
+  }
+
   try {
     await processResults(data);
   } catch (e) {
@@ -50,18 +57,31 @@ export const closeMatch = async (
   return data;
 };
 
+function validateMatch(match: MatchesJoined) {
+  if (!(match.rounds.length === 2 || match.rounds.length === 4)) {
+    return false;
+  }
+  return true;
+}
+
 export async function processResults(match: MatchesJoined) {
   const [resultsA, resultsB] = calculateMatchResults(match);
-  await client().createMatchResult(resultsA, resultsB).then(verifyResult);
+  const data = await client().createMatchResult(resultsA, resultsB).then(verifyResult);
 
   const playerResults = calculatePlayerResults(match).map(
     withRatingIncrement(match, resultsA.is_winner ? 'a' : 'b')
   );
+
   await client()
     .createMatchPlayerResults(...playerResults)
     .then(verifyResult);
 
   await updatePlayerRatings(playerResults);
+  logMessage(`Match ${match.id} results created`, { match });
+
+  await sendChannelMessage('1046889100369739786', {
+    embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
+  });
 }
 
 export const deleteMatch = async (

@@ -1,4 +1,9 @@
-import { MatchesJoined, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import {
+  MatchesJoined,
+  MatchStatus,
+  PlayerListItem,
+  ServerInfo,
+} from '@bf2-matchmaking/types';
 import { api } from '@bf2-matchmaking/utils';
 import RoundTable from '@/components/RoundTable';
 import AsyncActionButton from '@/components/AsyncActionButton';
@@ -10,7 +15,7 @@ interface Props {
 export default async function LiveSection({ match, isMatchAdmin }: Props) {
   const { data } = await api.rcon().getMatchLive(match.id);
 
-  if (!data) {
+  if (!data || match.status !== MatchStatus.Ongoing) {
     return null;
   }
 

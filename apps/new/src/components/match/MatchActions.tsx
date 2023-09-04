@@ -32,10 +32,6 @@ export default function MatchActions({ match, servers }: Props) {
     [match.id]
   );
 
-  if (match.status === MatchStatus.Closed) {
-    return null;
-  }
-
   return (
     <div className="flex flex-col">
       <button className="btn btn-primary w-fit" onClick={handleCloseMatch}>

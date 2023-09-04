@@ -6,16 +6,17 @@ import {
   RconBf2Server,
 } from '@bf2-matchmaking/types';
 import { api, verify } from '@bf2-matchmaking/utils';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logCreateChannelMessage } from '@bf2-matchmaking/logging';
 import { hasSummonEmbed, isPubobotMatchStarted, isTextBasedChannel } from '../utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { listenForMatchMessageReaction } from './reaction-listener';
-import { Client, Message, MessageCollector } from 'discord.js';
+import { Client, Message, MessageCollector, TextChannel } from 'discord.js';
 import { executeCommand, isCommand } from '../commands';
 import {
   createMatchFromPubobotEmbed,
   sendServerPollMessage,
 } from '../match-tracking-service';
+import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
 
 const listenerMap = new Map<string, MessageCollector>();
 export const initChannelListener = async () => {
@@ -147,13 +148,23 @@ const passiveCollector =
     } catch (e) {
       error('passiveCollector', e);
     }
-    async function handleServerSelected(server: RconBf2Server) {
+    async function handleServerSelected(server: RconBf2Server, channel: TextChannel) {
       try {
         const match = await createMatchFromPubobotEmbed(
           message.embeds[0],
           discordClient.users,
           config.id,
           server.ip
+        );
+        const resultMessage = await channel.send({
+          embeds: [getMatchStartedEmbed(match, server)],
+        });
+
+        logCreateChannelMessage(
+          channel.id,
+          resultMessage.id,
+          resultMessage.embeds[0].description,
+          resultMessage.embeds[0]
         );
         info('passiveCollector', `Created match ${match.id} for ${config.name} channel`);
         await api.rcon().postMatchPoll(match.id).then(verify);

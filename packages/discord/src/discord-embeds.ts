@@ -1,4 +1,11 @@
-import { MatchesJoined, MatchStatus, RconBf2Server } from '@bf2-matchmaking/types';
+import {
+  MatchConfigsRow,
+  MatchesJoined,
+  MatchResultsJoined,
+  MatchResultsRow,
+  MatchStatus,
+  RconBf2Server,
+} from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
   compareFullName,
@@ -26,14 +33,100 @@ export const getServerPollEmbed = (
   fields: createServerPollFields(servers),
 });
 export const getServerEmbed = (server: RconBf2Server) => ({
-  description: `Join [${replaceDiscordGG(server.name)}](https://joinme.click/g/bf2/${
-    server.ip
-  }:${server.port})`,
+  description: `Join [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
   fields: [
     { name: 'ip', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
   ],
 });
+
+export const getMatchStartedEmbed = (
+  match: MatchesJoined,
+  server: RconBf2Server
+): APIEmbed => ({
+  description: `**JOIN** [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
+  fields: [
+    {
+      name: 'IP:',
+      value: `\`\`\`${server.ip}\`\`\``,
+      inline: true,
+    },
+    {
+      name: 'PORT',
+      value: `\`\`\`${server.port}\`\`\``,
+      inline: true,
+    },
+    {
+      name: ``,
+      value: `[**Match ${match.id}** live score](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
+    },
+  ],
+});
+export const getMatchResultsEmbed = (
+  match: MatchesJoined,
+  results: [MatchResultsJoined, MatchResultsJoined]
+): APIEmbed => ({
+  description: `[**Match ${match.id}** results](https://bf2-matchmaking.vercel.app/results/${match.id})`,
+  fields:
+    results[0] && results[1]
+      ? [
+          {
+            name: `Team ${results[0].team.name}`,
+            value: results[0].maps.toString(),
+            inline: true,
+          },
+          {
+            name: `Team ${results[1].team.name}`,
+            value: results[1].maps.toString(),
+            inline: true,
+          },
+        ]
+      : [],
+});
+
+export const getRulesEmbedByConfig = (config: MatchConfigsRow): APIEmbed => {
+  return {
+    title: 'MATCH RULES',
+    description: getRulesDescriptionByConfig(config).concat(
+      '\n**CHEATING OF ANY KIND WILL NOT BE TOLERATED**'
+    ),
+  };
+};
+
+const getRulesDescriptionByConfig = (config: MatchConfigsRow): string => {
+  if (config.id === 9) {
+    return (
+      '**4v4**\n' +
+      '- Medic kit only\n' +
+      '- Flag by flag\n' +
+      '- No commander\n' +
+      '- Stationary machine guns not allowed'
+    );
+  }
+  if (config.id === 13) {
+    return (
+      '**2v2**\n' +
+      '- Medic kit only\n' +
+      '- Flag by flag\n' +
+      '- No commander\n' +
+      '- Stationary machine guns not allowed'
+    );
+  }
+  if (config.id === 10) {
+    return (
+      '**5v5**\n' +
+      '- All kits allowed\n' +
+      '- No claymores and C4\n' +
+      '- No commander\n' +
+      '- Stationary weapons allowed'
+    );
+  }
+  if ([11, 1, 2, 12].includes(config.id)) {
+    return '**8v8**\n' + '- No restrictions';
+  }
+  return '';
+};
+
 const getMatchDescription = (match: MatchesJoined): string | undefined => {
   if (match.status === MatchStatus.Summoning && match.ready_at) {
     return `Ready check ends <t:${moment(match.ready_at).unix()}:R>`;

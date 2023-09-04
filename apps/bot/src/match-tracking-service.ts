@@ -7,11 +7,17 @@ import {
   UserManager,
 } from 'discord.js';
 import { api } from '@bf2-matchmaking/utils';
-import { getServerEmbed, getServerPollEmbed } from '@bf2-matchmaking/discord';
+import {
+  getMatchStartedEmbed,
+  getRulesEmbedByConfig,
+  getServerEmbed,
+  getServerPollEmbed,
+} from '@bf2-matchmaking/discord';
 import { getServerPlayerCount, getServerTupleList } from './server-interactions';
 import { compareMessageReactionCount, toMatchPlayer } from './utils';
 import moment from 'moment';
 import {
+  error,
   logCreateChannelMessage,
   logEditChannelMessage,
   logOngoingMatchCreated,
@@ -59,7 +65,7 @@ const getUserIds = (embed: Embed, name: string) =>
 export const sendServerPollMessage = async (
   config: DiscordConfig,
   channel: TextChannel,
-  onServerChosen: (server: RconBf2Server) => void
+  onServerChosen: (server: RconBf2Server, channel: TextChannel) => void
 ) => {
   const servers = await getServerTupleList();
 
@@ -78,23 +84,14 @@ export const sendServerPollMessage = async (
   setTimeout(async () => {
     const topEmoji = message.reactions.cache.sort(compareMessageReactionCount).at(0);
 
-    const { server, error } = getTopServer(servers, topEmoji);
-
+    const { server, error: err } = getTopServer(servers, topEmoji);
+    await channel.send({ embeds: [getRulesEmbedByConfig(config)] });
     if (!server) {
-      return await channel.send(error);
+      error('sendServerPollMessage', err);
+      return;
     }
 
-    const resultMessage = await channel.send({
-      embeds: [getServerEmbed(server)],
-    });
-
-    logCreateChannelMessage(
-      channel.id,
-      resultMessage.id,
-      resultMessage.embeds[0].description,
-      resultMessage.embeds[0]
-    );
-    onServerChosen(server);
+    onServerChosen(server, channel);
   }, pollEndTime.diff(moment()));
 };
 

@@ -33,7 +33,7 @@ export default function AsyncActionButton({
   );
 
   return (
-    <button className="btn btn-primary w-fit" onClick={handleAction} disabled={pending}>
+    <button className="btn btn-secondary w-fit" onClick={handleAction} disabled={pending}>
       {pending && <span className="loading loading-spinner"></span>}
       {children}
     </button>
