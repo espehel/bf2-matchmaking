@@ -1,10 +1,10 @@
-import { MatchResultsRow, RoundsJoined } from '@bf2-matchmaking/types';
+import { MatchResultsJoined, RoundsJoined } from '@bf2-matchmaking/types';
 import { isUniqueObject } from '@bf2-matchmaking/utils';
 import { supabaseImageLoader } from '@/lib/supabase-client';
 import Image from 'next/image';
 
 interface Props {
-  matchResult: [MatchResultsRow, MatchResultsRow] | null;
+  matchResult: [MatchResultsJoined, MatchResultsJoined] | null;
   rounds: Array<RoundsJoined>;
   matchId: string;
 }
@@ -22,12 +22,12 @@ export default function MatchResultCard({ matchId, matchResult, rounds }: Props)
       <h2 className="text-xl">{`Match ${matchId}`}</h2>
       <div className="flex">
         <div className="stat">
-          <div className="stat-title">{`Team ${team1.team}`}</div>
+          <div className="stat-title">{`Team ${team1.team.name}`}</div>
           <div className="stat-value">{team1.rounds}</div>
           <div className="stat-desc">{`Tickets: ${team1.tickets}`}</div>
         </div>
         <div className="stat">
-          <div className="stat-title">{`Team ${team2.team}`}</div>
+          <div className="stat-title">{`Team ${team2.team.name}`}</div>
           <div className="stat-value">{team2.rounds}</div>
           <div className="stat-desc">{`Tickets: ${team2.tickets}`}</div>
         </div>

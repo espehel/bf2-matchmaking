@@ -34,7 +34,7 @@ export default async function ResultsMatch({ params }: Props) {
         <div className="flex flex-col mt-2 gap-4">
           <TeamStats matchResult={team1Result} />
           <TeamResultTable
-            playerResults={playerResults.filter(isTeam(team1Result.team))}
+            playerResults={playerResults.filter(isTeam(team1Result.team.id))}
             match={match}
           />
         </div>
@@ -42,7 +42,7 @@ export default async function ResultsMatch({ params }: Props) {
         <div className="flex flex-col mt-2 gap-4">
           <TeamStats matchResult={team2Result} />
           <TeamResultTable
-            playerResults={playerResults.filter(isTeam(team2Result.team))}
+            playerResults={playerResults.filter(isTeam(team2Result.team.id))}
             match={match}
           />
         </div>

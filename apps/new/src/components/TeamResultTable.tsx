@@ -1,10 +1,4 @@
-import {
-  MatchesJoined,
-  RoundStats,
-  PlayersRow,
-  MatchPlayerResultsRow,
-  MatchPlayerResultsJoined,
-} from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchPlayerResultsJoined } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 
 interface Props {

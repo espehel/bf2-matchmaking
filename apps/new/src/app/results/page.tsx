@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
-import { MatchResultsRow } from '@bf2-matchmaking/types';
+import { MatchResultsJoined } from '@bf2-matchmaking/types';
 import MatchResultCard from '@/components/MatchResultCard';
 import { toTuple } from '@bf2-matchmaking/utils';
 
@@ -12,7 +12,7 @@ export default async function Results() {
     .getMatchesInIdList(results.map((m) => m.match_id))
     .then(verifyResult);
 
-  const groupedByMatchid = results.reduce<Record<number, Array<MatchResultsRow>>>(
+  const groupedByMatchid = results.reduce<Record<number, Array<MatchResultsJoined>>>(
     (acc, cur) => {
       return { ...acc, [cur.match_id]: [...(acc[cur.match_id] || []), cur] };
     },
