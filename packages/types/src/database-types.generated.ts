@@ -527,23 +527,73 @@ export interface Database {
         }
         Relationships: []
       }
+      team_players: {
+        Row: {
+          captain: boolean
+          created_at: string
+          player_id: string
+          team_id: number
+        }
+        Insert: {
+          captain?: boolean
+          created_at?: string
+          player_id: string
+          team_id: number
+        }
+        Update: {
+          captain?: boolean
+          created_at?: string
+          player_id?: string
+          team_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_players_player_id_fkey"
+            columns: ["player_id"]
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_players_team_id_fkey"
+            columns: ["team_id"]
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       teams: {
         Row: {
+          avatar: string | null
           created_at: string
           id: number
           name: string
+          owner: string
+          visible: boolean
         }
         Insert: {
+          avatar?: string | null
           created_at?: string
           id?: number
           name: string
+          owner: string
+          visible?: boolean
         }
         Update: {
+          avatar?: string | null
           created_at?: string
           id?: number
           name?: string
+          owner?: string
+          visible?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teams_owner_fkey"
+            columns: ["owner"]
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

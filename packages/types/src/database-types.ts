@@ -1,4 +1,5 @@
 import { Database } from './database-types.generated';
+import { TeamPlayer } from './index';
 
 export type PlayersRow = Database['public']['Tables']['players']['Row'];
 export type MapsRow = Database['public']['Tables']['maps']['Row'];
@@ -12,6 +13,7 @@ export type MatchResultsRow = Database['public']['Tables']['match_results']['Row
 export type MatchPlayerResultsRow =
   Database['public']['Tables']['match_player_results']['Row'];
 export type TeamsRow = Database['public']['Tables']['teams']['Row'];
+export type TeamPlayersRow = Database['public']['Tables']['team_players']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -22,6 +24,8 @@ export type MatchPlayersInsert = Database['public']['Tables']['match_players']['
 export type MatchResultsInsert = Database['public']['Tables']['match_results']['Insert'];
 export type MatchPlayerResultsInsert =
   Database['public']['Tables']['match_player_results']['Insert'];
+export type TeamsInsert = Database['public']['Tables']['teams']['Insert'];
+export type TeamPlayersInsert = Database['public']['Tables']['team_players']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
@@ -100,4 +104,9 @@ export interface MatchResultsJoined extends Omit<MatchResultsRow, 'team'> {
 
 export interface MatchPlayerResultsJoined extends MatchPlayerResultsRow {
   player: PlayersRow;
+}
+
+export interface TeamsJoined extends Omit<TeamsRow, 'owner'> {
+  owner: PlayersRow;
+  players: Array<TeamPlayersRow>;
 }

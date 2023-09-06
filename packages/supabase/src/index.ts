@@ -9,6 +9,10 @@ import { createServerClient } from '@supabase/auth-helpers-remix';
 import matchServices from './services/match-service';
 import { Database } from '@bf2-matchmaking/types';
 import supabaseApi from './supabase-api';
+import {
+  PostgrestResponseFailure,
+  PostgrestResponseSuccess,
+} from '@supabase/postgrest-js/src/types';
 
 export const getSupabaseApi = (client: SupabaseClient<Database>) => {
   const api = supabaseApi(client);

@@ -7,10 +7,13 @@ export const supabase = (cookies: () => ReadonlyRequestCookies) => {
   const api = getSupabaseApi(client);
   async function getSessionPlayer() {
     const { data, error } = await client.auth.getSession();
-    if (data.session) {
-      return api.getPlayerByUserId(data.session.user.id);
+    if (error) {
+      return { data: null, error };
     }
-    return { data: null, error };
+    if (!data.session) {
+      return { data: null, error: { message: 'Not logged in' } };
+    }
+    return api.getPlayerByUserId(data.session.user.id);
   }
   async function getAdminRoles() {
     const { data, error } = await client.auth.getSession();

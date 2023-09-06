@@ -16,6 +16,9 @@ import {
   ServersInsert,
   ServersJoined,
   ServersUpdate,
+  TeamPlayersInsert,
+  TeamsInsert,
+  TeamsJoined,
 } from '@bf2-matchmaking/types';
 
 export default (client: SupabaseClient<Database>) => ({
@@ -111,4 +114,22 @@ export default (client: SupabaseClient<Database>) => ({
   getMatchAdmins: () => client.from('admin_roles').select('*').eq('match_admin', true),
   getAdminRoles: (userId: string) =>
     client.from('admin_roles').select('*').eq('user_id', userId).single(),
+  createTeam: (team: TeamsInsert) => client.from('teams').insert(team).select().single(),
+  getVisibleTeams: () =>
+    client
+      .from('teams')
+      .select<'*, owner(*), players:team_players(*)', TeamsJoined>(
+        '*, owner(*), players:team_players(*)'
+      )
+      .eq('visible', true),
+  getTeam: (id: number) =>
+    client
+      .from('teams')
+      .select<'*, owner(*), players:team_players(*)', TeamsJoined>(
+        '*, owner(*), players:team_players(*)'
+      )
+      .eq('id', id)
+      .single(),
+  createTeamPlayer: (team: TeamPlayersInsert) =>
+    client.from('team_players').insert(team).select().single(),
 });
