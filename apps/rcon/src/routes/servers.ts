@@ -8,12 +8,7 @@ import {
   switchPlayers,
 } from '../net/RconManager';
 import { getJoinmeHref } from '@bf2-matchmaking/utils';
-import {
-  getMatchResultsEmbed,
-  getMatchStartedEmbed,
-  getRulesEmbedByConfig,
-  sendChannelMessage,
-} from '@bf2-matchmaking/discord';
+import { RconBf2Server } from '@bf2-matchmaking/types';
 
 const router = express.Router();
 
@@ -109,7 +104,9 @@ router.get('/:ip', async (req, res) => {
       .then(verifySingleResult);
 
     const info = await rcon(id, rcon_port, rcon_pw).then(getServerInfo);
-    res.send({ ...server, info });
+    const joinmeHref = await getJoinmeHref(server);
+
+    res.send({ ...server, info, joinmeHref });
   } catch (e) {
     res.status(502).send(e);
   }
@@ -126,16 +123,17 @@ router.get('/', async (req, res) => {
     return res.status(502).send(err.message);
   }
 
-  const servers = await Promise.all(
+  const servers: Array<RconBf2Server> = await Promise.all(
     data.map(async (server) => {
+      const joinmeHref = await getJoinmeHref(server);
       try {
         const { id, rcon_port, rcon_pw } = await client()
           .getServerRcon(server.ip)
           .then(verifySingleResult);
         const info = await rcon(id, rcon_port, rcon_pw).then(getServerInfo);
-        return { ...server, info };
+        return { ...server, info, joinmeHref };
       } catch (e) {}
-      return { ...server, info: null };
+      return { ...server, info: null, joinmeHref };
     })
   );
   res.send(servers);

@@ -73,7 +73,7 @@ export const logCreateChannelMessage = (
   embed?: unknown
 ) => {
   logger
-    .info(`Channel ${channelId} received message ${content}`, {
+    .info(`Channel ${channelId} received message "${content}"`, {
       content,
       messageId,
       embed: JSON.stringify(embed),

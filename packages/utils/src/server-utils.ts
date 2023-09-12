@@ -9,7 +9,7 @@ export async function getJoinmeHref(server: ServersRow): Promise<string> {
       if (ip && !err) {
         resolve(`https://joinme.click/g/bf2/${ip}:${server.port}`);
       } else {
-        `(https://joinme.click/g/bf2/${server.ip}:${server.port}`;
+        resolve(`(https://joinme.click/g/bf2/${server.ip}:${server.port}`);
       }
     });
   });

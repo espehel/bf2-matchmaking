@@ -121,9 +121,9 @@ app.post('/matches', async (req, res) => {
     const match = await createMatchFromPubobotEmbed(
       message.embeds[0],
       discordClient.users,
-      configId,
-      serverIp
+      configId
     );
+    await client().updateMatch(match.id, { server: serverIp });
     await api.rcon().postMatchPoll(match.id).then(verify);
     return res.send(match);
   } catch (e) {

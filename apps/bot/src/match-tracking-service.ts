@@ -1,37 +1,37 @@
-import { DiscordConfig, MatchStatus, RconBf2Server, User } from '@bf2-matchmaking/types';
+import {
+  DiscordConfig,
+  DiscordMatch,
+  isDiscordMatch,
+  MatchesJoined,
+  MatchStatus,
+  RconBf2Server,
+} from '@bf2-matchmaking/types';
 import {
   Embed,
   MessageReaction,
+  TextBasedChannel,
   TextChannel,
-  User as DiscordUser,
   UserManager,
 } from 'discord.js';
-import { api } from '@bf2-matchmaking/utils';
-import {
-  getMatchStartedEmbed,
-  getRulesEmbedByConfig,
-  getServerEmbed,
-  getServerPollEmbed,
-} from '@bf2-matchmaking/discord';
+import { getRulesEmbedByConfig, getServerPollEmbed } from '@bf2-matchmaking/discord';
 import { getServerPlayerCount, getServerTupleList } from './server-interactions';
-import { compareMessageReactionCount, toMatchPlayer } from './utils';
+import { compareMessageReactionCount, isTextBasedChannel, toMatchPlayer } from './utils';
 import moment from 'moment';
 import {
   error,
+  info,
   logCreateChannelMessage,
-  logEditChannelMessage,
   logOngoingMatchCreated,
 } from '@bf2-matchmaking/logging';
-import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getOrCreatePlayer } from './match-interactions';
 
 export const createMatchFromPubobotEmbed = async (
   embed: Embed,
   users: UserManager,
-  configId: number,
-  serverIp: string
-) => {
-  const match = await client().createMatchFromConfig(configId).then(verifySingleResult);
+  config: DiscordConfig
+): Promise<DiscordMatch> => {
+  const match = await client().createMatchFromConfig(config.id).then(verifySingleResult);
 
   const team1 = await Promise.all(
     getUserIds(embed, 'USMC').map((player) => users.fetch(player).then(getOrCreatePlayer))
@@ -49,11 +49,15 @@ export const createMatchFromPubobotEmbed = async (
     .updateMatch(match.id, {
       status: MatchStatus.Ongoing,
       started_at: moment().toISOString(),
-      server: serverIp,
     })
     .then(verifySingleResult);
 
+  if (!isDiscordMatch(updatedMatch)) {
+    throw new Error(`Match ${updatedMatch.id} is not a Discord match`);
+  }
+
   logOngoingMatchCreated(updatedMatch);
+  info('passiveCollector', `Created match ${match.id} for ${config.name} channel`);
   return updatedMatch;
 };
 
@@ -62,38 +66,37 @@ const getUserIds = (embed: Embed, name: string) =>
     ?.find((field) => field.name.includes(name))
     ?.value.match(/(?<=<@)\d+(?=>)/g) || [];
 
-export const sendServerPollMessage = async (
-  config: DiscordConfig,
-  channel: TextChannel,
-  onServerChosen: (server: RconBf2Server, channel: TextChannel) => void
-) => {
-  const servers = await getServerTupleList();
-
-  const pollEndTime = moment().add(1, 'minute');
-  const message = await channel.send({
-    embeds: [getServerPollEmbed(servers, pollEndTime)],
-  });
-  await Promise.all(servers.map(([, , emoji]) => message.react(emoji)));
-  logCreateChannelMessage(
-    channel.id,
-    message.id,
-    message.embeds[0].description,
-    message.embeds[0]
-  );
-
-  setTimeout(async () => {
-    const topEmoji = message.reactions.cache.sort(compareMessageReactionCount).at(0);
-
-    const { server, error: err } = getTopServer(servers, topEmoji);
-    await channel.send({ embeds: [getRulesEmbedByConfig(config)] });
-    if (!server) {
-      error('sendServerPollMessage', err);
-      return;
+export const getTopServerPollResult = async (
+  match: MatchesJoined,
+  channel: TextBasedChannel
+): Promise<RconBf2Server> =>
+  new Promise(async (resolve, reject) => {
+    if (!isTextBasedChannel(channel)) {
+      return reject('Message did not come from text based channel');
     }
+    const servers = await getServerTupleList();
 
-    onServerChosen(server, channel);
-  }, pollEndTime.diff(moment()));
-};
+    const pollEndTime = moment().add(1, 'minute');
+    const message = await channel.send({
+      embeds: [getServerPollEmbed(match, servers, pollEndTime)],
+    });
+    await Promise.all(servers.map(([, , emoji]) => message.react(emoji)));
+    logCreateChannelMessage(
+      channel.id,
+      message.id,
+      message.embeds[0].description,
+      message.embeds[0]
+    );
+
+    setTimeout(async () => {
+      const topEmoji = message.reactions.cache.sort(compareMessageReactionCount).at(0);
+      const { server, error: err } = getTopServer(servers, topEmoji);
+      if (!server) {
+        return reject(err);
+      }
+      resolve(server);
+    }, pollEndTime.diff(moment()));
+  });
 
 // TODO: Automatically returns frankfurt server if available and no votes, to get some data going
 const PBASE_FRANKFURT = '95.179.167.83';
@@ -103,7 +106,11 @@ function getTopServer(
 ) {
   if (!topEmoji || topEmoji.count < 2) {
     const frankFurtServer = servers.find(([server]) => server.ip === PBASE_FRANKFURT);
-    if (frankFurtServer && getServerPlayerCount(frankFurtServer[0]) === 'available') {
+    if (
+      frankFurtServer &&
+      frankFurtServer[0].info &&
+      frankFurtServer[0].info.connectedPlayers === '0'
+    ) {
       return { error: null, server: frankFurtServer[0] };
     }
     return { error: 'No votes received.', server: null };

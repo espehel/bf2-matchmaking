@@ -1,5 +1,5 @@
 import { GameStatus, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { api, formatSecToMin, getJoinmeHref } from '@bf2-matchmaking/utils';
+import { api, formatSecToMin } from '@bf2-matchmaking/utils';
 import ServerActions from '@/components/match/ServerActions';
 import RevalidateForm from '@/components/RevalidateForm';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';

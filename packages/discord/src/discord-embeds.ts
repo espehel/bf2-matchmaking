@@ -17,6 +17,7 @@ import {
 } from '@bf2-matchmaking/utils';
 import moment, { Moment } from 'moment';
 import { getEmbedTitle, replaceDiscordGG } from './embed-utils';
+import { match } from 'assert';
 
 export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEmbed => ({
   title: getEmbedTitle(match),
@@ -26,10 +27,11 @@ export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEm
 });
 
 export const getServerPollEmbed = (
+  match: MatchesJoined,
   servers: Array<[RconBf2Server, string, string]>,
   endTime: Moment
 ): APIEmbed => ({
-  description: `Vote for match server, poll ends <t:${endTime.unix()}:R>`,
+  description: `Vote for match ${match.id} server, poll ends <t:${endTime.unix()}:R>`,
   fields: createServerPollFields(servers),
 });
 export const getServerEmbed = (server: RconBf2Server) => ({
@@ -42,26 +44,16 @@ export const getServerEmbed = (server: RconBf2Server) => ({
 
 export const getMatchStartedEmbed = (
   match: MatchesJoined,
-  server: RconBf2Server
-): APIEmbed => ({
-  description: `**JOIN** [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
-  fields: [
-    {
-      name: 'IP:',
-      value: `\`\`\`${server.ip}\`\`\``,
-      inline: true,
-    },
-    {
-      name: 'PORT',
-      value: `\`\`\`${server.port}\`\`\``,
-      inline: true,
-    },
-    {
-      name: ``,
-      value: `[**Match ${match.id}** live score](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
-    },
-  ],
-});
+  server?: RconBf2Server
+): APIEmbed =>
+  server
+    ? {
+        description: `**JOIN** [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
+        fields: [...getServerInfoFields(server), getLiveMatchField(match)],
+      }
+    : {
+        fields: [getLiveMatchField(match)],
+      };
 export const getMatchResultsEmbed = (
   match: MatchesJoined,
   results: [MatchResultsJoined, MatchResultsJoined]
@@ -225,3 +217,21 @@ const createServerPollFields = (servers: Array<[RconBf2Server, string, string]>)
     value: servers.map(([, description, emoji]) => `${emoji}  ${description}`).join('\n'),
   },
 ];
+
+const getServerInfoFields = (server: RconBf2Server) => [
+  {
+    name: 'IP:',
+    value: `\`\`\`${server.ip}\`\`\``,
+    inline: true,
+  },
+  {
+    name: 'PORT',
+    value: `\`\`\`${server.port}\`\`\``,
+    inline: true,
+  },
+];
+
+const getLiveMatchField = (match: MatchesJoined) => ({
+  name: ``,
+  value: `[**Match ${match.id}** live score](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
+});

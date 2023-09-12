@@ -11,10 +11,17 @@ import {
   MatchPlayersInsert,
   PlayersRow,
 } from '@bf2-matchmaking/types';
-import { Channel, Embed, Message, MessageReaction, TextChannel } from 'discord.js';
+import {
+  Channel,
+  Embed,
+  Message,
+  MessageCreateOptions,
+  MessageReaction,
+  TextChannel,
+} from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 import { api } from '@bf2-matchmaking/utils';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logCreateChannelMessage } from '@bf2-matchmaking/logging';
 
 export const getOption = (
   key: string,
@@ -108,3 +115,17 @@ export const toMatchPlayer =
     player_id: player.id,
     team,
   });
+
+export async function replyMessage(message: Message, content: MessageCreateOptions) {
+  if (!isTextBasedChannel(message.channel)) {
+    throw new Error('Message did not come from text based channel');
+  }
+  const replyMessage = await message.channel.send(content);
+  logCreateChannelMessage(
+    message.channel.id,
+    replyMessage.id,
+    replyMessage.embeds[0].description,
+    replyMessage.embeds
+  );
+  return replyMessage;
+}
