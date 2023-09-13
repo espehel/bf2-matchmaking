@@ -5,6 +5,7 @@ import {
   logSupabaseError,
 } from '@bf2-matchmaking/logging';
 import {
+  isNotNull,
   isServerMatch,
   MatchesJoined,
   MatchStatus,
@@ -18,6 +19,7 @@ import moment from 'moment/moment';
 import {
   calculateMatchResults,
   calculatePlayerResults,
+  getPlayerRoundStats,
   withRatingIncrement,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
@@ -61,7 +63,21 @@ function validateMatch(match: MatchesJoined) {
   if (!(match.rounds.length === 2 || match.rounds.length === 4)) {
     return false;
   }
+  if (!validateMatchPlayers(match)) {
+    return false;
+  }
   return true;
+}
+
+function validateMatchPlayers(match: MatchesJoined) {
+  const playerKeys = match.rounds
+    .map(getPlayerRoundStats)
+    .filter(isNotNull)
+    .flatMap((stats) => Object.keys(stats));
+
+  return match.players.every(
+    (player) => player.keyhash && playerKeys.includes(player.keyhash)
+  );
 }
 
 export async function processResults(match: MatchesJoined) {

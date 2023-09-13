@@ -27,7 +27,9 @@ export const calculateMatchResultsOld = (
   ]);
 };
 
-const getPlayerRoundStats = (round: RoundsJoined): Record<string, RoundStats> | null => {
+export const getPlayerRoundStats = (
+  round: RoundsJoined
+): Record<string, RoundStats> | null => {
   const playerList: Array<PlayerListItem> =
     typeof round.pl === 'string' ? JSON.parse(round.pl) : null;
 
