@@ -29,7 +29,7 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
 
   async function startPolling() {
     'use server';
-    return api.rcon().postMatchPoll(match.id);
+    return api.rcon().postMatchLive(match.id, false);
   }
 
   return (

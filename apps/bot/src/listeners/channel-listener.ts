@@ -165,7 +165,7 @@ const passiveCollector =
       const serverMatch = await client()
         .updateMatch(match.id, { server: topServer.ip })
         .then(verifySingleResult);
-      await api.rcon().postMatchPoll(match.id).then(verify);
+      await api.rcon().postMatchLive(match.id, true).then(verify);
       await replyMessage(message, {
         embeds: [getMatchStartedEmbed(serverMatch, topServer)],
       });

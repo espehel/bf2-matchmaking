@@ -1,6 +1,6 @@
 import { ServerMatch, ServerRconsRow } from '@bf2-matchmaking/types';
 import { pollServerInfo, rcon } from '../net/RconManager';
-import { LiveMatch } from './LiveMatch';
+import { LiveMatch, LiveMatchOptions } from './LiveMatch';
 import { logMessage } from '@bf2-matchmaking/logging';
 
 const liveMatches = new Map<number, LiveMatch>();
@@ -19,7 +19,11 @@ export function findLiveMatch(matchId: number): LiveMatch | undefined {
   return liveMatches.get(matchId);
 }
 
-export function startLiveMatch(match: ServerMatch, server: ServerRconsRow) {
+export function startLiveMatch(
+  match: ServerMatch,
+  server: ServerRconsRow,
+  options: LiveMatchOptions
+) {
   let liveMatch = findLiveMatch(match.id);
   if (liveMatch) {
     if (liveMatch.match.server.ip === server.id) {
@@ -32,9 +36,11 @@ export function startLiveMatch(match: ServerMatch, server: ServerRconsRow) {
         oldMatch: JSON.stringify(liveMatch.match),
       }
     );
+
+    liveMatch.setOptions(options);
     liveMatch.setMatch(match);
   } else {
-    liveMatch = new LiveMatch(match);
+    liveMatch = new LiveMatch(match, options);
     liveMatches.set(match.id, liveMatch);
     logMessage(`Match ${match.id}: Starting live match on server ${server.id}`, {
       match: JSON.stringify(match),

@@ -38,7 +38,9 @@ router.get('/:matchid/live', async (req, res) => {
   return res.send({ round: matchClient?.liveRound, status: matchClient?.state });
 });
 
-router.post('/:matchid/poll', async (req, res) => {
+router.post('/:matchid/live', async (req, res) => {
+  const prelive = `${req.query.prelive}`.toLowerCase() === 'true';
+
   try {
     const match = await client()
       .getMatch(parseInt(req.params.matchid))
@@ -49,7 +51,7 @@ router.post('/:matchid/poll', async (req, res) => {
     }
 
     const server = await client().getServerRcon(match.server.ip).then(verifySingleResult);
-    startLiveMatch(match, server);
+    startLiveMatch(match, server, { prelive });
     return res.sendStatus(202);
   } catch (e) {
     if (e instanceof Error) {

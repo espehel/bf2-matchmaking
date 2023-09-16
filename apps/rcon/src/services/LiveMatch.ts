@@ -2,7 +2,6 @@ import {
   LiveRound,
   LiveServerState,
   PlayerListItem,
-  RoundsJoined,
   RoundsRow,
   ServerInfo,
   ServerMatch,
@@ -20,19 +19,26 @@ import {
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
-
+export interface LiveMatchOptions {
+  prelive: boolean;
+}
 export class LiveMatch {
   rounds: Array<RoundsRow> = [];
   state: LiveServerState = 'waiting';
   match: ServerMatch;
   liveRound: LiveRound | null = null;
   nextServer: boolean = false;
-  constructor(match: ServerMatch) {
+  options: LiveMatchOptions;
+  constructor(match: ServerMatch, options?: LiveMatchOptions) {
     this.match = match;
+    this.options = options || { prelive: false };
   }
 
   setMatch(match: ServerMatch) {
     this.match = match;
+  }
+  setOptions(options: LiveMatchOptions) {
+    this.options = options;
   }
   #updateLiveRound(si: ServerInfo, pl: Array<PlayerListItem>) {
     this.liveRound = createLiveRound(this, si, pl);
@@ -81,7 +87,11 @@ export class LiveMatch {
       return next('warmup');
     }
 
-    if (this.state === 'warmup' && isFirstTimeFullServer(this.match, si, this.rounds)) {
+    if (
+      this.options.prelive &&
+      this.state === 'warmup' &&
+      isFirstTimeFullServer(this.match, si, this.rounds)
+    ) {
       return next('prelive');
     }
 

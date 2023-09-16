@@ -124,7 +124,7 @@ app.post('/matches', async (req, res) => {
       configId
     );
     await client().updateMatch(match.id, { server: serverIp });
-    await api.rcon().postMatchPoll(match.id).then(verify);
+    await api.rcon().postMatchLive(match.id, true).then(verify);
     return res.send(match);
   } catch (e) {
     return res.status(502).send(e);

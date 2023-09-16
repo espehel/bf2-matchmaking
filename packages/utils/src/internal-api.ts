@@ -29,7 +29,6 @@ export const rcon = () => {
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     matches: () => '/matches',
-    matchPoll: (matchId: number) => `/matches/${matchId}/poll`,
     matchLive: (matchId: number) => `/matches/${matchId}/live`,
     rconServerPlayer: (serverIp: string, playerId: string) =>
       `/rcon/${serverIp}/${playerId}`,
@@ -57,8 +56,8 @@ export const rcon = () => {
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
     postMatch: (body: PostMatchesRequestBody) =>
       postJSON<PostMatchResult>(basePath.concat(paths.matches()), body),
-    postMatchPoll: (matchId: number) =>
-      postJSON(basePath.concat(paths.matchPoll(matchId)), {}),
+    postMatchLive: (matchId: number, prelive: boolean) =>
+      postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
     getMatchLive: (matchId: number) =>
       getJSON<GetMatchLiveResponseBody>(basePath.concat(paths.matchLive(matchId))),
     getRconServerPlayer: (serverIp: string, playerId: string) =>
