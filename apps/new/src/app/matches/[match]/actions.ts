@@ -1,11 +1,30 @@
 'use server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchPlayersRow, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import { revalidatePath } from 'next/cache';
 import { api, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 
+export async function removeMatchPlayer(mp: MatchPlayersRow) {
+  const result = await supabase(cookies).deleteMatchPlayer(mp.match_id, mp.player_id);
+
+  if (!result.error) {
+    revalidatePath(`/matches/${mp.match_id}`);
+  }
+
+  return result;
+}
+
+export async function addMatchPlayer(matchId: number, playerId: string, team: number) {
+  const result = await supabase(cookies).createMatchPlayer(matchId, playerId, { team });
+
+  if (!result.error) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}
 export async function startPolling(matchId: number) {
   return api.rcon().postMatchLive(matchId, false);
 }
@@ -107,6 +126,16 @@ export async function setServer(matchId: number, serverIp: string) {
   const result = await supabase(cookies).updateMatch(matchId, {
     server: serverIp,
   });
+
+  if (!result.error) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}
+
+export async function addPlayer(matchId: number, playerId: string) {
+  const result = await supabase(cookies).createMatchPlayer(matchId, playerId, {});
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);

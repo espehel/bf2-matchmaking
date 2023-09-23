@@ -1,9 +1,16 @@
 'use client';
 import { MatchesJoined, MatchStatus, ServersJoined } from '@bf2-matchmaking/types';
-import { closeMatch, finishMatch, reopenMatch } from '@/app/matches/[match]/actions';
+import {
+  addPlayer,
+  closeMatch,
+  finishMatch,
+  reopenMatch,
+} from '@/app/matches/[match]/actions';
 import { closeMatch as createResults } from '@/app/results/[match]/actions';
 import AsyncActionButton from '@/components/AsyncActionButton';
 import SelectServerForm from '@/components/match/SelectServerForm';
+import { toast } from 'react-toastify';
+import { useCallback } from 'react';
 
 interface Props {
   match: MatchesJoined;
@@ -14,6 +21,18 @@ export default function MatchActions({ match, servers }: Props) {
   const isOngoing = match.status === MatchStatus.Ongoing;
   const isFinished = match.status === MatchStatus.Finished;
   const isClosed = match.status === MatchStatus.Closed;
+
+  const handleAddPlayer = useCallback(
+    async (value: string) => {
+      const { error } = await addPlayer(match.id, value);
+      if (error) {
+        toast.error('Failed to add player');
+      } else {
+        toast.success(`Added player`);
+      }
+    },
+    [match.id]
+  );
 
   return (
     <div className="flex gap-4 flex-col">

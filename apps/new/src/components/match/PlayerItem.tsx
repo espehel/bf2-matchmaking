@@ -6,6 +6,9 @@ import {
   PlayersRow,
 } from '@bf2-matchmaking/types';
 import { useMemo } from 'react';
+import { removeMatchPlayer } from '@/app/matches/[match]/actions';
+import { XCircleIcon } from '@heroicons/react/24/outline';
+import { usePlayer } from '@/state/PlayerContext';
 
 interface Props {
   mp: MatchPlayersRow;
@@ -15,6 +18,7 @@ interface Props {
 }
 type PlayerMatchStatus = 'unregistered' | 'unconnected' | 'unteamed' | 'ok';
 export default function PlayerItem({ mp, match, playerList, team }: Props) {
+  const { isMatchAdmin } = usePlayer();
   const player = useMemo(
     () => match.players.find(({ id }) => id === mp.player_id),
     [match, mp]
@@ -42,7 +46,7 @@ export default function PlayerItem({ mp, match, playerList, team }: Props) {
   const username = useMemo(
     () =>
       player
-        ? player.username
+        ? player.full_name
         : `Player ${match.teams.findIndex(
             ({ player_id }) => mp.player_id === player_id
           )}`,
@@ -50,9 +54,17 @@ export default function PlayerItem({ mp, match, playerList, team }: Props) {
   );
 
   return (
-    <li className="flex gap-2 items-center">
+    <li className="flex gap-2 items-center w-52">
       <PlayerBadge status={status} />
-      <div className="mb-1">{username}</div>
+      <div className="mb-1 truncate">{username}</div>
+      {isMatchAdmin && (
+        <button
+          className="btn btn-sm btn-circle btn-ghost ml-auto"
+          onClick={() => removeMatchPlayer(mp)}
+        >
+          <XCircleIcon className="text-error" />
+        </button>
+      )}
     </li>
   );
 }

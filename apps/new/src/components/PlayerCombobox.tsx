@@ -9,12 +9,20 @@ import { CheckIcon } from '@heroicons/react/24/solid';
 
 interface Props {
   onPlayerSelected?: (player: PlayersRow | null) => void;
+  placeholder?: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  disabled?: boolean;
 }
 
 const searchPlayers = (key: string, { arg }: { arg: string }) =>
   supabaseClient().searchPlayers(arg).then(verifyResult) as Promise<PlayersRow[]>;
 
-export default function PlayerCombobox({ onPlayerSelected }: Props) {
+export default function PlayerCombobox({
+  onPlayerSelected,
+  placeholder = 'Name',
+  size = 'md',
+  disabled = false,
+}: Props) {
   const {
     data: players = [],
     trigger,
@@ -33,9 +41,9 @@ export default function PlayerCombobox({ onPlayerSelected }: Props) {
   );
 
   const handleInputChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    async (event: ChangeEvent<HTMLInputElement>) => {
       if (event.target.value) {
-        trigger(event.target.value);
+        await trigger(event.target.value);
       } else {
         reset();
       }
@@ -45,14 +53,21 @@ export default function PlayerCombobox({ onPlayerSelected }: Props) {
 
   return (
     <div className="dropdown">
-      <Combobox value={selectedPlayer} onChange={handlePlayerSelected} nullable>
+      <Combobox
+        value={selectedPlayer}
+        onChange={handlePlayerSelected}
+        nullable
+        disabled={disabled}
+        name="player"
+      >
         <Combobox.Input
-          className="input"
-          placeholder="Name"
+          className={`input input-bordered input-${size} w-full`}
+          placeholder={placeholder}
+          name="player-select"
           onChange={handleInputChange}
           displayValue={(player: PlayersRow) => player?.full_name || ''}
         />
-        <Combobox.Options className="menu dropdown-content z-[1] shadow bg-base-100 rounded-box p-0 w-52">
+        <Combobox.Options className="menu dropdown-content z-[1] shadow bg-base-100 rounded-box p-0 w-full">
           {players.map((player) => (
             <Combobox.Option key={player.id} value={player} as={Fragment}>
               {({ active, selected }) => (

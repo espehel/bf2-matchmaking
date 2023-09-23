@@ -1,6 +1,5 @@
+'use-client';
 import { FetchResult } from '@bf2-matchmaking/utils';
-
-('use-client');
 import { MatchesJoined, RconBf2Server } from '@bf2-matchmaking/types';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';

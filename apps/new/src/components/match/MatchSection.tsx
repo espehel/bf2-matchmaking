@@ -1,15 +1,10 @@
-import {
-  MatchesJoined,
-  MatchPlayersRow,
-  MatchStatus,
-  PlayerListItem,
-} from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus, PlayerListItem } from '@bf2-matchmaking/types';
 import MatchActions from '@/components/match/MatchActions';
 import { api } from '@bf2-matchmaking/utils';
-import PlayerItem from '@/components/match/PlayerItem';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import TeamSection from '@/components/match/TeamSection';
 
 interface Props {
   match: MatchesJoined;
@@ -27,8 +22,6 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
 
   const { data: servers } = await supabase(cookies).getServers();
 
-  const isTeam = (team: number) => (mp: MatchPlayersRow) => mp.team === team;
-
   return (
     <section className="section w-fit">
       <div>
@@ -40,35 +33,9 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
         </p>
       </div>
       <div className="flex justify-center gap-8">
-        <div>
-          <div className="text-xl font-bold mb-2">{`Team ${match.home_team.name}`}</div>
-          <ul>
-            {match.teams.filter(isTeam(match.home_team.id)).map((mp) => (
-              <PlayerItem
-                key={mp.player_id}
-                match={match}
-                playerList={playerInfo}
-                mp={mp}
-                team={match.home_team.id}
-              />
-            ))}
-          </ul>
-        </div>
+        <TeamSection match={match} team={match.home_team} playerInfo={playerInfo} />
         <div className="divider divider-horizontal">vs</div>
-        <div>
-          <div className="text-xl font-bold mb-2">{`Team ${match.away_team.name}`}</div>
-          <ul>
-            {match.teams.filter(isTeam(match.away_team.id)).map((mp) => (
-              <PlayerItem
-                key={mp.player_id}
-                match={match}
-                playerList={playerInfo}
-                mp={mp}
-                team={match.away_team.id}
-              />
-            ))}
-          </ul>
-        </div>
+        <TeamSection match={match} team={match.away_team} playerInfo={playerInfo} />
       </div>
       {match.status === MatchStatus.Closed && (
         <Link className="btn btn-primary btn-lg btn-wide" href={`/results/${match.id}`}>
