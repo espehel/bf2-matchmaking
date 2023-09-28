@@ -30,6 +30,7 @@ export const rcon = () => {
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     matches: () => '/matches',
     matchLive: (matchId: number) => `/matches/${matchId}/live`,
+    matchResults: (matchId: number) => `/matches/${matchId}/results`,
     rconServerPlayer: (serverIp: string, playerId: string) =>
       `/rcon/${serverIp}/${playerId}`,
   };
@@ -60,6 +61,8 @@ export const rcon = () => {
       postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
     getMatchLive: (matchId: number) =>
       getJSON<GetMatchLiveResponseBody>(basePath.concat(paths.matchLive(matchId))),
+    postMatchResults: (matchId: number) =>
+      postJSON(basePath.concat(paths.matchResults(matchId)), {}),
     getRconServerPlayer: (serverIp: string, playerId: string) =>
       getJSON<PlayerListItem>(
         basePath.concat(paths.rconServerPlayer(serverIp, playerId))

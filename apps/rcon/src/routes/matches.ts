@@ -10,7 +10,7 @@ import { toMatchPlayer } from '../mappers/player';
 import { error, info, logOngoingMatchCreated } from '@bf2-matchmaking/logging';
 import moment from 'moment';
 import { findLiveMatch, startLiveMatch } from '../services/MatchManager';
-import { processResults } from '../services/matches';
+import { closeMatch } from '../services/matches';
 
 const router = express.Router();
 
@@ -20,7 +20,15 @@ router.post('/:matchid/results', async (req, res) => {
       .getMatch(parseInt(req.params.matchid))
       .then(verifySingleResult);
 
-    await processResults(match);
+    if (match.status !== MatchStatus.Finished) {
+      return res.status(400).send('Match is not finished.');
+    }
+
+    const errors = await closeMatch(match);
+
+    if (errors.length > 0) {
+      return res.status(400).send(errors.join(', '));
+    }
 
     return res.sendStatus(201);
   } catch (e) {

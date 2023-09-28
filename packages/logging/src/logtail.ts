@@ -110,15 +110,12 @@ export const logOngoingMatchCreated = (match: MatchesJoined) => {
 
 export const logChangeMatchStatus = (
   status: MatchStatus,
-  reason: string,
   match: MatchesJoined,
-  rounds: Array<RoundsRow>,
-  liveRound: LiveRound | null
+  liveRound?: LiveRound | null
 ) => {
   logger
-    .info(`Changing status for Match ${match.id} to ${status} because "${reason}"`, {
+    .info(`Changing status for Match ${match.id} to ${status}"`, {
       match: JSON.stringify(match),
-      rounds: JSON.stringify(rounds),
       liveRound: JSON.stringify(liveRound),
     })
     .then((log) => info('logtail', log.message))

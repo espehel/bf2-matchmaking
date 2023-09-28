@@ -37,6 +37,7 @@ export enum MatchStatus {
   Summoning = 'Summoning',
   Drafting = 'Drafting',
   Ongoing = 'Ongoing',
+  Finished = 'Finished',
   Closed = 'Closed',
   Deleted = 'Deleted',
 }

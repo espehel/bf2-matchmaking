@@ -10,6 +10,7 @@ import { createLiveRound, insertRound } from './round-service';
 import { LiveServerUpdate } from '../net/RconManager';
 import {
   closeMatch,
+  finishMatch,
   hasPlayedAllRounds,
   isFirstTimeFullServer,
   isOngoingRound,
@@ -128,7 +129,7 @@ export class LiveMatch {
     }
 
     if (nextState === 'finished') {
-      await closeMatch(this, `New live state ${nextState}`, this.rounds);
+      await finishMatch(this);
       removeLiveMatch(this);
     }
 

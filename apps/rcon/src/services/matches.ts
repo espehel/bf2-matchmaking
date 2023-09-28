@@ -13,7 +13,7 @@ import {
   RoundsRow,
   ServerInfo,
 } from '@bf2-matchmaking/types';
-import { client, verifyResult } from '@bf2-matchmaking/supabase';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { LiveMatch } from './LiveMatch';
 import moment from 'moment/moment';
 import {
@@ -25,48 +25,52 @@ import {
 import { updatePlayerRatings } from './players';
 import { getMatchResultsEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
 
-export const closeMatch = async (
-  liveMatch: LiveMatch,
-  reason: string,
-  rounds: Array<RoundsRow>
-) => {
-  logChangeMatchStatus(
-    MatchStatus.Closed,
-    reason,
-    liveMatch.match,
-    rounds,
-    liveMatch.liveRound
-  );
+export const finishMatch = async (liveMatch: LiveMatch) => {
+  logChangeMatchStatus(MatchStatus.Finished, liveMatch.match, liveMatch.liveRound);
   const { data, error } = await client().updateMatch(liveMatch.match.id, {
-    status: MatchStatus.Closed,
+    status: MatchStatus.Finished,
   });
   if (error) {
-    logSupabaseError('Failed to close match', error);
-    return;
-  }
-
-  if (!validateMatch(data)) {
-    logMessage(`Match ${data.id} is not valid, no results created.`, { match: data });
+    logSupabaseError('Failed to finish match', error);
     return;
   }
 
   try {
-    await processResults(data);
+    await closeMatch(data);
   } catch (e) {
-    logErrorMessage('Failed to process results', e);
+    logErrorMessage('Failed to close match', e);
+  }
+};
+export const closeMatch = async (match: MatchesJoined) => {
+  const errors = validateMatch(match);
+  if (errors.length > 0) {
+    logMessage(`Match ${match.id} is not valid, no results created.`, {
+      match,
+      errors,
+    });
+    return errors;
   }
 
-  return data;
+  await processResults(match);
+
+  await client()
+    .updateMatch(match.id, {
+      status: MatchStatus.Closed,
+    })
+    .then(verifySingleResult);
+  logChangeMatchStatus(MatchStatus.Closed, match);
+  return errors;
 };
 
-function validateMatch(match: MatchesJoined) {
+function validateMatch(match: MatchesJoined): Array<string> {
+  const errors: Array<string> = [];
   if (!(match.rounds.length === 2 || match.rounds.length === 4)) {
-    return false;
+    errors.push('Match must have 2 or 4 rounds');
   }
   if (!validateMatchPlayers(match)) {
-    return false;
+    errors.push('Every player must have a keyhash included in the match');
   }
-  return true;
+  return errors;
 }
 
 function validateMatchPlayers(match: MatchesJoined) {
@@ -100,18 +104,8 @@ export async function processResults(match: MatchesJoined) {
   });
 }
 
-export const deleteMatch = async (
-  liveMatch: LiveMatch,
-  reason: string,
-  rounds: Array<RoundsRow>
-) => {
-  logChangeMatchStatus(
-    MatchStatus.Closed,
-    reason,
-    liveMatch.match,
-    rounds,
-    liveMatch.liveRound
-  );
+export const deleteMatch = async (liveMatch: LiveMatch, rounds: Array<RoundsRow>) => {
+  logChangeMatchStatus(MatchStatus.Closed, liveMatch.match, liveMatch.liveRound);
   const { data, error } = await client().updateMatch(liveMatch.match.id, {
     status: MatchStatus.Deleted,
   });
