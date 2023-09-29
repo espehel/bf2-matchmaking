@@ -129,11 +129,15 @@ export class LiveMatch {
     }
 
     if (nextState === 'finished') {
-      await finishMatch(this);
-      removeLiveMatch(this);
+      await this.finish();
     }
 
     return { state: nextState, payload: null };
+  }
+
+  async finish() {
+    await finishMatch(this.match, this.liveRound);
+    removeLiveMatch(this);
   }
   #logChangeLiveState(
     nextState: LiveServerState,

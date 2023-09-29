@@ -1,9 +1,9 @@
 'use client';
 import { MatchesJoined, MatchStatus, ServersJoined } from '@bf2-matchmaking/types';
-import { closeMatch, setServer } from '@/app/matches/[match]/actions';
-import { toast } from 'react-toastify';
-import { useCallback } from 'react';
-import SelectForm from '@/components/SelectForm';
+import { closeMatch, finishMatch, reopenMatch } from '@/app/matches/[match]/actions';
+import { closeMatch as createResults } from '@/app/results/[match]/actions';
+import AsyncActionButton from '@/components/AsyncActionButton';
+import SelectServerForm from '@/components/match/SelectServerForm';
 
 interface Props {
   match: MatchesJoined;
@@ -11,39 +11,49 @@ interface Props {
 }
 
 export default function MatchActions({ match, servers }: Props) {
-  const handleCloseMatch = useCallback(async () => {
-    const { error } = await closeMatch(match.id);
-    if (error) {
-      toast.error('Failed to close match.');
-    } else {
-      toast.success(`Match ${match.id} closed.`);
-    }
-  }, [match]);
-
-  const handleSetServer = useCallback(
-    async (value: string) => {
-      const { error, data } = await setServer(match.id, value);
-      if (error) {
-        toast.error('Failed to set server');
-      } else {
-        toast.success(`Changed server to ${data.server?.name}`);
-      }
-    },
-    [match.id]
-  );
+  const isOngoing = match.status === MatchStatus.Ongoing;
+  const isFinished = match.status === MatchStatus.Finished;
+  const isClosed = match.status === MatchStatus.Closed;
 
   return (
-    <div className="flex flex-col">
-      <button className="btn btn-primary w-fit" onClick={handleCloseMatch}>
-        Close match
-      </button>
-      {servers && (
-        <SelectForm
-          options={servers.map(({ ip, name }) => [ip, name])}
-          defaultValue={match.server?.ip}
-          action={handleSetServer}
-        />
+    <div className="flex gap-4 flex-col">
+      {isOngoing && (
+        <AsyncActionButton
+          action={() => finishMatch(match.id)}
+          successMessage="Match closed and results created."
+          errorMessage="Match set to finished but results not created"
+        >
+          Finish match
+        </AsyncActionButton>
       )}
+      {isFinished && (
+        <div className="flex gap-4">
+          <AsyncActionButton
+            action={() => closeMatch(match.id)}
+            successMessage="Match closed without results."
+            errorMessage="Failed to close match"
+          >
+            Close match
+          </AsyncActionButton>
+          <AsyncActionButton
+            action={() => createResults(match.id)}
+            successMessage="Match closed and results created."
+            errorMessage="Failed to create results"
+          >
+            Create results
+          </AsyncActionButton>
+        </div>
+      )}
+      {isClosed && (
+        <AsyncActionButton
+          action={() => reopenMatch(match.id)}
+          successMessage="Match reopened."
+          errorMessage="Failed to reopen match"
+        >
+          Reopen match
+        </AsyncActionButton>
+      )}
+      {servers && isOngoing && <SelectServerForm match={match} servers={servers} />}
     </div>
   );
 }

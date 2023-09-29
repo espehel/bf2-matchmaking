@@ -82,7 +82,8 @@ export function pollServerInfo(liveMatch: LiveMatch) {
     async function intervalFn() {
       try {
         if (moment().diff(errorAt, 'minutes') > 30) {
-          return clearTimers();
+          clearTimers();
+          return liveMatch.finish();
         }
 
         const freshClient = await rcon(client.ip, client.port, client.password);
@@ -122,6 +123,7 @@ export function pollServerInfo(liveMatch: LiveMatch) {
         if (state === 'waiting' && moment().diff(waitingSince, 'minutes') > 30) {
           info('pollServerInfo', `Server is idle, stops polling`);
           clearTimers();
+          await liveMatch.finish();
         }
       } catch (e) {
         if (e instanceof Error) {

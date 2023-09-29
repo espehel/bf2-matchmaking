@@ -1,14 +1,13 @@
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import RoundsList from '@/components/RoundsList';
-import { MatchPlayerResultsRow } from '@bf2-matchmaking/types';
-import TeamResultTable from '@/components/TeamResultTable';
-import TeamStats from '@/components/TeamStats';
-import { assertObj, toTuple } from '@bf2-matchmaking/utils';
+import MatchResultSection from '@/components/result/MatchResultSection';
+import { MatchStatus } from '@bf2-matchmaking/types';
+import MatchFinishedSection from '@/components/result/MatchFinishedSection';
+import Link from 'next/link';
+import moment from 'moment/moment';
 
-const isTeam = (team: number) => (playerResult: MatchPlayerResultsRow) =>
-  playerResult.team === team;
 interface Props {
   params: { match: string };
 }
@@ -16,38 +15,27 @@ export default async function ResultsMatch({ params }: Props) {
   const match = await supabase(cookies)
     .getMatch(Number(params.match))
     .then(verifySingleResult);
-  const matchResult = await supabase(cookies)
-    .getMatchResultsByMatchId(Number(params.match))
-    .then(verifyResult)
-    .then(toTuple);
-  assertObj(matchResult);
-  const playerResults = await supabase(cookies)
-    .getPlayerMatchResultsByMatchId(Number(params.match))
-    .then(verifyResult);
 
-  const [team1Result, team2Result] = matchResult;
+  const isFinished = match.status === MatchStatus.Finished;
+  const isClosed = match.status === MatchStatus.Closed;
+  const isOngoing = match.status === MatchStatus.Ongoing;
 
   return (
     <main className="main text-center">
-      <h1 className="mb-8 text-accent font-bold">{`Match ${match.id}`}</h1>
-      <div className="flex flex-col xl:flex-row justify-around w-full">
-        <div className="flex flex-col mt-2 gap-4">
-          <TeamStats matchResult={team1Result} />
-          <TeamResultTable
-            playerResults={playerResults.filter(isTeam(team1Result.team.id))}
-            match={match}
-          />
-        </div>
-        <div className="divider xl:divider-horizontal">vs</div>
-        <div className="flex flex-col mt-2 gap-4">
-          <TeamStats matchResult={team2Result} />
-          <TeamResultTable
-            playerResults={playerResults.filter(isTeam(team2Result.team.id))}
-            match={match}
-          />
-        </div>
+      <div className="mb-8">
+        <h1 className="text-accent font-bold">{`Match ${match.id}`}</h1>
+        <p className="text-sm text-gray font-bold">
+          {moment(match.closed_at || match.created_at).format('HH:mm - dddd Do MMMM')}
+        </p>
       </div>
-      <div className="divider" />
+      {isFinished && <MatchFinishedSection match={match} />}
+      {isClosed && <MatchResultSection match={match} />}
+      {isOngoing && (
+        <Link className="link" href={`/matches/${match.id}`}>
+          Match is still ongoing
+        </Link>
+      )}
+      {match.rounds.length > 0 && <div className="divider" />}
       <RoundsList
         rounds={[...match.rounds].sort((a, b) =>
           a.created_at.localeCompare(b.created_at)

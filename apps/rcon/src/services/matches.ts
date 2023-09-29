@@ -7,6 +7,7 @@ import {
 import {
   isNotNull,
   isServerMatch,
+  LiveRound,
   MatchesJoined,
   MatchStatus,
   RoundsInsert,
@@ -25,9 +26,9 @@ import {
 import { updatePlayerRatings } from './players';
 import { getMatchResultsEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
 
-export const finishMatch = async (liveMatch: LiveMatch) => {
-  logChangeMatchStatus(MatchStatus.Finished, liveMatch.match, liveMatch.liveRound);
-  const { data, error } = await client().updateMatch(liveMatch.match.id, {
+export const finishMatch = async (match: MatchesJoined, liveRound: LiveRound | null) => {
+  logChangeMatchStatus(MatchStatus.Finished, match, liveRound);
+  const { data: updatedMatch, error } = await client().updateMatch(match.id, {
     status: MatchStatus.Finished,
   });
   if (error) {
@@ -35,8 +36,22 @@ export const finishMatch = async (liveMatch: LiveMatch) => {
     return;
   }
 
+  if (updatedMatch.rounds.length === 0) {
+    await client().updateMatch(updatedMatch.id, {
+      status: MatchStatus.Closed,
+      closed_at: moment().toISOString(),
+    });
+    logMessage(
+      `Match ${updatedMatch.id} has no rounds, closing match without creating results.`,
+      {
+        match: updatedMatch,
+      }
+    );
+    return;
+  }
+
   try {
-    await closeMatch(data);
+    await closeMatch(updatedMatch);
   } catch (e) {
     logErrorMessage('Failed to close match', e);
   }
@@ -56,6 +71,7 @@ export const closeMatch = async (match: MatchesJoined) => {
   await client()
     .updateMatch(match.id, {
       status: MatchStatus.Closed,
+      closed_at: moment().toISOString(),
     })
     .then(verifySingleResult);
   logChangeMatchStatus(MatchStatus.Closed, match);

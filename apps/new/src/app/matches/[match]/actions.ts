@@ -5,8 +5,33 @@ import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import { revalidatePath } from 'next/cache';
 import { api, getPlayersToSwitch } from '@bf2-matchmaking/utils';
-import { getTeamMap } from '@bf2-matchmaking/utils/src/results-utils';
 
+export async function reopenMatch(matchId: number) {
+  const result = await supabase(cookies).updateMatch(matchId, {
+    status: MatchStatus.Finished,
+    closed_at: null,
+  });
+
+  if (!result.error) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}
+export async function finishMatch(matchId: number) {
+  const result = await supabase(cookies).updateMatch(matchId, {
+    status: MatchStatus.Finished,
+  });
+
+  if (result.error) {
+    return result;
+  }
+
+  const apiResult = await api.rcon().postMatchResults(matchId);
+  revalidatePath(`/matches/${matchId}`);
+
+  return apiResult;
+}
 export async function closeMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Closed,
