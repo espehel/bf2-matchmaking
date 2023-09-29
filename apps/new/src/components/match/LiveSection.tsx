@@ -20,12 +20,10 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
   }
 
   const { round, status } = data;
-  const serverInfo =
-    typeof round?.si === 'string' ? (JSON.parse(round.si) as ServerInfo) : null;
-  const playerList =
-    typeof round?.pl === 'string'
-      ? (JSON.parse(round.pl) as Array<PlayerListItem>)
-      : null;
+  const serverInfo = round?.si;
+  const playerList = round?.pl;
+
+  const serverChanged = match.server?.ip !== data.round?.server;
 
   async function startPolling() {
     'use server';
@@ -37,7 +35,7 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
       <h2>Live</h2>
       <p>{`Status: ${status || 'not connected'}`}</p>
       {serverInfo && playerList && (
-        <RoundTable serverInfo={serverInfo} playerList={playerList} />
+        <RoundTable serverInfo={serverInfo!} playerList={playerList!} />
       )}
       {!status && (
         <div>
@@ -49,6 +47,20 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
               errorMessage="Failed to start polling data"
             >
               Connect
+            </AsyncActionButton>
+          )}
+        </div>
+      )}
+      {serverChanged && (
+        <div>
+          <p>Match is polling from wrong server</p>
+          {isMatchAdmin && (
+            <AsyncActionButton
+              action={startPolling}
+              successMessage="Match started polling data"
+              errorMessage="Failed to start polling data"
+            >
+              Reconnect
             </AsyncActionButton>
           )}
         </div>
