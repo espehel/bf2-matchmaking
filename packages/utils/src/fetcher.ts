@@ -47,8 +47,12 @@ export const getJSON = async <T>(
     });
     const { status, statusText } = res;
     if (res.ok) {
-      const data: T = await res.json();
-      return { data, error: null, status, statusText };
+      try {
+        const data: T = await res.json();
+        return { data, error: null, status, statusText };
+      } catch (e) {
+        return { data: {} as T, error: null, status, statusText };
+      }
     } else {
       const error = await res.text();
       return { data: null, error: parseError(error), status, statusText };

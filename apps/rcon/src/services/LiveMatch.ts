@@ -45,9 +45,9 @@ export class LiveMatch {
     this.liveRound = createLiveRound(this, si, pl);
     info(
       'updateLiveRound',
-      `${formatSecToMin(si.roundTime)} (${this.liveRound.pl.length}/${
-        this.match.config.size
-      }) ${si.team1_Name} [${si.team1_tickets} - ${si.team2_tickets}] ${si.team2_Name}`
+      `${formatSecToMin(si.roundTime)} (${pl.length}/${this.match.config.size}) ${
+        si.team1_Name
+      } [${si.team1_tickets} - ${si.team2_tickets}] ${si.team2_Name}`
     );
   }
 
@@ -98,6 +98,13 @@ export class LiveMatch {
 
     if (this.state === 'prelive' && si.roundTime === '0') {
       return next('live');
+    }
+
+    if (
+      this.state === 'warmup' &&
+      Number(si.connectedPlayers) !== this.match.players.length
+    ) {
+      return next('warmup');
     }
 
     if (isOngoingRound(si)) {

@@ -67,11 +67,6 @@ interface LiveServerPreliveUpdate {
 
 export type LiveServerUpdate = LiveServerBaseUpdate | LiveServerPreliveUpdate;
 
-export type PollServerInfoCb = (
-  serverInfo: ServerInfo,
-  playerList: Array<PlayerListItem>,
-  ip: string
-) => Promise<LiveServerUpdate>;
 export function pollServerInfo(liveMatch: LiveMatch) {
   return (client: RconClient) => {
     const interval = setInterval(intervalFn, POLL_INTERVAL);
