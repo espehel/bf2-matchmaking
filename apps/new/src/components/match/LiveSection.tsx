@@ -31,7 +31,7 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
   }
 
   return (
-    <section className="section w-full">
+    <section className="section bg-secondary text-secondary-content w-full">
       <h2>Live</h2>
       <p>{`Status: ${status || 'not connected'}`}</p>
       {serverInfo && playerList && (
