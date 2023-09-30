@@ -7,7 +7,6 @@ import {
   MatchConfigsRow,
   MatchStatus,
   PlayersInsert,
-  PlayersRow,
   PlayersUpdate,
   RoundsInsert,
   RoundsJoined,

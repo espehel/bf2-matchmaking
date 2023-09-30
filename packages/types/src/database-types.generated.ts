@@ -333,9 +333,11 @@ export interface Database {
       }
       matches: {
         Row: {
+          away_team: number
           closed_at: string | null
           config: number
           created_at: string | null
+          home_team: number
           id: number
           live_at: string | null
           ready_at: string | null
@@ -344,9 +346,11 @@ export interface Database {
           status: string
         }
         Insert: {
+          away_team?: number
           closed_at?: string | null
           config: number
           created_at?: string | null
+          home_team?: number
           id?: number
           live_at?: string | null
           ready_at?: string | null
@@ -355,9 +359,11 @@ export interface Database {
           status?: string
         }
         Update: {
+          away_team?: number
           closed_at?: string | null
           config?: number
           created_at?: string | null
+          home_team?: number
           id?: number
           live_at?: string | null
           ready_at?: string | null
@@ -367,9 +373,21 @@ export interface Database {
         }
         Relationships: [
           {
+            foreignKeyName: "matches_away_team_fkey"
+            columns: ["away_team"]
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_config_fkey"
             columns: ["config"]
             referencedRelation: "match_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_home_team_fkey"
+            columns: ["home_team"]
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
           {

@@ -65,7 +65,8 @@ export interface MatchConfigsRow
   map_draft: MapDraftType;
   mode: MatchConfigModeType;
 }
-export interface MatchesJoined extends Omit<MatchesRow, 'config' | 'server' | 'status'> {
+export interface MatchesJoined
+  extends Omit<MatchesRow, 'config' | 'server' | 'status' | 'home_team' | 'away_team'> {
   maps: Array<MapsRow>;
   players: Array<PlayersRow>;
   teams: Array<MatchPlayersRow>;
@@ -73,6 +74,8 @@ export interface MatchesJoined extends Omit<MatchesRow, 'config' | 'server' | 's
   status: MatchStatus;
   config: MatchConfigsRow;
   rounds: Array<RoundsJoined>;
+  home_team: TeamsRow;
+  away_team: TeamsRow;
 }
 export interface RoundsJoined extends Omit<RoundsRow, 'map' | 'server'> {
   map: MapsRow;

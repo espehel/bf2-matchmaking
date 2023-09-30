@@ -3,10 +3,9 @@ import {
   DiscordConfig,
   isDiscordConfig,
   MatchConfigModeType,
-  RconBf2Server,
 } from '@bf2-matchmaking/types';
 import { api, verify } from '@bf2-matchmaking/utils';
-import { error, info, logCreateChannelMessage } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 import {
   hasSummonEmbed,
   isPubobotMatchStarted,
@@ -15,14 +14,7 @@ import {
 } from '../utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { listenForMatchMessageReaction } from './reaction-listener';
-import {
-  Client,
-  Message,
-  MessageCollector,
-  MessageCreateOptions,
-  MessagePayload,
-  TextChannel,
-} from 'discord.js';
+import { Client, Message, MessageCollector } from 'discord.js';
 import { executeCommand, isCommand } from '../commands';
 import {
   createMatchFromPubobotEmbed,

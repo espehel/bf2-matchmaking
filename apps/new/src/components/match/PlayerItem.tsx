@@ -25,6 +25,8 @@ export default function PlayerItem({ mp, match, playerList, team }: Props) {
     [playerList, player]
   );
 
+  const expectedTeam = match.home_team.id === team ? '2' : '1';
+
   const status = useMemo<PlayerMatchStatus>(() => {
     if (!player?.keyhash) {
       return 'unregistered';
@@ -32,7 +34,7 @@ export default function PlayerItem({ mp, match, playerList, team }: Props) {
     if (!info) {
       return 'unconnected';
     }
-    if (team !== getTeamMap(match.rounds.length)[info.getTeam]) {
+    if (expectedTeam !== info.getTeam) {
       return 'unteamed';
     }
     return 'ok';

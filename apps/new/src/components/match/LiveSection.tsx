@@ -1,6 +1,9 @@
 'use client';
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { api } from '@bf2-matchmaking/utils';
+import {
+  GetMatchLiveResponseBody,
+  MatchesJoined,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import RoundTable from '@/components/RoundTable';
 import AsyncActionButton from '@/components/AsyncActionButton';
 import { startPolling } from '@/app/matches/[match]/actions';
@@ -8,10 +11,9 @@ import { startPolling } from '@/app/matches/[match]/actions';
 interface Props {
   match: MatchesJoined;
   isMatchAdmin: boolean;
+  data: GetMatchLiveResponseBody | null;
 }
-export default async function LiveSection({ match, isMatchAdmin }: Props) {
-  const { data } = await api.rcon().getMatchLive(match.id);
-
+export default async function LiveSection({ match, isMatchAdmin, data }: Props) {
   if (!data || match.status !== MatchStatus.Ongoing) {
     return null;
   }

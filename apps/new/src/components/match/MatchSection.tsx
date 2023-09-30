@@ -41,30 +41,30 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
       </div>
       <div className="flex justify-center gap-8">
         <div>
-          <div className="text-xl font-bold mb-2">Team A</div>
+          <div className="text-xl font-bold mb-2">{match.home_team.name}</div>
           <ul>
-            {match.teams.filter(isTeam(1)).map((mp) => (
+            {match.teams.filter(isTeam(match.home_team.id)).map((mp) => (
               <PlayerItem
                 key={mp.player_id}
                 match={match}
                 playerList={playerInfo}
                 mp={mp}
-                team={1}
+                team={match.home_team.id}
               />
             ))}
           </ul>
         </div>
         <div className="divider divider-horizontal">vs</div>
         <div>
-          <div className="text-xl font-bold mb-2">Team B</div>
+          <div className="text-xl font-bold mb-2">{match.away_team.name}</div>
           <ul>
-            {match.teams.filter(isTeam(2)).map((mp) => (
+            {match.teams.filter(isTeam(match.away_team.id)).map((mp) => (
               <PlayerItem
                 key={mp.player_id}
                 match={match}
                 playerList={playerInfo}
                 mp={mp}
-                team={2}
+                team={match.away_team.id}
               />
             ))}
           </ul>
