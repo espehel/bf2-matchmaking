@@ -20,6 +20,8 @@ import {
   TeamsJoined,
 } from '@bf2-matchmaking/types';
 
+const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
+
 export default (client: SupabaseClient<Database>) => ({
   ...matches(client),
   getServerRcon: (ip: string) =>
@@ -47,13 +49,13 @@ export default (client: SupabaseClient<Database>) => ({
   getRound: (id: number) =>
     client
       .from('rounds')
-      .select<'*, map(*), server(*)', RoundsJoined>('*, map(*), server(*)')
+      .select<typeof ROUNDS_JOINED_QUERY, RoundsJoined>(ROUNDS_JOINED_QUERY)
       .eq('id', id)
       .single(),
   getRounds: (limit?: number) =>
     client
       .from('rounds')
-      .select<'*, map(*), server(*)', RoundsJoined>('*, map(*), server(*)')
+      .select<typeof ROUNDS_JOINED_QUERY, RoundsJoined>(ROUNDS_JOINED_QUERY)
       .order('id', { ascending: false })
       .limit(limit || 50),
   createServer: (server: ServersInsert) =>

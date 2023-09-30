@@ -450,9 +450,9 @@ export interface Database {
           pl: Json | null
           server: string | null
           si: Json | null
-          team1_name: string
+          team1: number
           team1_tickets: string
-          team2_name: string
+          team2: number
           team2_tickets: string
         }
         Insert: {
@@ -463,9 +463,9 @@ export interface Database {
           pl?: Json | null
           server?: string | null
           si?: Json | null
-          team1_name?: string
+          team1?: number
           team1_tickets: string
-          team2_name: string
+          team2?: number
           team2_tickets: string
         }
         Update: {
@@ -476,9 +476,9 @@ export interface Database {
           pl?: Json | null
           server?: string | null
           si?: Json | null
-          team1_name?: string
+          team1?: number
           team1_tickets?: string
-          team2_name?: string
+          team2?: number
           team2_tickets?: string
         }
         Relationships: [
@@ -501,16 +501,16 @@ export interface Database {
             referencedColumns: ["ip"]
           },
           {
-            foreignKeyName: "rounds_team1_name_fkey"
-            columns: ["team1_name"]
+            foreignKeyName: "rounds_team1_fkey"
+            columns: ["team1"]
             referencedRelation: "teams"
-            referencedColumns: ["name"]
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "rounds_team2_name_fkey"
-            columns: ["team2_name"]
+            foreignKeyName: "rounds_team2_fkey"
+            columns: ["team2"]
             referencedRelation: "teams"
-            referencedColumns: ["name"]
+            referencedColumns: ["id"]
           }
         ]
       }

@@ -11,20 +11,6 @@ import {
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
 
-export const calculateMatchResultsOld = (
-  match: MatchesJoined
-): Array<[PlayersRow, RoundStats | null]> => {
-  const results = match.rounds
-    .map(getPlayerRoundStats)
-    .filter(isNotNull)
-    .reduce(aggregateRound, {});
-
-  return match.players.map((player) => [
-    player,
-    (player.keyhash && results[player.keyhash]) || null,
-  ]);
-};
-
 export const getPlayerRoundStats = (
   round: RoundsJoined
 ): Record<string, RoundStats> | null => {
@@ -65,39 +51,51 @@ const toObject = <T = unknown>(acc: Record<string, T>, curr: Record<string, T>) 
   ...acc,
   ...curr,
 });
-export function getTeamMap(round: number): Record<string, number> {
-  return round % 2 === 0 ? { '1': 1, '2': 2 } : { '1': 1, '2': 2 };
-}
-export function getTeamTickets(rounds: Array<RoundsJoined>, team: number) {
+
+export function getTicketsTuple(
+  rounds: Array<RoundsJoined>,
+  match: MatchesJoined
+): [number, number] {
   return rounds
-    .map((round, i) =>
-      getTeamMap(i)['1'] === team ? round.team1_tickets : round.team2_tickets
+    .map((round) =>
+      round.team1.id === match.home_team.id
+        ? [round.team1_tickets, round.team2_tickets]
+        : [round.team2_tickets, round.team1_tickets]
     )
-    .reduce((acc, cur) => acc + parseInt(cur), 0);
+    .reduce(
+      ([acc1, acc2], [cur1, cur2]) => [acc1 + parseInt(cur1), acc2 + parseInt(cur2)],
+      [0, 0]
+    );
 }
 
-export function getTeamRounds(rounds: Array<RoundsJoined>, team: number) {
+export function getRoundsTuple(rounds: Array<RoundsJoined>, match: MatchesJoined) {
+  const toTicketsTuple = (tickets1: string, tickets2: string) => [
+    Number(tickets1) - Number(tickets2) > 0 ? 1 : 0,
+    Number(tickets2) - Number(tickets1) > 0 ? 1 : 0,
+  ];
+
   return rounds
-    .map((round, i) =>
-      getTeamMap(i)['1'] === team
-        ? parseInt(round.team1_tickets) - parseInt(round.team2_tickets)
-        : parseInt(round.team2_tickets) - parseInt(round.team1_tickets)
+    .map((round) =>
+      round.team1.id === match.home_team.id
+        ? toTicketsTuple(round.team1_tickets, round.team2_tickets)
+        : toTicketsTuple(round.team2_tickets, round.team1_tickets)
     )
-    .reduce((acc, cur) => (cur > 0 ? acc + 1 : acc), 0);
+    .reduce(([acc1, acc2], [cur1, cur2]) => [acc1 + cur1, acc2 + cur2], [0, 0]);
 }
 
-export function getTeamMaps(rounds: Array<RoundsJoined>, team: 1 | 2) {
-  const otherTeam = team === 1 ? 2 : 1;
-  let mapsWon = 0;
+export function getMapsTuple(rounds: Array<RoundsJoined>, match: MatchesJoined) {
+  let mapsWon = [0, 0];
   for (let i = 0; i < rounds.length; i += 2) {
     if (i + 2 > rounds.length) {
       break;
     }
-    const tickets =
-      getTeamTickets(rounds.slice(i, i + 2), team) -
-      getTeamTickets(rounds.slice(i, i + 2), otherTeam);
-    if (tickets > 0) {
-      mapsWon++;
+
+    const [homeTickets, awayTickets] = getTicketsTuple(rounds.slice(i, i + 2), match);
+    if (homeTickets > awayTickets) {
+      mapsWon[0]++;
+    }
+    if (awayTickets > homeTickets) {
+      mapsWon[1]++;
     }
   }
   return mapsWon;
@@ -106,30 +104,29 @@ export function getTeamMaps(rounds: Array<RoundsJoined>, team: 1 | 2) {
 export function calculateMatchResults(
   match: MatchesJoined
 ): [MatchResultsInsert, MatchResultsInsert] {
-  const mapsA = getTeamMaps(match.rounds, 1);
-  const mapsB = getTeamMaps(match.rounds, 2);
-  const roundsA = getTeamRounds(match.rounds, 1);
-  const roundsB = getTeamRounds(match.rounds, 2);
-  const ticketsA = getTeamTickets(match.rounds, 1);
-  const ticketsB = getTeamTickets(match.rounds, 2);
-  const scoreA = mapsA * 100 + roundsA * 10 + ticketsA;
-  const scoreB = mapsB * 100 + roundsB * 10 + ticketsB;
+  const [mapsHome, mapsAway] = getMapsTuple(match.rounds, match);
+  const [roundsHome, roundsAway] = getRoundsTuple(match.rounds, match);
+  const [ticketsHome, ticketsAway] = getTicketsTuple(match.rounds, match);
+
+  const scoreHome = mapsHome * 1000 + ticketsHome;
+  const scoreAway = mapsAway * 1000 + ticketsAway;
+
   return [
     {
       match_id: match.id,
       team: 1,
-      maps: mapsA,
-      rounds: roundsA,
-      tickets: ticketsA,
-      is_winner: scoreA > scoreB,
+      maps: mapsHome,
+      rounds: roundsHome,
+      tickets: ticketsHome,
+      is_winner: scoreHome > scoreAway,
     },
     {
       match_id: match.id,
       team: 2,
-      maps: mapsB,
-      rounds: roundsB,
-      tickets: ticketsB,
-      is_winner: scoreB > scoreA,
+      maps: mapsAway,
+      rounds: roundsAway,
+      tickets: ticketsAway,
+      is_winner: scoreAway > scoreHome,
     },
   ];
 }

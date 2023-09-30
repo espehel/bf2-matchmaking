@@ -77,9 +77,12 @@ export interface MatchesJoined
   home_team: TeamsRow;
   away_team: TeamsRow;
 }
-export interface RoundsJoined extends Omit<RoundsRow, 'map' | 'server'> {
+export interface RoundsJoined
+  extends Omit<RoundsRow, 'map' | 'server' | 'team1' | 'team2'> {
   map: MapsRow;
   server: ServersRow | null;
+  team1: TeamsRow;
+  team2: TeamsRow;
 }
 
 export interface ServersJoined extends ServersRow {

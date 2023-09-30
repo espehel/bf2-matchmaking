@@ -1,8 +1,17 @@
-import { LiveRound, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import {
+  isDefined,
+  LiveRound,
+  MatchesJoined,
+  PlayerListItem,
+  ServerInfo,
+} from '@bf2-matchmaking/types';
 import { logSupabaseError } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 import { LiveMatch } from './LiveMatch';
+import { getMatchPlayer } from '@bf2-matchmaking/utils';
+import { match } from 'assert';
+import { getTeamTuple } from '@bf2-matchmaking/utils/src/round-utils';
 
 export function createLiveRound(
   liveMatch: LiveMatch,
@@ -15,14 +24,16 @@ export function createLiveRound(
       (p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash) === i
     );
 
+  const [team1, team2] = getTeamTuple(mergedPl, liveMatch.match);
+
   return {
-    team1_name: si.team1_Name,
     team1_tickets: si.team1_tickets,
-    team2_name: si.team2_Name,
     team2_tickets: si.team2_tickets,
     map: si.currentMapName,
     server: liveMatch.match.server.ip,
     match: liveMatch.match.id,
+    team1,
+    team2,
     si,
     pl: mergedPl,
   };

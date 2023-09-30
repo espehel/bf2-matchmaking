@@ -5,12 +5,14 @@ import { supabaseImageLoader } from '@/lib/supabase-client';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import { useMemo } from 'react';
 import moment from 'moment';
+import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
 
 interface Props {
   round: RoundsJoined;
 }
 
 export default function RoundLink({ round }: Props) {
+  const serverInfo = parseJSON<ServerInfo>(round.si);
   return (
     <Link href={`/rounds/${round.id}`}>
       <div className="card card-side w-full bg-base-100 shadow-xl">
@@ -31,12 +33,12 @@ export default function RoundLink({ round }: Props) {
             </p>
           </div>
           <div>
-            <p className="text-md font-bold">{round.team1_name}</p>
-            <p className="text-md">{round.team1_tickets}</p>
+            <p className="text-md font-bold">{serverInfo.team1_Name}</p>
+            <p className="text-md">{serverInfo.team1_tickets}</p>
           </div>
           <div>
-            <p className="text-md font-bold">{round.team2_name}</p>
-            <p className="text-md">{round.team2_tickets}</p>
+            <p className="text-md font-bold">{serverInfo.team2_Name}</p>
+            <p className="text-md">{serverInfo.team2_tickets}</p>
           </div>
         </div>
       </div>

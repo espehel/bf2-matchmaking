@@ -6,7 +6,6 @@ import {
   PlayersRow,
 } from '@bf2-matchmaking/types';
 import { useMemo } from 'react';
-import { getTeamMap } from '@bf2-matchmaking/utils/src/results-utils';
 
 interface Props {
   mp: MatchPlayersRow;
@@ -25,9 +24,9 @@ export default function PlayerItem({ mp, match, playerList, team }: Props) {
     [playerList, player]
   );
 
-  const expectedTeam = match.home_team.id === team ? '2' : '1';
-
   const status = useMemo<PlayerMatchStatus>(() => {
+    const expectedTeam = match.home_team.id === team ? '2' : '1';
+
     if (!player?.keyhash) {
       return 'unregistered';
     }

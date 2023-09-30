@@ -6,7 +6,6 @@ import {
   TeamPlayer,
 } from '@bf2-matchmaking/types';
 import { shuffleArray } from './array-utils';
-import { getTeamMap } from './results-utils';
 
 export const assignMatchPlayerTeams = (players: Array<PlayersRow>) =>
   shuffleArray(players).map((player, i) => ({
@@ -42,8 +41,6 @@ export function getPlayersToSwitch(
   match: MatchesJoined,
   pl: Array<PlayerListItem>
 ): Array<string> {
-  const teamMap = getTeamMap(match.rounds.length);
-
   return pl
     .filter((sp) => {
       const player = match.players.find((p) => p.keyhash === sp.keyhash);
@@ -54,10 +51,20 @@ export function getPlayersToSwitch(
       if (!team) {
         return false;
       }
-      if (teamMap[sp.getTeam] === team) {
+      if (match.home_team.id === team && sp.getTeam === '2') {
+        return false;
+      }
+      if (match.away_team.id === team && sp.getTeam === '1') {
         return false;
       }
       return true;
     })
     .map(({ index }) => index);
+}
+
+export function getMatchPlayer(match: MatchesJoined) {
+  return (playerInfo: PlayerListItem) => {
+    const id = match.players.find((p) => p.keyhash === playerInfo.keyhash)?.id;
+    return match.teams.find((p) => p.player_id === id);
+  };
 }

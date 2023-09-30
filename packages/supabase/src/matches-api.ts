@@ -14,7 +14,7 @@ import {
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
-  '*, players!match_players(*), maps(*), config!inner(*), teams:match_players(*), server(*), rounds(*, map(*), server(*)), home_team(*), away_team(*)';
+  '*, players!match_players(*), maps(*), config!inner(*), teams:match_players(*), server(*), rounds(*, map(*), server(*), team1(*), team2(*)), home_team(*), away_team(*)';
 
 export default (client: SupabaseClient<Database>) => ({
   createMatchFromConfig: (config: number) =>

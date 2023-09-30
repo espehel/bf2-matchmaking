@@ -13,7 +13,7 @@ interface Props {
   isMatchAdmin: boolean;
   data: GetMatchLiveResponseBody | null;
 }
-export default async function LiveSection({ match, isMatchAdmin, data }: Props) {
+export default function LiveSection({ match, isMatchAdmin, data }: Props) {
   if (!data || match.status !== MatchStatus.Ongoing) {
     return null;
   }

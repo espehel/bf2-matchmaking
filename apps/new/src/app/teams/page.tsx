@@ -4,6 +4,7 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import { TeamsJoined } from '@bf2-matchmaking/types';
 import TeamCreateForm from '@/components/TeamCreateForm';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default async function TeamsPage() {
   const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
@@ -37,7 +38,7 @@ function Avatar({ team }: AvatarProps) {
     return (
       <div className="avatar">
         <div className="w-12 rounded-full">
-          <img src={team.avatar} />
+          <Image src={team.avatar} alt="avatar" />
         </div>
       </div>
     );

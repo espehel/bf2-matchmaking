@@ -19,7 +19,7 @@ interface Props {
 export default async function MatchSection({ match, isMatchAdmin }: Props) {
   let playerInfo: PlayerListItem[] = [];
   if (match.server) {
-    const { data } = await api.rcon().getServerPlayerList(match.server?.ip);
+    const { data } = await api.rcon().getServerPlayerList(match.server.ip);
     if (data) {
       playerInfo = data;
     }
@@ -41,7 +41,7 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
       </div>
       <div className="flex justify-center gap-8">
         <div>
-          <div className="text-xl font-bold mb-2">{match.home_team.name}</div>
+          <div className="text-xl font-bold mb-2">{`Team ${match.home_team.name}`}</div>
           <ul>
             {match.teams.filter(isTeam(match.home_team.id)).map((mp) => (
               <PlayerItem
@@ -56,7 +56,7 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
         </div>
         <div className="divider divider-horizontal">vs</div>
         <div>
-          <div className="text-xl font-bold mb-2">{match.away_team.name}</div>
+          <div className="text-xl font-bold mb-2">{`Team ${match.away_team.name}`}</div>
           <ul>
             {match.teams.filter(isTeam(match.away_team.id)).map((mp) => (
               <PlayerItem

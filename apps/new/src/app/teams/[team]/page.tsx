@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { TeamsJoined } from '@bf2-matchmaking/types';
 import { PencilSquareIcon } from '@heroicons/react/24/solid';
+import Image from 'next/image';
 
 interface Props {
   params: { team: string };
@@ -48,7 +49,7 @@ function Avatar({ team }: AvatarProps) {
     return (
       <div className="avatar">
         <div className="w-24 rounded-full">
-          <img src={team.avatar} />
+          <Image src={team.avatar} alt="avatar" />
         </div>
       </div>
     );

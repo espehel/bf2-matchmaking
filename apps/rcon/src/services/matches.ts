@@ -20,11 +20,11 @@ import moment from 'moment/moment';
 import {
   calculateMatchResults,
   calculatePlayerResults,
-  getPlayerRoundStats,
   withRatingIncrement,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
 import { getMatchResultsEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
+import { toKeyhashList } from '@bf2-matchmaking/utils/src/round-utils';
 
 export const finishMatch = async (match: MatchesJoined, liveRound: LiveRound | null) => {
   logChangeMatchStatus(MatchStatus.Finished, match, liveRound);
@@ -90,10 +90,7 @@ function validateMatch(match: MatchesJoined): Array<string> {
 }
 
 function validateMatchPlayers(match: MatchesJoined) {
-  const playerKeys = match.rounds
-    .map(getPlayerRoundStats)
-    .filter(isNotNull)
-    .flatMap((stats) => Object.keys(stats));
+  const playerKeys = match.rounds.map(toKeyhashList).filter(isNotNull).flat();
 
   return match.players.every(
     (player) => player.keyhash && playerKeys.includes(player.keyhash)
