@@ -6,6 +6,9 @@ import moment from 'moment';
 import { revalidatePath } from 'next/cache';
 import { api, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 
+export async function startPolling(matchId: number) {
+  return api.rcon().postMatchLive(matchId, false);
+}
 export async function reopenMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Finished,

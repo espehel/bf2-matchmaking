@@ -1,12 +1,9 @@
-import {
-  MatchesJoined,
-  MatchStatus,
-  PlayerListItem,
-  ServerInfo,
-} from '@bf2-matchmaking/types';
+'use client';
+import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { api } from '@bf2-matchmaking/utils';
 import RoundTable from '@/components/RoundTable';
 import AsyncActionButton from '@/components/AsyncActionButton';
+import { startPolling } from '@/app/matches/[match]/actions';
 
 interface Props {
   match: MatchesJoined;
@@ -25,10 +22,6 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
 
   const serverChanged = match.server?.ip !== data.round?.server;
 
-  async function startPolling() {
-    'use server';
-    return api.rcon().postMatchLive(match.id, false);
-  }
   // TODO: rework this. should be client component or move async buttons to client component
   return (
     <section className="section bg-secondary text-secondary-content w-full">
@@ -42,7 +35,7 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
           <p>Match is not polling data from server</p>
           {isMatchAdmin && (
             <AsyncActionButton
-              action={startPolling}
+              action={() => startPolling(match.id)}
               successMessage="Match started polling data"
               errorMessage="Failed to start polling data"
             >
@@ -56,7 +49,7 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
           <p>Match is polling from wrong server</p>
           {isMatchAdmin && (
             <AsyncActionButton
-              action={startPolling}
+              action={() => startPolling(match.id)}
               successMessage="Match started polling data"
               errorMessage="Failed to start polling data"
             >
