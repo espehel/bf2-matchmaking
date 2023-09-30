@@ -3,15 +3,13 @@ import {
   MatchesJoined,
   RoundStats,
   MatchResultsInsert,
-  MatchResultsRow,
   PlayerListItem,
   PlayersRow,
   RoundsJoined,
   MatchPlayerResultsInsert,
-  isDefined,
-  PlayersUpdate,
   PlayersInsert,
 } from '@bf2-matchmaking/types';
+import { parseJSON } from './json-utils';
 
 export const calculateMatchResultsOld = (
   match: MatchesJoined
@@ -30,10 +28,8 @@ export const calculateMatchResultsOld = (
 export const getPlayerRoundStats = (
   round: RoundsJoined
 ): Record<string, RoundStats> | null => {
-  const playerList: Array<PlayerListItem> =
-    typeof round.pl === 'string' ? JSON.parse(round.pl) : null;
-
-  if (playerList) {
+  try {
+    const playerList = parseJSON<Array<PlayerListItem>>(round.pl);
     return playerList
       .map(({ keyhash, score, deaths, scoreKills }) => ({
         [keyhash]: {
@@ -43,8 +39,10 @@ export const getPlayerRoundStats = (
         },
       }))
       .reduce(toObject, {});
+  } catch (e) {
+    console.error(e);
+    return null;
   }
-  return null;
 };
 
 const aggregateRound = (
@@ -67,10 +65,10 @@ const toObject = <T = unknown>(acc: Record<string, T>, curr: Record<string, T>) 
   ...acc,
   ...curr,
 });
-export function getTeamMap(round: number): Record<string, 'a' | 'b'> {
-  return round % 2 === 0 ? { '1': 'a', '2': 'b' } : { '1': 'b', '2': 'a' };
+export function getTeamMap(round: number): Record<string, number> {
+  return round % 2 === 0 ? { '1': 1, '2': 2 } : { '1': 1, '2': 2 };
 }
-export function getTeamTickets(rounds: Array<RoundsJoined>, team: 'a' | 'b') {
+export function getTeamTickets(rounds: Array<RoundsJoined>, team: number) {
   return rounds
     .map((round, i) =>
       getTeamMap(i)['1'] === team ? round.team1_tickets : round.team2_tickets
@@ -78,7 +76,7 @@ export function getTeamTickets(rounds: Array<RoundsJoined>, team: 'a' | 'b') {
     .reduce((acc, cur) => acc + parseInt(cur), 0);
 }
 
-export function getTeamRounds(rounds: Array<RoundsJoined>, team: 'a' | 'b') {
+export function getTeamRounds(rounds: Array<RoundsJoined>, team: number) {
   return rounds
     .map((round, i) =>
       getTeamMap(i)['1'] === team
@@ -88,8 +86,8 @@ export function getTeamRounds(rounds: Array<RoundsJoined>, team: 'a' | 'b') {
     .reduce((acc, cur) => (cur > 0 ? acc + 1 : acc), 0);
 }
 
-export function getTeamMaps(rounds: Array<RoundsJoined>, team: 'a' | 'b') {
-  const otherTeam = team === 'a' ? 'b' : 'a';
+export function getTeamMaps(rounds: Array<RoundsJoined>, team: 1 | 2) {
+  const otherTeam = team === 1 ? 2 : 1;
   let mapsWon = 0;
   for (let i = 0; i < rounds.length; i += 2) {
     if (i + 2 > rounds.length) {
@@ -108,12 +106,12 @@ export function getTeamMaps(rounds: Array<RoundsJoined>, team: 'a' | 'b') {
 export function calculateMatchResults(
   match: MatchesJoined
 ): [MatchResultsInsert, MatchResultsInsert] {
-  const mapsA = getTeamMaps(match.rounds, 'a');
-  const mapsB = getTeamMaps(match.rounds, 'b');
-  const roundsA = getTeamRounds(match.rounds, 'a');
-  const roundsB = getTeamRounds(match.rounds, 'b');
-  const ticketsA = getTeamTickets(match.rounds, 'a');
-  const ticketsB = getTeamTickets(match.rounds, 'b');
+  const mapsA = getTeamMaps(match.rounds, 1);
+  const mapsB = getTeamMaps(match.rounds, 2);
+  const roundsA = getTeamRounds(match.rounds, 1);
+  const roundsB = getTeamRounds(match.rounds, 2);
+  const ticketsA = getTeamTickets(match.rounds, 1);
+  const ticketsB = getTeamTickets(match.rounds, 2);
   const scoreA = mapsA * 100 + roundsA * 10 + ticketsA;
   const scoreB = mapsB * 100 + roundsB * 10 + ticketsB;
   return [
@@ -160,17 +158,17 @@ export function calculatePlayerResults(
     .filter(isNotNull);
 }
 
-export function withRatingIncrement(match: MatchesJoined, winnerTeam: 'a' | 'b') {
-  return (playerResult: MatchPlayerResultsInsert) => {
+export function withRatingIncrement(match: MatchesJoined, winnerTeam: number) {
+  return (playerResult: MatchPlayerResultsInsert): MatchPlayerResultsInsert => {
     const mp = match.teams.find((mp) => mp.player_id === playerResult.player_id);
 
-    if (!mp) {
+    if (!mp || !mp.team) {
       return playerResult;
     }
 
     return {
       ...playerResult,
-      team: mp.team === 'a' ? 1 : 2,
+      team: mp.team,
       rating_inc: mp.team === winnerTeam ? 1 : -1,
     };
   };

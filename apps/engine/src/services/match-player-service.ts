@@ -16,13 +16,13 @@ export const setRandomTeams = async (match: MatchesJoined) => {
   await Promise.all([
     client().updateMatchPlayersForMatchId(
       match.id,
-      matchPlayers.filter((mp) => mp.team === 'a'),
-      { team: 'a' }
+      matchPlayers.filter((mp) => mp.team === 1),
+      { team: 1 }
     ),
     client().updateMatchPlayersForMatchId(
       match.id,
-      matchPlayers.filter((mp) => mp.team === 'b'),
-      { team: 'b' }
+      matchPlayers.filter((mp) => mp.team === 2),
+      { team: 2 }
     ),
   ]);
 };
@@ -40,7 +40,7 @@ export const setMatchCaptains = async (match: MatchesJoined) => {
   );
   await client()
     .updateMatchPlayer(match.id, shuffledPlayers[0].id, {
-      team: 'a',
+      team: 1,
       captain: true,
     })
     .then(verifyResult);
@@ -50,7 +50,7 @@ export const setMatchCaptains = async (match: MatchesJoined) => {
   );
   await client()
     .updateMatchPlayer(match.id, shuffledPlayers[1].id, {
-      team: 'b',
+      team: 2,
       captain: true,
     })
     .then(verifyResult);

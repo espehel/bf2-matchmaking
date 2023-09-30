@@ -1,4 +1,3 @@
-'use client';
 import React, { useCallback, useTransition } from 'react';
 import { FetchResult } from '@bf2-matchmaking/utils';
 import { toast } from 'react-toastify';

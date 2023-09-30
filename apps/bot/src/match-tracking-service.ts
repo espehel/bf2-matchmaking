@@ -41,8 +41,8 @@ export const createMatchFromPubobotEmbed = async (
   );
 
   await Promise.all([
-    client().createMatchPlayers(team1.map(toMatchPlayer(match.id, 'a'))),
-    client().createMatchPlayers(team2.map(toMatchPlayer(match.id, 'b'))),
+    client().createMatchPlayers(team1.map(toMatchPlayer(match.id, 1))),
+    client().createMatchPlayers(team2.map(toMatchPlayer(match.id, 2))),
   ]);
 
   const updatedMatch = await client()

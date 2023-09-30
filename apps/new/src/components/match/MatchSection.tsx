@@ -10,7 +10,6 @@ import PlayerItem from '@/components/match/PlayerItem';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import moment from 'moment';
 
 interface Props {
   match: MatchesJoined;
@@ -28,7 +27,7 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
 
   const { data: servers } = await supabase(cookies).getServers();
 
-  const isTeam = (team: string) => (mp: MatchPlayersRow) => mp.team === team;
+  const isTeam = (team: number) => (mp: MatchPlayersRow) => mp.team === team;
 
   return (
     <section className="section w-fit">
@@ -44,13 +43,13 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
         <div>
           <div className="text-xl font-bold mb-2">Team A</div>
           <ul>
-            {match.teams.filter(isTeam('a')).map((mp) => (
+            {match.teams.filter(isTeam(1)).map((mp) => (
               <PlayerItem
                 key={mp.player_id}
                 match={match}
                 playerList={playerInfo}
                 mp={mp}
-                team="a"
+                team={1}
               />
             ))}
           </ul>
@@ -59,13 +58,13 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
         <div>
           <div className="text-xl font-bold mb-2">Team B</div>
           <ul>
-            {match.teams.filter(isTeam('b')).map((mp) => (
+            {match.teams.filter(isTeam(2)).map((mp) => (
               <PlayerItem
                 key={mp.player_id}
                 match={match}
                 playerList={playerInfo}
                 mp={mp}
-                team="b"
+                team={2}
               />
             ))}
           </ul>

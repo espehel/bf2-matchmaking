@@ -19,7 +19,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     const formData = await request.formData();
     const team = formData.get('team');
     if (team) {
-      updateValues.team = team === 'null' ? null : team.toString();
+      updateValues.team = team === 'null' ? null : Number(team.toString());
     }
     updateValues.captain = formData.has('captain');
     updateValues.ready = formData.has('ready');

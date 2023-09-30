@@ -12,7 +12,7 @@ interface Props {
   mp: MatchPlayersRow;
   match: MatchesJoined;
   playerList: PlayerListItem[];
-  team: 'a' | 'b';
+  team: number;
 }
 type PlayerMatchStatus = 'unregistered' | 'unconnected' | 'unteamed' | 'ok';
 export default function PlayerItem({ mp, match, playerList, team }: Props) {

@@ -145,7 +145,7 @@ export interface PlayerListItem {
 
 export interface DraftStep {
   pool: Array<PlayersRow>;
-  team: 'a' | 'b' | null;
+  team: number | null;
   captain: PlayersRow | null;
 }
 

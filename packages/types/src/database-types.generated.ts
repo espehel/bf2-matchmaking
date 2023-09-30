@@ -244,7 +244,7 @@ export interface Database {
           player_id: string
           ready: boolean
           source: string | null
-          team: string | null
+          team: number | null
           updated_at: string
         }
         Insert: {
@@ -254,7 +254,7 @@ export interface Database {
           player_id: string
           ready?: boolean
           source?: string | null
-          team?: string | null
+          team?: number | null
           updated_at?: string
         }
         Update: {
@@ -264,7 +264,7 @@ export interface Database {
           player_id?: string
           ready?: boolean
           source?: string | null
-          team?: string | null
+          team?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -278,6 +278,12 @@ export interface Database {
             foreignKeyName: "match_players_player_id_fkey"
             columns: ["player_id"]
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_players_team_fkey"
+            columns: ["team"]
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           }
         ]
@@ -439,7 +445,7 @@ export interface Database {
           pl?: Json | null
           server?: string | null
           si?: Json | null
-          team1_name: string
+          team1_name?: string
           team1_tickets: string
           team2_name: string
           team2_tickets: string
@@ -475,6 +481,18 @@ export interface Database {
             columns: ["server"]
             referencedRelation: "servers"
             referencedColumns: ["ip"]
+          },
+          {
+            foreignKeyName: "rounds_team1_name_fkey"
+            columns: ["team1_name"]
+            referencedRelation: "teams"
+            referencedColumns: ["name"]
+          },
+          {
+            foreignKeyName: "rounds_team2_name_fkey"
+            columns: ["team2_name"]
+            referencedRelation: "teams"
+            referencedColumns: ["name"]
           }
         ]
       }

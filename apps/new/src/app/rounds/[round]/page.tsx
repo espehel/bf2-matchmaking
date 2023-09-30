@@ -1,12 +1,13 @@
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import { isDefined, isTruthy, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import { isTruthy, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Link from 'next/link';
 import RoundTable from '@/components/RoundTable';
 import PlayersRegisterSection from '@/components/PlayersRegisterSection';
 import { updatePlayer } from '@/app/rounds/[round]/actions';
+import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
 
 interface Props {
   params: { round: string };
@@ -22,10 +23,8 @@ export default async function RoundPage({ params, searchParams }: Props) {
   const isPlayerAdmin = Boolean(adminRoles?.player_admin);
   const isRegisterTab = searchParams.tab === 'register' && isPlayerAdmin;
 
-  const serverInfo: ServerInfo =
-    typeof round.si === 'string' ? JSON.parse(round.si) : null;
-  const playerList: Array<PlayerListItem> =
-    typeof round.pl === 'string' ? JSON.parse(round.pl) : null;
+  const serverInfo = parseJSON<ServerInfo>(round.si);
+  const playerList = parseJSON<Array<PlayerListItem>>(round.pl);
 
   const registeredPlayers = playerList
     ? await supabase(cookies)
@@ -48,11 +47,11 @@ export default async function RoundPage({ params, searchParams }: Props) {
   return (
     <main className="main">
       <h1 className="text-center mb-10">
-        <span>{round.team1_name}</span>
+        <span>{serverInfo.team1_Name}</span>
         <span className="bg-primary text-primary-content text-5xl font-bold p-2 mx-4 rounded">
-          {`${round.team1_tickets} - ${round.team2_tickets}`}
+          {`${serverInfo.team1_tickets} - ${serverInfo.team2_tickets}`}
         </span>
-        <span>{round.team2_name}</span>
+        <span>{serverInfo.team2_Name}</span>
       </h1>
       <section className="section mb-6">
         <h2>Info:</h2>

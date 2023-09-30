@@ -14,7 +14,7 @@ const StartedContainer: FC = () => {
   const { isMatchPlayer } = usePlayer();
 
   const isTeam =
-    (team: string) =>
+    (team: number) =>
     ([mp]: PlayerTuple) =>
       mp.team === team;
 
@@ -32,7 +32,7 @@ const StartedContainer: FC = () => {
           <ul>
             {match.teams
               .map(toPlayerTuple)
-              .filter(isTeam('a'))
+              .filter(isTeam(1))
               .map(([mp, username]) => (
                 <li key={mp.player_id}>{username}</li>
               ))}
@@ -43,7 +43,7 @@ const StartedContainer: FC = () => {
           <ul>
             {match.teams
               .map(toPlayerTuple)
-              .filter(isTeam('b'))
+              .filter(isTeam(2))
               .map(([mp, username]) => (
                 <li key={mp.player_id}>{username}</li>
               ))}

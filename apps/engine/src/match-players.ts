@@ -108,7 +108,7 @@ const isRenewExpireEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRo
 const isPickEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
   payload.old_record.team === null &&
   !isCaptainChangeEvent(payload) &&
-  (payload.record.team === 'a' || payload.record.team === 'b');
+  (payload.record.team === 1 || payload.record.team === 2);
 const isCaptainChangeEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>
   !payload.old_record.captain && payload.record.captain;
 const isReadyEvent = (payload: WebhookPostgresUpdatePayload<MatchPlayersRow>) =>

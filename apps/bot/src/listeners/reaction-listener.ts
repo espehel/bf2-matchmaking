@@ -48,7 +48,7 @@ export const listenForServerMessageReaction = (
   message: Message,
   server: ServersRow,
   match: DiscordMatch,
-  team: string
+  team: number
 ) => {
   info(
     'listenForServerMessageReaction',
@@ -63,7 +63,7 @@ export const listenForServerMessageReaction = (
     const playerTeam = getPlayerTeam(user.id, match);
     info(
       'listenForServerMessageReaction',
-      `Received reaction from ${user.id} in team ${playerTeam?.toLocaleUpperCase()}`
+      `Received reaction from ${user.id} in team ${playerTeam}`
     );
     if (playerTeam && playerTeam !== team) {
       await client().updateMatch(match.id, { server: server.ip });

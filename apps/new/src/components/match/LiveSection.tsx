@@ -29,7 +29,7 @@ export default async function LiveSection({ match, isMatchAdmin }: Props) {
     'use server';
     return api.rcon().postMatchLive(match.id, false);
   }
-
+  // TODO: rework this. should be client component or move async buttons to client component
   return (
     <section className="section bg-secondary text-secondary-content w-full">
       <h2>Live</h2>

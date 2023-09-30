@@ -77,8 +77,8 @@ router.post('/', async (req: Request<{}, {}, PostMatchesRequestBody>, res) => {
     const dbPlayers1 = await Promise.all(team1.map(getPlayerFromDatabase));
     const dbPlayers2 = await Promise.all(team2.map(getPlayerFromDatabase));
     await Promise.all([
-      client().createMatchPlayers(dbPlayers1.map(toMatchPlayer(match.id, 'a'))),
-      client().createMatchPlayers(dbPlayers2.map(toMatchPlayer(match.id, 'b'))),
+      client().createMatchPlayers(dbPlayers1.map(toMatchPlayer(match.id, 1))),
+      client().createMatchPlayers(dbPlayers2.map(toMatchPlayer(match.id, 2))),
       client().updateMatch(match.id, { server: serverIp }),
     ]);
     const updatedMatch = await client()

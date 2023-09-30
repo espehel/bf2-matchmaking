@@ -209,7 +209,7 @@ export const onServer = async (msg: Message) => {
 
   const { data: replyMessage } = await reply(
     msg,
-    `Team ${authorTeam.toLocaleUpperCase()} proposes following server. React to message or propose new server: 
+    `Team ${authorTeam} proposes following server. React to message or propose new server: 
     ${await getServerDescription(bf2Server)}`
   );
 

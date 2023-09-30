@@ -1,3 +1,4 @@
+'use client';
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import { closeMatch } from '@/app/results/[match]/actions';

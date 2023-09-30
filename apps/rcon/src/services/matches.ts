@@ -102,10 +102,11 @@ function validateMatchPlayers(match: MatchesJoined) {
 
 export async function processResults(match: MatchesJoined) {
   const [resultsA, resultsB] = calculateMatchResults(match);
+  const winner = resultsA.is_winner ? resultsA.team : resultsB.team;
   const data = await client().createMatchResult(resultsA, resultsB).then(verifyResult);
 
   const playerResults = calculatePlayerResults(match).map(
-    withRatingIncrement(match, resultsA.is_winner ? 'a' : 'b')
+    withRatingIncrement(match, winner)
   );
 
   await client()

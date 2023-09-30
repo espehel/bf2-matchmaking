@@ -13,9 +13,9 @@ const DraftingContainer: FC = () => {
 
   const isCurrentCaptain = Boolean(captain && user && captain.user_id === user.id);
 
-  const assignPlayer = (playerId: string, playerTeam: 'a' | 'b') => () =>
+  const assignPlayer = (playerId: string, playerTeam: number) => () =>
     submit(
-      { playerId, team: playerTeam },
+      { playerId, team: playerTeam.toString() },
       { method: 'post', action: `/matches/${match.id}/assign`, replace: true }
     );
 

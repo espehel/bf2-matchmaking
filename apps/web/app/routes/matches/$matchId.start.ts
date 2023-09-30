@@ -29,13 +29,13 @@ export const action: ActionFunction = async ({ request, params }) => {
       const matchPlayers = assignMatchPlayerTeams(match.players);
       client.updateMatchPlayersForMatchId(
         match.id,
-        matchPlayers.filter((mp) => mp.team === 'a'),
-        { team: 'a' }
+        matchPlayers.filter((mp) => mp.team === 1),
+        { team: 1 }
       );
       client.updateMatchPlayersForMatchId(
         match.id,
-        matchPlayers.filter((mp) => mp.team === 'b'),
-        { team: 'b' }
+        matchPlayers.filter((mp) => mp.team === 2),
+        { team: 2 }
       );
     }
 

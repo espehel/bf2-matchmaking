@@ -20,8 +20,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (shuffledPlayers.length < 2) {
       throw new Error('To few players for captian mode.');
     }
-    await client.updateMatchPlayer(match.id, shuffledPlayers[0].id, { team: 'a', captain: true });
-    await client.updateMatchPlayer(match.id, shuffledPlayers[1].id, { team: 'b', captain: true });
+    await client.updateMatchPlayer(match.id, shuffledPlayers[0].id, { team: 1, captain: true });
+    await client.updateMatchPlayer(match.id, shuffledPlayers[1].id, { team: 2, captain: true });
 
     const result = await client.updateMatch(matchId, { status: MatchStatus.Drafting });
     if (result.error) {

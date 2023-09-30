@@ -12,7 +12,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     const client = remixClient(request);
     const formData = await request.formData();
     const playerId = formData.get('playerId')?.toString();
-    const team = formData.get('team')?.toString();
+    const team = Number(formData.get('team')?.toString());
     invariant(playerId, 'playerId not defined');
     invariant(team, 'Team not defined');
     const matchId = params['matchId'] ? parseInt(params['matchId']) : undefined;
