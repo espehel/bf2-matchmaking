@@ -2,8 +2,16 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { getSupabaseApi } from '@bf2-matchmaking/supabase';
+import { cache } from 'react';
+
+const createServerSupabaseClient = cache((cookies: () => ReadonlyRequestCookies) => {
+  const cookieStore = cookies();
+  return createServerComponentClient({ cookies: () => cookieStore });
+});
+
 export const supabase = (cookies: () => ReadonlyRequestCookies) => {
-  const client = createServerComponentClient({ cookies });
+  //const client = createServerComponentClient({ cookies });
+  const client = createServerSupabaseClient(cookies);
   const api = getSupabaseApi(client);
   async function getSessionPlayer() {
     const { data, error } = await client.auth.getSession();
