@@ -28,7 +28,7 @@ export default function TeamSection({ match, team, playerInfo }: Props) {
             match={match}
             playerList={playerInfo}
             mp={mp}
-            team={match.home_team.id}
+            team={team.id}
           />
         ))}
         {emptySlots.map((e, i) => (
