@@ -4,7 +4,6 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import { TeamsJoined } from '@bf2-matchmaking/types';
 import TeamCreateForm from '@/components/TeamCreateForm';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default async function TeamsPage() {
   const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
@@ -34,7 +33,7 @@ interface AvatarProps {
   team: TeamsJoined;
 }
 function Avatar({ team }: AvatarProps) {
-  if (team.avatar) {
+  /*if (team.avatar) {
     return (
       <div className="avatar">
         <div className="w-12 rounded-full">
@@ -42,13 +41,12 @@ function Avatar({ team }: AvatarProps) {
         </div>
       </div>
     );
-  } else {
-    return (
-      <div className="avatar placeholder">
-        <div className="bg-neutral-focus text-neutral-content rounded-full w-12">
-          <span className="text-xl">{team.name.charAt(0)}</span>
-        </div>
+  }*/
+  return (
+    <div className="avatar placeholder">
+      <div className="bg-neutral-focus text-neutral-content rounded-full w-12">
+        <span className="text-xl">{team.name.charAt(0)}</span>
       </div>
-    );
-  }
+    </div>
+  );
 }

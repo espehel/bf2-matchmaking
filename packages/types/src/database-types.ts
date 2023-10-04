@@ -31,6 +31,8 @@ export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
 export type ServersUpdate = Database['public']['Tables']['servers']['Update'];
 export type ServerRconsUpdate = Database['public']['Tables']['server_rcons']['Update'];
+export type TeamsUpdate = Database['public']['Tables']['teams']['Update'];
+export type TeamPlayersUpdate = Database['public']['Tables']['team_players']['Update'];
 
 export enum MatchStatus {
   Open = 'Open',
@@ -115,5 +117,6 @@ export interface MatchPlayerResultsJoined extends MatchPlayerResultsRow {
 
 export interface TeamsJoined extends Omit<TeamsRow, 'owner'> {
   owner: PlayersRow;
-  players: Array<TeamPlayersRow>;
+  players: Array<PlayersRow>;
+  captains: Array<TeamPlayersRow>;
 }

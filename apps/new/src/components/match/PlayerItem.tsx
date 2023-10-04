@@ -1,10 +1,5 @@
 'use client';
-import {
-  MatchesJoined,
-  MatchPlayersRow,
-  PlayerListItem,
-  PlayersRow,
-} from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchPlayersRow, PlayerListItem } from '@bf2-matchmaking/types';
 import { useMemo } from 'react';
 import { removeMatchPlayer } from '@/app/matches/[match]/actions';
 import { XCircleIcon } from '@heroicons/react/24/outline';

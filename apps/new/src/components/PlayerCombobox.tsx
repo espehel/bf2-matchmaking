@@ -12,6 +12,7 @@ interface Props {
   placeholder?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   disabled?: boolean;
+  defaultValue?: PlayersRow;
 }
 
 const searchPlayers = (key: string, { arg }: { arg: string }) =>
@@ -22,13 +23,16 @@ export default function PlayerCombobox({
   placeholder = 'Name',
   size = 'md',
   disabled = false,
+  defaultValue,
 }: Props) {
   const {
     data: players = [],
     trigger,
     reset,
   } = useSWR('supabaseSearchPlayers', searchPlayers);
-  const [selectedPlayer, setSelectedPlayer] = useState<PlayersRow | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayersRow | null>(
+    defaultValue || null
+  );
 
   const handlePlayerSelected = useCallback(
     (player: PlayersRow) => {

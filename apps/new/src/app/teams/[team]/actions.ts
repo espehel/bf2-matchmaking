@@ -1,46 +1,54 @@
 'use server';
+
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import { isNotNull, isString, ServerRconsUpdate } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
-import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
+import { isString } from '@bf2-matchmaking/types';
+import { redirect } from 'next/navigation';
 
-export async function updateServer(ip: string, data: FormData) {
-  const portInput = data.get('portInput');
-  const serverUpdate =
-    portInput && isString(portInput)
-      ? supabase(cookies).updateServer(ip, { port: portInput })
-      : null;
+export async function setTeamCaptain(teamId: number, playerId: string, value: boolean) {
+  const result = await supabase(cookies).updateTeamPlayer(teamId, playerId, {
+    captain: value,
+  });
 
-  const rconValues = toRconUpdateValues(data);
-  const rconUpdate = rconValues
-    ? supabase(cookies).updateServerRcon(ip, rconValues)
-    : null;
-
-  const results = await Promise.all([serverUpdate, rconUpdate].filter(isNotNull));
-  if (results.some(hasError)) {
-    return { ok: false };
+  if (!result.error) {
+    revalidatePath(`/teams/${teamId}`);
   }
-  revalidatePath(`/servers/${ip}`);
-  return { ok: true };
+
+  return result;
+}
+export async function addTeamPlayer(playerId: string, teamId: number) {
+  const result = await supabase(cookies).createTeamPlayer({
+    player_id: playerId,
+    team_id: teamId,
+  });
+
+  if (!result.error) {
+    revalidatePath(`/teams/${teamId}`);
+  }
+
+  return result;
 }
 
-const toRconUpdateValues = (data: FormData) => {
-  const values: ServerRconsUpdate = {};
-
-  const port = data.get('rconPortInput');
-  if (port && isString(port)) {
-    values.rcon_port = parseInt(port);
+export async function removeTeamPlayer(teamId: number, playerId: string) {
+  const result = await supabase(cookies).deleteTeamPlayer(teamId, playerId);
+  if (!result.error) {
+    revalidatePath(`/teams/${teamId}`);
   }
 
-  const pw = data.get('rconPwInput');
-  if (pw && isString(pw)) {
-    values.rcon_pw = pw;
-  }
+  return result;
+}
 
-  if (Object.keys(values).length === 0) {
-    return null;
-  }
+export async function updateTeam(teamId: number, data: FormData) {
+  const name = data.get('name');
+  const owner = data.get('player[id]');
+  if (isString(name) && isString(owner)) {
+    const result = await supabase(cookies).updateTeam(teamId, { name, owner });
+    if (!result.error) {
+      redirect(`/teams/${teamId}`);
+    }
 
-  return values;
-};
+    return result;
+  }
+  return { data: null, error: { message: 'Invalid form data' } };
+}

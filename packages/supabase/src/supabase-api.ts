@@ -16,8 +16,10 @@ import {
   ServersJoined,
   ServersUpdate,
   TeamPlayersInsert,
+  TeamPlayersUpdate,
   TeamsInsert,
   TeamsJoined,
+  TeamsUpdate,
 } from '@bf2-matchmaking/types';
 
 const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
@@ -126,11 +128,25 @@ export default (client: SupabaseClient<Database>) => ({
   getTeam: (id: number) =>
     client
       .from('teams')
-      .select<'*, owner(*), players:team_players(*)', TeamsJoined>(
-        '*, owner(*), players:team_players(*)'
-      )
+      .select<
+        '*, owner(*), players!team_players(*), captains:team_players(*)',
+        TeamsJoined
+      >('*, owner(*), players!team_players(*), captains:team_players(*)')
       .eq('id', id)
+      .eq('captains.captain', true)
       .single(),
+  updateTeam: (teamId: number, values: TeamsUpdate) =>
+    client.from('teams').update(values).eq('id', teamId).select(),
   createTeamPlayer: (team: TeamPlayersInsert) =>
     client.from('team_players').insert(team).select().single(),
+  updateTeamPlayer: (teamId: number, playerId: string, values: TeamPlayersUpdate) =>
+    client
+      .from('team_players')
+      .update(values)
+      .eq('team_id', teamId)
+      .eq('player_id', playerId)
+      .select()
+      .single(),
+  deleteTeamPlayer: (teamId: number, playerId: string) =>
+    client.from('team_players').delete().eq('team_id', teamId).eq('player_id', playerId),
 });

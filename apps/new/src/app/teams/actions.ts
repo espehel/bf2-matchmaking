@@ -3,10 +3,10 @@ import { assertString } from '@bf2-matchmaking/utils';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { isString } from '@bf2-matchmaking/types';
 export async function createTeam(data: FormData) {
   const { nameInput, avatarInput } = Object.fromEntries(data);
   assertString(nameInput);
-  assertString(avatarInput);
 
   const { data: owner, error } = await supabase(cookies).getSessionPlayer();
 
@@ -16,7 +16,7 @@ export async function createTeam(data: FormData) {
 
   const { data: team, error: teamError } = await supabase(cookies).createTeam({
     name: nameInput,
-    avatar: avatarInput,
+    avatar: isString(avatarInput) ? avatarInput : null,
     owner: owner.id,
   });
 
