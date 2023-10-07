@@ -25,6 +25,10 @@ export default function TeamDetailsSection({ team }: Props) {
             <span>{team.name}</span>
           </div>
           <div>
+            <span className="mr-1">Discord ID:</span>
+            <span>{team.discord_role || 'None'}</span>
+          </div>
+          <div>
             <span className="mr-1">Owner:</span>
             <span>{team.owner.full_name}</span>
           </div>

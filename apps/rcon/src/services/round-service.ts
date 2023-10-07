@@ -55,9 +55,7 @@ export async function getMapId(si: ServerInfo) {
     return cachedMap;
   }
 
-  const { data: map, error: mapError } = await client()
-    .searchMap(si.currentMapName)
-    .single();
+  const { data: map, error: mapError } = await client().searchMap(si.currentMapName);
 
   if (mapError) {
     logSupabaseError('Failed to create round, map search failed.', mapError);

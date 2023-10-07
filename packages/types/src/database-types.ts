@@ -36,6 +36,7 @@ export type TeamPlayersUpdate = Database['public']['Tables']['team_players']['Up
 
 export enum MatchStatus {
   Open = 'Open',
+  Scheduled = 'Scheduled',
   Summoning = 'Summoning',
   Drafting = 'Drafting',
   Ongoing = 'Ongoing',

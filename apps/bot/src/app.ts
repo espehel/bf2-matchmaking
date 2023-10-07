@@ -27,6 +27,7 @@ import { api, verify } from '@bf2-matchmaking/utils';
 import interactionRouter from './interactions/interaction-router';
 import { getDiscordClient } from './client';
 import { createMatchFromPubobotEmbed } from './match-tracking-service';
+import { initScheduledEventsListener } from './listeners/scheduled-events-listener';
 
 // Create an express app
 const app = express();
@@ -39,6 +40,9 @@ app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 (function () {
   initChannelListener()
     .then(() => info('app init', 'Channel listener initialization complete.'))
+    .catch((err) => error('app init', err));
+  initScheduledEventsListener()
+    .then(() => info('app init', 'Scheduled events listener initialization complete.'))
     .catch((err) => error('app init', err));
 })();
 
@@ -144,6 +148,39 @@ app.post(
     res.sendStatus(200);
   }
 );
+
+app.get('/messages', async (req, res) => {
+  const { messageLink } = req.body;
+  const [, channelId, messageId] = messageLink.split('/').filter(Number);
+  try {
+    const discordClient = await getDiscordClient();
+    const channel = await discordClient.channels.fetch(channelId);
+
+    if (!isTextBasedChannel(channel)) {
+      return res.send('Message does not belong to a text channel').sendStatus(400);
+    }
+    const message = await channel.messages.fetch(messageId);
+
+    res.status(200).send(message);
+  } catch (e) {
+    return res.status(502).send(e);
+  }
+});
+
+app.get('/events', async (req, res) => {
+  const { guildId } = req.body;
+  try {
+    const discordClient = await getDiscordClient();
+    discordClient.on('guildScheduledEventCreated', async (event) => {});
+    const guild = await discordClient.guilds.fetch(guildId);
+
+    const events = await guild.scheduledEvents.fetch();
+
+    return res.status(200).send(events);
+  } catch (e) {
+    return res.status(502).send(e);
+  }
+});
 
 /**
  * Interactions endpoint URL where Discord will send HTTP requests

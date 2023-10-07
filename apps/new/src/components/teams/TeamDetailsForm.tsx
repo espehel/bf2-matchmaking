@@ -4,7 +4,6 @@ import { ArrowUpOnSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { TeamAvatar } from '@/components/TeamAvatar';
 import { updateTeam } from '@/app/teams/[team]/actions';
 import PlayerCombobox from '@/components/PlayerCombobox';
-import Link from 'next/link';
 import IconBtn from '@/components/commons/IconBtn';
 
 interface Props {
@@ -25,6 +24,15 @@ export default function TeamDetailsForm({ team }: Props) {
               defaultValue={team.name}
               className="input input-bordered input-sm"
               placeholder={team.name}
+            />
+          </div>
+          <div>
+            <span className="mr-1">Discord role:</span>
+            <input
+              name="discord_role"
+              defaultValue={team.discord_role || ''}
+              className="input input-bordered input-sm"
+              placeholder={team.discord_role || ''}
             />
           </div>
           <div>

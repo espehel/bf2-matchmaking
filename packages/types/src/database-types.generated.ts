@@ -114,6 +114,7 @@ export interface Database {
           permanent: boolean
           player_expire: number
           size: number
+          type: number
           updated_at: string
         }
         Insert: {
@@ -128,6 +129,7 @@ export interface Database {
           permanent?: boolean
           player_expire?: number
           size: number
+          type?: number
           updated_at?: string
         }
         Update: {
@@ -142,6 +144,7 @@ export interface Database {
           permanent?: boolean
           player_expire?: number
           size?: number
+          type?: number
           updated_at?: string
         }
         Relationships: [
@@ -341,6 +344,7 @@ export interface Database {
           id: number
           live_at: string | null
           ready_at: string | null
+          scheduled_at: string | null
           server: string | null
           started_at: string | null
           status: string
@@ -354,6 +358,7 @@ export interface Database {
           id?: number
           live_at?: string | null
           ready_at?: string | null
+          scheduled_at?: string | null
           server?: string | null
           started_at?: string | null
           status?: string
@@ -367,6 +372,7 @@ export interface Database {
           id?: number
           live_at?: string | null
           ready_at?: string | null
+          scheduled_at?: string | null
           server?: string | null
           started_at?: string | null
           status?: string
@@ -601,6 +607,7 @@ export interface Database {
         Row: {
           avatar: string | null
           created_at: string
+          discord_role: string | null
           id: number
           name: string
           owner: string
@@ -609,6 +616,7 @@ export interface Database {
         Insert: {
           avatar?: string | null
           created_at?: string
+          discord_role?: string | null
           id?: number
           name: string
           owner: string
@@ -617,6 +625,7 @@ export interface Database {
         Update: {
           avatar?: string | null
           created_at?: string
+          discord_role?: string | null
           id?: number
           name?: string
           owner?: string

@@ -11,6 +11,7 @@ const discordClient = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildScheduledEvents,
   ],
 });
 discordClient.setMaxListeners(Number.POSITIVE_INFINITY);

@@ -33,7 +33,11 @@ export const getOption = (
   return option?.value;
 };
 
-const WHITELIST = Object.values(api.bot().paths).concat(['/health']);
+const WHITELIST = Object.values(api.bot().paths).concat([
+  '/health',
+  '/messages',
+  '/events',
+]);
 export const VerifyDiscordRequest = (clientKey: string) => {
   return function (req: Request, res: any, buf: any, encoding: any) {
     if (WHITELIST.includes(req.url)) {

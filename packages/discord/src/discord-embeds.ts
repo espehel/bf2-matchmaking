@@ -2,7 +2,6 @@ import {
   MatchConfigsRow,
   MatchesJoined,
   MatchResultsJoined,
-  MatchResultsRow,
   MatchStatus,
   RconBf2Server,
 } from '@bf2-matchmaking/types';
@@ -17,7 +16,6 @@ import {
 } from '@bf2-matchmaking/utils';
 import moment, { Moment } from 'moment';
 import { getEmbedTitle, replaceDiscordGG } from './embed-utils';
-import { match } from 'assert';
 
 export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEmbed => ({
   title: getEmbedTitle(match),

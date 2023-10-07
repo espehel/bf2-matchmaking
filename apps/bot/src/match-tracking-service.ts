@@ -6,19 +6,12 @@ import {
   MatchStatus,
   RconBf2Server,
 } from '@bf2-matchmaking/types';
-import {
-  Embed,
-  MessageReaction,
-  TextBasedChannel,
-  TextChannel,
-  UserManager,
-} from 'discord.js';
-import { getRulesEmbedByConfig, getServerPollEmbed } from '@bf2-matchmaking/discord';
-import { getServerPlayerCount, getServerTupleList } from './server-interactions';
+import { Embed, MessageReaction, TextBasedChannel, UserManager } from 'discord.js';
+import { getServerPollEmbed } from '@bf2-matchmaking/discord';
+import { getServerTupleList } from './server-interactions';
 import { compareMessageReactionCount, isTextBasedChannel, toMatchPlayer } from './utils';
 import moment from 'moment';
 import {
-  error,
   info,
   logCreateChannelMessage,
   logOngoingMatchCreated,

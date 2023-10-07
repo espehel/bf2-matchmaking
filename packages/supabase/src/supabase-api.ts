@@ -111,7 +111,8 @@ export default (client: SupabaseClient<Database>) => ({
   getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
   createRound: (round: RoundsInsert) =>
     client.from('rounds').insert([round]).select().single(),
-  searchMap: (map: string) => client.from('maps').select().textSearch('name', `'${map}'`),
+  searchMap: (map: string) =>
+    client.from('maps').select().textSearch('name', `'${map}'`).single(),
   upsertServer: (ip: string, name: string) =>
     client.from('servers').upsert({ ip, name }).select().single(),
   getMatchAdmins: () => client.from('admin_roles').select('*').eq('match_admin', true),
@@ -135,6 +136,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('id', id)
       .eq('captains.captain', true)
       .single(),
+  getTeamByDiscordRole: (roleId: string) =>
+    client.from('teams').select('*').eq('discord_role', roleId).single(),
   updateTeam: (teamId: number, values: TeamsUpdate) =>
     client.from('teams').update(values).eq('id', teamId).select(),
   createTeamPlayer: (team: TeamPlayersInsert) =>
