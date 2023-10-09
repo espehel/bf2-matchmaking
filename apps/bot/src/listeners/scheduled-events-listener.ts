@@ -4,6 +4,9 @@ import { createScheduledMatch } from '../match-service';
 import { error, logErrorMessage } from '@bf2-matchmaking/logging';
 
 function getMatchConfig(guildScheduledEvent: GuildScheduledEvent) {
+  if (guildScheduledEvent.name.toLocaleLowerCase().includes('match')) {
+    return 16;
+  }
   if (guildScheduledEvent.name.toLocaleLowerCase().includes('pcw')) {
     return 15;
   }
