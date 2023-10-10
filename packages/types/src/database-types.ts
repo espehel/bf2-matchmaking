@@ -47,6 +47,7 @@ export enum MatchStatus {
 export enum DraftType {
   Captain = 'captain',
   Random = 'random',
+  Team = 'team',
 }
 
 export enum MapDraftType {
@@ -106,6 +107,11 @@ export interface DiscordMatch extends MatchesJoined {
 
 export interface ServerMatch extends MatchesJoined {
   server: ServersRow;
+}
+
+export interface ScheduledMatch extends MatchesJoined {
+  status: MatchStatus.Scheduled;
+  scheduled_at: string;
 }
 
 export interface MatchResultsJoined extends Omit<MatchResultsRow, 'team'> {

@@ -27,6 +27,11 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY),
+  getScheduledMatches: (scheduledAfter: string) =>
+    client
+      .from('matches')
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
+      .gte('scheduled_at', scheduledAfter),
   getMatchesInIdList: (idList: Array<number>) =>
     client
       .from('matches')

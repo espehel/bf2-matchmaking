@@ -10,7 +10,6 @@ import {
   PostServerExecRequestBody,
   PostServerExecResponseBody,
   PostServerPlayersSwitchRequestBody,
-  RoundsInsert,
   GetMatchLiveResponseBody,
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
@@ -51,7 +50,7 @@ export const rcon = () => {
       postJSON(basePath.concat(paths.serverPlayersSwitch(ip)), body),
     getServerPlayerList: (ip: string) =>
       getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip)), {
-        cache: 'no-store',
+        next: { tags: ['getServerPlayerList'] },
       }),
     getServers: () => getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers())),
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),

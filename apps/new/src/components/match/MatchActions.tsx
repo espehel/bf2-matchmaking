@@ -1,44 +1,46 @@
-'use client';
-import { MatchesJoined, MatchStatus, ServersJoined } from '@bf2-matchmaking/types';
-import {
-  addPlayer,
-  closeMatch,
-  finishMatch,
-  reopenMatch,
-} from '@/app/matches/[match]/actions';
+import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { closeMatch, finishMatch, reopenMatch } from '@/app/matches/[match]/actions';
 import { closeMatch as createResults } from '@/app/results/[match]/actions';
 import AsyncActionButton from '@/components/AsyncActionButton';
 import SelectServerForm from '@/components/match/SelectServerForm';
-import { toast } from 'react-toastify';
-import { useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
-  servers: Array<ServersJoined> | null;
 }
 
-export default function MatchActions({ match, servers }: Props) {
+export default async function MatchActions({ match }: Props) {
+  const { data: servers } = await supabase(cookies).getServers();
+
   const isOngoing = match.status === MatchStatus.Ongoing;
   const isFinished = match.status === MatchStatus.Finished;
   const isClosed = match.status === MatchStatus.Closed;
 
-  const handleAddPlayer = useCallback(
-    async (value: string) => {
-      const { error } = await addPlayer(match.id, value);
-      if (error) {
-        toast.error('Failed to add player');
-      } else {
-        toast.success(`Added player`);
-      }
-    },
-    [match.id]
-  );
+  async function finishMatchSA() {
+    'use server';
+    return finishMatch(match.id);
+  }
+
+  async function closeMatchSA() {
+    'use server';
+    return closeMatch(match.id);
+  }
+  async function createResultsSA() {
+    'use server';
+    return createResults(match.id);
+  }
+
+  async function reopenMatchSA() {
+    'use server';
+    return reopenMatch(match.id);
+  }
 
   return (
     <div className="flex gap-4 flex-col">
       {isOngoing && (
         <AsyncActionButton
-          action={() => finishMatch(match.id)}
+          action={finishMatchSA}
           successMessage="Match closed and results created."
           errorMessage="Match set to finished but results not created"
         >
@@ -48,14 +50,14 @@ export default function MatchActions({ match, servers }: Props) {
       {isFinished && (
         <div className="flex gap-4">
           <AsyncActionButton
-            action={() => closeMatch(match.id)}
+            action={closeMatchSA}
             successMessage="Match closed without results."
             errorMessage="Failed to close match"
           >
             Close match
           </AsyncActionButton>
           <AsyncActionButton
-            action={() => createResults(match.id)}
+            action={createResultsSA}
             successMessage="Match closed and results created."
             errorMessage="Failed to create results"
           >
@@ -65,14 +67,14 @@ export default function MatchActions({ match, servers }: Props) {
       )}
       {isClosed && (
         <AsyncActionButton
-          action={() => reopenMatch(match.id)}
+          action={reopenMatchSA}
           successMessage="Match reopened."
           errorMessage="Failed to reopen match"
         >
           Reopen match
         </AsyncActionButton>
       )}
-      {servers && isOngoing && <SelectServerForm match={match} servers={servers} />}
+      {servers && !isClosed && <SelectServerForm match={match} servers={servers} />}
     </div>
   );
 }

@@ -14,6 +14,7 @@ export default async function Header() {
         </Link>
       </div>
       <div className="navbar-end gap-4">
+        <Link href="/matches/scheduled">Schedule</Link>
         <Link href="/matches">Matches</Link>
         <Link href="/results">Results</Link>
         <Link href="/rounds">Rounds</Link>

@@ -49,7 +49,7 @@ export default function PlayerItem({ mp, match, playerList, team }: Props) {
   );
 
   return (
-    <li className="flex gap-2 items-center w-52">
+    <li className="flex gap-2 items-center mb-1 w-52">
       <PlayerBadge status={status} />
       <div className="mb-1 truncate">{username}</div>
       {isMatchAdmin && (

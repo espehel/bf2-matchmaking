@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { MatchStatus } from '@bf2-matchmaking/types';
 import OngoingMatchCard from '@/components/OngoingMatchCard';
 
-export default async function Results() {
+export default async function MatchesPage() {
   const matches = await supabase(cookies).getMatches().then(verifyResult);
   const displayMatches = matches
     .filter((m) => m.status === MatchStatus.Ongoing)

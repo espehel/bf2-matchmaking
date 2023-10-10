@@ -1,7 +1,6 @@
 import {
   DraftStep,
   MatchesJoined,
-  MatchesRow,
   MatchStatus,
   PlayersRow,
 } from '@bf2-matchmaking/types';
@@ -64,3 +63,11 @@ export const notHasPlayer = (playerId: string) => (match: MatchesJoined) =>
 
 export const isSummoning = (match: { status: MatchStatus }) =>
   match.status === MatchStatus.Summoning;
+
+export function toGroup<T extends [string, MatchesJoined]>(
+  acc: Record<string, Array<MatchesJoined>>,
+  curr: T
+): Record<string, Array<MatchesJoined>> {
+  const [key, value] = curr;
+  return acc[key] ? { ...acc, [key]: [...acc[key], value] } : { ...acc, [key]: [value] };
+}

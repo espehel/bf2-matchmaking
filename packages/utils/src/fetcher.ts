@@ -33,7 +33,7 @@ const parseError = (error: any): FetchError => {
 };
 export const getJSON = async <T>(
   url: string,
-  options: Partial<RequestInit> = {}
+  options: Partial<RequestInit> & { next?: any } = {}
 ): Promise<FetchResult<T>> => {
   const headers = {
     'Content-Type': 'application/json',

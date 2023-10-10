@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { MatchesJoined, MatchPlayersRow, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { api, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 
 export async function removeMatchPlayer(mp: MatchPlayersRow) {
@@ -129,16 +129,7 @@ export async function setServer(matchId: number, serverIp: string) {
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
-  }
-
-  return result;
-}
-
-export async function addPlayer(matchId: number, playerId: string) {
-  const result = await supabase(cookies).createMatchPlayer(matchId, playerId, {});
-
-  if (!result.error) {
-    revalidatePath(`/matches/${matchId}`);
+    revalidateTag('getServerPlayerList');
   }
 
   return result;
