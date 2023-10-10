@@ -58,7 +58,7 @@ export async function initScheduledEventsListener() {
 
       const maps = mapString?.split('+').map((m) => m.trim()) || [];
 
-      const server = serverString.split('Server: ')[1] || null;
+      const server = serverString?.split('Server: ')[1] || null;
 
       try {
         await createScheduledMatch({
