@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./app/**/*.{js,ts,jsx,tsx}'],
+  content: [
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  safelist: ['input-xs', 'input-sm', 'input-md', 'input-lg'],
   theme: {
     extend: {
       gridTemplateColumns: {
@@ -8,5 +12,8 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  daisyui: {
+    themes: ['bumblebee'],
+  },
+  plugins: [require('@tailwindcss/typography'), require('daisyui')],
 };
