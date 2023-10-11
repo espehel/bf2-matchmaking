@@ -2,7 +2,7 @@
 import { ChangeEvent, Fragment, useCallback, useEffect, useState } from 'react';
 import { Combobox } from '@headlessui/react';
 import { PlayersRow } from '@bf2-matchmaking/types';
-import { supabaseClient } from '@/lib/supabase-client';
+import { supabaseClient } from '@/lib/supabase/supabase-client';
 import useSWR from 'swr/mutation';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { CheckIcon } from '@heroicons/react/24/solid';

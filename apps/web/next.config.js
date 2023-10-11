@@ -7,6 +7,10 @@ const nextConfig = {
   ],
   experimental: {
     serverActions: true,
+    logging: {
+      level: 'verbose',
+      fullUrl: true,
+    },
   },
 };
 

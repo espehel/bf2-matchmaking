@@ -1,31 +1,23 @@
 'use client';
-import { MatchesJoined, TeamsJoined } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchTeam } from '@bf2-matchmaking/types';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import { Collapse } from 'react-collapse';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useMemo, useState } from 'react';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import { addMatchPlayer } from '@/app/matches/[match]/actions';
+import TeamPlayerActionButton from '@/components/TeamPlayerActionButton';
 
 interface Props {
   match: MatchesJoined;
-  team: TeamsJoined;
+  team: MatchTeam;
 }
 
 export default function AddTeamPlayerCollapsible({ match, team }: Props) {
   const [isOpened, setIsOpened] = useState(false);
-  let [pending, startTransition] = useTransition();
-
-  const handlePlayerAdd = useCallback(
-    (playerId: string) => () => {
-      startTransition(async () => {
-        await addMatchPlayer(match.id, playerId, team.id);
-      });
-    },
-    [match, team]
-  );
 
   const players = useMemo(
-    () => team.players.filter((p) => !match.teams.some((mp) => mp.player_id === p.id)),
+    () =>
+      team.players.filter((p) => !match.teams.some((mp) => mp.player_id === p.player_id)),
     [match.teams, team.players]
   );
 
@@ -45,16 +37,16 @@ export default function AddTeamPlayerCollapsible({ match, team }: Props) {
       </button>
       <Collapse isOpened={isOpened}>
         <ul>
-          {players.map((player) => (
+          {players.map(({ player }) => (
             <div key={player.id} className="flex items-center gap-2">
               <p>{player.full_name}</p>
-              <button
-                onClick={handlePlayerAdd(player.id)}
-                className="btn btn-sm btn-circle btn-ghost ml-auto text-success"
-                disabled={pending}
+              <TeamPlayerActionButton
+                action={() => addMatchPlayer(match.id, player.id, team.id)}
+                successMessage={`Added ${player.full_name}`}
+                errorMessage={`Failed to add ${player.full_name}`}
               >
-                <PlusCircleIcon />
-              </button>
+                <PlusCircleIcon className="text-success" />
+              </TeamPlayerActionButton>
             </div>
           ))}
         </ul>

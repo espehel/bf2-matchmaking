@@ -1,5 +1,5 @@
 'use server';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { isNotNull, isString, ServerRconsUpdate } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';

@@ -1,6 +1,6 @@
 import React from 'react';
 import RefreshButton from '@/components/RefreshButton';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { ServerInfo, ServersJoined } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';

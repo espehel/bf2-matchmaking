@@ -5,7 +5,7 @@ import { UnmountClosed } from 'react-collapse';
 import RoundTable from './RoundTable';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Image from 'next/image';
-import { supabaseImageLoader } from '@/lib/supabase-client';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Link from 'next/link';
 
 interface Props {
@@ -46,6 +46,7 @@ export default function RoundItem({ round }: Props) {
             loader={supabaseImageLoader}
             src={`map_images/${round.map.id}.webp`}
             fill={true}
+            sizes="25%"
             alt={round.map.name}
           />
         </figure>

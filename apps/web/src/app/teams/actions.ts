@@ -1,6 +1,6 @@
 'use server';
 import { assertString } from '@bf2-matchmaking/utils';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { isString } from '@bf2-matchmaking/types';

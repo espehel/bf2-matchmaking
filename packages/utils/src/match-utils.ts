@@ -51,9 +51,14 @@ export const getDraftStep = (match: MatchesJoined): DraftStep => {
   return { pool, team, captain };
 };
 
-export const isCaptain = (match: MatchesJoined, userId?: string) => {
-  const playerId = match.players.find((player) => player.user_id === userId)?.id;
-  return match.teams.some((player) => player.player_id === playerId && player.captain);
+export const isCaptain = (match: MatchesJoined, player: PlayersRow) => {
+  return match.teams.some((mp) => mp.player_id === player.id && mp.captain);
+};
+
+export const isTeamCaptain = (match: MatchesJoined, player: PlayersRow) => {
+  return [...match.home_team.players, ...match.away_team.players].some(
+    (tp) => tp.player_id === player.id && tp.captain
+  );
 };
 
 export const hasPlayer = (playerId: string) => (match: MatchesJoined) =>

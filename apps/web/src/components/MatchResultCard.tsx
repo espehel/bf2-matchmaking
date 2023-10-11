@@ -1,6 +1,6 @@
 import { MatchResultsJoined, RoundsJoined } from '@bf2-matchmaking/types';
 import { isUniqueObject } from '@bf2-matchmaking/utils';
-import { supabaseImageLoader } from '@/lib/supabase-client';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Image from 'next/image';
 
 interface Props {
@@ -40,6 +40,7 @@ export default function MatchResultCard({ matchId, matchResult, rounds }: Props)
               loader={supabaseImageLoader}
               src={`map_images/${map.id}.webp`}
               fill={true}
+              sizes="11rem"
               alt={map.name}
             />
           </div>

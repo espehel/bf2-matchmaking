@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import { PlayerProvider } from '@/state/PlayerContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 
 const inter = Inter({ subsets: ['latin'] });

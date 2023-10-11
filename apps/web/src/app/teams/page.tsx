@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { TeamsJoined } from '@bf2-matchmaking/types';
 import TeamCreateForm from '@/components/TeamCreateForm';

@@ -1,5 +1,5 @@
 'use server';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { MatchesJoined, MatchPlayersRow, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';

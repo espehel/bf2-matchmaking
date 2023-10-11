@@ -1,9 +1,8 @@
 'use client';
 import { MatchesJoined } from '@bf2-matchmaking/types';
-import { useFirstRenderDefault } from 'web/app/state/ssr-hooks';
 import moment from 'moment';
 import Image from 'next/image';
-import { supabaseImageLoader } from '@/lib/supabase-client';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 
 interface Props {
   match: MatchesJoined;
@@ -34,6 +33,7 @@ export default function ScheduledMatchCard({ match }: Props) {
               loader={supabaseImageLoader}
               src={`map_images/${map.id}.webp`}
               fill={true}
+              sizes="11rem"
               alt={map.name}
             />
           </div>

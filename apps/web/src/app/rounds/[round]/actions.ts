@@ -1,7 +1,7 @@
 'use server';
 
 import { PlayersUpdate } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 

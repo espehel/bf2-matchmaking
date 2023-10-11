@@ -21,27 +21,19 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
         )}
       </div>
       <div className="flex justify-center gap-8">
-        <Suspense fallback={null}>
-          <TeamSection match={match} team={match.home_team} />
-        </Suspense>
+        <TeamSection match={match} team={match.home_team} />
         <div className="divider divider-horizontal">vs</div>
-        <Suspense fallback={null}>
-          <TeamSection match={match} team={match.away_team} />
-        </Suspense>
+        <TeamSection match={match} team={match.away_team} />
       </div>
       {match.status === MatchStatus.Closed && (
         <Link className="btn btn-primary btn-lg btn-wide" href={`/results/${match.id}`}>
           Go to results
         </Link>
       )}
-      {isMatchAdmin && (
-        <div>
-          <div className="divider mt-0" />
-          <Suspense fallback={null}>
-            <MatchActions match={match} />
-          </Suspense>
-        </div>
-      )}
+
+      <Suspense fallback={null}>
+        <MatchActions match={match} />
+      </Suspense>
     </section>
   );
 }

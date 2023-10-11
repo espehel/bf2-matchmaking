@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import MatchSection from '@/components/match/MatchSection';
@@ -8,6 +8,8 @@ import RoundsList from '@/components/RoundsList';
 import moment from 'moment/moment';
 import { api } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
+import { useMatch } from '@/state/MatchContext';
+import ServerSectionLoading from '@/components/match/ServerSectionLoading';
 
 interface Props {
   params: { match: string };
@@ -32,10 +34,8 @@ export default async function ResultsMatch({ params }: Props) {
         </p>
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
-        <Suspense fallback={null}>
-          <MatchSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
-        </Suspense>
-        <Suspense fallback={null}>
+        <MatchSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
+        <Suspense fallback={<ServerSectionLoading match={match} />}>
           <ServerSection
             match={match}
             isMatchAdmin={Boolean(adminRoles?.match_admin)}

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import AuthButton from '@/components/AuthButton';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 
 export default async function Header() {

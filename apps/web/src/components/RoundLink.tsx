@@ -1,7 +1,7 @@
 import { RoundsJoined, ServerInfo } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabaseImageLoader } from '@/lib/supabase-client';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import { useMemo } from 'react';
 import moment from 'moment';
@@ -22,6 +22,7 @@ export default function RoundLink({ round }: Props) {
             loader={supabaseImageLoader}
             src={`map_images/${round.map.id}.webp`}
             fill={true}
+            sizes="25%"
             alt={round.map.name}
           />
         </figure>
