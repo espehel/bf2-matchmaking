@@ -1,7 +1,7 @@
 'use client';
 import { MatchesJoined } from '@bf2-matchmaking/types';
-import { useFirstRenderDefault } from 'web/app/state/ssr-hooks';
 import moment from 'moment';
+import { useFirstRenderDefault } from '@/state/ssr-hooks';
 
 interface Props {
   match: MatchesJoined;

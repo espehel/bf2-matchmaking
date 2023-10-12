@@ -5,6 +5,7 @@ import { Link, useLoaderData, useSubmit } from '@remix-run/react';
 import { loader } from '~/routes/matches/$matchId';
 import { useUser } from '@supabase/auth-helpers-react';
 import { isCaptain } from '@bf2-matchmaking/utils';
+import {usePlayer} from "web/src/state/PlayerContext";
 
 interface Props {
   server: ServersJoined;
@@ -13,6 +14,7 @@ interface Props {
 const ServerSelectionItem: FC<Props> = ({ server }) => {
   const { match } = useLoaderData<typeof loader>();
   const user = useUser();
+  const {player} = usePlayer();
   const submit = useSubmit();
 
   const selectServer = (serverIp: string) => () =>
@@ -65,7 +67,7 @@ const ServerSelectionItem: FC<Props> = ({ server }) => {
       <button
         className="w-full p-1 border-4 border-emerald-400 hover:border-emerald-600 rounded"
         onClick={selectServer(server.ip)}
-        disabled={!isCaptain(match, user?.id)}
+        disabled={player ? !isCaptain(match, player) : true}
       >
         <p className="truncate">{server.name}</p>
         <p className="text-green-800">Available</p>

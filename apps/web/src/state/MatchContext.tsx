@@ -30,7 +30,7 @@ export function MatchProvider({ children, match }: Props) {
       match,
       isMatchOfficer,
     }),
-    [match]
+    [match, isMatchOfficer]
   );
   return <MatchContext.Provider value={context}>{children}</MatchContext.Provider>;
 }

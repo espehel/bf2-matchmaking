@@ -30,7 +30,7 @@ export default function TeamPlayerActionButton({
         toast.success(successMessage);
       }
     });
-  }, [action]);
+  }, [action, errorMessage, successMessage, startTransition]);
 
   if (!isMatchOfficer) {
     return null;
