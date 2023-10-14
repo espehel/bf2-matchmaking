@@ -14,7 +14,7 @@ export default function ScheduledMatchCard({ match }: Props) {
   return (
     <section className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100">
       {scheduledAt && (
-        <div className="stat">
+        <div className="stat mr-auto">
           <div className="stat-title">{match.config.name}</div>
           <div className="tooltip" data-tip={moment(match.scheduled_at).toISOString()}>
             <div className="stat-value">{scheduledAt}</div>

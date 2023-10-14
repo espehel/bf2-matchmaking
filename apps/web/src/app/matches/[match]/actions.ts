@@ -6,11 +6,11 @@ import moment from 'moment';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { api, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 
-export async function removeMatchPlayer(mp: MatchPlayersRow) {
-  const result = await supabase(cookies).deleteMatchPlayer(mp.match_id, mp.player_id);
+export async function removeMatchPlayer(matchId: number, playerId: string) {
+  const result = await supabase(cookies).deleteMatchPlayer(matchId, playerId);
 
   if (!result.error) {
-    revalidatePath(`/matches/${mp.match_id}`);
+    revalidatePath(`/matches/${matchId}`);
   }
 
   return result;

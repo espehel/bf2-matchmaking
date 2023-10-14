@@ -1,7 +1,9 @@
 import { MatchesJoined, MatchPlayersRow, MatchTeam } from '@bf2-matchmaking/types';
-import PlayerItem from '@/components/match/PlayerItem';
 import AddPlayerForm from '@/components/match/AddPlayerForm';
 import AddTeamPlayerCollapsible from '@/components/AddTeamPlayerCollapsible';
+import PlayerListItems from '@/components/match/PlayerListItems';
+import { Suspense } from 'react';
+import PlayerListItemsLoading from '@/components/match/PlayerListItemsLoading';
 
 interface Props {
   match: MatchesJoined;
@@ -23,15 +25,23 @@ export default async function TeamSection({ match, team }: Props) {
     <section>
       <h3 className="text-xl font-bold mb-2">{`Team ${team.name}`}</h3>
       <ul>
-        {players.map((mp) => (
-          <PlayerItem
-            key={mp.player_id}
+        <Suspense
+          fallback={
+            <PlayerListItemsLoading
+              match={match}
+              team={team.id}
+              captains={captains}
+              players={players}
+            />
+          }
+        >
+          <PlayerListItems
             match={match}
-            mp={mp}
             team={team.id}
+            players={players}
             captains={captains}
           />
-        ))}
+        </Suspense>
         {emptySlots.map((e, i, { length }) => (
           <li key={(i + length) * length} className="flex items-center mb-1 w-52">
             <AddPlayerForm matchId={match.id} teamId={team.id} />

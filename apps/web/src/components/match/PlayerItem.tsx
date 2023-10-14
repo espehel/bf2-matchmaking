@@ -1,6 +1,5 @@
 import {
   MatchesJoined,
-  MatchPlayersRow,
   MatchStatus,
   PlayerListItem,
   PlayersRow,
@@ -8,44 +7,41 @@ import {
 import { removeMatchPlayer } from '@/app/matches/[match]/actions';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import TeamPlayerActionButton from '@/components/TeamPlayerActionButton';
-import { api } from '@bf2-matchmaking/utils';
-import { Suspense } from 'react';
 import { StarIcon } from '@heroicons/react/20/solid';
 
 interface Props {
-  mp: MatchPlayersRow;
+  player: PlayersRow;
+  playerInfo: PlayerListItem | undefined;
   match: MatchesJoined;
   team: number;
   captains: Array<string>;
 }
-export default async function PlayerItem({ mp, match, team, captains }: Props) {
-  const player = match.players.find(({ id }) => id === mp.player_id);
+export default function PlayerItem({ player, playerInfo, match, team, captains }: Props) {
   const expectedTeam = match.home_team.id === team ? '2' : '1';
 
-  const username = player
-    ? player.full_name
-    : `Player ${match.teams.findIndex(({ player_id }) => mp.player_id === player_id)}`;
-
-  const isCaptain = captains.includes(mp.player_id);
+  const isCaptain = captains.includes(player.id);
 
   const removeMatchPlayerSA = async () => {
     'use server';
-    return removeMatchPlayer(mp);
+    return removeMatchPlayer(match.id, player.id);
   };
 
   return (
-    <li className="flex gap-2 items-center mb-1 w-52">
-      <Suspense fallback={<span className="loading loading-ring loading-xs"></span>}>
-        <PlayerBadge player={player} match={match} expectedTeam={expectedTeam} />
-      </Suspense>
-      <div className="flex items-center mb-1 truncate">
-        {username}
+    <li className="flex gap-2 items-center w-52">
+      <PlayerBadge
+        player={player}
+        playerInfo={playerInfo}
+        match={match}
+        expectedTeam={expectedTeam}
+      />
+      <div className="flex items-center m-1 truncate">
+        {player.full_name}
         {isCaptain && <StarIcon height={16} viewBox="0 2 20 20" />}
       </div>
       <TeamPlayerActionButton
         action={removeMatchPlayerSA}
-        errorMessage={`Failed to remove ${username}`}
-        successMessage={`Removed ${username}`}
+        errorMessage={`Failed to remove ${player.full_name}`}
+        successMessage={`Removed ${player.full_name}`}
       >
         <XCircleIcon className="text-error" />
       </TeamPlayerActionButton>
@@ -53,15 +49,21 @@ export default async function PlayerItem({ mp, match, team, captains }: Props) {
   );
 }
 interface PlayerBadgeProps {
-  player?: PlayersRow;
+  player: PlayersRow;
+  playerInfo?: PlayerListItem;
   match: MatchesJoined;
   expectedTeam: '1' | '2';
 }
-async function PlayerBadge({ player, match, expectedTeam }: PlayerBadgeProps) {
-  if (!player?.keyhash) {
+async function PlayerBadge({
+  player,
+  playerInfo,
+  match,
+  expectedTeam,
+}: PlayerBadgeProps) {
+  if (!player.keyhash) {
     return (
       <div className="tooltip" data-tip="Not registered">
-        <div className="badge badge-ghost badge-sm" />
+        <div className="w-2 h-8 bg-ghost mr-4" />
       </div>
     );
   }
@@ -69,44 +71,31 @@ async function PlayerBadge({ player, match, expectedTeam }: PlayerBadgeProps) {
   if (match.status !== MatchStatus.Ongoing) {
     return (
       <div className="tooltip" data-tip="Not ongoing">
-        <div className="badge badge-info badge-sm" />
+        <div className="w-2 h-8 bg-info mr-4" />
       </div>
     );
   }
 
-  const info = await fetchPlayerInfo(match, player);
-  if (!info) {
+  if (!playerInfo) {
     return (
       <div className="tooltip" data-tip="Not connected">
-        <div className="badge badge-error badge-sm" />
+        <div className="w-2 h-8 bg-error mr-4" />
       </div>
     );
   }
 
-  if (expectedTeam !== info.getTeam) {
+  if (expectedTeam !== playerInfo.getTeam) {
     return (
       <div className="tooltip" data-tip="Wrong team">
-        <div className="badge badge-warning badge-sm" />
+        <div className="w-2 h-8 bg-warning mr-4" />
       </div>
     );
   }
 
   return (
-    <div className="tooltip" data-tip="Ready">
-      <div className="badge badge-success badge-sm" />
+    <div className="tooltip flex gap-2 items-center" data-tip="Ready">
+      <div className="w-2 h-8 bg-success" />
+      <div className="w-3">{playerInfo.index}</div>
     </div>
   );
-}
-
-async function fetchPlayerInfo(
-  match: MatchesJoined,
-  player?: PlayersRow
-): Promise<PlayerListItem | null> {
-  if (match.server && player) {
-    const { data } = await api.rcon().getServerPlayerList(match.server.ip);
-    if (data) {
-      return data.find((p) => p.keyhash === player.keyhash) || null;
-    }
-  }
-  return null;
 }
