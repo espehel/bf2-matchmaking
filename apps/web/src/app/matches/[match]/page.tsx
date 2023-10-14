@@ -10,6 +10,7 @@ import { api } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
 import { useMatch } from '@/state/MatchContext';
 import ServerSectionLoading from '@/components/match/ServerSectionLoading';
+import MapsSection from '@/components/match/MapsSection';
 
 interface Props {
   params: { match: string };
@@ -42,6 +43,7 @@ export default async function ResultsMatch({ params }: Props) {
             isMatchPlayer={isMatchPlayer}
           />
         </Suspense>
+        <MapsSection match={match} key={match.maps.map((m) => m.id).join()} />
         <LiveSection
           data={data}
           match={match}

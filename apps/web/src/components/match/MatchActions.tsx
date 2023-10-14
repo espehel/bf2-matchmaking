@@ -5,6 +5,7 @@ import AsyncActionButton from '@/components/AsyncActionButton';
 import SelectServerForm from '@/components/match/SelectServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import MatchMapsSelect from '@/components/match/MatchMapsSelect';
 
 interface Props {
   match: MatchesJoined;
@@ -12,6 +13,7 @@ interface Props {
 
 export default async function MatchActions({ match }: Props) {
   const { data: servers } = await supabase(cookies).getServers();
+  const { data: maps } = await supabase(cookies).getMaps();
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   const isMatchAdmin = adminRoles?.match_admin || false;
@@ -21,6 +23,7 @@ export default async function MatchActions({ match }: Props) {
   const isClosed = match.status === MatchStatus.Closed;
 
   const showSelectServerForm = Boolean(servers && !isClosed && isMatchOfficer);
+  const showSetMapsForm = Boolean(maps && !isClosed && isMatchOfficer);
 
   async function finishMatchSA() {
     'use server';
@@ -41,7 +44,7 @@ export default async function MatchActions({ match }: Props) {
     return reopenMatch(match.id);
   }
 
-  if (!showSelectServerForm && !isMatchAdmin) {
+  if (!showSelectServerForm && !showSetMapsForm && !isMatchAdmin) {
     return null;
   }
 
@@ -90,6 +93,7 @@ export default async function MatchActions({ match }: Props) {
           </>
         )}
         {showSelectServerForm && <SelectServerForm match={match} servers={servers!} />}
+        {showSetMapsForm && <MatchMapsSelect match={match} maps={maps!} />}
       </div>
     </div>
   );

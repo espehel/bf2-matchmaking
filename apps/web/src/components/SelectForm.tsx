@@ -4,8 +4,8 @@ import { useCallback } from 'react';
 import { isString } from '@bf2-matchmaking/types';
 
 interface Props {
-  options: Array<[string, string]>;
-  defaultValue?: string;
+  options: Array<[string | number, string]>;
+  defaultValue?: string | number;
   action: (value: string) => void;
 }
 export default function SelectForm({ options, action, defaultValue }: Props) {

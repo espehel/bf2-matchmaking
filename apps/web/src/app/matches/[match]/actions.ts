@@ -134,3 +134,18 @@ export async function setServer(matchId: number, serverIp: string) {
 
   return result;
 }
+
+export async function setMaps(matchId: number, maps: Array<number>) {
+  const { error } = await supabase(cookies).deleteAllMatchMaps(matchId);
+  if (error) {
+    return { data: null, error };
+  }
+
+  const result = await supabase(cookies).createMatchMaps(matchId, ...maps);
+
+  if (!result.error) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}

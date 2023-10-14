@@ -161,8 +161,13 @@ export default (client: SupabaseClient<Database>) => ({
         matches.map((m) => m.id)
       ),
 
+  deleteAllMatchMaps: (matchId: number) =>
+    client.from('match_maps').delete().eq('match_id', matchId),
   createMatchMaps: (match_id: number, ...maps: Array<number>) =>
-    client.from('match_maps').insert(maps.map((mapId) => ({ match_id, map_id: mapId }))),
+    client
+      .from('match_maps')
+      .insert(maps.map((mapId) => ({ match_id, map_id: mapId })))
+      .select('*'),
   getOngoingMatchesByServer: (serverIp: string) =>
     client
       .from('matches')

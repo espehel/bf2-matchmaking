@@ -1,5 +1,5 @@
 'use client';
-import { ChangeEvent, Fragment, useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, Fragment, useCallback, useState } from 'react';
 import { Combobox } from '@headlessui/react';
 import { PlayersRow } from '@bf2-matchmaking/types';
 import { supabaseClient } from '@/lib/supabase/supabase-client';

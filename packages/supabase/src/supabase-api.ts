@@ -111,6 +111,7 @@ export default (client: SupabaseClient<Database>) => ({
   getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
   createRound: (round: RoundsInsert) =>
     client.from('rounds').insert([round]).select().single(),
+  getMaps: () => client.from('maps').select('*'),
   searchMap: (map: string) =>
     client.from('maps').select().textSearch('name', `'${map}'`).single(),
   upsertServer: (ip: string, name: string) =>

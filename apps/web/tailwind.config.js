@@ -15,5 +15,9 @@ module.exports = {
   daisyui: {
     themes: ['bumblebee'],
   },
-  plugins: [require('@tailwindcss/typography'), require('daisyui')],
+  plugins: [
+    require('@tailwindcss/typography'),
+    require('daisyui'),
+    require('@headlessui/tailwindcss'),
+  ],
 };
