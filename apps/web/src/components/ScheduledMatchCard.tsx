@@ -14,15 +14,15 @@ export default function ScheduledMatchCard({ match }: Props) {
   return (
     <section className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100">
       {scheduledAt && (
-        <div className="stat mr-auto">
+        <div className="stat w-fit">
           <div className="stat-title">{match.config.name}</div>
           <div className="tooltip" data-tip={moment(match.scheduled_at).toISOString()}>
             <div className="stat-value">{scheduledAt}</div>
           </div>
         </div>
       )}
-      <div className="stat">
-        <h2 className="stat-title">{`Match ${match.id}`}</h2>
+      <div className="stat w-fit text-left">
+        <h2 className="stat-title">{match.server?.name ?? 'No server set'}</h2>
         <div className="stat-value">{`${match.home_team.name} vs ${match.away_team.name}`}</div>
       </div>
       <div className="flex mr-4 ml-auto">
