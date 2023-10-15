@@ -28,10 +28,10 @@ export default function MatchMapsSelect({ match, maps }: Props) {
       <div className="dropdown dropdown-top min-w-[360px]">
         <Listbox value={selectedMaps} onChange={setSelectedMaps} multiple>
           <Listbox.Button className="input input-bordered input-md w-full text-left font-bold">{`${selectedMaps.length} maps`}</Listbox.Button>
-          <Listbox.Options className="menu dropdown-content z-[1] shadow bg-base-100 rounded-box p-0 w-full">
+          <Listbox.Options className="menu dropdown-content z-[1] shadow bg-base-100 border border-1 rounded-box p-0 w-full">
             {maps.map((map) => (
               <Listbox.Option
-                className="p-2 text-lg text-left ui-active:bg-accent ui-active:text-accent-content ui-selected:bg-primary ui-selected:text-primary-content"
+                className="p-1.5 text-md text-left ui-active:bg-accent ui-active:text-accent-content ui-selected:bg-primary ui-selected:text-primary-content"
                 key={map.id}
                 value={map.id}
               >
