@@ -86,8 +86,9 @@ async function PlayerBadge({
 
   if (expectedTeam !== playerInfo.getTeam) {
     return (
-      <div className="tooltip" data-tip="Wrong team">
-        <div className="w-2 h-8 bg-warning mr-4" />
+      <div className="tooltip flex gap-2 items-center" data-tip="Wrong team">
+        <div className="w-2 h-8 bg-warning" />
+        <div className="w-3">{playerInfo.index}</div>
       </div>
     );
   }
