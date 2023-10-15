@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { MatchesJoined, MatchPlayersRow, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { api, getPlayersToSwitch } from '@bf2-matchmaking/utils';
+import { api, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const result = await supabase(cookies).deleteMatchPlayer(matchId, playerId);
@@ -148,4 +148,24 @@ export async function setMaps(matchId: number, maps: Array<number>) {
   }
 
   return result;
+}
+
+export async function updateMatchScheduledAt(matchId: number, formData: FormData) {
+  const { dateInput } = Object.fromEntries(formData);
+  assertString(dateInput);
+
+  const scheduled_at = moment(dateInput).utcOffset(120).toISOString();
+
+  const result = await supabase(cookies).updateMatch(matchId, {
+    scheduled_at,
+  });
+
+  if (result.error) {
+    return result;
+  }
+
+  const apiResult = await api.rcon().postMatchResults(matchId);
+  revalidatePath(`/matches/${matchId}`);
+
+  return apiResult;
 }

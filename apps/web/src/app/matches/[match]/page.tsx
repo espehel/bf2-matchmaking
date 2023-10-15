@@ -11,6 +11,7 @@ import { Suspense } from 'react';
 import { useMatch } from '@/state/MatchContext';
 import ServerSectionLoading from '@/components/match/ServerSectionLoading';
 import MapsSection from '@/components/match/MapsSection';
+import ScheduledAt from '@/components/match/ScheduledAt';
 
 interface Props {
   params: { match: string };
@@ -30,9 +31,7 @@ export default async function ResultsMatch({ params }: Props) {
     <main className="main flex flex-col items-center text-center">
       <div className="mb-8">
         <h1 className="text-accent font-bold">{`${match.config.name}`}</h1>
-        <p className="text-sm text-gray font-bold">
-          {moment(match.scheduled_at || match.created_at).format('HH:mm - dddd Do MMMM')}
-        </p>
+        <ScheduledAt match={match} />
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
         <MatchSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
