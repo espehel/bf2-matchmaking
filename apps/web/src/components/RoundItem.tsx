@@ -60,7 +60,7 @@ export default function RoundItem({ round }: Props) {
             <p className="text-md">{serverInfo.team1_tickets}</p>
           </div>
           <div>
-            <p className="text-md font-bold">{serverInfo.team1_Name}</p>
+            <p className="text-md font-bold">{serverInfo.team2_Name}</p>
             <p className="text-md">{serverInfo.team2_tickets}</p>
           </div>
         </button>
