@@ -8,6 +8,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import matches from '../state/matches';
+import { info } from '@bf2-matchmaking/logging';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -15,20 +16,24 @@ export const matchesRouter = new Router({
 
 matchesRouter.post('/', async (ctx) => {
   const { body } = ctx.request;
-
   if (isInsertPayload(body)) {
+    info('routers/matches', `Match ${body.record.id} ${body.record.status}`);
     const match = await client().getMatch(body.record.id).then(verifySingleResult);
     matches.pushMatch(match);
-    ctx.status = 204;
+    ctx.status = 202;
     return;
   }
 
   if (isUpdatePayload(body)) {
     const { old_record, record } = body;
+    info('routers/matches', `Match ${record.id} ${old_record.status}->${record.status}`);
     if (old_record.status !== record.status) {
       const match = await client().getMatch(body.record.id).then(verifySingleResult);
       matches.pushMatch(match);
+      ctx.status = 202;
+      return;
     }
+    ctx.status = 204;
     return;
   }
 
