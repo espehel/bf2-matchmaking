@@ -1,5 +1,5 @@
 {
-  "name": "engine",
+  "name": "legacy-engine",
   "version": "1.0.0",
   "scripts": {
     "dev": "concurrently \"npm:dev-*\"",

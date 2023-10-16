@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   Database,
+  MatchesInsert,
   MatchesJoined,
   MatchesRow,
   MatchesUpdate,
@@ -11,6 +12,8 @@ import {
   MatchResultsInsert,
   MatchResultsJoined,
   MatchStatus,
+  PlayersInsert,
+  PlayersUpdate,
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
@@ -76,6 +79,11 @@ export default (client: SupabaseClient<Database>) => ({
       .or(
         `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
       ),
+  getMatchesWithStatus: (status: MatchStatus) =>
+    client
+      .from('matches')
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
+      .or(`status.eq.${status}`),
   getStagingMatchesByConfig: (configId: number) =>
     client
       .from('matches')

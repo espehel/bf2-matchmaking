@@ -3,15 +3,19 @@ import {
   DiscordMatch,
   MatchConfigsRow,
   MatchesJoined,
+  MatchesRow,
   MatchPlayersRow,
   MatchStatus,
   ScheduledMatch,
   ServerMatch,
   TeamsJoined,
-  TeamsRow,
 } from './database-types';
 import { PostgrestError, TeamPlayer } from './index';
 
+export const isMatchesRow = (row: unknown): row is MatchesRow => {
+  const casted = row as MatchesRow;
+  return Boolean(casted && casted.id && casted.status);
+};
 export const isDiscordConfig = (
   config: Partial<MatchConfigsRow>
 ): config is DiscordConfig => Boolean(config.channel);

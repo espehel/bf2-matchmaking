@@ -220,7 +220,7 @@ export const logErrorMessage = (msg: string, err: unknown, context?: Context) =>
   logger
     .error(msg, { error: JSON.stringify(err), ...context })
     .then((log) => info('logtail', log.message))
-    .catch((e) => error('logtail', e))
+    .catch(() => error('logtail', err))
     .finally(flush);
 };
 export const logMessage = (msg: string, context?: Context) => {
