@@ -15,7 +15,7 @@ import {
 import { getJSON, postJSON } from './fetcher';
 
 export const rcon = () => {
-  const basePath = 'https://bf2-rcon-api-production.up.railway.app';
+  const basePath = 'https://bf2-rcon.up.railway.app';
   const paths = {
     rconServerInfo: () => '/rcon/si',
     rconPlayerList: () => '/rcon/pl',
@@ -69,7 +69,7 @@ export const rcon = () => {
   };
 };
 export const bot = () => {
-  const basePath = 'https://bot.bf2-matchmaking-production.up.railway.app';
+  const basePath = 'https://bf2-bot.up.railway.app';
   const paths = {
     matchEvent: '/api/match_events',
     matchConfigEvent: '/api/match_config_events',
