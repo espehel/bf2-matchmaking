@@ -1,15 +1,11 @@
 import express, { Request } from 'express';
-import {
-  isServerMatch,
-  MatchStatus,
-  PostMatchesRequestBody,
-} from '@bf2-matchmaking/types';
+import { MatchStatus, PostMatchesRequestBody } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getPlayerFromDatabase } from '../services/players';
 import { toMatchPlayer } from '../mappers/player';
 import { error, info, logOngoingMatchCreated } from '@bf2-matchmaking/logging';
 import moment from 'moment';
-import { findLiveMatch, startLiveMatch } from '../services/MatchManager';
+import { findLiveMatch, initLiveMatch } from '../services/MatchManager';
 import { closeMatch } from '../services/matches';
 
 const router = express.Router();
@@ -54,12 +50,7 @@ router.post('/:matchid/live', async (req, res) => {
       .getMatch(parseInt(req.params.matchid))
       .then(verifySingleResult);
 
-    if (!isServerMatch(match)) {
-      return res.status(400).send('Match is not linked to a server.');
-    }
-
-    const server = await client().getServerRcon(match.server.ip).then(verifySingleResult);
-    startLiveMatch(match, server, { prelive });
+    initLiveMatch(match, { prelive });
     return res.sendStatus(202);
   } catch (e) {
     if (e instanceof Error) {

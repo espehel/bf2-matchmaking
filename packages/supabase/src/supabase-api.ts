@@ -26,6 +26,7 @@ const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
 
 export default (client: SupabaseClient<Database>) => ({
   ...matches(client),
+  getServerRcons: () => client.from('server_rcons').select('*'),
   getServerRcon: (ip: string) =>
     client.from('server_rcons').select('*').eq('id', ip).single(),
   getPlayerByUserId: (userId?: string) =>

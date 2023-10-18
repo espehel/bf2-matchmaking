@@ -1,17 +1,19 @@
-import { ServerMatch, ServerRconsRow } from '@bf2-matchmaking/types';
-import { pollServerInfo, rcon } from '../net/RconManager';
+import { isServerMatch, MatchesJoined } from '@bf2-matchmaking/types';
 import { LiveMatch, LiveMatchOptions } from './LiveMatch';
 import { logMessage } from '@bf2-matchmaking/logging';
+import {
+  setServerLiveMatch,
+  isIdle,
+  findServer,
+  resetLiveMatchServers,
+} from '../net/ServerManager';
 
 const liveMatches = new Map<number, LiveMatch>();
 
 export function removeLiveMatch(liveMatch: LiveMatch) {
-  logMessage(
-    `Match ${liveMatch.match.id}: Removing live match from ${liveMatch.match.server.ip}`,
-    {
-      match: JSON.stringify(liveMatch.match),
-    }
-  );
+  logMessage(`Match ${liveMatch.match.id}: Removing live match`, {
+    match: JSON.stringify(liveMatch.match),
+  });
   return liveMatches.delete(liveMatch.match.id);
 }
 
@@ -19,32 +21,30 @@ export function findLiveMatch(matchId: number): LiveMatch | undefined {
   return liveMatches.get(matchId);
 }
 
-export function startLiveMatch(
-  match: ServerMatch,
-  server: ServerRconsRow,
-  options: LiveMatchOptions
-) {
-  let liveMatch = findLiveMatch(match.id);
-  if (liveMatch) {
-    if (liveMatch.match.server.ip === server.id) {
-      return;
-    }
-    logMessage(
-      `Match ${match.id}: Updating live match server from ${liveMatch.match.server.ip} to ${server.id}`,
-      {
-        match: JSON.stringify(match),
-        oldMatch: JSON.stringify(liveMatch.match),
-      }
-    );
-
-    liveMatch.setOptions(options);
-    liveMatch.setMatch(match);
-  } else {
-    liveMatch = new LiveMatch(match, options);
-    liveMatches.set(match.id, liveMatch);
-    logMessage(`Match ${match.id}: Starting live match on server ${server.id}`, {
-      match: JSON.stringify(match),
-    });
+export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
+  if (liveMatches.has(match.id)) {
+    return;
   }
-  rcon(server.id, server.rcon_port, server.rcon_pw).then(pollServerInfo(liveMatch));
+
+  const liveMatch = new LiveMatch(match, options);
+  liveMatches.set(match.id, liveMatch);
+
+  if (isServerMatch(match) && isIdle(match.server.ip)) {
+    setServerLiveMatch(match.server.ip, liveMatch);
+  }
+}
+
+export function updateLiveMatches() {
+  if (liveMatches.size === 0) {
+    return;
+  }
+  for (const liveMatch of liveMatches.values()) {
+    if (liveMatch.isWaiting()) {
+      const liveServer = findServer(liveMatch);
+      if (liveServer && liveServer.isIdle()) {
+        resetLiveMatchServers(liveMatch);
+        liveServer.setLiveMatch(liveMatch);
+      }
+    }
+  }
 }

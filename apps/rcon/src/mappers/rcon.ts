@@ -96,3 +96,9 @@ export const mapListPlayers = (data?: string): Array<PlayerListItem> | null =>
           };
         })
     : null;
+
+export function verifyData(si: ServerInfo, pl: Array<PlayerListItem>) {
+  if (Number(si.connectedPlayers) !== pl.length) {
+    throw new Error('Server info or player list have corrupt data.');
+  }
+}

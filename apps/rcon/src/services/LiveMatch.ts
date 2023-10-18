@@ -1,15 +1,12 @@
 import {
   LiveRound,
   LiveServerState,
-  PlayerListItem,
+  MatchesJoined,
   RoundsRow,
-  ServerInfo,
   ServerMatch,
 } from '@bf2-matchmaking/types';
 import { createLiveRound, insertRound } from './round-service';
-import { LiveServerUpdate } from '../net/RconManager';
 import {
-  closeMatch,
   finishMatch,
   hasPlayedAllRounds,
   isFirstTimeFullServer,
@@ -20,67 +17,61 @@ import {
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
+import { LiveServer } from '../net/LiveServer';
 export interface LiveMatchOptions {
   prelive: boolean;
 }
+interface LiveServerBaseUpdate {
+  state: Exclude<LiveServerState, 'prelive'>;
+  payload: null;
+}
+
+interface LiveServerPreliveUpdate {
+  state: 'prelive';
+  payload: Array<string>;
+}
+
+export type LiveServerUpdate = LiveServerBaseUpdate | LiveServerPreliveUpdate;
 export class LiveMatch {
-  rounds: Array<RoundsRow> = [];
+  match: MatchesJoined;
   state: LiveServerState = 'waiting';
-  match: ServerMatch;
+  rounds: Array<RoundsRow> = [];
   liveRound: LiveRound | null = null;
-  nextServer: boolean = false;
   options: LiveMatchOptions;
-  constructor(match: ServerMatch, options?: LiveMatchOptions) {
+  constructor(match: MatchesJoined, options?: LiveMatchOptions) {
     this.match = match;
     this.options = options || { prelive: false };
   }
 
-  setMatch(match: ServerMatch) {
-    this.match = match;
+  isWaiting() {
+    return this.state === 'waiting';
   }
-  setOptions(options: LiveMatchOptions) {
-    this.options = options;
-  }
-  #updateLiveRound(si: ServerInfo, pl: Array<PlayerListItem>) {
-    this.liveRound = createLiveRound(this, si, pl);
+
+  #updateLiveRound(server: LiveServer) {
+    this.liveRound = createLiveRound(this, server);
+    const { roundTime, players, team1_Name, team1_tickets, team2_Name, team2_tickets } =
+      server.info;
     info(
       'updateLiveRound',
-      `${formatSecToMin(si.roundTime)} (${pl.length}/${this.match.config.size}) ${
-        si.team1_Name
-      } [${si.team1_tickets} - ${si.team2_tickets}] ${si.team2_Name}`
+      `${formatSecToMin(roundTime)} (${players.length}/${
+        this.match.config.size
+      }) ${team1_Name} [${team1_tickets} - ${team2_tickets}] ${team2_Name}`
     );
   }
 
-  async onLiveServerUpdate(
-    si: ServerInfo,
-    pl: Array<PlayerListItem>,
-    ip: string
-  ): Promise<LiveServerUpdate> {
-    this.#updateLiveRound(si, pl);
-    const next = (state: LiveServerState) => this.handleNextState(state, pl, si);
-
-    if (this.nextServer && ip !== this.match.server.ip) {
-      this.nextServer = false;
-      return next('new_server');
-    }
-
-    if (this.nextServer) {
-      return { state: 'waiting', payload: null };
-    }
-
-    if (this.state === 'new_server' && ip === this.match.server.ip) {
-      return next('waiting');
-    }
+  async onLiveServerUpdate(server: LiveServer): Promise<LiveServerUpdate> {
+    this.#updateLiveRound(server);
+    const next = (state: LiveServerState) => this.handleNextState(state, server);
 
     if (hasPlayedAllRounds(this.rounds)) {
       return next('finished');
     }
 
-    if (isServerEmptied(this.rounds, si)) {
+    if (isServerEmptied(this.rounds, server.info)) {
       return next('finished');
     }
 
-    if (pl.length === 0) {
+    if (server.info.players.length === 0) {
       return next('waiting');
     }
 
@@ -91,29 +82,29 @@ export class LiveMatch {
     if (
       this.options.prelive &&
       this.state === 'warmup' &&
-      isFirstTimeFullServer(this.match, si, this.rounds)
+      isFirstTimeFullServer(this.match, server.info, this.rounds)
     ) {
       return next('prelive');
     }
 
-    if (this.state === 'prelive' && si.roundTime === '0') {
+    if (this.state === 'prelive' && server.info.roundTime === '0') {
       return next('live');
     }
 
     if (
       this.state === 'warmup' &&
-      Number(si.connectedPlayers) !== this.match.players.length
+      Number(server.info.connectedPlayers) !== this.match.players.length
     ) {
       return next('warmup');
     }
 
-    if (isOngoingRound(si)) {
+    if (isOngoingRound(server.info)) {
       return next('live');
     }
 
     if (this.liveRound) {
       const round = await insertRound(this.liveRound);
-      logAddMatchRound(round, this.match, si, pl);
+      logAddMatchRound(round, this.match, server.info);
       info('onServerInfo', `Created round ${round.id}`);
       this.rounds.push(round);
     }
@@ -122,17 +113,19 @@ export class LiveMatch {
 
   async handleNextState(
     nextState: LiveServerState,
-    pl: Array<PlayerListItem>,
-    si: ServerInfo
+    server: LiveServer
   ): Promise<LiveServerUpdate> {
     if (this.state !== nextState) {
-      this.#logChangeLiveState(nextState, si, pl);
+      this.#logChangeLiveState(nextState, server);
       this.state = nextState;
     }
 
     if (nextState === 'prelive') {
       await updateLiveAt(this);
-      return { state: nextState, payload: getPlayersToSwitch(this.match, pl) };
+      return {
+        state: nextState,
+        payload: getPlayersToSwitch(this.match, server.info.players),
+      };
     }
 
     if (nextState === 'finished') {
@@ -146,19 +139,14 @@ export class LiveMatch {
     await finishMatch(this.match, this.liveRound);
     removeLiveMatch(this);
   }
-  #logChangeLiveState(
-    nextState: LiveServerState,
-    si?: ServerInfo,
-    pl?: Array<PlayerListItem>
-  ) {
+  #logChangeLiveState(nextState: LiveServerState, server: LiveServer) {
     logChangeLiveState(
       this.state,
       nextState,
       this.match,
       this.rounds,
       this.liveRound,
-      si,
-      pl
+      server.info
     );
   }
 }

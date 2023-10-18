@@ -11,12 +11,14 @@ import {
   PostServerExecResponseBody,
   PostServerPlayersSwitchRequestBody,
   GetMatchLiveResponseBody,
+  RconServer,
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
 
 export const rcon = () => {
   const basePath = 'https://bf2-rcon.up.railway.app';
   const paths = {
+    rconServers: () => '/rcon/servers',
     rconServerInfo: () => '/rcon/si',
     rconPlayerList: () => '/rcon/pl',
     servers: () => '/servers',
@@ -35,6 +37,8 @@ export const rcon = () => {
   };
   return {
     paths,
+    getRconServers: () =>
+      getJSON<Array<RconServer>>(basePath.concat(paths.rconServers())),
     postRconServerInfo: (body: PostRconRequestBody) =>
       postJSON<ServerInfo>(basePath.concat(paths.rconServerInfo()), body),
     postRconPlayerList: (body: PostRconRequestBody) =>

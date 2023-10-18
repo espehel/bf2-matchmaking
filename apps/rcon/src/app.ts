@@ -6,6 +6,12 @@ import rounds from './routes/rounds';
 import rcon from './routes/rcon';
 import matches from './routes/matches';
 import { getExpressAccessLogger, getExpressErrorLogger } from '@bf2-matchmaking/logging';
+import { initLiveServers } from './net/ServerManager';
+import cron from 'node-cron';
+import { updateLiveMatches } from './services/MatchManager';
+
+initLiveServers();
+cron.schedule('* * * * *', updateLiveMatches);
 
 const app = express();
 

@@ -1,5 +1,5 @@
 import { MatchesJoined, RoundsInsert, ServersJoined } from './database-types';
-import { LiveRound, LiveServerState, ServerInfo, User } from './index';
+import { LiveRound, LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -52,6 +52,11 @@ export interface PostCommandsReinstallRequestBody {
 export interface RconBf2Server extends ServersJoined {
   info: ServerInfo | null;
   joinmeHref: string;
+}
+
+export interface RconServer extends ServerInfo {
+  ip: string;
+  players: Array<PlayerListItem>;
 }
 
 export interface PostMatchesRequestBody {

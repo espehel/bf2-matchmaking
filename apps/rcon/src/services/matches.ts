@@ -162,3 +162,18 @@ export async function updateLiveAt(liveMatch: LiveMatch) {
     }
   }
 }
+
+export async function updateServer(liveMatch: LiveMatch, server: string) {
+  const { data, error } = await client().updateMatch(liveMatch.match.id, {
+    server,
+  });
+  if (data) {
+    liveMatch.match = data;
+  }
+  if (error) {
+    logSupabaseError(
+      `Match ${liveMatch.match.id}: Failed to update server for LiveMatch`,
+      error
+    );
+  }
+}

@@ -12,6 +12,7 @@ import {
   PlayersRow,
   PlayersUpdate,
   PostgrestError,
+  RconServer,
   RoundsInsert,
   RoundsRow,
   ServerInfo,
@@ -129,8 +130,7 @@ export const logChangeLiveState = (
   match: MatchesJoined,
   rounds: Array<RoundsRow>,
   liveRound: LiveRound | null,
-  si?: ServerInfo,
-  pl?: Array<PlayerListItem>
+  serverInfo: RconServer
 ) => {
   logger
     .info(
@@ -139,8 +139,7 @@ export const logChangeLiveState = (
         match: JSON.stringify(match),
         rounds: JSON.stringify(rounds),
         liveRound: JSON.stringify(liveRound),
-        si: JSON.stringify(si),
-        pl: JSON.stringify(pl),
+        serverInfo: JSON.stringify(serverInfo),
       }
     )
     .then((log) => info('logtail', log.message))
@@ -151,15 +150,13 @@ export const logChangeLiveState = (
 export const logAddMatchRound = (
   round: RoundsInsert,
   match: MatchesJoined,
-  si: ServerInfo | null,
-  pl: Array<PlayerListItem> | null
+  serverInfo: RconServer
 ) => {
   logger
     .info(`Adding Round ${round.id} to Match ${match.id}`, {
       round: JSON.stringify(round),
       match: JSON.stringify(match),
-      si: JSON.stringify(si),
-      pl: JSON.stringify(pl),
+      si: JSON.stringify(serverInfo),
     })
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
