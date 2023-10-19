@@ -49,6 +49,8 @@ export function updateLiveMatches() {
       if (liveServer && liveServer.isIdle()) {
         resetLiveMatchServers(liveMatch);
         liveServer.setLiveMatch(liveMatch);
+      } else {
+        info('updateLiveMatches', `No live server found for match ${liveMatch.match.id}`);
       }
     }
   }

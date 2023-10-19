@@ -1,5 +1,5 @@
 import moment, { Moment } from 'moment/moment';
-import { info, logRconError } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 import {
   getPlayerList,
   getServerInfo,
@@ -8,8 +8,12 @@ import {
   switchPlayers,
 } from './RconManager';
 import { LiveMatch } from '../services/LiveMatch';
-import { verifyData } from '../mappers/rcon';
-import { LiveInfo, ServerRconsRow } from '@bf2-matchmaking/types';
+import {
+  LiveInfo,
+  PlayerListItem,
+  ServerInfo,
+  ServerRconsRow,
+} from '@bf2-matchmaking/types';
 
 const IDLE_POLL_INTERVAL = 1000 * 60 * 5;
 const LIVE_MATCH_POLL_INTERVAL = 1000 * 10;
@@ -82,11 +86,7 @@ export class LiveServer {
         await this.#updateLiveMatch(this.#liveMatch);
       }
     } catch (e) {
-      if (e instanceof Error) {
-        logRconError(e.message, e, this.ip);
-      } else {
-        logRconError(JSON.stringify(e), e, this.ip);
-      }
+      error('LiveServer', error);
       this.#errorAt = moment();
     }
   }
@@ -127,5 +127,13 @@ export class LiveServer {
   #clearTimers() {
     clearInterval(this.#interval);
     clearTimeout(this.#timeout);
+  }
+}
+
+export function verifyData(si: ServerInfo, pl: Array<PlayerListItem>) {
+  if (Number(si.connectedPlayers) !== pl.length) {
+    throw new Error(
+      `Corrupt live info. Connected players: ${si.connectedPlayers}, players: ${pl.length}`
+    );
   }
 }

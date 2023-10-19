@@ -2,7 +2,7 @@ import { LiveServer } from './LiveServer';
 import { client } from '@bf2-matchmaking/supabase';
 import { info, logSupabaseError } from '@bf2-matchmaking/logging';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
-import { getRconServer } from '../services/servers';
+import { getLiveInfo } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
@@ -19,9 +19,9 @@ export async function initLiveServers() {
   await Promise.all(
     data.map(async (rcon) => {
       rcons.set(rcon.id, rcon);
-      const rconServer = await getRconServer(rcon);
-      if (rconServer) {
-        liveServers.set(rcon.id, new LiveServer(rcon, rconServer).start());
+      const liveInfo = await getLiveInfo(rcon);
+      if (liveInfo) {
+        liveServers.set(rcon.id, new LiveServer(rcon, liveInfo).start());
       }
     })
   );
