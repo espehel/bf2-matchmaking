@@ -33,16 +33,6 @@ router.post('/:matchid/results', async (req, res) => {
   }
 });
 
-router.get('/:matchid/live', async (req, res) => {
-  const match = findLiveMatch(Number(req.params.matchid));
-
-  if (!match) {
-    return res.status(404).send('Live match not found.');
-  }
-
-  return res.send(match);
-});
-
 router.post('/:matchid/live', async (req, res) => {
   const prelive = `${req.query.prelive}`.toLowerCase() === 'true';
 
@@ -63,6 +53,16 @@ router.post('/:matchid/live', async (req, res) => {
     }
     return res.status(500).send(JSON.stringify(e));
   }
+});
+
+router.get('/:matchid/live', async (req, res) => {
+  const match = findLiveMatch(Number(req.params.matchid));
+
+  if (!match) {
+    return res.status(404).send('Live match not found.');
+  }
+
+  return res.send(match);
 });
 
 export default router;
