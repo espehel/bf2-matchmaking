@@ -1,11 +1,11 @@
-import { PlayerListItem, RconServer, ServerRconsRow } from '@bf2-matchmaking/types';
+import { PlayerListItem, LiveInfo, ServerRconsRow } from '@bf2-matchmaking/types';
 import { getPlayerList, getServerInfo, rcon } from '../net/RconManager';
 
 export async function getRconServer({
   id: ip,
   rcon_port,
   rcon_pw,
-}: ServerRconsRow): Promise<RconServer | null> {
+}: ServerRconsRow): Promise<LiveInfo | null> {
   const info = await rcon(ip, rcon_port, rcon_pw)
     .then(getServerInfo)
     .catch(() => null);

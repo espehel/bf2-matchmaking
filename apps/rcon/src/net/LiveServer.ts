@@ -9,7 +9,7 @@ import {
 } from './RconManager';
 import { LiveMatch } from '../services/LiveMatch';
 import { verifyData } from '../mappers/rcon';
-import { RconServer, ServerRconsRow } from '@bf2-matchmaking/types';
+import { LiveInfo, ServerRconsRow } from '@bf2-matchmaking/types';
 
 const IDLE_POLL_INTERVAL = 1000 * 60 * 5;
 const LIVE_MATCH_POLL_INTERVAL = 1000 * 10;
@@ -20,13 +20,13 @@ export class LiveServer {
   port: number;
   #password: string;
   #liveMatch: LiveMatch | null = null;
-  info: RconServer;
+  info: LiveInfo;
   updatedAt: Moment;
   #interval: NodeJS.Timeout | undefined;
   #timeout: NodeJS.Timeout | undefined;
   #errorAt: Moment | null = null;
   #waitingSince: Moment | null = null;
-  constructor(rconInfo: ServerRconsRow, info: RconServer) {
+  constructor(rconInfo: ServerRconsRow, info: LiveInfo) {
     this.ip = rconInfo.id;
     this.port = rconInfo.rcon_port;
     this.#password = rconInfo.rcon_pw;
@@ -36,7 +36,7 @@ export class LiveServer {
   start() {
     info('LiveServer', `Starting ${this.info.serverName}`);
     this.#clearTimers();
-    this.#interval = setInterval(this.#updateInfo, IDLE_POLL_INTERVAL);
+    this.#interval = setInterval(this.#updateInfo.bind(this), IDLE_POLL_INTERVAL);
     return this;
   }
   reset() {
@@ -44,15 +44,15 @@ export class LiveServer {
     this.#clearTimers();
     this.#liveMatch = null;
     this.#waitingSince = null;
-    this.#interval = setInterval(this.#updateInfo, IDLE_POLL_INTERVAL);
+    this.#interval = setInterval(this.#updateInfo.bind(this), IDLE_POLL_INTERVAL);
     return this;
   }
   setLiveMatch(liveMatch: LiveMatch) {
     info('LiveServer', `Setting match ${liveMatch.match.id} for ${this.info.serverName}`);
     this.#liveMatch = liveMatch;
     this.#clearTimers();
-    this.#interval = setInterval(this.#updateInfo, LIVE_MATCH_POLL_INTERVAL);
-    this.#timeout = setTimeout(this.#stopPolling, POLL_MAX_DURATION);
+    this.#interval = setInterval(this.#updateInfo.bind(this), LIVE_MATCH_POLL_INTERVAL);
+    this.#timeout = setTimeout(this.#stopPolling.bind(this), POLL_MAX_DURATION);
     this.#waitingSince = moment();
     return this;
   }
@@ -68,6 +68,10 @@ export class LiveServer {
 
   async #updateInfo() {
     try {
+      if (moment().diff(this.#errorAt, 'minutes') > 30) {
+        this.reset();
+      }
+
       const si = await this.#rcon().then(getServerInfo);
       const pl =
         si.connectedPlayers !== '0' ? await this.#rcon().then(getPlayerList) : [];
@@ -87,16 +91,12 @@ export class LiveServer {
     }
   }
   async #updateLiveMatch(liveMatch: LiveMatch) {
-    const { state, payload } = await liveMatch.onLiveServerUpdate(this);
-    info('pollServerInfo', `State: ${state}`);
+    const { state, payload } = await liveMatch.onLiveServerUpdate(this.info);
+    info('LiveServer', `Received live match state: ${state}`);
 
     if (state !== 'waiting') {
       this.#errorAt = null;
       this.#waitingSince = null;
-    }
-
-    if (moment().diff(this.#errorAt, 'minutes') > 30) {
-      this.reset();
     }
 
     if (state === 'prelive') {

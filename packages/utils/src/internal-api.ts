@@ -11,7 +11,7 @@ import {
   PostServerExecResponseBody,
   PostServerPlayersSwitchRequestBody,
   GetMatchLiveResponseBody,
-  RconServer,
+  LiveInfo,
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
 
@@ -38,7 +38,7 @@ export const rcon = () => {
   return {
     paths,
     getRconServers: () =>
-      getJSON<Array<RconServer>>(basePath.concat(paths.rconServers()), {
+      getJSON<Array<LiveInfo>>(basePath.concat(paths.rconServers()), {
         cache: 'no-store',
       }),
     postRconServerInfo: (body: PostRconRequestBody) =>

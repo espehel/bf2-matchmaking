@@ -1,11 +1,10 @@
 import {
-  LiveRound,
   LiveServerState,
   MatchesJoined,
+  LiveInfo,
   RoundsRow,
-  ServerMatch,
 } from '@bf2-matchmaking/types';
-import { createLiveRound, insertRound } from './round-service';
+import { insertRound } from './round-service';
 import {
   finishMatch,
   hasPlayedAllRounds,
@@ -17,7 +16,7 @@ import {
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
-import { LiveServer } from '../net/LiveServer';
+
 export interface LiveMatchOptions {
   prelive: boolean;
 }
@@ -36,7 +35,7 @@ export class LiveMatch {
   match: MatchesJoined;
   state: LiveServerState = 'waiting';
   rounds: Array<RoundsRow> = [];
-  liveRound: LiveRound | null = null; // todo: replace with serverinfo
+  liveInfo: LiveInfo | null = null;
   options: LiveMatchOptions;
   constructor(match: MatchesJoined, options?: LiveMatchOptions) {
     this.match = match;
@@ -47,31 +46,38 @@ export class LiveMatch {
     return this.state === 'waiting';
   }
 
-  #updateLiveRound(server: LiveServer) {
-    this.liveRound = createLiveRound(this, server);
-    const { roundTime, players, team1_Name, team1_tickets, team2_Name, team2_tickets } =
-      server.info;
+  #updateLiveInfo(liveInfo: LiveInfo) {
+    this.liveInfo = {
+      ...liveInfo,
+      players: liveInfo.players
+        .concat(this.liveInfo?.players || [])
+        .filter(
+          (p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash) === i
+        ),
+    };
     info(
-      'updateLiveRound',
-      `${formatSecToMin(roundTime)} (${players.length}/${
+      'updateLiveInfo',
+      `${formatSecToMin(liveInfo.roundTime)} (${liveInfo.players.length}/${
         this.match.config.size
-      }) ${team1_Name} [${team1_tickets} - ${team2_tickets}] ${team2_Name}`
+      }) ${liveInfo.team1_Name} [${liveInfo.team1_tickets} - ${liveInfo.team2_tickets}] ${
+        liveInfo.team2_Name
+      }`
     );
   }
 
-  async onLiveServerUpdate(server: LiveServer): Promise<LiveServerUpdate> {
-    this.#updateLiveRound(server);
-    const next = (state: LiveServerState) => this.handleNextState(state, server);
+  async onLiveServerUpdate(liveInfo: LiveInfo): Promise<LiveServerUpdate> {
+    this.#updateLiveInfo(liveInfo);
+    const next = (state: LiveServerState) => this.handleNextState(state, liveInfo);
 
     if (hasPlayedAllRounds(this.rounds)) {
       return next('finished');
     }
 
-    if (isServerEmptied(this.rounds, server.info)) {
+    if (isServerEmptied(this.rounds, liveInfo)) {
       return next('finished');
     }
 
-    if (server.info.players.length === 0) {
+    if (liveInfo.players.length === 0) {
       return next('waiting');
     }
 
@@ -82,30 +88,30 @@ export class LiveMatch {
     if (
       this.options.prelive &&
       this.state === 'warmup' &&
-      isFirstTimeFullServer(this.match, server.info, this.rounds)
+      isFirstTimeFullServer(this.match, liveInfo, this.rounds)
     ) {
       return next('prelive');
     }
 
-    if (this.state === 'prelive' && server.info.roundTime === '0') {
+    if (this.state === 'prelive' && liveInfo.roundTime === '0') {
       return next('live');
     }
 
     if (
       this.state === 'warmup' &&
-      Number(server.info.connectedPlayers) !== this.match.players.length
+      Number(liveInfo.connectedPlayers) !== this.match.players.length
     ) {
       return next('warmup');
     }
 
-    if (isOngoingRound(server.info)) {
+    if (isOngoingRound(liveInfo)) {
       return next('live');
     }
 
-    if (this.liveRound) {
-      const round = await insertRound(this.liveRound);
-      logAddMatchRound(round, this.match, server.info);
-      info('onServerInfo', `Created round ${round.id}`);
+    if (this.liveInfo) {
+      const round = await insertRound(this.match, this.liveInfo);
+      logAddMatchRound(round, this.match, liveInfo);
+      info('onLiveServerUpdate', `Created round ${round.id}`);
       this.rounds.push(round);
     }
     return next('endlive');
@@ -113,10 +119,10 @@ export class LiveMatch {
 
   async handleNextState(
     nextState: LiveServerState,
-    server: LiveServer
+    liveInfo: LiveInfo
   ): Promise<LiveServerUpdate> {
     if (this.state !== nextState) {
-      this.#logChangeLiveState(nextState, server);
+      this.#logChangeLiveState(nextState, liveInfo);
       this.state = nextState;
     }
 
@@ -124,7 +130,7 @@ export class LiveMatch {
       await updateLiveAt(this);
       return {
         state: nextState,
-        payload: getPlayersToSwitch(this.match, server.info.players),
+        payload: getPlayersToSwitch(this.match, liveInfo.players),
       };
     }
 
@@ -136,17 +142,10 @@ export class LiveMatch {
   }
 
   async finish() {
-    await finishMatch(this.match, this.liveRound);
+    await finishMatch(this.match, this.liveInfo);
     removeLiveMatch(this);
   }
-  #logChangeLiveState(nextState: LiveServerState, server: LiveServer) {
-    logChangeLiveState(
-      this.state,
-      nextState,
-      this.match,
-      this.rounds,
-      this.liveRound,
-      server.info
-    );
+  #logChangeLiveState(nextState: LiveServerState, liveInfo: LiveInfo) {
+    logChangeLiveState(this.state, nextState, this.match, this.rounds, liveInfo);
   }
 }

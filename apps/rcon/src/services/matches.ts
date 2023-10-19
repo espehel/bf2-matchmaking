@@ -7,6 +7,7 @@ import {
 import {
   isNotNull,
   isServerMatch,
+  LiveInfo,
   LiveRound,
   MatchesJoined,
   MatchStatus,
@@ -26,8 +27,8 @@ import { updatePlayerRatings } from './players';
 import { getMatchResultsEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
 import { toKeyhashList } from '@bf2-matchmaking/utils/src/round-utils';
 
-export const finishMatch = async (match: MatchesJoined, liveRound: LiveRound | null) => {
-  logChangeMatchStatus(MatchStatus.Finished, match, liveRound);
+export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | null) => {
+  logChangeMatchStatus(MatchStatus.Finished, match, liveInfo);
   const { data: updatedMatch, error } = await client().updateMatch(match.id, {
     status: MatchStatus.Finished,
   });
@@ -117,17 +118,6 @@ export async function processResults(match: MatchesJoined) {
     embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
   });
 }
-
-export const deleteMatch = async (liveMatch: LiveMatch, rounds: Array<RoundsRow>) => {
-  logChangeMatchStatus(MatchStatus.Closed, liveMatch.match, liveMatch.liveRound);
-  const { data, error } = await client().updateMatch(liveMatch.match.id, {
-    status: MatchStatus.Deleted,
-  });
-  if (error) {
-    logSupabaseError('Failed to delete match', error);
-  }
-  return data;
-};
 
 export const hasPlayedAllRounds = (rounds: Array<RoundsInsert>) => rounds.length >= 4;
 

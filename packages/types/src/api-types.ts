@@ -54,7 +54,7 @@ export interface RconBf2Server extends ServersJoined {
   joinmeHref: string;
 }
 
-export interface RconServer extends ServerInfo {
+export interface LiveInfo extends ServerInfo {
   ip: string;
   players: Array<PlayerListItem>;
 }

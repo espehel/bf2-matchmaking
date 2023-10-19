@@ -1,40 +1,24 @@
-import { LiveRound, ServerInfo } from '@bf2-matchmaking/types';
+import { MatchesJoined, LiveInfo, ServerInfo } from '@bf2-matchmaking/types';
 import { logSupabaseError } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
-import { LiveMatch } from './LiveMatch';
 import { getTeamTuple } from '@bf2-matchmaking/utils/src/round-utils';
-import { LiveServer } from '../net/LiveServer';
 
-export function createLiveRound(liveMatch: LiveMatch, liveServer: LiveServer): LiveRound {
-  const { players, ip, ...si } = liveServer.info;
-  const mergedPl = players
-    .concat(liveMatch.liveRound?.pl || [])
-    .filter(
-      (p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash) === i
-    );
+export async function insertRound(match: MatchesJoined, liveInfo: LiveInfo) {
+  const { players, ip, ...si } = liveInfo;
 
-  const [team1, team2] = getTeamTuple(mergedPl, liveMatch.match);
+  const [team1, team2] = getTeamTuple(players, match);
 
-  return {
-    team1_tickets: liveServer.info.team1_tickets,
-    team2_tickets: liveServer.info.team2_tickets,
-    map: liveServer.info.currentMapName,
+  const round = {
+    team1_tickets: liveInfo.team1_tickets,
+    team2_tickets: liveInfo.team2_tickets,
     server: ip,
-    match: liveMatch.match.id,
+    match: match.id,
     team1,
     team2,
-    si,
-    pl: mergedPl,
-  };
-}
-
-export async function insertRound(liveRound: LiveRound) {
-  const round = {
-    ...liveRound,
-    si: JSON.stringify(liveRound.si),
-    pl: JSON.stringify(liveRound.pl),
-    map: await getMapId(liveRound.si),
+    si: JSON.stringify(si),
+    pl: JSON.stringify(players),
+    map: await getMapId(si),
   };
   return client().createRound(round).then(verifySingleResult);
 }
