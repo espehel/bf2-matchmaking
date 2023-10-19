@@ -38,7 +38,9 @@ export const rcon = () => {
   return {
     paths,
     getRconServers: () =>
-      getJSON<Array<RconServer>>(basePath.concat(paths.rconServers())),
+      getJSON<Array<RconServer>>(basePath.concat(paths.rconServers()), {
+        cache: 'no-store',
+      }),
     postRconServerInfo: (body: PostRconRequestBody) =>
       postJSON<ServerInfo>(basePath.concat(paths.rconServerInfo()), body),
     postRconPlayerList: (body: PostRconRequestBody) =>
@@ -58,8 +60,6 @@ export const rcon = () => {
       }),
     getServers: () => getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers())),
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
-    postMatch: (body: PostMatchesRequestBody) =>
-      postJSON<PostMatchResult>(basePath.concat(paths.matches()), body),
     postMatchLive: (matchId: number, prelive: boolean) =>
       postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
     getMatchLive: (matchId: number) =>

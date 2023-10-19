@@ -37,9 +37,13 @@ router.post('/:matchid/results', async (req, res) => {
 });
 
 router.get('/:matchid/live', async (req, res) => {
-  const matchId = parseInt(req.params.matchid);
-  const matchClient = findLiveMatch(matchId);
-  return res.send({ round: matchClient?.liveRound, status: matchClient?.state });
+  const match = findLiveMatch(Number(req.params.matchid));
+
+  if (!match) {
+    return res.status(404).send('Live match not found.');
+  }
+
+  return res.send(match);
 });
 
 router.post('/:matchid/live', async (req, res) => {
@@ -50,43 +54,23 @@ router.post('/:matchid/live', async (req, res) => {
       .getMatch(parseInt(req.params.matchid))
       .then(verifySingleResult);
 
-    initLiveMatch(match, { prelive });
-    return res.sendStatus(202);
+    if (match.status !== MatchStatus.Ongoing) {
+      return res.status(400).send({ message: `Match ${match.id} is not ongoing.` });
+    }
+
+    const lm = initLiveMatch(match, { prelive });
+    if (lm) {
+      return res.status(201).send(lm);
+    } else {
+      return res
+        .status(400)
+        .send({ message: `Live match already exists for match ${match.id}` });
+    }
   } catch (e) {
     if (e instanceof Error) {
       return res.status(500).send(e.message);
     }
     return res.status(500).send(JSON.stringify(e));
-  }
-});
-
-router.post('/', async (req: Request<{}, {}, PostMatchesRequestBody>, res) => {
-  const { config, team1, team2, serverIp } = req.body;
-  info('POST /matches', `Received request for config ${config} and server ${serverIp}`);
-  try {
-    const match = await client().createMatchFromConfig(config).then(verifySingleResult);
-    const dbPlayers1 = await Promise.all(team1.map(getPlayerFromDatabase));
-    const dbPlayers2 = await Promise.all(team2.map(getPlayerFromDatabase));
-    await Promise.all([
-      client().createMatchPlayers(dbPlayers1.map(toMatchPlayer(match.id, 1))),
-      client().createMatchPlayers(dbPlayers2.map(toMatchPlayer(match.id, 2))),
-      client().updateMatch(match.id, { server: serverIp }),
-    ]);
-    const updatedMatch = await client()
-      .updateMatch(match.id, {
-        status: MatchStatus.Ongoing,
-        started_at: moment().toISOString(),
-      })
-      .then(verifySingleResult);
-    logOngoingMatchCreated(updatedMatch);
-
-    res.status(201).send(updatedMatch);
-  } catch (e) {
-    error('POST /matches', e);
-    if (e instanceof Error) {
-      res.status(500).send(e.message);
-    }
-    res.status(500).send(JSON.stringify(e));
   }
 });
 

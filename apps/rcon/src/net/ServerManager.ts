@@ -1,6 +1,6 @@
 import { LiveServer } from './LiveServer';
 import { client } from '@bf2-matchmaking/supabase';
-import { logSupabaseError } from '@bf2-matchmaking/logging';
+import { info, logSupabaseError } from '@bf2-matchmaking/logging';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
 import { getRconServer } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
@@ -21,10 +21,11 @@ export async function initLiveServers() {
       rcons.set(rcon.id, rcon);
       const rconServer = await getRconServer(rcon);
       if (rconServer) {
-        liveServers.set(rcon.id, new LiveServer(rcon, rconServer));
+        liveServers.set(rcon.id, new LiveServer(rcon, rconServer).start());
       }
     })
   );
+  info('initLiveServers', `Initialized ${liveServers.size}/${data.length} live servers`);
 }
 
 export function isIdle(serverIp: string) {
@@ -54,4 +55,7 @@ function isMatchServer(liveMatch: LiveMatch) {
       .length /
       players.length >=
     SERVER_IDENTIFIED_RATIO;
+}
+export function getLiveServers() {
+  return Array.from(liveServers.values());
 }

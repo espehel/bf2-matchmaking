@@ -18,7 +18,7 @@ const POLL_MAX_DURATION = 1000 * 3600 * 3;
 export class LiveServer {
   ip: string;
   port: number;
-  password: string;
+  #password: string;
   #liveMatch: LiveMatch | null = null;
   info: RconServer;
   updatedAt: Moment;
@@ -29,16 +29,18 @@ export class LiveServer {
   constructor(rconInfo: ServerRconsRow, info: RconServer) {
     this.ip = rconInfo.id;
     this.port = rconInfo.rcon_port;
-    this.password = rconInfo.rcon_pw;
+    this.#password = rconInfo.rcon_pw;
     this.info = info;
     this.updatedAt = moment();
   }
   start() {
+    info('LiveServer', `Starting ${this.info.serverName}`);
     this.#clearTimers();
     this.#interval = setInterval(this.#updateInfo, IDLE_POLL_INTERVAL);
     return this;
   }
   reset() {
+    info('LiveServer', `Resetting ${this.info.serverName}`);
     this.#clearTimers();
     this.#liveMatch = null;
     this.#waitingSince = null;
@@ -46,6 +48,7 @@ export class LiveServer {
     return this;
   }
   setLiveMatch(liveMatch: LiveMatch) {
+    info('LiveServer', `Setting match ${liveMatch.match.id} for ${this.info.serverName}`);
     this.#liveMatch = liveMatch;
     this.#clearTimers();
     this.#interval = setInterval(this.#updateInfo, LIVE_MATCH_POLL_INTERVAL);
@@ -115,7 +118,7 @@ export class LiveServer {
     }
   }
   #rcon() {
-    return rcon(this.ip, this.port, this.password);
+    return rcon(this.ip, this.port, this.#password);
   }
   #stopPolling() {
     info('pollServerInfo', `Live match polling timed out.`);

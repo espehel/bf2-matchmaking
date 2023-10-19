@@ -1,6 +1,6 @@
 import { isServerMatch, MatchesJoined } from '@bf2-matchmaking/types';
 import { LiveMatch, LiveMatchOptions } from './LiveMatch';
-import { logMessage } from '@bf2-matchmaking/logging';
+import { info, logMessage } from '@bf2-matchmaking/logging';
 import {
   setServerLiveMatch,
   isIdle,
@@ -23,7 +23,7 @@ export function findLiveMatch(matchId: number): LiveMatch | undefined {
 
 export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
   if (liveMatches.has(match.id)) {
-    return;
+    return null;
   }
 
   const liveMatch = new LiveMatch(match, options);
@@ -32,10 +32,12 @@ export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
   if (isServerMatch(match) && isIdle(match.server.ip)) {
     setServerLiveMatch(match.server.ip, liveMatch);
   }
+  return liveMatch;
 }
 
 export function updateLiveMatches() {
   if (liveMatches.size === 0) {
+    info('updateLiveMatches', 'No live matches found');
     return;
   }
   for (const liveMatch of liveMatches.values()) {

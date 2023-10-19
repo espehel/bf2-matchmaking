@@ -36,7 +36,7 @@ export class LiveMatch {
   match: MatchesJoined;
   state: LiveServerState = 'waiting';
   rounds: Array<RoundsRow> = [];
-  liveRound: LiveRound | null = null;
+  liveRound: LiveRound | null = null; // todo: replace with serverinfo
   options: LiveMatchOptions;
   constructor(match: MatchesJoined, options?: LiveMatchOptions) {
     this.match = match;

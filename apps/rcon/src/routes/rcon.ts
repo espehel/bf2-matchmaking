@@ -1,22 +1,11 @@
 import express from 'express';
 import { getPlayerList, getServerInfo, rcon } from '../net/RconManager';
-import { client } from '@bf2-matchmaking/supabase';
-import { isNotNull, RconServer } from '@bf2-matchmaking/types';
-import { getRconServer } from '../services/servers';
+import { getLiveServers } from '../net/ServerManager';
 
 const router = express.Router();
 
 router.get('/servers', async (req, res) => {
-  const { data, error: err } = await client().getServerRcons();
-
-  if (err) {
-    return res.status(502).send(err.message);
-  }
-
-  const servers: Array<RconServer> = (await Promise.all(data.map(getRconServer))).filter(
-    isNotNull
-  );
-  res.send(servers);
+  res.send(getLiveServers());
 });
 
 router.post('/pl', async (req, res) => {
