@@ -11,11 +11,13 @@ import {
   isFirstTimeFullServer,
   isOngoingRound,
   isServerEmptied,
+  sendWarmUpStartedMessage,
   updateLiveAt,
 } from './matches';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
+import { isServerIdentified } from '../net/ServerManager';
 
 export interface LiveMatchOptions {
   prelive: boolean;
@@ -40,6 +42,10 @@ export class LiveMatch {
   constructor(match: MatchesJoined, options?: LiveMatchOptions) {
     this.match = match;
     this.options = options || { prelive: false };
+  }
+
+  setMatch(match: MatchesJoined) {
+    this.match = match;
   }
 
   isWaiting() {
@@ -77,11 +83,18 @@ export class LiveMatch {
       return next('finished');
     }
 
-    if (liveInfo.players.length === 0) {
+    if (!isServerIdentified(liveInfo.players.length, this.match.players.length)) {
       return next('waiting');
     }
 
-    if (this.state === 'waiting' || this.state === 'endlive') {
+    if (
+      this.state === 'waiting' &&
+      isServerIdentified(liveInfo.players.length, this.match.players.length)
+    ) {
+      return next('warmup');
+    }
+
+    if (this.state === 'endlive') {
       return next('warmup');
     }
 
@@ -108,12 +121,10 @@ export class LiveMatch {
       return next('live');
     }
 
-    if (this.liveInfo) {
-      const round = await insertRound(this.match, this.liveInfo);
-      logAddMatchRound(round, this.match, liveInfo);
-      info('onLiveServerUpdate', `Created round ${round.id}`);
-      this.rounds.push(round);
-    }
+    const round = await insertRound(this.match, liveInfo);
+    logAddMatchRound(round, this.match, liveInfo);
+    info('onLiveServerUpdate', `Created round ${round.id}`);
+    this.rounds.push(round);
     return next('endlive');
   }
 
@@ -121,9 +132,8 @@ export class LiveMatch {
     nextState: LiveServerState,
     liveInfo: LiveInfo
   ): Promise<LiveServerUpdate> {
-    if (this.state !== nextState) {
-      this.#logChangeLiveState(nextState, liveInfo);
-      this.state = nextState;
+    if (this.state === 'waiting' && nextState === 'warmup') {
+      await sendWarmUpStartedMessage(this, liveInfo);
     }
 
     if (nextState === 'prelive') {
@@ -138,6 +148,10 @@ export class LiveMatch {
       await this.finish();
     }
 
+    if (this.state !== nextState) {
+      this.#logChangeLiveState(nextState, liveInfo);
+      this.state = nextState;
+    }
     return { state: nextState, payload: null };
   }
 

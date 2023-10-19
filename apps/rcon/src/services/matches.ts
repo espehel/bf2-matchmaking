@@ -148,8 +148,18 @@ export async function updateLiveAt(liveMatch: LiveMatch) {
       live_at: moment().toISOString(),
     });
     if (data && isServerMatch(data)) {
-      liveMatch.match = data;
+      liveMatch.setMatch(data);
     }
+  }
+}
+
+export async function sendWarmUpStartedMessage(liveMatch: LiveMatch, liveInfo: LiveInfo) {
+  const match = await updateServer(liveMatch, liveInfo.ip);
+  if (match) {
+    logMessage(
+      `Match ${match.id} warmup started on server ${match.server?.ip};${match.server?.port}`,
+      { match, liveMatch, liveInfo }
+    );
   }
 }
 
@@ -157,13 +167,15 @@ export async function updateServer(liveMatch: LiveMatch, server: string) {
   const { data, error } = await client().updateMatch(liveMatch.match.id, {
     server,
   });
-  if (data) {
-    liveMatch.match = data;
-  }
+
   if (error) {
     logSupabaseError(
       `Match ${liveMatch.match.id}: Failed to update server for LiveMatch`,
       error
     );
+    return null;
   }
+
+  liveMatch.setMatch(data);
+  return data;
 }

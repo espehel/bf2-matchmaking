@@ -149,19 +149,11 @@ const passiveCollector =
         discordClient.users,
         config
       );
-      const matchMessage = await replyMessage(message, {
+      await replyMessage(message, {
         embeds: [getMatchStartedEmbed(match), getRulesEmbedByConfig(config)],
       });
 
-      const topServer = await getTopServerPollResult(match, message.channel);
-      const serverMatch = await client()
-        .updateMatch(match.id, { server: topServer.ip })
-        .then(verifySingleResult);
       await api.rcon().postMatchLive(match.id, true).then(verify);
-      await replyMessage(message, {
-        embeds: [getMatchStartedEmbed(serverMatch, topServer)],
-      });
-      await matchMessage.edit({ embeds: [getRulesEmbedByConfig(config)] });
     } catch (e) {
       error('passiveCollector', e);
     }

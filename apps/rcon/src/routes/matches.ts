@@ -1,10 +1,7 @@
-import express, { Request } from 'express';
-import { MatchStatus, PostMatchesRequestBody } from '@bf2-matchmaking/types';
+import express from 'express';
+import { MatchStatus } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { getPlayerFromDatabase } from '../services/players';
-import { toMatchPlayer } from '../mappers/player';
-import { error, info, logOngoingMatchCreated } from '@bf2-matchmaking/logging';
-import moment from 'moment';
+import { error } from '@bf2-matchmaking/logging';
 import { findLiveMatch, initLiveMatch } from '../services/MatchManager';
 import { closeMatch } from '../services/matches';
 
@@ -58,14 +55,8 @@ router.post('/:matchid/live', async (req, res) => {
       return res.status(400).send({ message: `Match ${match.id} is not ongoing.` });
     }
 
-    const lm = initLiveMatch(match, { prelive });
-    if (lm) {
-      return res.status(201).send(lm);
-    } else {
-      return res
-        .status(400)
-        .send({ message: `Live match already exists for match ${match.id}` });
-    }
+    const liveMatch = initLiveMatch(match, { prelive });
+    return res.status(201).send(liveMatch);
   } catch (e) {
     if (e instanceof Error) {
       return res.status(500).send(e.message);

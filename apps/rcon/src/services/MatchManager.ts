@@ -22,14 +22,17 @@ export function findLiveMatch(matchId: number): LiveMatch | undefined {
 }
 
 export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
-  if (liveMatches.has(match.id)) {
-    return null;
+  let liveMatch = liveMatches.get(match.id);
+
+  if (liveMatch) {
+    liveMatch.setMatch(match);
+  } else {
+    liveMatch = new LiveMatch(match, options);
+    liveMatches.set(match.id, liveMatch);
   }
 
-  const liveMatch = new LiveMatch(match, options);
-  liveMatches.set(match.id, liveMatch);
-
   if (isServerMatch(match) && isIdle(match.server.ip)) {
+    resetLiveMatchServers(liveMatch);
     setServerLiveMatch(match.server.ip, liveMatch);
   }
   return liveMatch;

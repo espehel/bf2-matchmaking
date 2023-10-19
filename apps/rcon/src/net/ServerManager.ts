@@ -51,10 +51,15 @@ export function findServer(liveMatch: LiveMatch) {
 function isMatchServer(liveMatch: LiveMatch) {
   const players = liveMatch.match.players;
   return (server: LiveServer) =>
-    players.filter((p) => server.info.players.some((sp) => sp.keyhash === p.keyhash))
-      .length /
-      players.length >=
-    SERVER_IDENTIFIED_RATIO;
+    isServerIdentified(
+      players.filter((p) => server.info.players.some((sp) => sp.keyhash === p.keyhash))
+        .length,
+      players.length
+    );
+}
+
+export function isServerIdentified(serverPlayers: number, matchSize: number) {
+  return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
 }
 export function getLiveServers() {
   return Array.from(liveServers.values());

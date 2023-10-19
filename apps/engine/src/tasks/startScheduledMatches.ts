@@ -3,6 +3,7 @@ import moment from 'moment';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { api } from '@bf2-matchmaking/utils';
 
 export async function startScheduledMatches() {
   const matchesToStart = matches.getScheduled().filter(isScheduledToStart);
@@ -21,14 +22,24 @@ function isScheduledToStart(match: ScheduledMatch) {
   );
 }
 
-async function startMatch(match: ScheduledMatch) {
-  const { error } = await client().updateMatch(match.id, {
+async function startMatch(scheduledMatch: ScheduledMatch) {
+  const { data: match, error } = await client().updateMatch(scheduledMatch.id, {
     status: MatchStatus.Ongoing,
     started_at: moment().toISOString(),
   });
+  const { data: liveMatch, error: rconError } = await api
+    .rcon()
+    .postMatchLive(scheduledMatch.id, false);
+
   if (error) {
-    logErrorMessage(`Match ${match.id} failed to start`, error, { match });
+    logErrorMessage(`Match ${scheduledMatch.id} failed to set status ongoing`, error, {
+      match: scheduledMatch,
+    });
+  } else if (rconError) {
+    logErrorMessage(`Match ${match.id} failed to start live match`, rconError, {
+      match,
+    });
   } else {
-    logMessage(`Match ${match.id} started`, { match });
+    logMessage(`Match ${match.id} started`, { match, liveMatch });
   }
 }
