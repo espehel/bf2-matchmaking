@@ -9,7 +9,8 @@ import {
 } from '../net/RconManager';
 import { getJoinmeHref } from '@bf2-matchmaking/utils';
 import { RconBf2Server } from '@bf2-matchmaking/types';
-
+import { externalApi } from '@bf2-matchmaking/utils';
+import { getLiveInfo, getLiveServer, getLiveServers } from '../net/ServerManager';
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
@@ -126,14 +127,11 @@ router.get('/', async (req, res) => {
   const servers: Array<RconBf2Server> = await Promise.all(
     data.map(async (server) => {
       const joinmeHref = await getJoinmeHref(server);
-      try {
-        const { id, rcon_port, rcon_pw } = await client()
-          .getServerRcon(server.ip)
-          .then(verifySingleResult);
-        const info = await rcon(id, rcon_port, rcon_pw).then(getServerInfo);
-        return { ...server, info, joinmeHref };
-      } catch (e) {}
-      return { ...server, info: null, joinmeHref };
+      const { data: location } = await externalApi.ip().getIpLocation(server.ip);
+      const country = location?.country || null;
+      const city = location?.city || null;
+      const info = getLiveInfo(server.ip);
+      return { ...server, info, joinmeHref, country, city };
     })
   );
   res.send(servers);

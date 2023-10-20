@@ -1,7 +1,7 @@
 import { PlayerListItem, LiveInfo, ServerRconsRow } from '@bf2-matchmaking/types';
 import { getPlayerList, getServerInfo, rcon } from '../net/RconManager';
 
-export async function getLiveInfo({
+export async function createLiveInfo({
   id: ip,
   rcon_port,
   rcon_pw,

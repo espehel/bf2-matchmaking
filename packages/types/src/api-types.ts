@@ -50,8 +50,10 @@ export interface PostCommandsReinstallRequestBody {
 }
 
 export interface RconBf2Server extends ServersJoined {
-  info: ServerInfo | null;
+  info: LiveInfo | null;
   joinmeHref: string;
+  country: string | null;
+  city: string | null;
 }
 
 export interface LiveInfo extends ServerInfo {

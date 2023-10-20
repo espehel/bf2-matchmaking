@@ -2,7 +2,7 @@ import { LiveServer } from './LiveServer';
 import { client } from '@bf2-matchmaking/supabase';
 import { info, logSupabaseError } from '@bf2-matchmaking/logging';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
-import { getLiveInfo } from '../services/servers';
+import { createLiveInfo } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
@@ -10,6 +10,17 @@ export const SERVER_IDENTIFIED_RATIO = 0.3;
 const liveServers = new Map<string, LiveServer>();
 const rcons = new Map<string, ServerRconsRow>();
 
+export function getLiveServers() {
+  return Array.from(liveServers.values());
+}
+
+export function getLiveServer(ip: string) {
+  return liveServers.get(ip) || null;
+}
+
+export function getLiveInfo(ip: string) {
+  return liveServers.get(ip)?.info || null;
+}
 export async function initLiveServers() {
   const { data, error } = await client().getServerRcons();
   if (error) {
@@ -19,7 +30,7 @@ export async function initLiveServers() {
   await Promise.all(
     data.map(async (rcon) => {
       rcons.set(rcon.id, rcon);
-      const liveInfo = await getLiveInfo(rcon);
+      const liveInfo = await createLiveInfo(rcon);
       if (liveInfo) {
         liveServers.set(rcon.id, new LiveServer(rcon, liveInfo).start());
       }
@@ -60,7 +71,4 @@ function isMatchServer(liveMatch: LiveMatch) {
 
 export function isServerIdentified(serverPlayers: number, matchSize: number) {
   return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
-}
-export function getLiveServers() {
-  return Array.from(liveServers.values());
 }
