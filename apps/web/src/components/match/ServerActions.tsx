@@ -63,13 +63,13 @@ export default function ServerActions({ match, server }: Props) {
         <button className="btn btn-primary w-fit" disabled>
           Change map
         </button>
-        <AsyncActionButton
+        {/*<AsyncActionButton
           action={() => setTeams(match, server.ip)}
           errorMessage="Failed to set teams"
           successMessage="Teams set"
         >
           Set teams
-        </AsyncActionButton>
+        </AsyncActionButton>*/}
       </div>
     </div>
   );
