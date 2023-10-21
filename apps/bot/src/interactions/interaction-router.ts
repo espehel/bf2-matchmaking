@@ -5,13 +5,12 @@ import {
   InteractionType,
 } from 'discord-api-types/v10';
 import { InteractionResponseType } from 'discord-interactions';
-import { getOption, VerifyDiscordRequest } from '../utils';
+import { getOption } from '../utils';
 import { ApplicationCommandName } from '../commands';
 import { logInternalApiError, logSupabaseError } from '@bf2-matchmaking/logging';
-import { rcon } from '@bf2-matchmaking/utils/src/internal-api';
 import { updatePlayerKeyHash } from './interaction-service';
 import { getServerInfoList } from '../server-interactions';
-import invariant from 'tiny-invariant';
+import { api } from '@bf2-matchmaking/utils';
 
 const router = express.Router();
 router.post('/', async (req, res) => {
@@ -49,10 +48,9 @@ router.post('/', async (req, res) => {
       const { error } = await updatePlayerKeyHash(member, keyhash);
       updateError = error;
     } else if (serverIp && playerId) {
-      const { data: player, error: apiError } = await rcon().getRconServerPlayer(
-        serverIp,
-        playerId
-      );
+      const { data: player, error: apiError } = await api
+        .rcon()
+        .getRconServerPlayer(serverIp, playerId);
       if (!player) {
         logInternalApiError('Failed to fetch Server Player', apiError);
         return res.send(

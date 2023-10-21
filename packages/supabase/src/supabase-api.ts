@@ -69,19 +69,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('servers').update(values).eq('ip', ip).select().single(),
   updateServerRcon: (id: string, values: ServerRconsUpdate) =>
     client.from('server_rcons').update(values).eq('id', id).select(),
-  getServers: () =>
-    client
-      .from('servers')
-      .select<'*, matches(id, status)', ServersJoined>('*, matches(id, status)')
-      .or(`status.eq.${MatchStatus.Drafting},status.eq.${MatchStatus.Ongoing}`, {
-        foreignTable: 'matches',
-      }),
-  getServer: (ip: string) =>
-    client
-      .from('servers')
-      .select<'*, matches(id, status)', ServersJoined>('*, matches(id, status)')
-      .eq('ip', ip)
-      .single(),
+  getServers: () => client.from('servers').select('*'),
+  getServer: (ip: string) => client.from('servers').select('*').eq('ip', ip).single(),
   getServerByNameSearch: (name: string) =>
     client.from('servers').select('*').textSearch('name', name, {
       type: 'websearch',

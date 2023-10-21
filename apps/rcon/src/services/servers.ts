@@ -1,5 +1,13 @@
-import { PlayerListItem, LiveInfo, ServerRconsRow } from '@bf2-matchmaking/types';
+import {
+  PlayerListItem,
+  LiveInfo,
+  ServerRconsRow,
+  ServersRow,
+  RconBf2Server,
+} from '@bf2-matchmaking/types';
 import { getPlayerList, getServerInfo, rcon } from '../net/RconManager';
+import { externalApi, getJoinmeHref } from '@bf2-matchmaking/utils';
+import { getLiveServer } from '../net/ServerManager';
 
 export async function createLiveInfo({
   id: ip,
@@ -27,4 +35,15 @@ export async function createLiveInfo({
   }
 
   return { ...info, players, ip };
+}
+
+export async function createRconBF2Server(server: ServersRow): Promise<RconBf2Server> {
+  const joinmeHref = await getJoinmeHref(server);
+  const { data: location } = await externalApi.ip().getIpLocation(server.ip);
+  const country = location?.country || null;
+  const city = location?.city || null;
+  const live = getLiveServer(server.ip);
+  const info = live?.info || null;
+  const match = live?.getLiveMatch()?.match || null;
+  return { ...server, info, joinmeHref, country, city, match };
 }

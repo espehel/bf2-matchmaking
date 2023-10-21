@@ -1,13 +1,12 @@
-import { supabase } from '@/lib/supabase/supabase';
-import { cookies } from 'next/headers';
-import { verifyResult } from '@bf2-matchmaking/supabase';
-import { ServersJoined } from '@bf2-matchmaking/types';
+import { RconBf2Server } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ServerCreateForm from '@/components/ServerCreateForm';
+import { api, verify } from '@bf2-matchmaking/utils';
 
 export default async function Page() {
-  const servers = await supabase(cookies).getServers().then(verifyResult);
+  const servers = await api.rcon().getServers().then(verify);
+
   return (
     <main className="main">
       <table className="table mt-2 bg-base-100 shadow-xl">
@@ -16,19 +15,25 @@ export default async function Page() {
             <th>Name</th>
             <th>Address</th>
             <th>Port</th>
-            <th>In use</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Players</th>
             <th>Details</th>
           </tr>
         </thead>
         <tbody>
           {servers.map((server) => (
             <tr key={server.ip} className="hover">
-              <td className="truncate">{server.name}</td>
+              <td className="truncate">{server.info?.serverName || server.name}</td>
               <td>{server.ip}</td>
               <td>{server.port}</td>
+              <td className="truncate">{`${server.city}, ${server.country}`}</td>
               <td>
-                <MatchServer server={server} />
+                <ServerStatus server={server} />
               </td>
+              <td>{`${server.info?.players.length || 0}/${
+                server.info?.maxPlayers || 0
+              }`}</td>
               <td>
                 <Link className="link link-secondary" href={`/servers/${server.ip}`}>
                   <DocumentMagnifyingGlassIcon className="h-6" />
@@ -46,15 +51,16 @@ export default async function Page() {
   );
 }
 
-function MatchServer({ server }: { server: ServersJoined }) {
-  const match = server.matches.at(0);
-  if (match) {
+function ServerStatus({ server }: { server: RconBf2Server }) {
+  if (server.match) {
     return (
-      <Link className="link" href={`/matches/${match.id}`}>
-        {match.id}
+      <Link className="link" href={`/matches/${server.match.id}`}>
+        {server.match.id}
       </Link>
     );
+  } else if (server.info) {
+    return 'Idle';
   } else {
-    return 'No';
+    return 'Offline';
   }
 }

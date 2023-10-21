@@ -10,7 +10,8 @@ import {
 import { getJoinmeHref } from '@bf2-matchmaking/utils';
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { externalApi } from '@bf2-matchmaking/utils';
-import { getLiveInfo, getLiveServer, getLiveServers } from '../net/ServerManager';
+import { getLiveServer } from '../net/ServerManager';
+import { createRconBF2Server } from '../services/servers';
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
@@ -100,14 +101,10 @@ router.get('/:ip/si', async (req, res) => {
 router.get('/:ip', async (req, res) => {
   try {
     const server = await client().getServer(req.params.ip).then(verifySingleResult);
-    const { id, rcon_port, rcon_pw } = await client()
-      .getServerRcon(req.params.ip)
-      .then(verifySingleResult);
 
-    const info = await rcon(id, rcon_port, rcon_pw).then(getServerInfo);
-    const joinmeHref = await getJoinmeHref(server);
+    const rconServer = await createRconBF2Server(server);
 
-    res.send({ ...server, info, joinmeHref });
+    res.send(rconServer);
   } catch (e) {
     res.status(502).send(e);
   }
@@ -124,16 +121,8 @@ router.get('/', async (req, res) => {
     return res.status(502).send(err.message);
   }
 
-  const servers: Array<RconBf2Server> = await Promise.all(
-    data.map(async (server) => {
-      const joinmeHref = await getJoinmeHref(server);
-      const { data: location } = await externalApi.ip().getIpLocation(server.ip);
-      const country = location?.country || null;
-      const city = location?.city || null;
-      const info = getLiveInfo(server.ip);
-      return { ...server, info, joinmeHref, country, city };
-    })
-  );
+  const servers: Array<RconBf2Server> = await Promise.all(data.map(createRconBF2Server));
+
   res.send(servers);
 });
 export default router;

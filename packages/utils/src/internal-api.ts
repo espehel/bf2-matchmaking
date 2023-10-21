@@ -15,7 +15,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
 
-export const rcon = () => {
+const rcon = () => {
   const basePath = 'https://bf2-rcon.up.railway.app';
   const paths = {
     rconServers: () => '/rcon/servers',
@@ -72,7 +72,7 @@ export const rcon = () => {
       ),
   };
 };
-export const bot = () => {
+const bot = () => {
   const basePath = 'https://bf2-bot.up.railway.app';
   const paths = {
     matchEvent: '/api/match_events',
@@ -87,4 +87,9 @@ export const bot = () => {
     postMatchConfigEvent: (channelId: string, event: MatchConfigEvent) =>
       postJSON(basePath.concat(paths.matchConfigEvent), event),
   };
+};
+
+export const api = {
+  rcon,
+  bot,
 };

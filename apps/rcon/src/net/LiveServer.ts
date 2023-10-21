@@ -61,6 +61,9 @@ export class LiveServer {
     this.#waitingSince = moment();
     return this;
   }
+  getLiveMatch() {
+    return this.#liveMatch;
+  }
   isIdle() {
     return !Boolean(this.#liveMatch);
   }

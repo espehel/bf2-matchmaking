@@ -1,4 +1,4 @@
-import { MatchesJoined, RoundsInsert, ServersJoined } from './database-types';
+import { MatchesJoined, RoundsInsert, ServersJoined, ServersRow } from './database-types';
 import { LiveRound, LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
 export enum ApiErrorType {
@@ -49,8 +49,9 @@ export interface PostCommandsReinstallRequestBody {
   commands: Array<string>;
 }
 
-export interface RconBf2Server extends ServersJoined {
+export interface RconBf2Server extends ServersRow {
   info: LiveInfo | null;
+  match: MatchesJoined | null;
   joinmeHref: string;
   country: string | null;
   city: string | null;
