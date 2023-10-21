@@ -18,6 +18,7 @@ import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/log
 import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
 import { isServerIdentified } from '../net/ServerManager';
+import moment from 'moment/moment';
 
 export interface LiveMatchOptions {
   prelive: boolean;
@@ -50,6 +51,10 @@ export class LiveMatch {
 
   isWaiting() {
     return this.state === 'waiting';
+  }
+
+  isStale() {
+    return moment(this.match.started_at).isBefore(moment().subtract(3, 'hours'));
   }
 
   #updateLiveInfo(liveInfo: LiveInfo) {

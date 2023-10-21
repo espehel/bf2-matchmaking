@@ -44,7 +44,7 @@ export function updateLiveMatches() {
     return;
   }
   for (const liveMatch of liveMatches.values()) {
-    if (liveMatch.isWaiting()) {
+    if (liveMatch.isWaiting() && !liveMatch.isStale()) {
       const liveServer = findServer(liveMatch);
       if (liveServer && liveServer.isIdle()) {
         resetLiveMatchServers(liveMatch);

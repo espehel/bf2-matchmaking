@@ -48,6 +48,7 @@ export class LiveServer {
     this.#clearTimers();
     this.#liveMatch = null;
     this.#waitingSince = null;
+    this.#errorAt = null;
     this.#interval = setInterval(this.#updateInfo.bind(this), IDLE_POLL_INTERVAL);
     return this;
   }

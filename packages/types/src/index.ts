@@ -181,7 +181,6 @@ export type LiveServerState =
   | 'prelive'
   | 'live'
   | 'endlive'
-  | 'new_server'
   | 'finished';
 
 export interface LiveRound extends Omit<RoundsInsert, 'si' | 'pl' | 'map'> {
