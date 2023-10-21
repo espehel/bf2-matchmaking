@@ -18,9 +18,7 @@ export default function LiveSection({ match, isMatchAdmin, data }: Props) {
     return null;
   }
 
-  const { round, status } = data;
-  const serverInfo = round?.si;
-  const playerList = round?.pl;
+  const { status } = data;
 
   const serverChanged = match.server?.ip !== data.round?.server;
 
@@ -29,9 +27,6 @@ export default function LiveSection({ match, isMatchAdmin, data }: Props) {
     <section className="section bg-secondary text-secondary-content w-full">
       <h2>Live</h2>
       <p>{`Status: ${status || 'not connected'}`}</p>
-      {serverInfo && playerList && (
-        <RoundTable serverInfo={serverInfo!} playerList={playerList!} />
-      )}
       {!status && (
         <div>
           <p>Match is not polling data from server</p>

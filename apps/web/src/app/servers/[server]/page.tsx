@@ -1,7 +1,4 @@
-import { supabase } from '@/lib/supabase/supabase';
-import { cookies } from 'next/headers';
-import { verifySingleResult } from '@bf2-matchmaking/supabase';
-import { api } from '@bf2-matchmaking/utils';
+import { api, verify } from '@bf2-matchmaking/utils';
 import RoundTable from '@/components/RoundTable';
 import ServerUpdateForm from '@/components/ServerUpdateForm';
 import ServerInfoSection from '@/components/ServerInfoSection';
@@ -11,16 +8,7 @@ interface Props {
   params: { server: string };
 }
 export default async function ServerPage({ params }: Props) {
-  const server = await supabase(cookies)
-    .getServer(params.server)
-    .then(verifySingleResult);
-
-  const { data: serverInfo } = await api.rcon().getServerInfo(params.server);
-
-  const { data: playerList } =
-    serverInfo && parseInt(serverInfo.connectedPlayers) > 0
-      ? await api.rcon().getServerPlayerList(params.server)
-      : { data: null };
+  const server = await api.rcon().getServer(params.server).then(verify);
 
   return (
     <main className="main flex flex-col gap-6">
@@ -28,15 +16,15 @@ export default async function ServerPage({ params }: Props) {
       <section>
         <div className="flex items-center">
           <h2 className="text-xl">{server.name}</h2>
-          {serverInfo && <UpdateServerNameForm server={server} info={serverInfo} />}
+          {server.info && <UpdateServerNameForm server={server} info={server.info} />}
         </div>
         <p className="font-bold mb-2">{`IP: ${server.ip}`}</p>
         <ServerUpdateForm server={server} />
       </section>
-      <ServerInfoSection serverInfo={serverInfo} />
-      {playerList && serverInfo && (
+      <ServerInfoSection serverInfo={server.info} />
+      {server.info && server.info.players.length > 0 && (
         <section>
-          <RoundTable serverInfo={serverInfo} playerList={playerList} />
+          <RoundTable liveInfo={server.info} />
         </section>
       )}
     </main>

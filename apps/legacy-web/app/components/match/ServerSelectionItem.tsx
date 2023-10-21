@@ -5,7 +5,7 @@ import { Link, useLoaderData, useSubmit } from '@remix-run/react';
 import { loader } from '~/routes/matches/$matchId';
 import { useUser } from '@supabase/auth-helpers-react';
 import { isCaptain } from '@bf2-matchmaking/utils';
-import {usePlayer} from "web/src/state/PlayerContext";
+import { usePlayer } from 'web/src/state/PlayerContext';
 
 interface Props {
   server: ServersJoined;
@@ -14,7 +14,7 @@ interface Props {
 const ServerSelectionItem: FC<Props> = ({ server }) => {
   const { match } = useLoaderData<typeof loader>();
   const user = useUser();
-  const {player} = usePlayer();
+  const { player } = usePlayer();
   const submit = useSubmit();
 
   const selectServer = (serverIp: string) => () =>

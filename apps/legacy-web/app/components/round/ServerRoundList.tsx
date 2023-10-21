@@ -14,11 +14,9 @@ const ServerRoundList: FC<Props> = ({ rounds }) => {
         <section className="mb-2" key={serverName}>
           <h3 className="font-bold">Server: {serverName}</h3>
           <ul className="ml-2 space-y-2">
-            {serverRounds
-              .filter((round) => round.pl !== 'null' && Boolean(round.pl && round.si))
-              .map((round) => (
-                <RoundItem round={round} key={round.id} />
-              ))}
+            {serverRounds.map((round) => (
+              <RoundItem round={round} key={round.id} />
+            ))}
           </ul>
         </section>
       ))}

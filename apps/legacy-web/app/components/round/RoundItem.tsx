@@ -26,10 +26,6 @@ const RoundItem: FC<Props> = ({ round }) => {
     }
   };
 
-  if (!round.si || !round.pl) {
-    return null;
-  }
-
   return (
     <li className="border rounded w-full">
       <button className="flex gap-4 p-4 w-full" onClick={onRoundClick}>

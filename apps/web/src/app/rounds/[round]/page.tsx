@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { isTruthy, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import { isTruthy, LiveInfo, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Link from 'next/link';
@@ -23,21 +23,16 @@ export default async function RoundPage({ params, searchParams }: Props) {
   const isPlayerAdmin = Boolean(adminRoles?.player_admin);
   const isRegisterTab = searchParams.tab === 'register' && isPlayerAdmin;
 
-  const serverInfo = parseJSON<ServerInfo>(round.si);
-  const playerList = parseJSON<Array<PlayerListItem>>(round.pl);
+  const info = parseJSON<LiveInfo>(round.info);
 
-  const registeredPlayers = playerList
-    ? await supabase(cookies)
-        .getPlayersByKeyhashList(
-          playerList.map(({ keyhash }) => keyhash).filter(isTruthy)
-        )
-        .then(verifyResult)
-    : [];
+  const registeredPlayers = await supabase(cookies)
+    .getPlayersByKeyhashList(info.players.map(({ keyhash }) => keyhash).filter(isTruthy))
+    .then(verifyResult);
 
   const roundTime =
-    parseInt(serverInfo.roundTime) < parseInt(serverInfo.timeLimit)
-      ? formatSecToMin(serverInfo.roundTime)
-      : formatSecToMin(serverInfo.timeLimit);
+    parseInt(info.roundTime) < parseInt(info.timeLimit)
+      ? formatSecToMin(info.roundTime)
+      : formatSecToMin(info.timeLimit);
 
   async function registerPlayer(playerId: string, keyhash: string) {
     'use server';
@@ -47,18 +42,18 @@ export default async function RoundPage({ params, searchParams }: Props) {
   return (
     <main className="main">
       <h1 className="text-center mb-10">
-        <span>{serverInfo.team1_Name}</span>
+        <span>{info.team1_Name}</span>
         <span className="bg-primary text-primary-content text-5xl font-bold p-2 mx-4 rounded">
-          {`${serverInfo.team1_tickets} - ${serverInfo.team2_tickets}`}
+          {`${info.team1_tickets} - ${info.team2_tickets}`}
         </span>
-        <span>{serverInfo.team2_Name}</span>
+        <span>{info.team2_Name}</span>
       </h1>
       <section className="section mb-6">
         <h2>Info:</h2>
         <div className="flex flex-wrap gap-4">
           <p>{`Map: ${round.map.name}`}</p>
           <p>{`Round time: ${roundTime}`}</p>
-          <p>{`Connected players: ${serverInfo.connectedPlayers}`}</p>
+          <p>{`Connected players: ${info.connectedPlayers}`}</p>
           {round.server && (
             <Link
               className="link"
@@ -95,12 +90,12 @@ export default async function RoundPage({ params, searchParams }: Props) {
       </div>
       {!isRegisterTab && (
         <section>
-          <RoundTable serverInfo={serverInfo} playerList={playerList} />
+          <RoundTable liveInfo={info} />
         </section>
       )}
       {isRegisterTab && (
         <PlayersRegisterSection
-          playerList={playerList}
+          playerList={info.players}
           registeredPlayers={registeredPlayers}
           registerPlayer={registerPlayer}
         />

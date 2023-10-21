@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import PlayerConnectSection from '@/components/PlayerConnectSection';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
+import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
+import { LiveInfo } from '@bf2-matchmaking/types';
 
 interface Props {
   params: { round: string };
@@ -13,11 +15,8 @@ export default async function RoundClaimPage({ params }: Props) {
     .then(verifySingleResult);
   const { data: session } = await supabase(cookies).auth.getSession();
 
-  const playerList = typeof round.pl === 'string' ? JSON.parse(round.pl) : null;
+  const info = parseJSON<LiveInfo>(round.info);
 
-  if (!playerList) {
-    return <main>No playerlist found for the round</main>;
-  }
   //TODO: use session to fetch player and give option to delete keyhash
   return (
     <main className="text-center">
@@ -27,7 +26,7 @@ export default async function RoundClaimPage({ params }: Props) {
           Your current public ip address will be used to match a player from the chosen
           round.
         </p>
-        <PlayerConnectSection playerList={playerList} session={session.session} />
+        <PlayerConnectSection playerList={info.players} session={session.session} />
         {round.match && (
           <Link className="link float-left" href={`/results/${round.match}`}>
             Back to match result

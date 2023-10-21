@@ -451,11 +451,10 @@ export interface Database {
         Row: {
           created_at: string
           id: number
+          info: Json
           map: number
           match: number | null
-          pl: Json | null
           server: string | null
-          si: Json | null
           team1: number
           team1_tickets: string
           team2: number
@@ -464,11 +463,10 @@ export interface Database {
         Insert: {
           created_at?: string
           id?: number
+          info: Json
           map: number
           match?: number | null
-          pl?: Json | null
           server?: string | null
-          si?: Json | null
           team1?: number
           team1_tickets: string
           team2?: number
@@ -477,11 +475,10 @@ export interface Database {
         Update: {
           created_at?: string
           id?: number
+          info?: Json
           map?: number
           match?: number | null
-          pl?: Json | null
           server?: string | null
-          si?: Json | null
           team1?: number
           team1_tickets?: string
           team2?: number

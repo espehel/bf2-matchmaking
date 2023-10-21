@@ -8,6 +8,7 @@ import {
   RoundsJoined,
   MatchPlayerResultsInsert,
   PlayersInsert,
+  LiveInfo,
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
 
@@ -15,8 +16,8 @@ export const getPlayerRoundStats = (
   round: RoundsJoined
 ): Record<string, RoundStats> | null => {
   try {
-    const playerList = parseJSON<Array<PlayerListItem>>(round.pl);
-    return playerList
+    const info = parseJSON<LiveInfo>(round.info);
+    return info.players
       .map(({ keyhash, score, deaths, scoreKills }) => ({
         [keyhash]: {
           score: parseInt(score),

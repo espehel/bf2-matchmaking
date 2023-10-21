@@ -1,5 +1,6 @@
 import React, { FC, useMemo } from 'react';
-import { PlayerListItem, RoundsJoined, ServerInfo } from '@bf2-matchmaking/types';
+import { LiveInfo, PlayerListItem, RoundsJoined, ServerInfo } from '@bf2-matchmaking/types';
+import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
 
 interface Props {
   round: RoundsJoined;
@@ -12,24 +13,14 @@ const toTimeString = (seconds: number) =>
   (seconds - (seconds %= 60)) / 60 + (9 < seconds ? ':' : ':0') + seconds;
 
 const RoundSummary: FC<Props> = ({ round }: Props) => {
-  const serverInfo: ServerInfo = useMemo(
-    () => (typeof round.si === 'string' ? JSON.parse(round.si) : null),
-    [round]
-  );
-  const playerList: Array<PlayerListItem> = useMemo(
-    () => (typeof round.pl === 'string' ? JSON.parse(round.pl) : null), //(mock as any) : null),
-    [round]
-  );
-  if (!serverInfo || !playerList) {
-    return <p>Round summary not available.</p>;
-  }
+  const info = parseJSON<LiveInfo>(round.info);
 
-  const team1 = playerList.filter((player) => player.getTeam === '1').sort(compareScore);
-  const team2 = playerList.filter((player) => player.getTeam === '2').sort(compareScore);
+  const team1 = info.players.filter((player) => player.getTeam === '1').sort(compareScore);
+  const team2 = info.players.filter((player) => player.getTeam === '2').sort(compareScore);
   return (
     <div className="ml-4">
       <div className="flex gap-4 mb-4">
-        <p>{`Round time: ${toTimeString(parseInt(serverInfo.roundTime))}`}</p>
+        <p>{`Round time: ${toTimeString(parseInt(info.roundTime))}`}</p>
       </div>
       <div className="flex">
         <div className="w-1/2">

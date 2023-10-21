@@ -1,4 +1,5 @@
 import {
+  LiveInfo,
   MatchesJoined,
   PlayerListItem,
   RoundsJoined,
@@ -9,8 +10,8 @@ import { getMatchPlayer } from './player-utils';
 
 export function toKeyhashList(round: RoundsRow | RoundsJoined) {
   try {
-    const playerList = parseJSON<Array<PlayerListItem>>(round.pl);
-    return playerList.map(({ keyhash }) => keyhash);
+    const info = parseJSON<LiveInfo>(round.info);
+    return info.players.map(({ keyhash }) => keyhash);
   } catch (e) {
     console.error(e);
     return null;

@@ -1,18 +1,17 @@
 'use client';
-import { PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import { LiveInfo, PlayerListItem } from '@bf2-matchmaking/types';
 
 interface Props {
-  serverInfo: ServerInfo;
-  playerList: Array<PlayerListItem>;
+  liveInfo: LiveInfo;
 }
 
 const compareScore = (playerA: PlayerListItem, playerB: PlayerListItem) =>
   parseInt(playerB.score) - parseInt(playerA.score);
 
-export default function RoundTable({ playerList, serverInfo }: Props) {
-  const sortedPlayers = [...playerList].sort(compareScore);
+export default function RoundTable({ liveInfo }: Props) {
+  const sortedPlayers = [...liveInfo.players].sort(compareScore);
   const getTeam = (teamNumber: string) =>
-    teamNumber === '1' ? serverInfo.team1_Name : serverInfo.team2_Name;
+    teamNumber === '1' ? liveInfo.team1_Name : liveInfo.team2_Name;
   return (
     <table className="table mt-2 bg-base-100 shadow-xl">
       <thead>

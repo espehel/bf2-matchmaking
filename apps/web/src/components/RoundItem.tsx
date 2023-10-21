@@ -1,12 +1,18 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { PlayerListItem, RoundsJoined, ServerInfo } from '@bf2-matchmaking/types';
+import {
+  LiveInfo,
+  PlayerListItem,
+  RoundsJoined,
+  ServerInfo,
+} from '@bf2-matchmaking/types';
 import { UnmountClosed } from 'react-collapse';
 import RoundTable from './RoundTable';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Image from 'next/image';
 import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Link from 'next/link';
+import { parseJSON, parseNullableJSON } from '@bf2-matchmaking/utils/src/json-utils';
 
 interface Props {
   round: RoundsJoined;
@@ -19,23 +25,16 @@ export default function RoundItem({ round }: Props) {
     setSummaryOpen(!isSummaryOpen);
   };
 
-  const serverInfo: ServerInfo = useMemo(
-    () => (typeof round.si === 'string' ? JSON.parse(round.si) : null),
-    [round]
-  );
-  const playerList: Array<PlayerListItem> = useMemo(
-    () => (typeof round.pl === 'string' ? JSON.parse(round.pl) : null),
-    [round]
-  );
+  const info = parseNullableJSON<LiveInfo>(round.info);
 
-  if (!serverInfo || !playerList) {
+  if (!info) {
     return null;
   }
 
   const roundTime =
-    parseInt(serverInfo.roundTime) < parseInt(serverInfo.timeLimit)
-      ? formatSecToMin(serverInfo.roundTime)
-      : formatSecToMin(serverInfo.timeLimit);
+    parseInt(info.roundTime) < parseInt(info.timeLimit)
+      ? formatSecToMin(info.roundTime)
+      : formatSecToMin(info.timeLimit);
 
   return (
     <li>
@@ -56,17 +55,17 @@ export default function RoundItem({ round }: Props) {
             <p className="text-sm">{`Round time: ${roundTime}`}</p>
           </div>
           <div>
-            <p className="text-md font-bold">{serverInfo.team1_Name}</p>
-            <p className="text-md">{serverInfo.team1_tickets}</p>
+            <p className="text-md font-bold">{info.team1_Name}</p>
+            <p className="text-md">{info.team1_tickets}</p>
           </div>
           <div>
-            <p className="text-md font-bold">{serverInfo.team2_Name}</p>
-            <p className="text-md">{serverInfo.team2_tickets}</p>
+            <p className="text-md font-bold">{info.team2_Name}</p>
+            <p className="text-md">{info.team2_tickets}</p>
           </div>
         </button>
       </div>
       <UnmountClosed isOpened={isSummaryOpen}>
-        <RoundTable serverInfo={serverInfo} playerList={playerList} />
+        <RoundTable liveInfo={info} />
         <div className="flex justify-end">
           <Link
             className="btn btn-secondary btn-sm mt-2 mr-2"

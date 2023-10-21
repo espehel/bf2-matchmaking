@@ -1,6 +1,6 @@
 'use client';
 
-import { MatchesJoined, ServersJoined } from '@bf2-matchmaking/types';
+import { MatchesJoined, ServersRow } from '@bf2-matchmaking/types';
 import SelectForm from '@/components/SelectForm';
 import { useCallback } from 'react';
 import { setServer } from '@/app/matches/[match]/actions';
@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 
 interface Props {
   match: MatchesJoined;
-  servers: Array<ServersJoined>;
+  servers: Array<ServersRow>;
 }
 
 export default function SelectServerForm({ match, servers }: Props) {
