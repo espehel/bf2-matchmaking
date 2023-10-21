@@ -23,7 +23,6 @@ export default async function ResultsMatch({ params }: Props) {
 
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   const { data: sessionPlayer } = await supabase(cookies).getSessionPlayer();
-  const { data } = await api.rcon().getMatchLive(match.id);
 
   const isMatchPlayer = match.players.some((p) => p.id === sessionPlayer?.id);
 
@@ -43,11 +42,9 @@ export default async function ResultsMatch({ params }: Props) {
           />
         </Suspense>
         <MapsSection match={match} key={match.maps.map((m) => m.id).join()} />
-        <LiveSection
-          data={data}
-          match={match}
-          isMatchAdmin={Boolean(adminRoles?.match_admin)}
-        />
+        <Suspense fallback={null}>
+          <LiveSection match={match} />
+        </Suspense>
         <div className="divider" />
         <RoundsList
           rounds={[...match.rounds].sort((a, b) =>

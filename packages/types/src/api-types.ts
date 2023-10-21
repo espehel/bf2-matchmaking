@@ -90,6 +90,6 @@ export interface PostServerPlayersSwitchRequestBody {
 export type PostMatchResult = MatchesJoined;
 
 export type GetMatchLiveResponseBody = {
-  round: LiveRound | null | undefined;
-  status: LiveServerState;
+  liveInfo: LiveInfo | null;
+  liveState: LiveServerState;
 };

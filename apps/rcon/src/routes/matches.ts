@@ -1,5 +1,5 @@
 import express from 'express';
-import { MatchStatus } from '@bf2-matchmaking/types';
+import { GetMatchLiveResponseBody, MatchStatus } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error } from '@bf2-matchmaking/logging';
 import { findLiveMatch, initLiveMatch } from '../services/MatchManager';
@@ -61,8 +61,11 @@ router.get('/:matchid/live', async (req, res) => {
   if (!match) {
     return res.status(404).send('Live match not found.');
   }
-
-  return res.send(match);
+  const body: GetMatchLiveResponseBody = {
+    liveInfo: match.liveInfo,
+    liveState: match.state,
+  };
+  return res.send(body);
 });
 
 export default router;
