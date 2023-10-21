@@ -153,7 +153,7 @@ const passiveCollector =
         embeds: [getMatchStartedEmbed(match), getRulesEmbedByConfig(config)],
       });
 
-      await api.rcon().postMatchLive(match.id, true).then(verify);
+      await api.rcon().postMatchLive(match.id, false).then(verify);
     } catch (e) {
       error('passiveCollector', e);
     }
