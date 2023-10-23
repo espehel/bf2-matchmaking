@@ -56,7 +56,7 @@ export async function createScheduledMatch(options: CreateScheduledMatchOptions)
   }
 
   if (!err && !mapErr) {
-    logMessage(`Match ${updatedMatch.id} scheduled`, {
+    logMessage(`Match ${updatedMatch.id} scheduled for ${scheduled_at}`, {
       match: updatedMatch,
       maps: matchMaps,
     });

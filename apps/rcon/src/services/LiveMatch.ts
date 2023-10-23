@@ -57,6 +57,9 @@ export class LiveMatch {
     return moment(this.match.started_at).isBefore(moment().subtract(3, 'hours'));
   }
 
+  hasMatchPlayers() {
+    return this.match.players.length > 0;
+  }
   #updateLiveInfo(liveInfo: LiveInfo) {
     this.liveInfo = {
       ...liveInfo,
@@ -88,13 +91,13 @@ export class LiveMatch {
       return next('finished');
     }
 
-    if (!isServerIdentified(liveInfo.players.length, this.match.players.length)) {
+    if (!isServerIdentified(liveInfo.players.length, this.match.config.size)) {
       return next('waiting');
     }
 
     if (
       this.state === 'waiting' &&
-      isServerIdentified(liveInfo.players.length, this.match.players.length)
+      isServerIdentified(liveInfo.players.length, this.match.config.size)
     ) {
       return next('warmup');
     }
@@ -126,7 +129,7 @@ export class LiveMatch {
       return next('live');
     }
 
-    const round = await insertRound(this.match, liveInfo);
+    const round = await insertRound(this.match, this.liveInfo || liveInfo);
     logAddMatchRound(round, this.match, liveInfo);
     info('onLiveServerUpdate', `Created round ${round.id}`);
     this.rounds.push(round);
