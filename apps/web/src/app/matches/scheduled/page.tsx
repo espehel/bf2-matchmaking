@@ -4,6 +4,7 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import { isScheduledMatch } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import MatchDateItems from '@/components/match/MatchDateItems';
+import ScheduleMatchForm from '@/components/match/ScheduleMatchForm';
 
 export default async function ScheduledMatchesPage() {
   const matches = await supabase(cookies)
@@ -20,6 +21,7 @@ export default async function ScheduledMatchesPage() {
   return (
     <main className="main text-center">
       <h1 className="mb-8">Scheduled matches</h1>
+      <ScheduleMatchForm />
       {!hasMatches && <p>Currently no scheduled matches...</p>}
       {hasMatches && (
         <ul className="grid justify-center gap-4">

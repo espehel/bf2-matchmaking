@@ -27,6 +27,7 @@
     "daisyui": "^3.4.0",
     "eslint": "^8.45.0",
     "eslint-config-next": "^13.4.12",
+    "luxon": "^3.4.3",
     "moment": "^2.29.4",
     "next": "^13.5.4",
     "postcss": "^8.4.27",
@@ -42,6 +43,7 @@
     "typescript": "^5.2.2"
   },
   "devDependencies": {
+    "@types/luxon": "^3.3.3",
     "encoding": "^0.1.13"
   }
 }
