@@ -67,6 +67,18 @@ export async function closeMatch(matchId: number) {
   return result;
 }
 
+export async function deleteMatch(matchId: number) {
+  const result = await supabase(cookies).updateMatch(matchId, {
+    status: MatchStatus.Deleted,
+  });
+
+  if (!result.error) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}
+
 export async function pauseRound(matchId: number, serverIp: string) {
   const result = await api.rcon().postServerPause(serverIp);
 

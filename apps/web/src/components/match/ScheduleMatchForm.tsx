@@ -1,9 +1,7 @@
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { XMarkIcon } from '@heroicons/react/24/solid';
 import moment from 'moment';
-import IconBtn from '@/components/commons/IconBtn';
 import FormSubmitButton from '@/components/FormSubmitButton';
 import Select from '@/components/commons/Select';
 import DatetimeInput from '@/components/commons/DatetimeInput';
@@ -11,8 +9,14 @@ import { createScheduledMatch } from '@/app/matches/actions';
 import CollapseControl from '@/components/commons/CollapseControl';
 
 export default async function ScheduleMatchForm() {
-  const configs = await supabase(cookies).getMatchConfigs().then(verifyResult);
-  const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
+  const configs = await supabase(cookies)
+    .getMatchConfigs()
+    .then(verifyResult)
+    .then(filterVisible);
+  const teams = await supabase(cookies)
+    .getVisibleTeams()
+    .then(verifyResult)
+    .then(filterVisible);
   const servers = await supabase(cookies).getServers().then(verifyResult);
 
   return (
@@ -60,4 +64,8 @@ export default async function ScheduleMatchForm() {
       </CollapseControl>
     </div>
   );
+}
+
+function filterVisible<T extends { visible: boolean }>(array: Array<T>): Array<T> {
+  return array.filter((e) => e.visible);
 }

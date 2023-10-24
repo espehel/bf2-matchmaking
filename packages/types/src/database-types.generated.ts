@@ -116,6 +116,7 @@ export interface Database {
           size: number
           type: number
           updated_at: string
+          visible: boolean
         }
         Insert: {
           channel?: string | null
@@ -131,6 +132,7 @@ export interface Database {
           size: number
           type?: number
           updated_at?: string
+          visible?: boolean
         }
         Update: {
           channel?: string | null
@@ -146,6 +148,7 @@ export interface Database {
           size?: number
           type?: number
           updated_at?: string
+          visible?: boolean
         }
         Relationships: [
           {

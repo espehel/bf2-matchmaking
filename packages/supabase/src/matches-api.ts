@@ -25,6 +25,27 @@ export default (client: SupabaseClient<Database>) => ({
       .insert([{ config }])
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
+  createScheduledMatch: (
+    config: number,
+    home_team: number,
+    away_team: number,
+    scheduled_at: string,
+    server?: string | null
+  ) =>
+    client
+      .from('matches')
+      .insert([
+        {
+          status: MatchStatus.Scheduled,
+          config,
+          home_team,
+          away_team,
+          scheduled_at,
+          server,
+        },
+      ])
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
+      .single(),
   getMatches: () =>
     client
       .from('matches')

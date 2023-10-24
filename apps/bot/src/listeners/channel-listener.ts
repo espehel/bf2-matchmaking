@@ -16,10 +16,7 @@ import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supab
 import { listenForMatchMessageReaction } from './reaction-listener';
 import { Client, Message, MessageCollector } from 'discord.js';
 import { executeCommand, isCommand } from '../commands';
-import {
-  createMatchFromPubobotEmbed,
-  getTopServerPollResult,
-} from '../match-tracking-service';
+import { createMatchFromPubobotEmbed } from '../match-tracking-service';
 import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
 
 const listenerMap = new Map<string, MessageCollector>();

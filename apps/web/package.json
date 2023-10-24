@@ -9,9 +9,10 @@
     "verify": "next lint && tsc --noEmit"
   },
   "dependencies": {
-    "@bf2-matchmaking/supabase": "^1.0.0",
-    "@bf2-matchmaking/types": "^1.0.0",
-    "@bf2-matchmaking/utils": "^1.0.0",
+    "@bf2-matchmaking/logging": "^1.0.0",
+    "@bf2-matchmaking/supabase": "*",
+    "@bf2-matchmaking/types": "*",
+    "@bf2-matchmaking/utils": "*",
     "@headlessui/react": "^1.7.16",
     "@headlessui/tailwindcss": "^0.2.0",
     "@heroicons/react": "^2.0.18",

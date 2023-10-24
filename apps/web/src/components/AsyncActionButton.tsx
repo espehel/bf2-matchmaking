@@ -8,7 +8,7 @@ interface Props {
   action: () => Promise<FetchResult<unknown>>;
   successMessage: string;
   errorMessage: string;
-  kind?: 'btn-primary' | 'btn-secondary';
+  kind?: 'btn-primary' | 'btn-secondary' | 'btn-error';
 }
 
 export default function AsyncActionButton({

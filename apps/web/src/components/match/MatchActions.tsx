@@ -1,5 +1,10 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { closeMatch, finishMatch, reopenMatch } from '@/app/matches/[match]/actions';
+import {
+  closeMatch,
+  deleteMatch,
+  finishMatch,
+  reopenMatch,
+} from '@/app/matches/[match]/actions';
 import { closeMatch as createResults } from '@/app/results/[match]/actions';
 import AsyncActionButton from '@/components/AsyncActionButton';
 import SelectServerForm from '@/components/match/SelectServerForm';
@@ -18,6 +23,7 @@ export default async function MatchActions({ match }: Props) {
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   const isMatchAdmin = adminRoles?.match_admin || false;
 
+  const isScheduled = match.status === MatchStatus.Scheduled;
   const isOngoing = match.status === MatchStatus.Ongoing;
   const isFinished = match.status === MatchStatus.Finished;
   const isClosed = match.status === MatchStatus.Closed;
@@ -25,6 +31,10 @@ export default async function MatchActions({ match }: Props) {
   const showSelectServerForm = Boolean(servers && !isClosed && isMatchOfficer);
   const showSetMapsForm = Boolean(maps && !isClosed && isMatchOfficer);
 
+  async function deleteMatchSA() {
+    'use server';
+    return deleteMatch(match.id);
+  }
   async function finishMatchSA() {
     'use server';
     return finishMatch(match.id);
@@ -44,7 +54,7 @@ export default async function MatchActions({ match }: Props) {
     return reopenMatch(match.id);
   }
 
-  if (!showSelectServerForm && !showSetMapsForm && !isMatchAdmin) {
+  if (!showSelectServerForm && !showSetMapsForm && !(isMatchAdmin || isMatchOfficer)) {
     return null;
   }
 
@@ -52,8 +62,18 @@ export default async function MatchActions({ match }: Props) {
     <div>
       <div className="divider mt-0" />
       <div className="flex gap-4 flex-col">
-        {isMatchAdmin && (
+        {(isMatchAdmin || isMatchOfficer) && (
           <>
+            {isScheduled && (
+              <AsyncActionButton
+                action={deleteMatchSA}
+                successMessage="Match deleted."
+                errorMessage="Failed to delete match"
+                kind="btn-error"
+              >
+                Delete match
+              </AsyncActionButton>
+            )}
             {isOngoing && (
               <AsyncActionButton
                 action={finishMatchSA}
