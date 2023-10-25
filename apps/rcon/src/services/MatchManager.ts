@@ -10,6 +10,10 @@ import {
 
 const liveMatches = new Map<number, LiveMatch>();
 
+export function getLiveMatches() {
+  return Array.from(liveMatches.values());
+}
+
 export function removeLiveMatch(liveMatch: LiveMatch) {
   logMessage(`Match ${liveMatch.match.id}: Removing live match`, {
     match: JSON.stringify(liveMatch.match),

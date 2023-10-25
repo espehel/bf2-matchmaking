@@ -3,8 +3,6 @@ import {
   MatchConfigEvent,
   MatchEvent,
   PlayerListItem,
-  PostMatchesRequestBody,
-  PostMatchResult,
   RconBf2Server,
   ServerInfo,
   PostServerExecRequestBody,
@@ -30,6 +28,7 @@ const rcon = () => {
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     matches: () => '/matches',
+    matchesLive: () => '/matches/live',
     matchLive: (matchId: number) => `/matches/${matchId}/live`,
     matchResults: (matchId: number) => `/matches/${matchId}/results`,
     rconServerPlayer: (serverIp: string, playerId: string) =>
@@ -62,6 +61,8 @@ const rcon = () => {
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
     postMatchLive: (matchId: number, prelive: boolean) =>
       postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
+    getMatchesLive: () =>
+      getJSON<Array<GetMatchLiveResponseBody>>(basePath.concat(paths.matchesLive())),
     getMatchLive: (matchId: number) =>
       getJSON<GetMatchLiveResponseBody>(basePath.concat(paths.matchLive(matchId))),
     postMatchResults: (matchId: number) =>

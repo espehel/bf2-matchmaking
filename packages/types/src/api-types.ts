@@ -92,4 +92,5 @@ export type PostMatchResult = MatchesJoined;
 export type GetMatchLiveResponseBody = {
   liveInfo: LiveInfo | null;
   liveState: LiveServerState;
+  matchId: number;
 };

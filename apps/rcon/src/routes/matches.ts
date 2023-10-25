@@ -2,7 +2,7 @@ import express from 'express';
 import { GetMatchLiveResponseBody, MatchStatus } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error } from '@bf2-matchmaking/logging';
-import { findLiveMatch, initLiveMatch } from '../services/MatchManager';
+import { findLiveMatch, getLiveMatches, initLiveMatch } from '../services/MatchManager';
 import { closeMatch } from '../services/matches';
 
 const router = express.Router();
@@ -64,7 +64,21 @@ router.get('/:matchid/live', async (req, res) => {
   const body: GetMatchLiveResponseBody = {
     liveInfo: match.liveInfo,
     liveState: match.state,
+    matchId: match.match.id,
   };
+  return res.send(body);
+});
+
+router.get('/live', async (req, res) => {
+  const liveMatches = getLiveMatches();
+
+  const body: Array<GetMatchLiveResponseBody> = liveMatches.map(
+    ({ liveInfo, state, match }) => ({
+      liveInfo: liveInfo,
+      liveState: state,
+      matchId: match.id,
+    })
+  );
   return res.send(body);
 });
 
