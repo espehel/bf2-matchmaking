@@ -100,11 +100,11 @@ export default (client: SupabaseClient<Database>) => ({
       .or(
         `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
       ),
-  getMatchesWithStatus: (status: MatchStatus) =>
+  getMatchesWithStatus: (...status: Array<MatchStatus>) =>
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
-      .or(`status.eq.${status}`),
+      .in('status', status),
   getStagingMatchesByConfig: (configId: number) =>
     client
       .from('matches')

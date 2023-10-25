@@ -1,6 +1,7 @@
 import {
   DraftStep,
   MatchesJoined,
+  MatchesRow,
   MatchStatus,
   PlayersRow,
 } from '@bf2-matchmaking/types';
@@ -75,4 +76,11 @@ export function toGroup<T extends [string, MatchesJoined]>(
 ): Record<string, Array<MatchesJoined>> {
   const [key, value] = curr;
   return acc[key] ? { ...acc, [key]: [...acc[key], value] } : { ...acc, [key]: [value] };
+}
+
+export function compareStartedAt(
+  a: MatchesRow | MatchesJoined | undefined,
+  b: MatchesRow | MatchesJoined | undefined
+) {
+  return (b?.started_at || '0').localeCompare(a?.started_at || '0');
 }

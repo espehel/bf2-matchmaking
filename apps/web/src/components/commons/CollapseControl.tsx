@@ -15,11 +15,7 @@ export default function CollapseControl({ children, label }: Props) {
       {isOpen ? (
         <IconBtn Icon={XMarkIcon} onClick={() => setIsOpen(false)} />
       ) : (
-        <button
-          className="btn btn-primary ml-auto"
-          onClick={() => setIsOpen(true)}
-          disabled={true}
-        >
+        <button className="btn btn-primary ml-auto" onClick={() => setIsOpen(true)}>
           {label}
         </button>
       )}

@@ -8,14 +8,17 @@ import ScheduleMatchForm from '@/components/match/ScheduleMatchForm';
 
 export default async function ScheduledMatchesPage() {
   const matches = await supabase(cookies)
-    .getScheduledMatches(moment().toISOString())
+    .getScheduledMatches(moment().subtract(2, 'hours').toISOString())
     .then(verifyResult);
   const scheduledMatches = matches
     .filter(isScheduledMatch)
     .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
 
-  const matchDates = [...new Set(scheduledMatches.map((match) => match.scheduled_at))];
-
+  const matchDates = [
+    ...new Set(
+      scheduledMatches.map((match) => moment(match.scheduled_at).format('dddd, MMMM Do'))
+    ),
+  ];
   const hasMatches = matchDates.length > 0;
 
   return (
