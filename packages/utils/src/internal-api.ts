@@ -13,6 +13,12 @@ import {
 } from '@bf2-matchmaking/types';
 import { getJSON, postJSON } from './fetcher';
 
+const web = () => {
+  const basePath = 'https://bf2-matchmaking.vercel.app';
+  return {
+    basePath,
+  };
+};
 const rcon = () => {
   const basePath = 'https://bf2-rcon.up.railway.app';
   const paths = {
@@ -83,6 +89,7 @@ const bot = () => {
     matchConfigEvent: '/api/match_config_events',
     commandsReinstall: '/commands/reinstall',
     matches: '/matches',
+    matchesEvent: '/api/matches/event',
   };
   return {
     paths,
@@ -90,10 +97,13 @@ const bot = () => {
       postJSON(basePath.concat(paths.matchEvent), event),
     postMatchConfigEvent: (channelId: string, event: MatchConfigEvent) =>
       postJSON(basePath.concat(paths.matchConfigEvent), event),
+    postMatchesEvent: (matchId: number) =>
+      postJSON(basePath.concat(paths.matchesEvent), { matchId }),
   };
 };
 
 export const api = {
   rcon,
   bot,
+  web,
 };

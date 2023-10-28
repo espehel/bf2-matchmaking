@@ -32,7 +32,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@bf2-matchmaking/logging": "^1.0.0",
+    "@bf2-matchmaking/discord": "*",
+    "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
@@ -41,6 +42,7 @@
     "dotenv": "^16.3.1",
     "koa": "^2.14.2",
     "koa-logger": "^3.2.1",
+    "luxon": "^3.4.3",
     "moment": "^2.29.4",
     "node-cron": "^3.0.2"
   }

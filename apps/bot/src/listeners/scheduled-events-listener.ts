@@ -1,7 +1,10 @@
 import { getDiscordClient } from '../client';
 import { GuildScheduledEvent } from 'discord.js';
 import { createScheduledMatch } from '../match-service';
-import { error, logErrorMessage } from '@bf2-matchmaking/logging';
+import { error, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { isScheduledMatch, MatchesJoined } from '@bf2-matchmaking/types';
+import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
+import { DateTime } from 'luxon';
 
 function getMatchConfig(guildScheduledEvent: GuildScheduledEvent) {
   if (guildScheduledEvent.name.toLocaleLowerCase().includes('match')) {
@@ -75,4 +78,21 @@ export async function initScheduledEventsListener() {
       }
     }
   );
+}
+
+export async function createDiscordEvent(match: MatchesJoined) {
+  if (isScheduledMatch(match)) {
+    const discordClient = await getDiscordClient();
+    const guild = await discordClient.guilds.fetch('1036673720787411066');
+    const event = await guild.scheduledEvents.create(createScheduledMatchEvent(match));
+    recordedEvents.push(event.id);
+    logMessage(
+      `Match ${match.id}: Created scheduled discord event at ${
+        event.scheduledStartTimestamp &&
+        DateTime.fromMillis(event.scheduledStartTimestamp).toISO()
+      }`,
+      { match, event }
+    );
+    return event;
+  }
 }

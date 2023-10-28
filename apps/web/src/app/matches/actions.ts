@@ -1,5 +1,5 @@
 'use server';
-import { assertString } from '@bf2-matchmaking/utils';
+import { api, assertString } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
@@ -39,12 +39,14 @@ export async function createScheduledMatch(formData: FormData) {
     );
 
     if (!result.error) {
+      const { data: event } = await api.bot().postMatchesEvent(result.data.id);
       revalidatePath('/matches/scheduled');
       logMessage(`Match ${result.data.id} scheduled by ${player?.full_name}`, {
         match: result.data,
         player,
         scheduledInput,
         timezone,
+        event,
       });
     } else {
       logErrorMessage('Failed to schedule match', result.error, {

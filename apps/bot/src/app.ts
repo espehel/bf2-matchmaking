@@ -27,7 +27,10 @@ import { api, verify } from '@bf2-matchmaking/utils';
 import interactionRouter from './interactions/interaction-router';
 import { getDiscordClient } from './client';
 import { createMatchFromPubobotEmbed } from './match-tracking-service';
-import { initScheduledEventsListener } from './listeners/scheduled-events-listener';
+import {
+  createDiscordEvent,
+  initScheduledEventsListener,
+} from './listeners/scheduled-events-listener';
 
 // Create an express app
 const app = express();
@@ -109,6 +112,17 @@ app.post(
     }
   }
 );
+
+app.post(api.bot().paths.matchesEvent, async (req, res) => {
+  const { matchId } = req.body;
+  try {
+    const match = await client().getMatch(matchId).then(verifySingleResult);
+    const event = await createDiscordEvent(match);
+    res.status(200).send(event);
+  } catch (e) {
+    return res.status(502).send(e);
+  }
+});
 
 app.post('/matches', async (req, res) => {
   const { channelId, messageId, configId, serverIp } = req.body;
