@@ -1,7 +1,6 @@
 import { ScheduledMatch } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
-import { RESTPostAPIGuildScheduledEventJSONBody } from 'discord-api-types/v10';
-import { api } from '@bf2-matchmaking/utils';
+import { api, getMatchType } from '@bf2-matchmaking/utils';
 import { GuildScheduledEventCreateOptions } from '@bf2-matchmaking/types/src/discordjs';
 
 export function createScheduledMatchEvent(
@@ -32,21 +31,6 @@ export function createScheduledMatchEvent(
     privacyLevel: 2,
   };
 }
-
-const getMatchType = (match: ScheduledMatch) => {
-  switch (match.config.type) {
-    case 1:
-      return 'Mix: ';
-    case 2:
-      return 'Match: ';
-    case 3:
-      return 'Ladder: ';
-    case 4:
-      return 'PCW: ';
-    default:
-      return '';
-  }
-};
 
 const getMatchDescription = (match: ScheduledMatch) => {
   const mapText = match.maps.length ? match.maps.map((m) => m.name).join(', ') : 'TBD';

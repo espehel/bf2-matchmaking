@@ -22,8 +22,6 @@ export class LiveServer {
   #liveMatch: LiveMatch | null = null;
   info: LiveInfo;
   updatedAt: Moment;
-  #interval: NodeJS.Timeout | undefined;
-  #timeout: NodeJS.Timeout | undefined;
   #errorAt: Moment | null = null;
   #waitingSince: Moment | null = null;
   constructor(rconInfo: ServerRconsRow, info: LiveInfo) {
@@ -100,6 +98,10 @@ export class LiveServer {
 
     if (state === 'waiting' && moment().diff(this.#waitingSince, 'minutes') > 30) {
       info('pollServerInfo', `No players connected, resetting ${this.info.serverName}`);
+      this.reset();
+    }
+
+    if (state === 'finished') {
       this.reset();
     }
   }

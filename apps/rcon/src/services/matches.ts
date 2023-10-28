@@ -2,7 +2,6 @@ import {
   logChangeMatchStatus,
   logErrorMessage,
   logMessage,
-  logSupabaseError,
 } from '@bf2-matchmaking/logging';
 import {
   isNotNull,
@@ -31,28 +30,30 @@ export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | nul
     status: MatchStatus.Finished,
   });
   if (error) {
-    logSupabaseError('Failed to finish match', error);
-    return;
-  }
-
-  if (updatedMatch.rounds.length === 0) {
-    await client().updateMatch(updatedMatch.id, {
-      status: MatchStatus.Closed,
-      closed_at: moment().toISOString(),
-    });
-    logMessage(
-      `Match ${updatedMatch.id} has no rounds, closing match without creating results.`,
-      {
-        match: updatedMatch,
-      }
-    );
+    logErrorMessage(`Match ${match.id} failed to finish`, error);
     return;
   }
 
   try {
+    if (updatedMatch.rounds.length === 0) {
+      await client()
+        .updateMatch(updatedMatch.id, {
+          status: MatchStatus.Closed,
+          closed_at: moment().toISOString(),
+        })
+        .then(verifySingleResult);
+      logMessage(
+        `Match ${updatedMatch.id} has no rounds, closing match without creating results.`,
+        {
+          match: updatedMatch,
+        }
+      );
+      return;
+    }
+
     await closeMatch(updatedMatch);
   } catch (e) {
-    logErrorMessage('Failed to close match', e);
+    logErrorMessage(`Match ${match.id} failed to close`, e);
   }
 };
 export const closeMatch = async (match: MatchesJoined) => {
@@ -168,7 +169,7 @@ export async function updateServer(liveMatch: LiveMatch, server: string) {
   });
 
   if (error) {
-    logSupabaseError(
+    logErrorMessage(
       `Match ${liveMatch.match.id}: Failed to update server for LiveMatch`,
       error
     );

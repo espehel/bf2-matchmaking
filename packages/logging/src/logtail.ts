@@ -212,8 +212,17 @@ export const logPlayerUpdated = (
 };
 
 export const logErrorMessage = (msg: string, err: unknown, context?: Context) => {
+  let e: string;
+  if (err instanceof Error) {
+    e = err.message;
+  } else if (typeof err === 'string') {
+    e = err;
+  } else {
+    e = JSON.stringify(err);
+  }
+
   logger
-    .error(msg, { error: JSON.stringify(err), ...context })
+    .error(msg, { error: e, ...context })
     .then((log) => info('logtail', log.message))
     .catch(() => error('logtail', err))
     .finally(flush);
