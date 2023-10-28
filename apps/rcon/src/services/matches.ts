@@ -8,11 +8,9 @@ import {
   isNotNull,
   isServerMatch,
   LiveInfo,
-  LiveRound,
   MatchesJoined,
   MatchStatus,
   RoundsInsert,
-  RoundsRow,
   ServerInfo,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -64,10 +62,10 @@ export const closeMatch = async (match: MatchesJoined) => {
       match,
       errors,
     });
-    return errors;
+    return { result: null, errors };
   }
 
-  await processResults(match);
+  const results = await processResults(match);
 
   await client()
     .updateMatch(match.id, {
@@ -76,7 +74,7 @@ export const closeMatch = async (match: MatchesJoined) => {
     })
     .then(verifySingleResult);
   logChangeMatchStatus(MatchStatus.Closed, match);
-  return errors;
+  return { results, errors: null };
 };
 
 function validateMatch(match: MatchesJoined): Array<string> {
@@ -117,6 +115,7 @@ export async function processResults(match: MatchesJoined) {
   await sendChannelMessage('1046889100369739786', {
     embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
   });
+  return data;
 }
 
 export const hasPlayedAllRounds = (rounds: Array<RoundsInsert>) => rounds.length >= 4;

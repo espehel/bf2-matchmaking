@@ -15,10 +15,6 @@ import {
   ServerRconsRow,
 } from '@bf2-matchmaking/types';
 
-const IDLE_POLL_INTERVAL = 1000 * 60 * 5;
-const LIVE_MATCH_POLL_INTERVAL = 1000 * 10;
-const POLL_MAX_DURATION = 1000 * 3600 * 3;
-
 export class LiveServer {
   ip: string;
   port: number;
@@ -37,27 +33,16 @@ export class LiveServer {
     this.info = info;
     this.updatedAt = moment();
   }
-  start() {
-    info('LiveServer', `Starting ${this.info.serverName}`);
-    this.#clearTimers();
-    this.#interval = setInterval(this.#updateInfo.bind(this), IDLE_POLL_INTERVAL);
-    return this;
-  }
   reset() {
     info('LiveServer', `Resetting ${this.info.serverName}`);
-    this.#clearTimers();
     this.#liveMatch = null;
     this.#waitingSince = null;
     this.#errorAt = null;
-    this.#interval = setInterval(this.#updateInfo.bind(this), IDLE_POLL_INTERVAL);
     return this;
   }
   setLiveMatch(liveMatch: LiveMatch) {
     info('LiveServer', `Setting match ${liveMatch.match.id} for ${this.info.serverName}`);
     this.#liveMatch = liveMatch;
-    this.#clearTimers();
-    this.#interval = setInterval(this.#updateInfo.bind(this), LIVE_MATCH_POLL_INTERVAL);
-    this.#timeout = setTimeout(this.#stopPolling.bind(this), POLL_MAX_DURATION);
     this.#waitingSince = moment();
     return this;
   }
@@ -74,7 +59,7 @@ export class LiveServer {
       : false;
   }
 
-  async #updateInfo() {
+  async updateInfo() {
     try {
       if (moment().diff(this.#errorAt, 'minutes') > 30) {
         this.reset();
@@ -89,8 +74,9 @@ export class LiveServer {
       if (this.#liveMatch) {
         await this.#updateLiveMatch(this.#liveMatch);
       }
+      return this.info;
     } catch (e) {
-      error('LiveServer', error);
+      error('LiveServer', e);
       this.#errorAt = moment();
     }
   }
@@ -112,25 +98,13 @@ export class LiveServer {
       );
     }
 
-    if (state === 'finished') {
-      this.#clearTimers();
-    }
-
     if (state === 'waiting' && moment().diff(this.#waitingSince, 'minutes') > 30) {
-      info('pollServerInfo', `Server is idle, stops polling`);
+      info('pollServerInfo', `No players connected, resetting ${this.info.serverName}`);
       this.reset();
     }
   }
   #rcon() {
     return rcon(this.ip, this.port, this.#password);
-  }
-  #stopPolling() {
-    info('pollServerInfo', `Live match polling timed out.`);
-    this.reset();
-  }
-  #clearTimers() {
-    clearInterval(this.#interval);
-    clearTimeout(this.#timeout);
   }
 }
 

@@ -17,7 +17,6 @@ export async function createLiveInfo({
   const info = await rcon(ip, rcon_port, rcon_pw)
     .then(getServerInfo)
     .catch(() => null);
-
   if (!info) {
     return null;
   }

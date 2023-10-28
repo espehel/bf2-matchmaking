@@ -72,25 +72,29 @@ export class RconClient {
                 .digest('hex') +
               '\n'
           );
-        }
-
-        if (sent.includes('Authentication successful')) {
+        } else if (sent.includes('Authentication successful')) {
           info('RconClient', `Authenticated ${host}:${port}`);
           isAuthenticated = true;
           socket.removeAllListeners();
           resolve(new RconClient(socket, host, port, password));
+        } else {
+          info('RconClient', `Received: ${sent} from ${host}:${port}`);
         }
       });
 
       socket.on('error', (err) => {
         error('RconClient', err);
-        reject(err.message);
+      });
+
+      socket.on('close', (hadError) => {
+        info('RconClient', `Disconnected from ${host}:${port}, hadError: ${hadError}`);
       });
 
       setTimeout(() => {
         if (!isAuthenticated) {
-          info('RconClient', `Destroying socket ${host}:${port}`);
-          socket.destroy(new Error('Authentication Timeout'));
+          const errMsg = `Authentication Timeout ${host}:${port}`;
+          socket.destroy(new Error(errMsg));
+          reject(errMsg);
         }
       }, TIMEOUT);
     });

@@ -32,7 +32,7 @@ export async function initLiveServers() {
       rcons.set(rcon.id, rcon);
       const liveInfo = await createLiveInfo(rcon);
       if (liveInfo) {
-        liveServers.set(rcon.id, new LiveServer(rcon, liveInfo).start());
+        liveServers.set(rcon.id, new LiveServer(rcon, liveInfo));
       }
     })
   );
@@ -71,4 +71,34 @@ function isMatchServer(liveMatch: LiveMatch) {
 
 export function isServerIdentified(serverPlayers: number, matchSize: number) {
   return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
+}
+
+export async function updateIdleLiveServers() {
+  const idleServers = Array.from(liveServers.values()).filter((s) => s.isIdle());
+  if (idleServers.length === 0) {
+    info('updateIdleLiveServers', 'No idle live servers found');
+    return;
+  }
+  const serverInfoList = await Promise.all(
+    idleServers.map((liveServer) => liveServer.updateInfo())
+  );
+  info(
+    'updateIdleLiveServers',
+    `Updated ${serverInfoList.length}/${idleServers.length} idle servers`
+  );
+}
+
+export async function updateActiveLiveServers() {
+  const activeServers = Array.from(liveServers.values()).filter((s) => !s.isIdle());
+  if (activeServers.length === 0) {
+    info('updateActiveLiveServers', 'No active live servers found');
+    return;
+  }
+  const serverInfoList = await Promise.all(
+    activeServers.map((liveServer) => liveServer.updateInfo())
+  );
+  info(
+    'updateActiveLiveServers',
+    `Updated ${serverInfoList.length}/${activeServers.length} active servers`
+  );
 }

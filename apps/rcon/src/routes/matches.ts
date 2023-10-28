@@ -17,13 +17,13 @@ router.post('/:matchid/results', async (req, res) => {
       return res.status(400).send('Match is not finished.');
     }
 
-    const errors = await closeMatch(match);
+    const { results, errors } = await closeMatch(match);
 
-    if (errors.length > 0) {
+    if (errors) {
       return res.status(400).send(errors.join(', '));
     }
 
-    return res.sendStatus(201);
+    return res.status(201).send(results);
   } catch (e) {
     error('POST /matches/:matchid/results', e);
     if (e instanceof Error) {
