@@ -57,7 +57,10 @@ const rcon = () => {
       getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip)), {
         next: { tags: ['getServerPlayerList'] },
       }),
-    getServers: () => getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers())),
+    getServers: () =>
+      getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers()), {
+        cache: 'no-store',
+      }),
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
     postMatchLive: (matchId: number, prelive: boolean) =>
       postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
