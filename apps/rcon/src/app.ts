@@ -21,7 +21,7 @@ import { updateLiveMatches } from './services/MatchManager';
 initLiveServers()
   .then(() => {
     cron.schedule('*/2 * * * *', updateIdleLiveServers);
-    cron.schedule('*/30 * * * * *', updateActiveLiveServers);
+    cron.schedule('*/10 * * * * *', updateActiveLiveServers);
     cron.schedule('* * * * *', updateLiveMatches);
   })
   .catch((err) => error('app', err));
