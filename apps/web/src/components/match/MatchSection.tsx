@@ -3,13 +3,15 @@ import MatchActions from '@/components/match/MatchActions';
 import Link from 'next/link';
 import TeamSection from '@/components/match/TeamSection';
 import { Suspense } from 'react';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
-  isMatchAdmin: boolean;
 }
 
-export default async function MatchSection({ match, isMatchAdmin }: Props) {
+export default async function MatchSection({ match }: Props) {
+  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
   return (
     <section className="section w-fit">
       <div>
@@ -30,10 +32,11 @@ export default async function MatchSection({ match, isMatchAdmin }: Props) {
           Go to results
         </Link>
       )}
-
-      <Suspense fallback={null}>
-        <MatchActions match={match} />
-      </Suspense>
+      {isMatchOfficer && (
+        <Suspense fallback={null}>
+          <MatchActions match={match} />
+        </Suspense>
+      )}
     </section>
   );
 }

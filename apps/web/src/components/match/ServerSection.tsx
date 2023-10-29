@@ -1,25 +1,19 @@
-import { GameStatus, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { GameStatus, MatchStatus, ServerMatch } from '@bf2-matchmaking/types';
 import { api, formatSecToMin } from '@bf2-matchmaking/utils';
 import ServerActions from '@/components/match/ServerActions';
 import RevalidateForm from '@/components/RevalidateForm';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
-  match: MatchesJoined;
-  isMatchAdmin: boolean;
-  isMatchPlayer: boolean;
+  match: ServerMatch;
 }
 
-export default async function ServerSection({
-  match,
-  isMatchAdmin,
-  isMatchPlayer,
-}: Props) {
-  if (!match.server) {
-    return null;
-  }
-
+export default async function ServerSection({ match }: Props) {
+  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
+  const isMatchPlayer = await supabase(cookies).isMatchPlayer(match);
   const { data: server } = await api.rcon().getServer(match.server.ip);
 
   return (
@@ -51,7 +45,7 @@ export default async function ServerSection({
           Join match
         </Link>
       )}
-      {isMatchAdmin && match.status !== MatchStatus.Closed && (
+      {isMatchOfficer && MatchStatus.Ongoing && (
         <div>
           <div className="divider mt-0" />
           <ServerActions match={match} server={server} />

@@ -5,13 +5,11 @@ import MatchSection from '@/components/match/MatchSection';
 import ServerSection from '@/components/match/ServerSection';
 import LiveSection from '@/components/match/LiveSection';
 import RoundsList from '@/components/RoundsList';
-import moment from 'moment/moment';
-import { api } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
-import { useMatch } from '@/state/MatchContext';
 import ServerSectionLoading from '@/components/match/ServerSectionLoading';
 import MapsSection from '@/components/match/MapsSection';
 import ScheduledAt from '@/components/match/ScheduledAt';
+import { isServerMatch } from '@bf2-matchmaking/types';
 
 interface Props {
   params: { match: string };
@@ -21,11 +19,6 @@ export default async function ResultsMatch({ params }: Props) {
     .getMatch(parseInt(params.match))
     .then(verifySingleResult);
 
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
-  const { data: sessionPlayer } = await supabase(cookies).getSessionPlayer();
-
-  const isMatchPlayer = match.players.some((p) => p.id === sessionPlayer?.id);
-
   return (
     <main className="main flex flex-col items-center text-center">
       <div className="mb-8">
@@ -33,14 +26,12 @@ export default async function ResultsMatch({ params }: Props) {
         <ScheduledAt match={match} />
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
-        <MatchSection match={match} isMatchAdmin={Boolean(adminRoles?.match_admin)} />
-        <Suspense fallback={<ServerSectionLoading match={match} />}>
-          <ServerSection
-            match={match}
-            isMatchAdmin={Boolean(adminRoles?.match_admin)}
-            isMatchPlayer={isMatchPlayer}
-          />
-        </Suspense>
+        <MatchSection match={match} />
+        {isServerMatch(match) && (
+          <Suspense fallback={<ServerSectionLoading match={match} />}>
+            <ServerSection match={match} />
+          </Suspense>
+        )}
         <MapsSection match={match} key={match.maps.map((m) => m.id).join()} />
         <Suspense fallback={null}>
           <LiveSection match={match} />
