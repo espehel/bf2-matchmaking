@@ -15,8 +15,8 @@ export function TeamAvatar({ team }: AvatarProps) {
     }*/
   return (
     <div className="avatar placeholder">
-      <div className="bg-neutral-focus text-neutral-content rounded-full w-24">
-        <span className="text-3xl">{team.name.charAt(0)}</span>
+      <div className="bg-primary text-primary-content rounded-full w-24">
+        <span className="text-3xl font-bold capitalize">{team.name.charAt(0)}</span>
       </div>
     </div>
   );

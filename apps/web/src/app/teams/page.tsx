@@ -7,6 +7,8 @@ import Link from 'next/link';
 
 export default async function TeamsPage() {
   const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+
   return (
     <main className="main">
       <ul className="flex flex-col gap-2 justify-center items-center">
@@ -14,17 +16,19 @@ export default async function TeamsPage() {
           <li className="sheet max-w-3xl w-full" key={t.id}>
             <Link className="flex items-center gap-4" href={`/teams/${t.id}`}>
               <Avatar team={t} />
-              <p className="text-3xl font-bold font-serif">{t.name}</p>
+              <p className="text-3xl font-bold font-serif text-accent">{t.name}</p>
               <p className="text-lg font-bold ml-auto self-end">{`Players: ${t.players.length}`}</p>
               <p className="text-lg font-bold self-end">{`Owner: ${t.owner.full_name}`}</p>
             </Link>
           </li>
         ))}
       </ul>
-      <section className="section max-w-3xl w-full m-auto mt-6">
-        <h2 className="text-xl">Add new team</h2>
-        <TeamCreateForm />
-      </section>
+      {player && (
+        <section className="section max-w-3xl w-full m-auto mt-6">
+          <h2 className="text-xl">Add new team</h2>
+          <TeamCreateForm />
+        </section>
+      )}
     </main>
   );
 }
@@ -44,8 +48,8 @@ function Avatar({ team }: AvatarProps) {
   }*/
   return (
     <div className="avatar placeholder">
-      <div className="bg-neutral-focus text-neutral-content rounded-full w-12">
-        <span className="text-xl">{team.name.charAt(0)}</span>
+      <div className="bg-primary text-primary-content rounded-full w-12">
+        <span className="text-xl font-bold capitalize">{team.name.trim().charAt(0)}</span>
       </div>
     </div>
   );

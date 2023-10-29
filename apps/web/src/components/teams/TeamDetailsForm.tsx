@@ -16,22 +16,22 @@ export default function TeamDetailsForm({ team }: Props) {
       <h2 className="hidden">Team details</h2>
       <div className="flex items-center gap-6">
         <TeamAvatar team={team} />
-        <div>
+        <div className="flex flex-col gap-1">
           <div>
             <span className="mr-1">Name:</span>
             <input
               name="name"
               defaultValue={team.name}
-              className="input input-bordered input-sm"
+              className="input input-bordered input-xs"
               placeholder={team.name}
             />
           </div>
           <div>
-            <span className="mr-1">Discord role:</span>
+            <span className="mr-1">Discord ID:</span>
             <input
               name="discord_role"
               defaultValue={team.discord_role || ''}
-              className="input input-bordered input-sm"
+              className="input input-bordered input-xs"
               placeholder={team.discord_role || ''}
             />
           </div>
@@ -40,7 +40,7 @@ export default function TeamDetailsForm({ team }: Props) {
             <PlayerCombobox
               defaultValue={team.owner}
               placeholder={team.owner.full_name}
-              size="sm"
+              size="xs"
             />
           </div>
         </div>

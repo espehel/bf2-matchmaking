@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseApi } from '@bf2-matchmaking/supabase';
-import { MatchesJoined } from '@bf2-matchmaking/types';
+import { MatchesJoined, TeamsRow } from '@bf2-matchmaking/types';
 import { isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
 
 export function getActions(client: SupabaseClient) {
@@ -41,13 +41,15 @@ export function getActions(client: SupabaseClient) {
     return adminRoles?.match_admin || false;
   }
 
-  async function isTeamOfficer() {
+  async function isTeamOfficer(...teams: Array<number>) {
     const { data: player } = await getSessionPlayer();
     if (!player) {
       return false;
     }
-    const { data: teamPlayers } = await api.getTeamPlayersByPlayerId(player.id);
-    if (teamPlayers && teamPlayers.some((tp) => tp.captain)) {
+    const { data } = await api.getTeamPlayersByPlayerId(player.id);
+    const teamPlayers =
+      data && teams.length ? data.filter((t) => teams.includes(t.team_id)) : data || [];
+    if (teamPlayers.some((tp) => tp.captain)) {
       return true;
     }
 
