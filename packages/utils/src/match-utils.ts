@@ -85,18 +85,3 @@ export function compareStartedAt(
 ) {
   return (b?.started_at || '0').localeCompare(a?.started_at || '0');
 }
-
-export const getMatchType = (match: ScheduledMatch) => {
-  switch (match.config.type) {
-    case 1:
-      return 'Mix: ';
-    case 2:
-      return 'Match: ';
-    case 3:
-      return 'Ladder: ';
-    case 4:
-      return 'PCW: ';
-    default:
-      return '';
-  }
-};

@@ -1,14 +1,12 @@
 import { ScheduledMatch } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
-import { api, getMatchType } from '@bf2-matchmaking/utils';
+import { api } from '@bf2-matchmaking/utils';
 import { GuildScheduledEventCreateOptions } from '@bf2-matchmaking/types/src/discordjs';
 
 export function createScheduledMatchEvent(
   match: ScheduledMatch
 ): GuildScheduledEventCreateOptions {
-  const name = `${getMatchType(match)}${match.home_team.name} vs. ${
-    match.away_team.name
-  }`;
+  const name = `${match.config.type}: ${match.home_team.name} vs. ${match.away_team.name}`;
   const description = getMatchDescription(match);
   const scheduledStartTime = match.scheduled_at;
   const scheduledEndTime =

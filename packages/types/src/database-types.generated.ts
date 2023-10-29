@@ -114,7 +114,7 @@ export interface Database {
           permanent: boolean
           player_expire: number
           size: number
-          type: number
+          type: Database["public"]["Enums"]["match_type"]
           updated_at: string
           visible: boolean
         }
@@ -130,7 +130,7 @@ export interface Database {
           permanent?: boolean
           player_expire?: number
           size: number
-          type?: number
+          type?: Database["public"]["Enums"]["match_type"]
           updated_at?: string
           visible?: boolean
         }
@@ -146,7 +146,7 @@ export interface Database {
           permanent?: boolean
           player_expire?: number
           size?: number
-          type?: number
+          type?: Database["public"]["Enums"]["match_type"]
           updated_at?: string
           visible?: boolean
         }
@@ -648,7 +648,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      match_type: "Mix" | "PCW" | "Match"
     }
     CompositeTypes: {
       [_ in never]: never
