@@ -1,4 +1,3 @@
-'use client';
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import { useFirstRenderDefault } from '@/state/ssr-hooks';
@@ -8,19 +7,18 @@ interface Props {
 }
 
 export default function MatchCard({ match }: Props) {
-  const isMix = match.home_team.id === 1 && match.away_team.id === 2;
   const matchTime = moment(match.scheduled_at || match.started_at).format('HH:mm');
   const matchDate = moment(match.scheduled_at || match.started_at).format(
     'dddd, MMMM Do'
   );
+  const teamText =
+    match.config.type === 'Mix'
+      ? ''
+      : `: ${match.home_team.name} vs. ${match.away_team.name}`;
   return (
     <section className="px-8 border-2 border-primary rounded bg-base-100">
-      {!isMix && (
-        <>
-          <div className="mt-3 text-left font-bold text-lg text-accent">{`${match.home_team.name} vs ${match.away_team.name}`}</div>
-          <div className="divider divider-vertical m-0" />
-        </>
-      )}
+      <h3 className="mt-3 text-left font-bold text-lg text-accent">{`${match.config.type}${teamText}`}</h3>
+      <div className="divider divider-vertical m-0" />
       <div className="flex items-center gap-8">
         <div className="stat">
           <div className="stat-title">{match.config.name}</div>

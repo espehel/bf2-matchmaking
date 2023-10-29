@@ -9,8 +9,6 @@ export default async function MatchesPage() {
       <h1 className="mb-8">Matches</h1>
       <Suspense fallback={<LoadingSection />}>
         <LiveMatchesList />
-      </Suspense>
-      <Suspense fallback={<LoadingSection />}>
         <StaleMatchesList />
       </Suspense>
     </main>

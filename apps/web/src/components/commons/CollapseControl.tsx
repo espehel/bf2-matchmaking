@@ -6,16 +6,21 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 
 interface Props extends PropsWithChildren {
   label: string;
+  disabled?: boolean;
 }
 
-export default function CollapseControl({ children, label }: Props) {
+export default function CollapseControl({ children, label, disabled }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="text-right">
       {isOpen ? (
         <IconBtn Icon={XMarkIcon} onClick={() => setIsOpen(false)} />
       ) : (
-        <button className="btn btn-primary ml-auto" onClick={() => setIsOpen(true)}>
+        <button
+          className="btn btn-primary ml-auto"
+          onClick={() => setIsOpen(true)}
+          disabled={disabled}
+        >
           {label}
         </button>
       )}

@@ -41,5 +41,23 @@ export function getActions(client: SupabaseClient) {
     return adminRoles?.match_admin || false;
   }
 
-  return { ...api, getSessionPlayer, getAdminRoles, isMatchOfficer };
+  async function isTeamOfficer() {
+    const { data: player } = await getSessionPlayer();
+    if (!player) {
+      return false;
+    }
+    const { data: teamPlayers } = await api.getTeamPlayersByPlayerId(player.id);
+    if (teamPlayers && teamPlayers.some((tp) => tp.captain)) {
+      return true;
+    }
+
+    if (!player.user_id) {
+      return false;
+    }
+    const { data: adminRoles } = await api.getAdminRoles(player.user_id);
+
+    return adminRoles?.match_admin || false;
+  }
+
+  return { ...api, getSessionPlayer, getAdminRoles, isMatchOfficer, isTeamOfficer };
 }

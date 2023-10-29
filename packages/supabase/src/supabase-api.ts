@@ -141,6 +141,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('player_id', playerId)
       .select()
       .single(),
+  getTeamPlayersByPlayerId: (playerId: string) =>
+    client.from('team_players').select('*').eq('player_id', playerId),
   deleteTeamPlayer: (teamId: number, playerId: string) =>
     client.from('team_players').delete().eq('team_id', teamId).eq('player_id', playerId),
 });

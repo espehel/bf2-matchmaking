@@ -18,10 +18,11 @@ export default async function ScheduleMatchForm() {
     .then(verifyResult)
     .then(filterVisible);
   const servers = await supabase(cookies).getServers().then(verifyResult);
+  const isTeamOfficer = await supabase(cookies).isTeamOfficer();
 
   return (
     <div className="max-w-5xl mx-auto">
-      <CollapseControl label="Schedule match">
+      <CollapseControl label="Schedule match" disabled={!isTeamOfficer}>
         <form action={createScheduledMatch} className="flex flex-col gap-4">
           <div className="flex gap-4">
             <Select

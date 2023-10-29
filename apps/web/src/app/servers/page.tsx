@@ -3,9 +3,13 @@ import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ServerCreateForm from '@/components/ServerCreateForm';
 import { api, verify } from '@bf2-matchmaking/utils';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 export default async function Page() {
   const servers = await api.rcon().getServers().then(verify);
+
+  const { data: player } = await supabase(cookies).getSessionPlayer();
 
   return (
     <main className="main">
@@ -43,10 +47,12 @@ export default async function Page() {
           ))}
         </tbody>
       </table>
-      <section className="bg-base-100 border-primary border-2 rounded p-4 mt-6">
-        <h2 className="text-xl">Add server</h2>
-        <ServerCreateForm />
-      </section>
+      {player && (
+        <section className="bg-base-100 border-primary border-2 rounded p-4 mt-6">
+          <h2 className="text-xl">Add server</h2>
+          <ServerCreateForm />
+        </section>
+      )}
     </main>
   );
 }
