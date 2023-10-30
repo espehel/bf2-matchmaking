@@ -3,9 +3,12 @@ import { api, assertString } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { isString } from '@bf2-matchmaking/types';
+import { isScheduledMatch, isString } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { postGuildScheduledEvent } from '@bf2-matchmaking/discord';
+import { match } from 'assert';
+import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
 export async function createScheduledMatch(formData: FormData) {
   try {
     const {
@@ -38,17 +41,7 @@ export async function createScheduledMatch(formData: FormData) {
       isString(serverSelect) ? serverSelect : null
     );
 
-    if (!result.error) {
-      const { data: event } = await api.bot().postMatchesEvent(result.data.id);
-      revalidatePath('/matches/scheduled');
-      logMessage(`Match ${result.data.id} scheduled by ${player?.full_name}`, {
-        match: result.data,
-        player,
-        scheduledInput,
-        timezone,
-        event,
-      });
-    } else {
+    if (result.error) {
       logErrorMessage('Failed to schedule match', result.error, {
         player,
         configSelect,
@@ -56,6 +49,32 @@ export async function createScheduledMatch(formData: FormData) {
         awaySelect,
         scheduled_at,
         serverSelect,
+      });
+      return;
+    }
+    const match = result.data;
+    if (match.config.guild && isScheduledMatch(match)) {
+      const { data: event, error: discordError } = await postGuildScheduledEvent(
+        match.config.guild,
+        createScheduledMatchEvent(match)
+      );
+      console.log('EVENT:');
+      console.log(event);
+      if (event) {
+        await supabase(cookies).updateMatch(match.id, { events: [event.id] });
+      } else {
+        logErrorMessage('Failed to post scheduled event to discord', discordError, {
+          match,
+        });
+      }
+
+      revalidatePath('/matches/scheduled');
+      logMessage(`Match ${result.data.id} scheduled by ${player?.full_name}`, {
+        match: result.data,
+        player,
+        scheduledInput,
+        timezone,
+        event,
       });
     }
 

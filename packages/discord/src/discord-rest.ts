@@ -12,6 +12,10 @@ import {
   RESTPutAPIChannelMessageReactionResult,
   RESTDeleteAPIChannelAllMessageReactionsResult,
   RESTGetAPIChannelMessageResult,
+  RESTPostAPIGuildScheduledEventJSONBody,
+  RESTPostAPIGuildScheduledEventResult,
+  RESTPatchAPIGuildScheduledEventJSONBody,
+  RESTPatchAPIGuildScheduledEventResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
 import {
@@ -201,4 +205,23 @@ export const deleteGuildCommand = (appId: string, guildId: string, commandId: st
 export const getGuildCommands = (appId: string, guildId: string) =>
   getDiscordRoute<Array<APIApplicationCommand>>(
     Routes.applicationGuildCommands(appId, guildId)
+  );
+
+export const postGuildScheduledEvent = (
+  guildId: string,
+  body: RESTPostAPIGuildScheduledEventJSONBody
+) =>
+  postDiscordRoute<RESTPostAPIGuildScheduledEventResult>(
+    Routes.guildScheduledEvents(guildId),
+    { body }
+  );
+
+export const patchGuildScheduledEvent = (
+  guildId: string,
+  scheduledEventId: string,
+  body: RESTPatchAPIGuildScheduledEventJSONBody
+) =>
+  patchDiscordRoute<RESTPatchAPIGuildScheduledEventResult>(
+    Routes.guildScheduledEvent(guildId, scheduledEventId),
+    { body }
   );

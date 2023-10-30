@@ -1,36 +1,38 @@
-import { ScheduledMatch } from '@bf2-matchmaking/types';
+import { MatchesJoined, ScheduledMatch } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import { api } from '@bf2-matchmaking/utils';
-import { GuildScheduledEventCreateOptions } from '@bf2-matchmaking/types/src/discordjs';
+import { RESTPostAPIGuildScheduledEventJSONBody } from 'discord-api-types/v10';
+import { matchthumb } from '../resources/matchthumb-base64';
+import { pcwthumb } from '../resources/pcwthumb-base64';
 
 export function createScheduledMatchEvent(
   match: ScheduledMatch
-): GuildScheduledEventCreateOptions {
+): RESTPostAPIGuildScheduledEventJSONBody {
   const name = `${match.config.type}: ${match.home_team.name} vs. ${match.away_team.name}`;
   const description = getMatchDescription(match);
-  const scheduledStartTime = match.scheduled_at;
-  const scheduledEndTime =
+  const scheduled_start_time = match.scheduled_at;
+  const scheduled_end_time =
     DateTime.fromISO(match.scheduled_at).plus({ hours: 2 }).toISO() || undefined;
-  const entityType = 3;
+  const entity_type = 3;
   const image =
     match.config.id === 16
-      ? 'https://cdn.discordapp.com/attachments/1017421174545862748/1161351076633661510/matchthumb.jpg'
-      : 'https://cdn.discordapp.com/attachments/1017421174545862748/1161351076159688794/pcwthumb.jpg';
-  const entityMetadata = { location: `${api.web().basePath}/matches/${match.id}` };
+      ? `data:image/jpeg;base64,${matchthumb}`
+      : `data:image/jpeg;base64,${pcwthumb}`;
+  const entity_metadata = { location: `${api.web().basePath}/matches/${match.id}` };
 
   return {
     name,
     description,
-    scheduledStartTime,
-    scheduledEndTime,
-    entityType,
-    entityMetadata,
+    scheduled_start_time,
+    scheduled_end_time,
+    entity_type,
+    entity_metadata,
     image,
-    privacyLevel: 2,
+    privacy_level: 2,
   };
 }
 
-const getMatchDescription = (match: ScheduledMatch) => {
+export const getMatchDescription = (match: MatchesJoined) => {
   const mapText = match.maps.length ? match.maps.map((m) => m.name).join(', ') : 'TBD';
   const serverText = match.server?.name || 'TBD';
   return `Maps: ${mapText} | Server: ${serverText}`;

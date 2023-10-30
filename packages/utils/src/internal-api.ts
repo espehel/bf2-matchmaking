@@ -89,7 +89,6 @@ const bot = () => {
     matchConfigEvent: '/api/match_config_events',
     commandsReinstall: '/commands/reinstall',
     matches: '/matches',
-    matchesEvent: '/api/matches/event',
   };
   return {
     paths,
@@ -97,8 +96,6 @@ const bot = () => {
       postJSON(basePath.concat(paths.matchEvent), event),
     postMatchConfigEvent: (channelId: string, event: MatchConfigEvent) =>
       postJSON(basePath.concat(paths.matchConfigEvent), event),
-    postMatchesEvent: (matchId: number) =>
-      postJSON(basePath.concat(paths.matchesEvent), { matchId }),
   };
 };
 

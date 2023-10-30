@@ -106,6 +106,7 @@ export interface Database {
           channel: string | null
           created_at: string
           draft: string
+          guild: string | null
           id: number
           map_draft: string
           mode: string
@@ -122,6 +123,7 @@ export interface Database {
           channel?: string | null
           created_at?: string
           draft: string
+          guild?: string | null
           id?: number
           map_draft: string
           mode?: string
@@ -138,6 +140,7 @@ export interface Database {
           channel?: string | null
           created_at?: string
           draft?: string
+          guild?: string | null
           id?: number
           map_draft?: string
           mode?: string
@@ -343,6 +346,7 @@ export interface Database {
           closed_at: string | null
           config: number
           created_at: string | null
+          events: string[]
           home_team: number
           id: number
           live_at: string | null
@@ -357,6 +361,7 @@ export interface Database {
           closed_at?: string | null
           config: number
           created_at?: string | null
+          events?: string[]
           home_team?: number
           id?: number
           live_at?: string | null
@@ -371,6 +376,7 @@ export interface Database {
           closed_at?: string | null
           config?: number
           created_at?: string | null
+          events?: string[]
           home_team?: number
           id?: number
           live_at?: string | null

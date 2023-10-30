@@ -1,10 +1,13 @@
 'use server';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { MatchesJoined, MatchPlayersRow, MatchStatus } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { api, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { patchGuildScheduledEvent } from '@bf2-matchmaking/discord';
+import { getMatchDescription } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const result = await supabase(cookies).deleteMatchPlayer(matchId, playerId);
@@ -25,9 +28,7 @@ export async function addMatchPlayer(matchId: number, playerId: string, team: nu
 
   return result;
 }
-export async function startPolling(matchId: number) {
-  return api.rcon().postMatchLive(matchId, false);
-}
+
 export async function reopenMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Finished,
@@ -138,27 +139,85 @@ export async function setServer(matchId: number, serverIp: string) {
   const result = await supabase(cookies).updateMatch(matchId, {
     server: serverIp,
   });
+  const { data: player } = await supabase(cookies).getSessionPlayer();
 
-  if (!result.error) {
-    revalidatePath(`/matches/${matchId}`);
-    revalidateTag('getServerPlayerList');
+  if (result.error) {
+    logErrorMessage('Failed to set server', result.error, { matchId, serverIp, player });
+    return result;
   }
+  const match = result.data;
+  const guild = match.config.guild;
+
+  let events: unknown = null;
+  if (guild && match.events.length > 0) {
+    events = await Promise.all(
+      match.events.map((eventId) =>
+        patchGuildScheduledEvent(guild, eventId, {
+          description: getMatchDescription(match),
+        })
+      )
+    );
+  }
+
+  logMessage(`Match ${match.id}: Server ${serverIp} set by ${player?.full_name}`, {
+    match,
+    player,
+    events,
+  });
+
+  revalidatePath(`/matches/${matchId}`);
+  revalidateTag('getServerPlayerList');
 
   return result;
 }
 
 export async function setMaps(matchId: number, maps: Array<number>) {
+  const { data: player } = await supabase(cookies).getSessionPlayer();
   const { error } = await supabase(cookies).deleteAllMatchMaps(matchId);
+
   if (error) {
+    logErrorMessage('Failed to delete maps before setting new', error, {
+      matchId,
+      maps,
+      player,
+    });
     return { data: null, error };
   }
 
   const result = await supabase(cookies).createMatchMaps(matchId, ...maps);
 
-  if (!result.error) {
-    revalidatePath(`/matches/${matchId}`);
+  if (result.error) {
+    logErrorMessage('Failed to set maps', result.error, { matchId, maps, player });
+    return result;
   }
 
+  const { data: match } = await supabase(cookies).getMatch(matchId);
+
+  const guild = match?.config.guild;
+  let events: unknown = ['test', 'test2'];
+  console.log(guild);
+  console.log(match?.events.length);
+  if (guild && match?.events.length > 0) {
+    events = await Promise.all(
+      match.events.map((eventId) =>
+        patchGuildScheduledEvent(guild, eventId, {
+          description: getMatchDescription(match),
+        })
+      )
+    );
+  }
+
+  logMessage(
+    `Match ${matchId}: Maps ${JSON.stringify(maps)} set by ${player?.full_name}`,
+    {
+      match,
+      player,
+      events,
+      maps: result.data,
+    }
+  );
+
+  revalidatePath(`/matches/${matchId}`);
   return result;
 }
 

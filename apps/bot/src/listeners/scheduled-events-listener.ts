@@ -1,10 +1,7 @@
 import { getDiscordClient } from '../client';
 import { GuildScheduledEvent } from 'discord.js';
 import { createScheduledMatch } from '../match-service';
-import { error, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { isScheduledMatch, MatchesJoined } from '@bf2-matchmaking/types';
-import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
-import { DateTime } from 'luxon';
+import { info, logErrorMessage } from '@bf2-matchmaking/logging';
 
 function getMatchConfig(guildScheduledEvent: GuildScheduledEvent) {
   if (guildScheduledEvent.name.toLocaleLowerCase().includes('match')) {
@@ -32,21 +29,27 @@ export async function initScheduledEventsListener() {
   discordClient.on(
     'guildScheduledEventCreate',
     async (guildScheduledEvent: GuildScheduledEvent) => {
+      if (guildScheduledEvent.creatorId !== '736116031772164128') {
+        info(
+          'initScheduledEventsListener',
+          `Discarding non-raid organizer events. User: ${guildScheduledEvent.creator?.username} - ${guildScheduledEvent.creatorId}`
+        );
+        return;
+      }
       if (recordedEvents.includes(guildScheduledEvent.id)) {
-        error('initScheduledEventsListener', 'Aborting due to duplicated event');
+        info('initScheduledEventsListener', 'Aborting due to duplicated event');
         return;
       }
       recordedEvents.push(guildScheduledEvent.id);
-
       const startTime = guildScheduledEvent.scheduledStartTimestamp;
       if (!startTime) {
-        error('initScheduledEventsListener', 'Aborting due to no startTime');
+        info('initScheduledEventsListener', 'Aborting due to no startTime');
         return;
       }
 
       const config = getMatchConfig(guildScheduledEvent);
       if (!config) {
-        error('initScheduledEventsListener', 'Aborting due to no config');
+        info('initScheduledEventsListener', 'Aborting due to no config');
         return;
       }
 
@@ -55,7 +58,7 @@ export async function initScheduledEventsListener() {
 
       const [home_team, away_team] = getMatchTeams(teamString);
       if (!home_team || !away_team) {
-        error('initScheduledEventsListener', 'Aborting due to missing team');
+        info('initScheduledEventsListener', 'Aborting due to missing team');
         return;
       }
 
@@ -73,26 +76,8 @@ export async function initScheduledEventsListener() {
           startTime,
         });
       } catch (e) {
-        error('initScheduledEventsListener', e);
         logErrorMessage('Failed to create scheduled match', e);
       }
     }
   );
-}
-
-export async function createDiscordEvent(match: MatchesJoined) {
-  if (isScheduledMatch(match)) {
-    const discordClient = await getDiscordClient();
-    const guild = await discordClient.guilds.fetch('1036673720787411066');
-    const event = await guild.scheduledEvents.create(createScheduledMatchEvent(match));
-    recordedEvents.push(event.id);
-    logMessage(
-      `Match ${match.id}: Created scheduled discord event at ${
-        event.scheduledStartTimestamp &&
-        DateTime.fromMillis(event.scheduledStartTimestamp).toISO()
-      }`,
-      { match, event }
-    );
-    return event;
-  }
 }
