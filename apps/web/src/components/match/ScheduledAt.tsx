@@ -50,9 +50,10 @@ export default function ScheduledAt({ match }: Props) {
   return (
     <div className="flex items-center gap-1 text-gray font-bold">
       <span>{moment(match.scheduled_at).format('HH:mm - dddd Do MMMM')}</span>
-      {isMatchOfficer && (
+      {/* TODO: reenable this with update of discord event
+      isMatchOfficer && (
         <IconBtn size="xs" Icon={PencilSquareIcon} onClick={() => setEdit(true)} />
-      )}
+      )*/}
     </div>
   );
 }

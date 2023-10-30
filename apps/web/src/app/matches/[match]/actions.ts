@@ -6,7 +6,10 @@ import moment from 'moment';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { api, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { patchGuildScheduledEvent } from '@bf2-matchmaking/discord';
+import {
+  deleteGuildScheduledEvent,
+  patchGuildScheduledEvent,
+} from '@bf2-matchmaking/discord';
 import { getMatchDescription } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
@@ -72,11 +75,29 @@ export async function deleteMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Deleted,
   });
+  const { data: player } = await supabase(cookies).getSessionPlayer();
 
-  if (!result.error) {
-    revalidatePath(`/matches/${matchId}`);
+  if (result.error) {
+    logErrorMessage('Failed to delete match', result.error, { matchId, player });
+    return result;
   }
 
+  const match = result.data;
+  const guild = match.config.guild;
+  let events: unknown = null;
+  if (guild && match.events.length > 0) {
+    events = await Promise.all(
+      match.events.map((eventId) => deleteGuildScheduledEvent(guild, eventId))
+    );
+  }
+
+  logMessage(`Match ${matchId}: Deleted by ${player?.full_name}`, {
+    match,
+    player,
+    events,
+  });
+
+  revalidatePath(`/matches/${matchId}`);
   return result;
 }
 
@@ -194,9 +215,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
   const { data: match } = await supabase(cookies).getMatch(matchId);
 
   const guild = match?.config.guild;
-  let events: unknown = ['test', 'test2'];
-  console.log(guild);
-  console.log(match?.events.length);
+  let events: unknown = null;
   if (guild && match?.events.length > 0) {
     events = await Promise.all(
       match.events.map((eventId) =>

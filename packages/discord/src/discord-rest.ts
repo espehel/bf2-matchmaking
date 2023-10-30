@@ -16,6 +16,7 @@ import {
   RESTPostAPIGuildScheduledEventResult,
   RESTPatchAPIGuildScheduledEventJSONBody,
   RESTPatchAPIGuildScheduledEventResult,
+  RESTDeleteAPIGuildScheduledEventResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
 import {
@@ -224,4 +225,9 @@ export const patchGuildScheduledEvent = (
   patchDiscordRoute<RESTPatchAPIGuildScheduledEventResult>(
     Routes.guildScheduledEvent(guildId, scheduledEventId),
     { body }
+  );
+
+export const deleteGuildScheduledEvent = (guildId: string, scheduledEventId: string) =>
+  deleteDiscordRoute<RESTDeleteAPIGuildScheduledEventResult>(
+    Routes.guildScheduledEvent(guildId, scheduledEventId)
   );
