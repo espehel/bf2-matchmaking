@@ -36,10 +36,12 @@ export async function initScheduledEventsListener() {
         );
         return;
       }
+
       if (recordedEvents.includes(guildScheduledEvent.id)) {
         info('initScheduledEventsListener', 'Aborting due to duplicated event');
         return;
       }
+
       recordedEvents.push(guildScheduledEvent.id);
       const startTime = guildScheduledEvent.scheduledStartTimestamp;
       if (!startTime) {
