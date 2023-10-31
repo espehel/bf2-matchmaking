@@ -7,22 +7,22 @@ import {
 import { client } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage } from '@bf2-matchmaking/logging';
 
-let ongoing: Array<MatchesJoined> = [];
+let active: Array<MatchesJoined> = [];
 let scheduled: Array<ScheduledMatch> = [];
 
 export default {
-  loadOngoing() {
+  loadActive() {
     client()
-      .getMatchesWithStatus(MatchStatus.Ongoing)
+      .getMatchesWithStatus(MatchStatus.Ongoing, MatchStatus.Finished)
       .then(({ data, error }) => {
         if (data && data.length > 0) {
-          ongoing = data;
-          info('loadOngoing', `Loaded ${ongoing.length} ongoing matches`);
+          active = data;
+          info('loadActive', `Loaded ${active.length} active matches`);
         } else {
-          info('loadOngoing', 'No ongoing matches found');
+          info('loadActive', 'No active matches found');
         }
         if (error) {
-          logErrorMessage('Failed to load ongoing matches', error);
+          logErrorMessage('Failed to load active matches', error);
         }
       });
     return this;
@@ -47,8 +47,8 @@ export default {
       });
     return this;
   },
-  getOngoing() {
-    return [...ongoing];
+  getActive() {
+    return [...active];
   },
   getScheduled() {
     return [...scheduled];
@@ -57,9 +57,9 @@ export default {
     if (isScheduledMatch(match) && !this.hasScheduledMatch(match)) {
       info('state/matches', `Pushing match ${match.id} to scheduled matches`);
       scheduled.push(match);
-    } else if (match.status === MatchStatus.Ongoing && !this.hasOngoingMatch(match)) {
-      info('state/matches', `Pushing match ${match.id} to ongoing matches`);
-      ongoing.push(match);
+    } else if (match.status === MatchStatus.Ongoing && !this.hasActiveMatch(match)) {
+      info('state/matches', `Pushing match ${match.id} to active matches`);
+      active.push(match);
     } else {
       info('state/matches', `Discarding match ${match.id}`);
     }
@@ -68,16 +68,16 @@ export default {
     this.removeMatch(match);
     this.pushMatch(match);
   },
-  hasOngoingMatch(match: MatchesJoined) {
-    return ongoing.some((m) => m.id === match.id);
+  hasActiveMatch(match: MatchesJoined) {
+    return active.some((m) => m.id === match.id);
   },
   hasScheduledMatch(match: MatchesJoined) {
     return scheduled.some((m) => m.id === match.id);
   },
   removeMatch(match: MatchesJoined) {
-    if (this.hasOngoingMatch(match)) {
-      info('state/matches', `Removing match ${match.id} from ongoing matches`);
-      ongoing = ongoing.filter((m) => m.id !== match.id);
+    if (this.hasActiveMatch(match)) {
+      info('state/matches', `Removing match ${match.id} from active matches`);
+      active = active.filter((m) => m.id !== match.id);
     }
     if (this.hasScheduledMatch(match)) {
       info('state/matches', `Removing match ${match.id} from scheduled matches`);

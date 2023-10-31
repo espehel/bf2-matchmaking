@@ -3,16 +3,14 @@ import Koa from 'koa';
 import logger from 'koa-logger';
 import { bodyParser } from '@koa/bodyparser';
 import cron from 'node-cron';
-import { findMatchServer } from './tasks/findMatchServer';
 import { matchesRouter } from './routers/matches';
 import matches from './state/matches';
 import { closeOldMatches } from './tasks/closeOldMatches';
 import { rootRouter } from './routers/root';
 import { startScheduledMatches } from './tasks/startScheduledMatches';
 
-matches.loadOngoing().loadScheduled();
+matches.loadActive().loadScheduled();
 
-cron.schedule('*/10 * * * *', findMatchServer);
 cron.schedule('0 16 * * *', closeOldMatches);
 cron.schedule('0,30 * * * *', startScheduledMatches);
 

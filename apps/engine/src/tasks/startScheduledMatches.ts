@@ -1,9 +1,9 @@
 import { MatchStatus, ScheduledMatch } from '@bf2-matchmaking/types';
-import moment from 'moment';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { api } from '@bf2-matchmaking/utils';
+import { DateTime } from 'luxon';
 
 export async function startScheduledMatches() {
   const matchesToStart = matches.getScheduled().filter(isScheduledToStart);
@@ -14,18 +14,14 @@ export async function startScheduledMatches() {
 }
 
 function isScheduledToStart(match: ScheduledMatch) {
-  const scheduled = moment(match.scheduled_at);
-  const now = moment();
-  return (
-    scheduled.isAfter(now.subtract(15, 'minutes')) &&
-    scheduled.isBefore(now.add(15, 'minutes'))
-  );
+  const startsInMinutes = DateTime.fromISO(match.scheduled_at).diffNow('minutes').minutes;
+  return startsInMinutes <= 15 && startsInMinutes >= -15;
 }
 
 async function startMatch(scheduledMatch: ScheduledMatch) {
   const { data: match, error } = await client().updateMatch(scheduledMatch.id, {
     status: MatchStatus.Ongoing,
-    started_at: moment().toISOString(),
+    started_at: DateTime.now().toISO(),
   });
   const { data: liveMatch, error: rconError } = await api
     .rcon()

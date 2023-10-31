@@ -1,12 +1,12 @@
 import matches from '../state/matches';
-import moment from 'moment';
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { client } from '@bf2-matchmaking/supabase';
 import { api } from '@bf2-matchmaking/utils';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { DateTime } from 'luxon';
 
 export async function closeOldMatches() {
-  const oldMatches = matches.getOngoing().filter(isOlderThan2Days);
+  const oldMatches = matches.getActive().filter(isOlderThan24Hours);
   info('closeOldMatches', `Handling ${oldMatches.length} old matches`);
 
   const matchesWithRounds = oldMatches.filter((m) => m.rounds.length > 0);
@@ -22,8 +22,10 @@ export async function closeOldMatches() {
   }
 }
 
-function isOlderThan2Days(match: MatchesJoined) {
-  return match.started_at ? moment().diff(match.started_at, 'days') > 2 : true;
+function isOlderThan24Hours(match: MatchesJoined) {
+  return match.started_at
+    ? DateTime.fromISO(match.started_at).diffNow('hours').hours > 24
+    : true;
 }
 
 async function closeMatch(match: MatchesJoined) {
@@ -46,7 +48,7 @@ async function closeMatch(match: MatchesJoined) {
 async function forceCloseMatch(match: MatchesJoined) {
   const { error } = await client().updateMatch(match.id, {
     status: MatchStatus.Closed,
-    closed_at: moment().toISOString(),
+    closed_at: DateTime.now().toISO(),
   });
 
   if (error) {
