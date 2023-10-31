@@ -23,7 +23,7 @@ export default async function StaleMatchesList() {
   return (
     <section className="max-w-4xl m-auto">
       <h2 className="mb-8 text-xl font-bold text-left text-base-content">
-        Stale matches
+        Finished matches
       </h2>
       <ul>
         {staleMatches.map((match) => (

@@ -6,7 +6,7 @@ import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 
 export async function closeOldMatches() {
-  const oldMatches = matches.getActive().filter(isOlderThan24Hours);
+  const oldMatches = matches.getActive().filter(isOlderThan1Day);
   info('closeOldMatches', `Handling ${oldMatches.length} old matches`);
 
   const matchesWithRounds = oldMatches.filter((m) => m.rounds.length > 0);
@@ -22,9 +22,9 @@ export async function closeOldMatches() {
   }
 }
 
-function isOlderThan24Hours(match: MatchesJoined) {
+function isOlderThan1Day(match: MatchesJoined) {
   return match.started_at
-    ? DateTime.fromISO(match.started_at).diffNow('hours').hours > 24
+    ? DateTime.fromISO(match.started_at).diffNow('days').days < -1
     : true;
 }
 
