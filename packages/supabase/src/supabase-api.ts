@@ -43,10 +43,14 @@ export default (client: SupabaseClient<Database>) => ({
       .from('player_ratings')
       .select('*')
       .eq('config', config)
-      .eq('id', playerId)
+      .eq('player_id', playerId)
       .single(),
   getPlayerRatingsByIdList: (idList: Array<string>, config: number) =>
-    client.from('player_ratings').select('*').eq('config', config).in('id', idList),
+    client
+      .from('player_ratings')
+      .select('*')
+      .eq('config', config)
+      .in('player_id', idList),
   upsertPlayerRatings: (playerRatings: Array<PlayerRatingsInsert>) =>
     client.from('player_ratings').upsert(playerRatings).select('*'),
   searchPlayers: (query: string) =>
