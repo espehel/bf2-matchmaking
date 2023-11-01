@@ -106,10 +106,10 @@ export async function processResults(match: MatchesJoined) {
     : null;
   const data = await client().createMatchResult(resultsA, resultsB).then(verifyResult);
 
-  const playerResults = calculatePlayerResults(match);
+  let playerResults = calculatePlayerResults(match);
 
   if (match.config.type === 'Mix') {
-    playerResults.map(withMixRatingIncrement(match, winnerId));
+    playerResults = playerResults.map(withMixRatingIncrement(match, winnerId));
   }
 
   await client()
@@ -117,7 +117,12 @@ export async function processResults(match: MatchesJoined) {
     .then(verifyResult);
 
   await updatePlayerRatings(playerResults, match.config.id);
-  logMessage(`Match ${match.id} results created`, { match });
+  logMessage(`Match ${match.id} results created`, {
+    match,
+    playerResults,
+    resultsA,
+    resultsB,
+  });
 
   await sendChannelMessage('1046889100369739786', {
     embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],

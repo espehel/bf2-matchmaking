@@ -183,7 +183,7 @@ export function withMixRatingIncrement(
       mp.team === match.home_team.id ? awayTeamRating : homeTeamRating;
 
     const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - mp.rating) / 400));
-    const actualScore = winnerTeamId === null ? 0.5 : (winnerTeamId = mp.team ? 1 : 0);
+    const actualScore = winnerTeamId === null ? 0.5 : winnerTeamId === mp.team ? 1 : 0;
     const rating_inc = K_FACTOR * (actualScore - expectedScore);
 
     return {
@@ -194,18 +194,19 @@ export function withMixRatingIncrement(
   };
 }
 
-export function toPlayerRatingUpdate(players: Array<PlayerRatingsRow>) {
+export function toPlayerRatingUpdate(players: Array<PlayerRatingsRow>, config: number) {
   return (playerResult: MatchPlayerResultsInsert): PlayerRatingsInsert | null => {
-    const player = players.find((p) => p.player_id === playerResult.player_id);
+    const playerRating =
+      players.find((p) => p.player_id === playerResult.player_id)?.rating || 1500; // TODO: Get this from match player
 
-    if (!player || !playerResult.rating_inc) {
+    if (!playerResult.rating_inc) {
       return null;
     }
 
     return {
-      player_id: player.player_id,
-      config: player.config,
-      rating: player.rating + playerResult.rating_inc,
+      player_id: playerResult.player_id,
+      config,
+      rating: playerRating + playerResult.rating_inc,
     };
   };
 }

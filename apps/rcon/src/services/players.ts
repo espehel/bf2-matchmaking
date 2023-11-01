@@ -31,7 +31,7 @@ export async function updatePlayerRatings(
     .then(verifyResult);
 
   const playerUpdates = playerResults
-    .map(toPlayerRatingUpdate(playerRatings))
+    .map(toPlayerRatingUpdate(playerRatings, config))
     .filter(isNotNull);
 
   if (playerUpdates.length > 0) {
