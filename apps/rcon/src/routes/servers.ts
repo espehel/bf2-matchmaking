@@ -7,11 +7,9 @@ import {
   exec,
   switchPlayers,
 } from '../net/RconManager';
-import { getJoinmeHref } from '@bf2-matchmaking/utils';
 import { RconBf2Server } from '@bf2-matchmaking/types';
-import { externalApi } from '@bf2-matchmaking/utils';
-import { getLiveServer } from '../net/ServerManager';
 import { createRconBF2Server } from '../services/servers';
+import { isOffline, reconnectLiveServer } from '../net/ServerManager';
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
@@ -100,7 +98,12 @@ router.get('/:ip/si', async (req, res) => {
 
 router.get('/:ip', async (req, res) => {
   try {
-    const server = await client().getServer(req.params.ip).then(verifySingleResult);
+    const { ip } = req.params;
+    const server = await client().getServer(ip).then(verifySingleResult);
+
+    if (isOffline(ip)) {
+      await reconnectLiveServer(ip);
+    }
 
     const rconServer = await createRconBF2Server(server);
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import { getPlayerList, getServerInfo, rcon } from '../net/RconManager';
-import { getLiveServers } from '../net/ServerManager';
+import { getLiveServers, initLiveServer } from '../net/ServerManager';
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post('/pl', async (req, res) => {
 });
 
 router.post('/si', async (req, res) => {
-  const { host, port, password } = req.body;
+  const { host, port, password, persist } = req.body;
 
   if (!(host || port || password)) {
     return res.status(400).send('Missing host, port or password.');
@@ -32,6 +32,16 @@ router.post('/si', async (req, res) => {
 
   try {
     const si = await rcon(host, port, password).then(getServerInfo);
+
+    if (persist) {
+      await initLiveServer({
+        id: host,
+        rcon_port: port,
+        rcon_pw: password,
+        created_at: null,
+      });
+    }
+
     res.send(si);
   } catch (e) {
     res.status(502).send(e);

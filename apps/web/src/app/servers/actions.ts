@@ -15,6 +15,7 @@ export async function createServer(data: FormData) {
     host: addressInput,
     password: rconPwInput,
     port: rconPortInput,
+    persist: true,
   });
 
   if (error) {

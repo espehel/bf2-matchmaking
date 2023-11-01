@@ -73,6 +73,7 @@ export interface PostRconRequestBody {
   host: string;
   port: string;
   password: string;
+  persist?: boolean;
 }
 
 export interface PostServerExecRequestBody {

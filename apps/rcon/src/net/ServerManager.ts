@@ -18,6 +18,10 @@ export function getLiveServer(ip: string) {
   return liveServers.get(ip) || null;
 }
 
+export function isOffline(host: string) {
+  return !liveServers.has(host) && rcons.has(host);
+}
+
 export function getLiveInfo(ip: string) {
   return liveServers.get(ip)?.info || null;
 }
@@ -37,6 +41,22 @@ export async function initLiveServers() {
     })
   );
   info('initLiveServers', `Initialized ${liveServers.size}/${data.length} live servers`);
+}
+
+export async function initLiveServer(rcon: ServerRconsRow) {
+  rcons.set(rcon.id, rcon);
+  const liveInfo = await createLiveInfo(rcon);
+  if (liveInfo) {
+    liveServers.set(rcon.id, new LiveServer(rcon, liveInfo));
+    info('initLiveServer', `Initialized live server ${rcon.id}`);
+  }
+}
+
+export function reconnectLiveServer(host: string) {
+  const rcon = rcons.get(host);
+  if (rcon) {
+    return initLiveServer(rcon);
+  }
 }
 
 export function isIdle(serverIp: string) {
