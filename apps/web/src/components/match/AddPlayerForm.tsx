@@ -12,15 +12,16 @@ import { useMatch } from '@/state/MatchContext';
 interface Props {
   teamId: number;
   matchId: number;
+  config: number;
 }
-export default function AddPlayerForm({ teamId, matchId }: Props) {
+export default function AddPlayerForm({ teamId, matchId, config }: Props) {
   const { isMatchOfficer } = useMatch();
   const handleFormAction = useCallback(
     async (data: FormData) => {
       const value = data.get('player[id]');
       const name = data.get('player[full_name]');
       if (isString(value)) {
-        const { error } = await addMatchPlayer(matchId, value, teamId);
+        const { error } = await addMatchPlayer(matchId, value, teamId, config);
         if (error) {
           toast.error(`Failed to add player ${name}`);
         } else {
@@ -28,7 +29,7 @@ export default function AddPlayerForm({ teamId, matchId }: Props) {
         }
       }
     },
-    [matchId, teamId]
+    [matchId, teamId, config]
   );
 
   return (

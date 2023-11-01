@@ -1,7 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   Database,
-  MatchesInsert,
   MatchesJoined,
   MatchesRow,
   MatchesUpdate,
@@ -12,8 +11,6 @@ import {
   MatchResultsInsert,
   MatchResultsJoined,
   MatchStatus,
-  PlayersInsert,
-  PlayersUpdate,
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =

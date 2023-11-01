@@ -75,7 +75,7 @@ export const addPlayer = async (user: User | APIUser, config: DiscordConfig) => 
   await Promise.all(
     matchesWithoutPlayer.map((match) =>
       client()
-        .createMatchPlayer(match.id, player.id, { source: 'bot', expire_at })
+        .createMatchPlayer(match.id, player.id, { expire_at })
         .then(verifySingleResult)
     )
   )

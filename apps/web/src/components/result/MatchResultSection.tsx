@@ -4,7 +4,7 @@ import TeamResultTable from '@/components/TeamResultTable';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { assertObj, toTuple } from '@bf2-matchmaking/utils';
+import { toTuple } from '@bf2-matchmaking/utils';
 
 interface Props {
   match: MatchesJoined;

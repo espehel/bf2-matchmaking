@@ -22,8 +22,17 @@ export async function removeMatchPlayer(matchId: number, playerId: string) {
   return result;
 }
 
-export async function addMatchPlayer(matchId: number, playerId: string, team: number) {
-  const result = await supabase(cookies).createMatchPlayer(matchId, playerId, { team });
+export async function addMatchPlayer(
+  matchId: number,
+  playerId: string,
+  team: number,
+  config: number
+) {
+  const { data } = await supabase(cookies).getPlayerRating(playerId, config);
+  const result = await supabase(cookies).createMatchPlayer(matchId, playerId, {
+    team,
+    rating: data?.rating,
+  });
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);

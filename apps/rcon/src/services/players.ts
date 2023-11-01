@@ -20,13 +20,23 @@ export const getPlayerFromDatabase = async (user: User): Promise<PlayersRow> => 
 };
 
 export async function updatePlayerRatings(
-  playerUpdates: Array<MatchPlayerResultsInsert>
+  playerResults: Array<MatchPlayerResultsInsert>,
+  config: number
 ) {
-  const players = await client()
-    .getPlayersByIdList(playerUpdates.map((p) => p.player_id))
+  const playerRatings = await client()
+    .getPlayerRatingsByIdList(
+      playerResults.map((p) => p.player_id),
+      config
+    )
     .then(verifyResult);
 
-  await client()
-    .updatePlayers(playerUpdates.map(toPlayerRatingUpdate(players)).filter(isNotNull))
-    .then(verifyResult);
+  const playerUpdates = playerResults
+    .map(toPlayerRatingUpdate(playerRatings))
+    .filter(isNotNull);
+
+  if (playerUpdates.length > 0) {
+    return client().upsertPlayerRatings(playerUpdates).then(verifyResult);
+  }
+
+  return [];
 }

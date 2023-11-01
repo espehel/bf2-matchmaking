@@ -14,6 +14,7 @@ export type MatchPlayerResultsRow =
   Database['public']['Tables']['match_player_results']['Row'];
 export type TeamsRow = Database['public']['Tables']['teams']['Row'];
 export type TeamPlayersRow = Database['public']['Tables']['team_players']['Row'];
+export type PlayerRatingsRow = Database['public']['Tables']['player_ratings']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -26,6 +27,8 @@ export type MatchPlayerResultsInsert =
   Database['public']['Tables']['match_player_results']['Insert'];
 export type TeamsInsert = Database['public']['Tables']['teams']['Insert'];
 export type TeamPlayersInsert = Database['public']['Tables']['team_players']['Insert'];
+export type PlayerRatingsInsert =
+  Database['public']['Tables']['player_ratings']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];

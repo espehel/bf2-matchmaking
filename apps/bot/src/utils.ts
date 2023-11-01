@@ -9,6 +9,7 @@ import {
   ApiError,
   MatchesJoined,
   MatchPlayersInsert,
+  PlayerRatingsRow,
   PlayersRow,
 } from '@bf2-matchmaking/types';
 import {
@@ -86,8 +87,8 @@ export const getMatchCopyWithPlayer =
         team: null,
         expire_at: '',
         ready: false,
-        source: '',
         captain: false,
+        rating: 1500,
         updated_at: new Date().toISOString(),
       },
     ],
@@ -113,7 +114,7 @@ export const compareMessageReactionCount = (
 ) => secondValue.count - firstValue.count;
 
 export const toMatchPlayer =
-  (matchId: number, team: number) =>
+  (matchId: number, team: number, ratings: Array<PlayerRatingsRow>) =>
   (player: PlayersRow): MatchPlayersInsert => ({
     match_id: matchId,
     player_id: player.id,

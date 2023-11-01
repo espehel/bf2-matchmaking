@@ -200,7 +200,7 @@ export interface Database {
           kills: number
           match_id: number
           player_id: string
-          rating_inc: number
+          rating_inc: number | null
           score: number
           team: number
         }
@@ -210,7 +210,7 @@ export interface Database {
           kills: number
           match_id?: number
           player_id: string
-          rating_inc: number
+          rating_inc?: number | null
           score: number
           team?: number
         }
@@ -220,7 +220,7 @@ export interface Database {
           kills?: number
           match_id?: number
           player_id?: string
-          rating_inc?: number
+          rating_inc?: number | null
           score?: number
           team?: number
         }
@@ -251,8 +251,8 @@ export interface Database {
           expire_at: string | null
           match_id: number
           player_id: string
+          rating: number
           ready: boolean
-          source: string | null
           team: number | null
           updated_at: string
         }
@@ -261,8 +261,8 @@ export interface Database {
           expire_at?: string | null
           match_id: number
           player_id: string
+          rating?: number
           ready?: boolean
-          source?: string | null
           team?: number | null
           updated_at?: string
         }
@@ -271,8 +271,8 @@ export interface Database {
           expire_at?: string | null
           match_id?: number
           player_id?: string
+          rating?: number
           ready?: boolean
-          source?: string | null
           team?: number | null
           updated_at?: string
         }
@@ -410,6 +410,43 @@ export interface Database {
             columns: ["server"]
             referencedRelation: "servers"
             referencedColumns: ["ip"]
+          }
+        ]
+      }
+      player_ratings: {
+        Row: {
+          config: number
+          created_at: string
+          player_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          config: number
+          created_at?: string
+          player_id: string
+          rating?: number
+          updated_at?: string
+        }
+        Update: {
+          config?: number
+          created_at?: string
+          player_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_ratings_config_fkey"
+            columns: ["config"]
+            referencedRelation: "match_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_ratings_player_id_fkey"
+            columns: ["player_id"]
+            referencedRelation: "players"
+            referencedColumns: ["id"]
           }
         ]
       }

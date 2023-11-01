@@ -18,7 +18,7 @@ import moment from 'moment/moment';
 import {
   calculateMatchResults,
   calculatePlayerResults,
-  withRatingIncrement,
+  withMixRatingIncrement,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
 import { getMatchResultsEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
@@ -99,18 +99,24 @@ function validateMatchPlayers(match: MatchesJoined) {
 
 export async function processResults(match: MatchesJoined) {
   const [resultsA, resultsB] = calculateMatchResults(match);
-  const winner = resultsA.is_winner ? resultsA.team : resultsB.team;
+  const winnerId = resultsA.is_winner
+    ? resultsA.team
+    : resultsB.is_winner
+    ? resultsB.team
+    : null;
   const data = await client().createMatchResult(resultsA, resultsB).then(verifyResult);
 
-  const playerResults = calculatePlayerResults(match).map(
-    withRatingIncrement(match, winner)
-  );
+  const playerResults = calculatePlayerResults(match);
+
+  if (match.config.type === 'Mix') {
+    playerResults.map(withMixRatingIncrement(match, winnerId));
+  }
 
   await client()
     .createMatchPlayerResults(...playerResults)
     .then(verifyResult);
 
-  await updatePlayerRatings(playerResults);
+  await updatePlayerRatings(playerResults, match.config.id);
   logMessage(`Match ${match.id} results created`, { match });
 
   await sendChannelMessage('1046889100369739786', {

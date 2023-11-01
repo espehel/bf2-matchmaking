@@ -18,7 +18,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     const expire_at = moment().add(config.player_expire, 'ms').toISOString();
 
     const { error, status } = await client.createMatchPlayer(matchId, playerId, {
-      source: 'web',
       expire_at,
     });
 

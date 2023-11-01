@@ -9,9 +9,14 @@ import {
   MatchPlayerResultsInsert,
   PlayersInsert,
   LiveInfo,
+  MatchPlayersRow,
+  PlayerRatingsInsert,
+  PlayerRatingsRow,
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
+import { isTeam } from './team-utils';
 
+const K_FACTOR = 32;
 export const getPlayerRoundStats = (
   round: RoundsJoined
 ): Record<string, RoundStats> | null => {
@@ -149,14 +154,24 @@ export function calculatePlayerResults(
             score: results[player.keyhash]?.score || 0,
             deaths: results[player.keyhash]?.deaths || 0,
             kills: results[player.keyhash]?.kills || 0,
-            rating_inc: 0,
+            rating_inc: null,
           }
         : null
     )
     .filter(isNotNull);
 }
 
-export function withRatingIncrement(match: MatchesJoined, winnerTeam: number) {
+export function withMixRatingIncrement(
+  match: MatchesJoined,
+  winnerTeamId: number | null
+) {
+  const homeTeam = match.teams.filter(isTeam(match.home_team.id));
+  const homeTeamRating =
+    homeTeam.reduce((sum, mp) => sum + mp.rating, 0) / homeTeam.length;
+  const awayTeam = match.teams.filter(isTeam(match.away_team.id));
+  const awayTeamRating =
+    awayTeam.reduce((sum, mp) => sum + mp.rating, 0) / awayTeam.length;
+
   return (playerResult: MatchPlayerResultsInsert): MatchPlayerResultsInsert => {
     const mp = match.teams.find((mp) => mp.player_id === playerResult.player_id);
 
@@ -164,22 +179,32 @@ export function withRatingIncrement(match: MatchesJoined, winnerTeam: number) {
       return playerResult;
     }
 
+    const opponentRating =
+      mp.team === match.home_team.id ? awayTeamRating : homeTeamRating;
+
+    const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - mp.rating) / 400));
+    const actualScore = winnerTeamId === null ? 0.5 : (winnerTeamId = mp.team ? 1 : 0);
+    const rating_inc = K_FACTOR * (actualScore - expectedScore);
+
     return {
       ...playerResult,
       team: mp.team,
-      rating_inc: mp.team === winnerTeam ? 1 : -1,
+      rating_inc,
     };
   };
 }
 
-export function toPlayerRatingUpdate(players: Array<PlayersRow>) {
-  return (playerResult: MatchPlayerResultsInsert): PlayersInsert | null => {
-    const player = players.find((p) => p.id === playerResult.player_id);
-    if (!player) {
+export function toPlayerRatingUpdate(players: Array<PlayerRatingsRow>) {
+  return (playerResult: MatchPlayerResultsInsert): PlayerRatingsInsert | null => {
+    const player = players.find((p) => p.player_id === playerResult.player_id);
+
+    if (!player || !playerResult.rating_inc) {
       return null;
     }
+
     return {
-      ...player,
+      player_id: player.player_id,
+      config: player.config,
       rating: player.rating + playerResult.rating_inc,
     };
   };

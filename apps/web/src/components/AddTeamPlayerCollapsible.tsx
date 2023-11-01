@@ -41,7 +41,9 @@ export default function AddTeamPlayerCollapsible({ match, team }: Props) {
             <div key={player.id} className="flex items-center gap-2">
               <p>{player.full_name}</p>
               <TeamPlayerActionButton
-                action={() => addMatchPlayer(match.id, player.id, team.id)}
+                action={() =>
+                  addMatchPlayer(match.id, player.id, team.id, match.config.id)
+                }
                 successMessage={`Added ${player.full_name}`}
                 errorMessage={`Failed to add ${player.full_name}`}
               >

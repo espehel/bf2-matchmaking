@@ -33,9 +33,14 @@ export const createMatchFromPubobotEmbed = async (
     getUserIds(embed, 'MEC').map((player) => users.fetch(player).then(getOrCreatePlayer))
   );
 
+  const { data: ratings } = await client().getPlayerRatingsByIdList(
+    team1.concat(team2).map((p) => p.id),
+    config.id
+  );
+
   await Promise.all([
-    client().createMatchPlayers(team1.map(toMatchPlayer(match.id, 1))),
-    client().createMatchPlayers(team2.map(toMatchPlayer(match.id, 2))),
+    client().createMatchPlayers(team1.map(toMatchPlayer(match.id, 1, ratings || []))),
+    client().createMatchPlayers(team2.map(toMatchPlayer(match.id, 2, ratings || []))),
   ]);
 
   const updatedMatch = await client()
