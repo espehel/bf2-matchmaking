@@ -111,7 +111,6 @@ export async function updateIdleLiveServers() {
 export async function updateActiveLiveServers() {
   const activeServers = Array.from(liveServers.values()).filter((s) => !s.isIdle());
   if (activeServers.length === 0) {
-    info('updateActiveLiveServers', 'No active live servers found');
     return;
   }
   const serverInfoList = await Promise.all(

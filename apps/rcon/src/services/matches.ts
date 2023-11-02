@@ -116,12 +116,13 @@ export async function processResults(match: MatchesJoined) {
     .createMatchPlayerResults(...playerResults)
     .then(verifyResult);
 
-  await updatePlayerRatings(playerResults, match.config.id);
+  const updatedRatings = await updatePlayerRatings(playerResults, match.config.id);
   logMessage(`Match ${match.id} results created`, {
     match,
-    playerResults,
     resultsA,
     resultsB,
+    playerResults,
+    updatedRatings,
   });
 
   await sendChannelMessage('1046889100369739786', {
