@@ -119,6 +119,7 @@ export const toMatchPlayer =
     match_id: matchId,
     player_id: player.id,
     team,
+    rating: ratings.find((r) => r.player_id === player.id)?.rating || 1500,
   });
 
 export async function replyMessage(message: Message, content: MessageCreateOptions) {
