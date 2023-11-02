@@ -1,6 +1,5 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import moment from 'moment';
-import { useFirstRenderDefault } from '@/state/ssr-hooks';
 
 interface Props {
   match: MatchesJoined;

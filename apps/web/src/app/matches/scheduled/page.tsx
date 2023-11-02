@@ -2,13 +2,13 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { isScheduledMatch } from '@bf2-matchmaking/types';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import MatchDateItems from '@/components/match/MatchDateItems';
 import ScheduleMatchForm from '@/components/match/ScheduleMatchForm';
 
 export default async function ScheduledMatchesPage() {
   const matches = await supabase(cookies)
-    .getScheduledMatches(moment().subtract(2, 'hours').toISOString())
+    .getScheduledMatches(DateTime.now().set({ hour: 23, minute: 59 }).toISO())
     .then(verifyResult);
   const scheduledMatches = matches
     .filter(isScheduledMatch)
@@ -16,7 +16,9 @@ export default async function ScheduledMatchesPage() {
 
   const matchDates = [
     ...new Set(
-      scheduledMatches.map((match) => moment(match.scheduled_at).format('dddd, MMMM Do'))
+      scheduledMatches.map((match) =>
+        DateTime.fromISO(match.scheduled_at).toFormat('EEEE, MMMM d')
+      )
     ),
   ];
   const hasMatches = matchDates.length > 0;

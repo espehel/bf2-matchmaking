@@ -47,7 +47,7 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY),
-  getScheduledMatches: (scheduledAfter: string) =>
+  getScheduledMatches: (scheduledAfter: string | null) =>
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
@@ -214,10 +214,16 @@ export default (client: SupabaseClient<Database>) => ({
       .from('match_results')
       .select<'*, team(*)', MatchResultsJoined>('*, team(*)')
       .eq('match_id', matchId),
-  getPlayerMatchResultsByMatchId: (matchId: number) =>
+  getMatchPlayerResultsByMatchId: (matchId: number) =>
     client
       .from('match_player_results')
       .select<'*, player:players(*)', MatchPlayerResultsJoined>('*, player:players(*)')
       .eq('match_id', matchId)
       .order('score', { ascending: false }),
+  getMatchPlayerResultsByPlayerId: (playerId: string) =>
+    client
+      .from('match_player_results')
+      .select('*')
+      .eq('player_id', playerId)
+      .order('created_at', { ascending: false }),
 });

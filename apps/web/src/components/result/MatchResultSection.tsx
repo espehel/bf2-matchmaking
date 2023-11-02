@@ -21,7 +21,7 @@ export default async function MatchResultSection({ match }: Props) {
   }
 
   const playerResults = await supabase(cookies)
-    .getPlayerMatchResultsByMatchId(match.id)
+    .getMatchPlayerResultsByMatchId(match.id)
     .then(verifyResult);
 
   const [team1Result, team2Result] = matchResult;

@@ -1,13 +1,24 @@
-import { MatchesJoined, MatchPlayerResultsJoined } from '@bf2-matchmaking/types';
-import Link from 'next/link';
+import {
+  MatchesJoined,
+  MatchPlayerResultsJoined,
+  PlayersRow,
+} from '@bf2-matchmaking/types';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   playerResults: Array<MatchPlayerResultsJoined>;
   match: MatchesJoined;
 }
 
-export default function TeamResultTable({ playerResults, match }: Props) {
-  const roundForConnect = match.rounds.at(0);
+export default async function TeamResultTable({ playerResults }: Props) {
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const showRatingCol =
+    adminRoles?.player_admin ||
+    playerResults.some(
+      ({ player_id, rating_inc }) => player_id === player?.id && rating_inc
+    );
   return (
     <table className="table bg-base-100 shadow-xl">
       <thead>
@@ -17,6 +28,7 @@ export default function TeamResultTable({ playerResults, match }: Props) {
           <th>Score</th>
           <th>Kills</th>
           <th>Deaths</th>
+          {showRatingCol && <th>Rating</th>}
         </tr>
       </thead>
       <tbody>
@@ -29,25 +41,33 @@ export default function TeamResultTable({ playerResults, match }: Props) {
                 <td>{result.score}</td>
                 <td>{result.kills}</td>
                 <td>{result.deaths}</td>
+                <RatingCell
+                  result={result}
+                  player={player}
+                  isAdmin={Boolean(adminRoles?.player_admin)}
+                />
               </>
             )}
-            {!result && roundForConnect && (
-              <>
-                <td colSpan={2}>Unconnected</td>
-                <td>
-                  <Link
-                    className="btn btn-xs btn-secondary float-right"
-                    href={`/rounds/${roundForConnect.id}/connect`}
-                  >
-                    Connect
-                  </Link>
-                </td>
-              </>
-            )}
-            {!result && !roundForConnect && <td colSpan={3}>Unconnected</td>}
           </tr>
         ))}
       </tbody>
     </table>
+  );
+}
+
+interface RatingCellProps {
+  result: MatchPlayerResultsJoined;
+  player: PlayersRow | null;
+  isAdmin: boolean;
+}
+async function RatingCell({ result, player, isAdmin }: RatingCellProps) {
+  if (!((player?.id === result.player_id || isAdmin) && result.rating_inc)) {
+    return null;
+  }
+
+  return (
+    <td className={`font-bold ${result.rating_inc > 0 ? 'text-success' : 'text-error'}`}>
+      {result.rating_inc}
+    </td>
   );
 }
