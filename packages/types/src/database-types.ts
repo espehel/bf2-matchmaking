@@ -131,8 +131,38 @@ export interface MatchPlayerResultsJoined extends MatchPlayerResultsRow {
   player: PlayersRow;
 }
 
+export interface PlayerResultsJoined extends MatchPlayerResultsRow {
+  match: {
+    home_team: TeamsRow;
+    away_team: TeamsRow;
+    config: MatchConfigsRow;
+    players: Array<MatchPlayersRow>;
+    results: Array<MatchResultsRow>;
+  };
+}
+
 export interface TeamsJoined extends Omit<TeamsRow, 'owner'> {
   owner: PlayersRow;
   players: Array<PlayersRow>;
   captains: Array<TeamPlayersRow>;
+}
+
+export interface MatchResultInfo {
+  homeTeam: string;
+  homeTeamRating: number;
+  homeTeamTickets: number;
+  awayTeam: string;
+  awayTeamRating: number;
+  awayTeamTickets: number;
+  type: string;
+  name: string;
+}
+export interface PlayerResultInfo extends MatchResultInfo {
+  score: number;
+  rating: number;
+  playerTeam: string;
+}
+
+export interface PlayerRatingsJoined extends Omit<PlayerRatingsRow, 'config'> {
+  config: { id: number; name: string };
 }

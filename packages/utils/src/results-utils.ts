@@ -12,6 +12,9 @@ import {
   MatchPlayersRow,
   PlayerRatingsInsert,
   PlayerRatingsRow,
+  Json,
+  PlayerResultInfo,
+  MatchResultInfo,
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
 import { isTeam } from './team-utils';
@@ -161,16 +164,40 @@ export function calculatePlayerResults(
     .filter(isNotNull);
 }
 
+export function calculateMatchTeamRating(
+  matchPlayers: Array<MatchPlayersRow>,
+  teamId: number
+) {
+  const players = matchPlayers.filter(isTeam(teamId));
+  return players.length > 0
+    ? players.reduce((sum, mp) => sum + mp.rating, 0) / players.length
+    : 0;
+}
+
 export function withMixRatingIncrement(
   match: MatchesJoined,
-  winnerTeamId: number | null
+  resultsHome: MatchResultsInsert,
+  resultsAway: MatchResultsInsert
 ) {
-  const homeTeam = match.teams.filter(isTeam(match.home_team.id));
-  const homeTeamRating =
-    homeTeam.reduce((sum, mp) => sum + mp.rating, 0) / homeTeam.length;
-  const awayTeam = match.teams.filter(isTeam(match.away_team.id));
-  const awayTeamRating =
-    awayTeam.reduce((sum, mp) => sum + mp.rating, 0) / awayTeam.length;
+  const winnerTeamId = resultsHome.is_winner
+    ? resultsHome.team
+    : resultsAway.is_winner
+    ? resultsAway.team
+    : null;
+
+  const homeTeamRating = calculateMatchTeamRating(match.teams, match.home_team.id);
+  const awayTeamRating = calculateMatchTeamRating(match.teams, match.away_team.id);
+
+  const matchResultInfo: MatchResultInfo = {
+    homeTeam: match.home_team.name,
+    homeTeamRating,
+    homeTeamTickets: resultsHome.tickets,
+    awayTeam: match.home_team.name,
+    awayTeamRating,
+    awayTeamTickets: resultsAway.tickets,
+    type: match.config.type,
+    name: match.config.name,
+  };
 
   return (playerResult: MatchPlayerResultsInsert): MatchPlayerResultsInsert => {
     const mp = match.teams.find((mp) => mp.player_id === playerResult.player_id);
@@ -179,16 +206,22 @@ export function withMixRatingIncrement(
       return playerResult;
     }
 
-    const opponentRating =
-      mp.team === match.home_team.id ? awayTeamRating : homeTeamRating;
+    const [rating, opponentRating] =
+      mp.team === match.home_team.id
+        ? [homeTeamRating, awayTeamRating]
+        : [awayTeamRating, homeTeamRating];
 
-    const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - mp.rating) / 400));
+    const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - rating) / 400));
     const actualScore = winnerTeamId === null ? 0.5 : winnerTeamId === mp.team ? 1 : 0;
     const rating_inc = K_FACTOR * (actualScore - expectedScore);
 
     return {
       ...playerResult,
       team: mp.team,
+      info: {
+        ...matchResultInfo,
+        ...createPlayerResultInfo(match, actualScore, mp),
+      },
       rating_inc,
     };
   };
@@ -208,5 +241,18 @@ export function toPlayerRatingUpdate(players: Array<PlayerRatingsRow>, config: n
       config,
       rating: playerRating + playerResult.rating_inc,
     };
+  };
+}
+
+export function createPlayerResultInfo(
+  match: MatchesJoined,
+  score: number,
+  mp: MatchPlayersRow
+): Omit<PlayerResultInfo, keyof MatchResultInfo> {
+  return {
+    score,
+    rating: mp.rating,
+    playerTeam:
+      mp.team === match.home_team.id ? match.home_team.name : match.away_team.name,
   };
 }

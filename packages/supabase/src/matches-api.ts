@@ -11,6 +11,7 @@ import {
   MatchResultsInsert,
   MatchResultsJoined,
   MatchStatus,
+  PlayerResultsJoined,
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
@@ -226,4 +227,13 @@ export default (client: SupabaseClient<Database>) => ({
       .select('*')
       .eq('player_id', playerId)
       .order('created_at', { ascending: false }),
+  getJoinedPlayerResults: (playerId: string) =>
+    client
+      .from('match_player_results')
+      .select(
+        '*, match:matches(home_team(*), away_team(*), config(*), players:match_players(*), results:match_results(*))'
+      )
+      .eq('player_id', playerId)
+      .order('created_at', { ascending: false })
+      .returns<Array<PlayerResultsJoined>>(),
 });

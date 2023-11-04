@@ -98,18 +98,17 @@ function validateMatchPlayers(match: MatchesJoined) {
 }
 
 export async function processResults(match: MatchesJoined) {
-  const [resultsA, resultsB] = calculateMatchResults(match);
-  const winnerId = resultsA.is_winner
-    ? resultsA.team
-    : resultsB.is_winner
-    ? resultsB.team
-    : null;
-  const data = await client().createMatchResult(resultsA, resultsB).then(verifyResult);
+  const [resultsHome, resultsAway] = calculateMatchResults(match);
+  const data = await client()
+    .createMatchResult(resultsHome, resultsAway)
+    .then(verifyResult);
 
   let playerResults = calculatePlayerResults(match);
 
   if (match.config.type === 'Mix') {
-    playerResults = playerResults.map(withMixRatingIncrement(match, winnerId));
+    playerResults = playerResults.map(
+      withMixRatingIncrement(match, resultsHome, resultsAway)
+    );
   }
 
   await client()
@@ -119,8 +118,8 @@ export async function processResults(match: MatchesJoined) {
   const updatedRatings = await updatePlayerRatings(playerResults, match.config.id);
   logMessage(`Match ${match.id} results created`, {
     match,
-    resultsA,
-    resultsB,
+    resultsHome,
+    resultsAway,
     playerResults,
     updatedRatings,
   });

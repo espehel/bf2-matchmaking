@@ -7,6 +7,7 @@ import {
   MatchConfigsRow,
   MatchStatus,
   PlayerRatingsInsert,
+  PlayerRatingsJoined,
   PlayersInsert,
   PlayersUpdate,
   RoundsInsert,
@@ -37,7 +38,12 @@ export default (client: SupabaseClient<Database>) => ({
   getPlayers: () => client.from('players').select('*'),
   getPlayersByIdList: (idList: Array<string>) =>
     client.from('players').select('*').in('id', idList),
-  getPlayerRatings: () => client.from('player_ratings').select('*'),
+  getPlayerRatings: (playerId: string) =>
+    client
+      .from('player_ratings')
+      .select('*, config(id, name)')
+      .eq('player_id', playerId)
+      .returns<Array<PlayerRatingsJoined>>(),
   getPlayerRating: (playerId: string, config: number) =>
     client
       .from('player_ratings')

@@ -38,6 +38,7 @@ export interface Database {
           {
             foreignKeyName: "admin_roles_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -78,6 +79,7 @@ export interface Database {
           {
             foreignKeyName: "discord_channels_match_config_fkey"
             columns: ["match_config"]
+            isOneToOne: false
             referencedRelation: "match_configs"
             referencedColumns: ["id"]
           }
@@ -157,6 +159,7 @@ export interface Database {
           {
             foreignKeyName: "match_configs_owner_fkey"
             columns: ["owner"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           }
@@ -182,12 +185,14 @@ export interface Database {
           {
             foreignKeyName: "match_maps_map_id_fkey"
             columns: ["map_id"]
+            isOneToOne: false
             referencedRelation: "maps"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "match_maps_match_id_fkey"
             columns: ["match_id"]
+            isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
           }
@@ -197,6 +202,7 @@ export interface Database {
         Row: {
           created_at: string
           deaths: number
+          info: Json | null
           kills: number
           match_id: number
           player_id: string
@@ -207,6 +213,7 @@ export interface Database {
         Insert: {
           created_at?: string
           deaths: number
+          info?: Json | null
           kills: number
           match_id?: number
           player_id: string
@@ -217,6 +224,7 @@ export interface Database {
         Update: {
           created_at?: string
           deaths?: number
+          info?: Json | null
           kills?: number
           match_id?: number
           player_id?: string
@@ -228,18 +236,21 @@ export interface Database {
           {
             foreignKeyName: "match_player_results_match_id_fkey"
             columns: ["match_id"]
+            isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "match_player_results_player_id_fkey"
             columns: ["player_id"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "match_player_results_team_fkey"
             columns: ["team"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           }
@@ -280,18 +291,21 @@ export interface Database {
           {
             foreignKeyName: "match_players_match_id_fkey"
             columns: ["match_id"]
+            isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "match_players_player_id_fkey"
             columns: ["player_id"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "match_players_team_fkey"
             columns: ["team"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           }
@@ -329,12 +343,14 @@ export interface Database {
           {
             foreignKeyName: "match_results_match_id_fkey"
             columns: ["match_id"]
+            isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "match_results_team_fkey"
             columns: ["team"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           }
@@ -390,24 +406,28 @@ export interface Database {
           {
             foreignKeyName: "matches_away_team_fkey"
             columns: ["away_team"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "matches_config_fkey"
             columns: ["config"]
+            isOneToOne: false
             referencedRelation: "match_configs"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "matches_home_team_fkey"
             columns: ["home_team"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "matches_server_fkey"
             columns: ["server"]
+            isOneToOne: false
             referencedRelation: "servers"
             referencedColumns: ["ip"]
           }
@@ -439,12 +459,14 @@ export interface Database {
           {
             foreignKeyName: "player_ratings_config_fkey"
             columns: ["config"]
+            isOneToOne: false
             referencedRelation: "match_configs"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "player_ratings_player_id_fkey"
             columns: ["player_id"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           }
@@ -488,6 +510,7 @@ export interface Database {
           {
             foreignKeyName: "players_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -534,30 +557,35 @@ export interface Database {
           {
             foreignKeyName: "rounds_map_fkey"
             columns: ["map"]
+            isOneToOne: false
             referencedRelation: "maps"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "rounds_match_fkey"
             columns: ["match"]
+            isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "rounds_server_fkey"
             columns: ["server"]
+            isOneToOne: false
             referencedRelation: "servers"
             referencedColumns: ["ip"]
           },
           {
             foreignKeyName: "rounds_team1_fkey"
             columns: ["team1"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "rounds_team2_fkey"
             columns: ["team2"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           }
@@ -586,6 +614,7 @@ export interface Database {
           {
             foreignKeyName: "server_rcons_id_fkey"
             columns: ["id"]
+            isOneToOne: true
             referencedRelation: "servers"
             referencedColumns: ["ip"]
           }
@@ -635,12 +664,14 @@ export interface Database {
           {
             foreignKeyName: "team_players_player_id_fkey"
             columns: ["player_id"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "team_players_team_id_fkey"
             columns: ["team_id"]
+            isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
           }
@@ -678,6 +709,7 @@ export interface Database {
           {
             foreignKeyName: "teams_owner_fkey"
             columns: ["owner"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           }

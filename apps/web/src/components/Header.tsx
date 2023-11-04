@@ -19,7 +19,7 @@ export default async function Header() {
         <Link href="/results">Results</Link>
         <Link href="/teams">Teams</Link>
         <Link href="/servers">Servers</Link>
-        {player && <div className="p-2">{player.full_name}</div>}
+        {player && <Link href={`/players/${player.id}`}>{player.full_name}</Link>}
         <AuthButton className="btn" session={session.session} />
       </div>
     </header>
