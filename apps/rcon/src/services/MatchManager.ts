@@ -30,14 +30,26 @@ export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
 
   if (liveMatch) {
     liveMatch.setMatch(match);
+    logMessage(`Match ${match.id}: Updated live match`, {
+      match,
+      options,
+    });
   } else {
     liveMatch = new LiveMatch(match, options);
     liveMatches.set(match.id, liveMatch);
+    logMessage(`Match ${match.id}: Initialized live match`, {
+      match,
+      options,
+    });
   }
 
   if (isServerMatch(match) && isIdle(match.server.ip)) {
     resetLiveMatchServers(liveMatch);
     setServerLiveMatch(match.server.ip, liveMatch);
+    logMessage(`Match ${match.id}: Setting live match server`, {
+      match,
+      options,
+    });
   }
   return liveMatch;
 }
