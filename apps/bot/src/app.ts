@@ -29,21 +29,23 @@ import { getDiscordClient } from './client';
 import { createMatchFromPubobotEmbed } from './match-tracking-service';
 import { initScheduledEventsListener } from './listeners/scheduled-events-listener';
 
-// Create an express app
 const app = express();
-// Get port, or default to 5001
 const PORT = process.env.PORT || 5001;
 
 invariant(process.env.PUBLIC_KEY, 'PUBLIC_KEY not defined');
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
-(function () {
-  initChannelListener()
-    .then(() => info('app init', 'Channel listener initialization complete.'))
-    .catch((err) => error('app init', err));
-  initScheduledEventsListener()
-    .then(() => info('app init', 'Scheduled events listener initialization complete.'))
-    .catch((err) => error('app init', err));
+(async function () {
+  try {
+    await getDiscordClient();
+    info('app init', 'Discord client initialization complete.');
+    await initChannelListener();
+    info('app init', 'Channel listener initialization complete.');
+    await initScheduledEventsListener();
+    info('app init', 'Scheduled events listener initialization complete.');
+  } catch (err) {
+    error('app init', err);
+  }
 })();
 
 app.post(
@@ -193,5 +195,5 @@ app.get('/health', (req, res) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log('Listening on port', PORT);
+  info('app init', `Server listening on port ${PORT}`);
 });
