@@ -146,6 +146,7 @@ const passiveCollector =
         discordClient.users,
         config
       );
+
       await replyMessage(message, {
         embeds: [getMatchStartedEmbed(match), getRulesEmbedByConfig(config)],
       });

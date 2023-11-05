@@ -22,7 +22,12 @@ import {
 } from 'discord.js';
 import { getMatchIdFromEmbed, isSummonEmbed } from '@bf2-matchmaking/discord';
 import { api } from '@bf2-matchmaking/utils';
-import { error, info, logCreateChannelMessage } from '@bf2-matchmaking/logging';
+import {
+  error,
+  info,
+  logCreateChannelMessage,
+  logErrorMessage,
+} from '@bf2-matchmaking/logging';
 
 export const getOption = (
   key: string,
@@ -124,14 +129,20 @@ export const toMatchPlayer =
 
 export async function replyMessage(message: Message, content: MessageCreateOptions) {
   if (!isTextBasedChannel(message.channel)) {
-    throw new Error('Message did not come from text based channel');
+    info('replyMessage', 'Message did not come from text based channel');
+    return null;
   }
-  const replyMessage = await message.channel.send(content);
-  logCreateChannelMessage(
-    message.channel.id,
-    replyMessage.id,
-    replyMessage.embeds[0].description,
-    replyMessage.embeds
-  );
-  return replyMessage;
+  try {
+    const replyMessage = await message.channel.send(content);
+    logCreateChannelMessage(
+      message.channel.id,
+      replyMessage.id,
+      replyMessage.embeds[0].description,
+      replyMessage.embeds
+    );
+    return replyMessage;
+  } catch (e) {
+    logErrorMessage('Failed to reply to message', e, { message, content });
+    return null;
+  }
 }
