@@ -176,7 +176,7 @@ export interface RoundStats {
 }
 
 export type LiveServerState =
-  | 'waiting'
+  | 'pending'
   | 'warmup'
   | 'prelive'
   | 'live'

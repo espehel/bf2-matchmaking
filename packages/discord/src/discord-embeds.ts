@@ -4,6 +4,7 @@ import {
   MatchResultsJoined,
   MatchStatus,
   RconBf2Server,
+  ServerMatch,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -37,6 +38,19 @@ export const getServerEmbed = (server: RconBf2Server) => ({
   fields: [
     { name: 'ip', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
+  ],
+});
+
+export const getWarmUpStartedEmbed = (
+  match: ServerMatch,
+  serverName: string,
+  joinmeHref: string
+) => ({
+  description: `Warm up started on [${replaceDiscordGG(serverName)}](${joinmeHref})`,
+  fields: [
+    { name: 'ip', value: match.server.ip, inline: true },
+    { name: 'port', value: match.server.port, inline: true },
+    getLiveMatchField(match),
   ],
 });
 

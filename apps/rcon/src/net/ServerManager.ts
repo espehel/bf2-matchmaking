@@ -100,7 +100,7 @@ export async function updateIdleLiveServers() {
     return;
   }
   const serverInfoList = await Promise.all(
-    idleServers.map((liveServer) => liveServer.updateInfo())
+    idleServers.map((liveServer) => liveServer.update())
   );
   info(
     'updateIdleLiveServers',
@@ -114,7 +114,7 @@ export async function updateActiveLiveServers() {
     return;
   }
   const serverInfoList = await Promise.all(
-    activeServers.map((liveServer) => liveServer.updateInfo())
+    activeServers.map((liveServer) => liveServer.update())
   );
   info(
     'updateActiveLiveServers',

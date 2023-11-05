@@ -16,13 +16,24 @@ import {
   updateIdleLiveServers,
 } from './net/ServerManager';
 import cron from 'node-cron';
-import { updateLiveMatches } from './services/MatchManager';
+import { updatePendingLiveMatches } from './services/MatchManager';
+
+const inactiveTasks = cron.schedule(
+  '*/2 * * * *',
+  async () => {
+    await updateIdleLiveServers();
+    await updatePendingLiveMatches();
+  },
+  { scheduled: false }
+);
+const activeTasks = cron.schedule('*/10 * * * * *', updateActiveLiveServers, {
+  scheduled: false,
+});
 
 initLiveServers()
   .then(() => {
-    cron.schedule('*/2 * * * *', updateIdleLiveServers);
-    cron.schedule('*/10 * * * * *', updateActiveLiveServers);
-    cron.schedule('* * * * *', updateLiveMatches);
+    inactiveTasks.start();
+    activeTasks.start();
   })
   .catch((err) => error('app', err));
 

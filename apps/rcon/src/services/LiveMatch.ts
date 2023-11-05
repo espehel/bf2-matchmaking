@@ -18,7 +18,7 @@ import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/log
 import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
 import { isServerIdentified } from '../net/ServerManager';
-import moment from 'moment/moment';
+import { DateTime } from 'luxon';
 
 export interface LiveMatchOptions {
   prelive: boolean;
@@ -35,8 +35,9 @@ interface LiveServerPreliveUpdate {
 
 export type LiveServerUpdate = LiveServerBaseUpdate | LiveServerPreliveUpdate;
 export class LiveMatch {
+  pendingSince: DateTime | null = DateTime.now();
   match: MatchesJoined;
-  state: LiveServerState = 'waiting';
+  state: LiveServerState = 'pending';
   rounds: Array<RoundsRow> = [];
   liveInfo: LiveInfo | null = null;
   options: LiveMatchOptions;
@@ -49,15 +50,15 @@ export class LiveMatch {
     this.match = match;
   }
 
-  isWaiting() {
-    return this.state === 'waiting';
+  isPending() {
+    return this.state === 'pending';
   }
 
   isStale() {
-    return moment(this.match.started_at).isBefore(moment().subtract(3, 'hours'));
+    return this.pendingSince !== null && this.pendingSince.diffNow('hours').hours < -3;
   }
 
-  hasMatchPlayers() {
+  hasValidMatch() {
     return this.match.players.length > 0;
   }
   #updateLiveInfo(liveInfo: LiveInfo) {
@@ -79,7 +80,7 @@ export class LiveMatch {
     );
   }
 
-  async onLiveServerUpdate(liveInfo: LiveInfo): Promise<LiveServerUpdate> {
+  async updateState(liveInfo: LiveInfo): Promise<LiveServerUpdate> {
     this.#updateLiveInfo(liveInfo);
     const next = (state: LiveServerState) => this.handleNextState(state, liveInfo);
 
@@ -92,11 +93,11 @@ export class LiveMatch {
     }
 
     if (!isServerIdentified(liveInfo.players.length, this.match.config.size)) {
-      return next('waiting');
+      return next('pending');
     }
 
     if (
-      this.state === 'waiting' &&
+      this.state === 'pending' &&
       isServerIdentified(liveInfo.players.length, this.match.config.size)
     ) {
       return next('warmup');
@@ -140,7 +141,14 @@ export class LiveMatch {
     nextState: LiveServerState,
     liveInfo: LiveInfo
   ): Promise<LiveServerUpdate> {
-    if (this.state === 'waiting' && nextState === 'warmup') {
+    if (nextState === 'pending' && this.state !== 'pending') {
+      this.pendingSince = DateTime.now();
+    }
+    if (nextState !== 'pending' && this.state === 'pending') {
+      this.pendingSince = null;
+    }
+
+    if (this.state === 'pending' && nextState === 'warmup') {
       await sendWarmUpStartedMessage(this, liveInfo);
     }
 

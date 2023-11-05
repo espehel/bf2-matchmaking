@@ -1,4 +1,3 @@
-import moment, { Moment } from 'moment/moment';
 import { error, info } from '@bf2-matchmaking/logging';
 import {
   getPlayerList,
@@ -14,6 +13,7 @@ import {
   ServerInfo,
   ServerRconsRow,
 } from '@bf2-matchmaking/types';
+import { DateTime } from 'luxon';
 
 export class LiveServer {
   ip: string;
@@ -21,15 +21,14 @@ export class LiveServer {
   #password: string;
   #liveMatch: LiveMatch | null = null;
   info: LiveInfo;
-  updatedAt: Moment;
-  #errorAt: Moment | null = null;
-  #waitingSince: Moment | null = null;
+  updatedAt: DateTime = DateTime.now();
+  #errorAt: DateTime | null = null;
+  #waitingSince: DateTime | null = null;
   constructor(rconInfo: ServerRconsRow, info: LiveInfo) {
     this.ip = rconInfo.id;
     this.port = rconInfo.rcon_port;
     this.#password = rconInfo.rcon_pw;
     this.info = info;
-    this.updatedAt = moment();
   }
   reset() {
     info('LiveServer', `Resetting ${this.info.serverName}`);
@@ -41,7 +40,7 @@ export class LiveServer {
   setLiveMatch(liveMatch: LiveMatch) {
     info('LiveServer', `Setting match ${liveMatch.match.id} for ${this.info.serverName}`);
     this.#liveMatch = liveMatch;
-    this.#waitingSince = moment();
+    this.#waitingSince = DateTime.now();
     return this;
   }
   getLiveMatch() {
@@ -57,9 +56,9 @@ export class LiveServer {
       : false;
   }
 
-  async updateInfo() {
+  async update() {
     try {
-      if (moment().diff(this.#errorAt, 'minutes') > 30) {
+      if (this.#errorAt && this.#errorAt.diffNow('minutes').minutes < -30) {
         this.reset();
       }
 
@@ -67,22 +66,25 @@ export class LiveServer {
       const pl =
         si.connectedPlayers !== '0' ? await this.#rcon().then(getPlayerList) : [];
       verifyData(si, pl);
+
       this.info = { ...si, players: pl, ip: this.ip };
-      this.updatedAt = moment();
+      this.updatedAt = DateTime.now();
+
       if (this.#liveMatch) {
         await this.#updateLiveMatch(this.#liveMatch);
       }
+
       return this.info;
     } catch (e) {
       error('LiveServer', e);
-      this.#errorAt = moment();
+      this.#errorAt = DateTime.now();
     }
   }
   async #updateLiveMatch(liveMatch: LiveMatch) {
-    const { state, payload } = await liveMatch.onLiveServerUpdate(this.info);
+    const { state, payload } = await liveMatch.updateState(this.info);
     info('LiveServer', `Received live match state: ${state}`);
 
-    if (state !== 'waiting') {
+    if (state !== 'pending') {
       this.#errorAt = null;
       this.#waitingSince = null;
     }
@@ -91,13 +93,17 @@ export class LiveServer {
       const spRes = await this.#rcon().then(switchPlayers(payload));
       const rsRes = await this.#rcon().then(restartRound);
       info(
-        'pollServerInfo',
+        'LiveServer',
         `Prelive executed: switch: "${spRes.join(', ')}", rs: "${rsRes}"`
       );
     }
 
-    if (state === 'waiting' && moment().diff(this.#waitingSince, 'minutes') > 30) {
-      info('pollServerInfo', `No players connected, resetting ${this.info.serverName}`);
+    if (
+      state === 'pending' &&
+      this.#waitingSince &&
+      this.#waitingSince.diffNow('minutes').minutes < -30
+    ) {
+      info('LiveServer', `No players connected, resetting ${this.info.serverName}`);
       this.reset();
     }
 

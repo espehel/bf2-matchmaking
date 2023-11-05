@@ -14,15 +14,20 @@ import {
 } from '@bf2-matchmaking/types';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { LiveMatch } from './LiveMatch';
-import moment from 'moment/moment';
 import {
   calculateMatchResults,
   calculatePlayerResults,
   withMixRatingIncrement,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
-import { getMatchResultsEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
+import {
+  getMatchResultsEmbed,
+  getWarmUpStartedEmbed,
+  sendChannelMessage,
+} from '@bf2-matchmaking/discord';
 import { toKeyhashList } from '@bf2-matchmaking/utils/src/round-utils';
+import { getJoinmeHref } from '@bf2-matchmaking/utils';
+import { DateTime } from 'luxon';
 
 export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | null) => {
   logChangeMatchStatus(MatchStatus.Finished, match, liveInfo);
@@ -39,7 +44,7 @@ export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | nul
       await client()
         .updateMatch(updatedMatch.id, {
           status: MatchStatus.Closed,
-          closed_at: moment().toISOString(),
+          closed_at: DateTime.now().toISO(),
         })
         .then(verifySingleResult);
       logMessage(
@@ -71,7 +76,7 @@ export const closeMatch = async (match: MatchesJoined) => {
   await client()
     .updateMatch(match.id, {
       status: MatchStatus.Closed,
-      closed_at: moment().toISOString(),
+      closed_at: DateTime.now().toISO(),
     })
     .then(verifySingleResult);
   logChangeMatchStatus(MatchStatus.Closed, match);
@@ -156,7 +161,7 @@ export const isOngoingRound = (si: ServerInfo) => {
 export async function updateLiveAt(liveMatch: LiveMatch) {
   if (!liveMatch.match.live_at) {
     const { data } = await client().updateMatch(liveMatch.match.id, {
-      live_at: moment().toISOString(),
+      live_at: DateTime.now().toISO(),
     });
     if (data && isServerMatch(data)) {
       liveMatch.setMatch(data);
@@ -166,7 +171,11 @@ export async function updateLiveAt(liveMatch: LiveMatch) {
 
 export async function sendWarmUpStartedMessage(liveMatch: LiveMatch, liveInfo: LiveInfo) {
   const match = await updateServer(liveMatch, liveInfo.ip);
-  if (match) {
+  if (match && isServerMatch(match)) {
+    const joinmeHref = await getJoinmeHref(match.server);
+    await sendChannelMessage('1046889100369739786', {
+      embeds: [getWarmUpStartedEmbed(match, liveInfo.serverName, joinmeHref)],
+    });
     logMessage(
       `Match ${match.id} warmup started on server ${match.server?.ip};${match.server?.port}`,
       { match, liveMatch, liveInfo }

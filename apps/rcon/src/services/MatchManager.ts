@@ -54,20 +54,30 @@ export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
   return liveMatch;
 }
 
-export function updateLiveMatches() {
+export async function updatePendingLiveMatches() {
   if (liveMatches.size === 0) {
-    info('updateLiveMatches', 'No live matches found');
+    info('updateWaitingLiveMatches', 'No live matches found');
     return;
   }
   for (const liveMatch of liveMatches.values()) {
-    if (liveMatch.isWaiting() && liveMatch.hasMatchPlayers() && !liveMatch.isStale()) {
+    if (!liveMatch.isPending()) {
+      continue;
+    }
+
+    if (liveMatch.hasValidMatch()) {
       const liveServer = findServer(liveMatch);
       if (liveServer && liveServer.isIdle()) {
         resetLiveMatchServers(liveMatch);
         liveServer.setLiveMatch(liveMatch);
-      } else {
-        info('updateLiveMatches', `No live server found for match ${liveMatch.match.id}`);
+        continue;
       }
     }
+
+    if (liveMatch.isStale()) {
+      await liveMatch.finish();
+      continue;
+    }
+
+    info('updateWaitingLiveMatches', `Match ${liveMatch.match.id} is pending...`);
   }
 }
