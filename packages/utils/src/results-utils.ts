@@ -3,16 +3,12 @@ import {
   MatchesJoined,
   RoundStats,
   MatchResultsInsert,
-  PlayerListItem,
-  PlayersRow,
   RoundsJoined,
   MatchPlayerResultsInsert,
-  PlayersInsert,
   LiveInfo,
   MatchPlayersRow,
   PlayerRatingsInsert,
   PlayerRatingsRow,
-  Json,
   PlayerResultInfo,
   MatchResultInfo,
 } from '@bf2-matchmaking/types';
@@ -213,7 +209,7 @@ export function withMixRatingIncrement(
 
     const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - rating) / 400));
     const actualScore = winnerTeamId === null ? 0.5 : winnerTeamId === mp.team ? 1 : 0;
-    const rating_inc = K_FACTOR * (actualScore - expectedScore);
+    const rating_inc = Math.round(K_FACTOR * (actualScore - expectedScore));
 
     return {
       ...playerResult,
