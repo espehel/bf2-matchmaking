@@ -24,7 +24,7 @@ export default async function ResultsSection({ player }: Props) {
         <aside>
           <div className="stats stats-vertical shadow">
             {ratings.map((rating) => (
-              <div className="stat">
+              <div key={rating.config.id} className="stat">
                 <div className="stat-value">{rating.rating}</div>
                 <div className="stat-desc">{rating.config.name}</div>
               </div>
