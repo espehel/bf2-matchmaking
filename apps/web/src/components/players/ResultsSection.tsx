@@ -17,7 +17,6 @@ export default async function ResultsSection({ player }: Props) {
   if (!playerResults || !playerResults.length || !ratings || !ratings.length) {
     return null;
   }
-
   return (
     <section>
       <h2 className="text-xl font-bold mb-2">Ratings:</h2>
@@ -38,7 +37,7 @@ export default async function ResultsSection({ player }: Props) {
               <PlayerResultItem
                 key={playerResult.match_id}
                 playerResult={playerResult}
-                info={parseJSON<PlayerResultInfo>(playerResult.info)}
+                info={playerResult.info}
               />
             ) : (
               <PlayerResultItemOld

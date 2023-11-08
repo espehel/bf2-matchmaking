@@ -188,7 +188,7 @@ export function withMixRatingIncrement(
     homeTeam: match.home_team.name,
     homeTeamRating,
     homeTeamTickets: resultsHome.tickets,
-    awayTeam: match.home_team.name,
+    awayTeam: match.away_team.name,
     awayTeamRating,
     awayTeamTickets: resultsAway.tickets,
     type: match.config.type,

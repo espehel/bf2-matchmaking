@@ -131,7 +131,8 @@ export interface MatchPlayerResultsJoined extends MatchPlayerResultsRow {
   player: PlayersRow;
 }
 
-export interface PlayerResultsJoined extends MatchPlayerResultsRow {
+export interface PlayerResultsJoined extends Omit<MatchPlayerResultsRow, 'info'> {
+  info: PlayerResultInfo;
   match: {
     home_team: TeamsRow;
     away_team: TeamsRow;
