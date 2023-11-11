@@ -3,10 +3,9 @@ import { MatchesJoined } from '@bf2-matchmaking/types';
 import { useState } from 'react';
 import moment from 'moment';
 import IconBtn from '@/components/commons/IconBtn';
-import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon } from '@heroicons/react/24/solid';
 import { ArrowUpOnSquareIcon } from '@heroicons/react/24/outline';
-// @ts-ignore
-import { experimental_useFormStatus as useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { useMatch } from '@/state/MatchContext';
 import { updateMatchScheduledAt } from '@/app/matches/[match]/actions';
 

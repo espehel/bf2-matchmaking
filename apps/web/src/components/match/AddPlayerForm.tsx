@@ -4,8 +4,7 @@ import { isString } from '@bf2-matchmaking/types';
 import PlayerCombobox from '@/components/PlayerCombobox';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import { addMatchPlayer } from '@/app/matches/[match]/actions';
-// @ts-ignore
-import { experimental_useFormStatus as useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { toast } from 'react-toastify';
 import { useMatch } from '@/state/MatchContext';
 

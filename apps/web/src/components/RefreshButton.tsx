@@ -1,6 +1,5 @@
 'use client';
-// @ts-ignore
-import { experimental_useFormStatus as useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { ArrowPathIcon } from '@heroicons/react/20/solid';
 
 export default function RefreshButton() {
