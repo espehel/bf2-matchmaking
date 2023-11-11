@@ -8,6 +8,9 @@ import {
 import { getPlayerList, getServerInfo, rcon } from '../net/RconManager';
 import { externalApi, getJoinmeHref } from '@bf2-matchmaking/utils';
 import { getLiveServer } from '../net/ServerManager';
+import { supabase } from 'web/src/lib/supabase/supabase';
+import { client } from '@bf2-matchmaking/supabase';
+import { info } from '@bf2-matchmaking/logging';
 
 export async function createLiveInfo({
   id: ip,
@@ -45,4 +48,17 @@ export async function createRconBF2Server(server: ServersRow): Promise<RconBf2Se
   const info = live?.info || null;
   const match = live?.getLiveMatch()?.match || null;
   return { ...server, info, joinmeHref, country, city, match };
+}
+
+export async function updateServerName(servers: Array<ServersRow>, liveInfo: LiveInfo) {
+  const server = servers.find(({ ip }) => ip === liveInfo.ip);
+  if (server && server.name !== liveInfo.serverName) {
+    info(
+      'updateServerName',
+      `Server ${server.ip} updating name to ${liveInfo.serverName}`
+    );
+    await client().updateServer(server.ip, {
+      name: liveInfo.serverName,
+    });
+  }
 }

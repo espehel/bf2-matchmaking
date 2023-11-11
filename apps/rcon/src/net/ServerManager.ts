@@ -1,9 +1,10 @@
 import { LiveServer } from './LiveServer';
-import { client } from '@bf2-matchmaking/supabase';
+import { client, fallbackResult, verifyResult } from '@bf2-matchmaking/supabase';
 import { info, logSupabaseError } from '@bf2-matchmaking/logging';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
-import { createLiveInfo } from '../services/servers';
+import { createLiveInfo, updateServerName } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
+import { verify } from '@bf2-matchmaking/utils';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
 
@@ -26,6 +27,7 @@ export function getLiveInfo(ip: string) {
   return liveServers.get(ip)?.info || null;
 }
 export async function initLiveServers() {
+  const servers = await client().getServers().then(fallbackResult([]));
   const { data, error } = await client().getServerRcons();
   if (error) {
     logSupabaseError('Failed to init live servers', error);
@@ -37,6 +39,7 @@ export async function initLiveServers() {
       const liveInfo = await createLiveInfo(rcon);
       if (liveInfo) {
         liveServers.set(rcon.id, new LiveServer(rcon, liveInfo));
+        await updateServerName(servers || [], liveInfo);
       }
     })
   );

@@ -62,6 +62,22 @@ export const remixClient = (request: Request) => {
   };
 };
 
+export function fallbackResult<T>(fallback: any[]) {
+  return ({ data, error }: PostgrestResponse<T>) => {
+    if (error) {
+      return fallback;
+    }
+    return data;
+  };
+}
+export function fallbackSingleResult<T>(fallback: any) {
+  return ({ data, error }: PostgrestSingleResponse<T>) => {
+    if (error) {
+      return fallback as T;
+    }
+    return data;
+  };
+}
 export const verifyResult = <T>({ data, error }: PostgrestResponse<T>) => {
   if (error) {
     throw new Error(JSON.stringify(error));
