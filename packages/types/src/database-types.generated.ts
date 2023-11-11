@@ -622,18 +622,21 @@ export interface Database {
       }
       servers: {
         Row: {
+          created_at: string
           ip: string
           name: string
           port: string
           updated_at: string
         }
         Insert: {
+          created_at?: string
           ip: string
           name: string
           port?: string
           updated_at?: string
         }
         Update: {
+          created_at?: string
           ip?: string
           name?: string
           port?: string

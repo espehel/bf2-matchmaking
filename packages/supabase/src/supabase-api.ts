@@ -92,6 +92,9 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('servers').update(values).eq('ip', ip).select().single(),
   updateServerRcon: (id: string, values: ServerRconsUpdate) =>
     client.from('server_rcons').update(values).eq('id', id).select(),
+  deleteServer: (ip: string) => client.from('servers').delete().eq('ip', ip).select(),
+  deleteServerRcon: (ip: string) =>
+    client.from('server_rcons').delete().eq('id', ip).select(),
   getServers: () => client.from('servers').select('*'),
   getServer: (ip: string) => client.from('servers').select('*').eq('ip', ip).single(),
   getServerByNameSearch: (name: string) =>

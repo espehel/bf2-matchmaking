@@ -19,10 +19,7 @@ export default function ServerUpdateForm({ server }: Props) {
   };
 
   return (
-    <form
-      action={handleFormAction}
-      className="form-control bg-base-100 border-primary border-2 rounded p-4"
-    >
+    <form action={handleFormAction} className="form-control">
       <label className="label" htmlFor="portInput">
         Port:
       </label>

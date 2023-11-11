@@ -1,7 +1,7 @@
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import ServerCreateForm from '@/components/ServerCreateForm';
+import ServerCreateForm from '@/components/servers/ServerCreateForm';
 import { api, verify } from '@bf2-matchmaking/utils';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';

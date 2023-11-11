@@ -44,3 +44,17 @@ const toRconUpdateValues = (data: FormData) => {
 
   return values;
 };
+
+export async function deleteServer(ip: string) {
+  const rconResult = await supabase(cookies).deleteServerRcon(ip);
+  if (rconResult.error) {
+    return rconResult;
+  }
+
+  const serverResult = await supabase(cookies).deleteServer(ip);
+  if (serverResult.error) {
+    return serverResult;
+  }
+
+  return serverResult;
+}

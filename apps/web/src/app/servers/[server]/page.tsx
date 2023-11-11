@@ -1,10 +1,10 @@
 import { api, verify } from '@bf2-matchmaking/utils';
 import RoundTable from '@/components/RoundTable';
-import ServerUpdateForm from '@/components/ServerUpdateForm';
-import ServerInfoSection from '@/components/ServerInfoSection';
-import UpdateServerNameForm from '@/components/UpdateServerNameForm';
+import ServerInfoSection from '@/components/servers/ServerInfoSection';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import ServerActions from '@/components/servers/ServerActions';
+import { DateTime } from 'luxon';
 
 interface Props {
   params: { server: string };
@@ -19,12 +19,12 @@ export default async function ServerPage({ params }: Props) {
       <section>
         <div className="flex items-center">
           <h2 className="text-xl">{server.name}</h2>
-          {server.info && adminRoles?.server_admin && (
-            <UpdateServerNameForm server={server} info={server.info} />
-          )}
         </div>
-        <p className="font-bold mb-2">{`IP: ${server.ip}`}</p>
-        {adminRoles?.server_admin && <ServerUpdateForm server={server} />}
+        <div className="flex gap-2 font-bold mb-2">
+          <p>{`IP: ${server.ip}`}</p>
+          <p>{`Created: ${DateTime.fromISO(server.created_at).toFormat('DDD, T')}`}</p>
+        </div>
+        {adminRoles?.server_admin && <ServerActions server={server} />}
       </section>
       <ServerInfoSection serverInfo={server.info} />
       {server.info && server.info.players.length > 0 && (
