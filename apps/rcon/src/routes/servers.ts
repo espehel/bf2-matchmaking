@@ -10,6 +10,7 @@ import {
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { createRconBF2Server } from '../services/servers';
 import { isOffline, reconnectLiveServer } from '../net/ServerManager';
+import { info } from '@bf2-matchmaking/logging';
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
@@ -114,7 +115,27 @@ router.get('/:ip', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  res.sendStatus(410);
+  const { ip, port, rcon_port, rcon_pw } = req.body;
+  try {
+    const serverInfo = await rcon(ip, rcon_port, rcon_pw).then(getServerInfo);
+
+    const server = await client()
+      .upsertServer({ ip, port, name: serverInfo.serverName })
+      .then(verifySingleResult);
+
+    const serverRcon = await client()
+      .upsertServerRcon({ id: ip, rcon_port, rcon_pw })
+      .then(verifySingleResult);
+
+    info(
+      'routes/servers',
+      `Upserted server ${serverInfo.serverName} with ip ${ip}:${port}`
+    );
+
+    res.status(200).send({ info: serverInfo, server, rcon: serverRcon });
+  } catch (e) {
+    res.status(502).send(e);
+  }
 });
 
 router.get('/', async (req, res) => {

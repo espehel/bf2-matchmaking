@@ -9,6 +9,7 @@ import {
   error,
   getExpressAccessLogger,
   getExpressErrorLogger,
+  info,
 } from '@bf2-matchmaking/logging';
 import {
   initLiveServers,
@@ -55,5 +56,5 @@ app.get('/health', (req, res) => {
 app.use(getExpressErrorLogger());
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5002;
 app.listen(PORT, () => {
-  console.log(`rcon api listening on port ${PORT}`);
+  info('app', `rcon api listening on port ${PORT}`);
 });

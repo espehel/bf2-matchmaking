@@ -127,8 +127,10 @@ export default (client: SupabaseClient<Database>) => ({
   getMaps: () => client.from('maps').select('*'),
   searchMap: (map: string) =>
     client.from('maps').select().textSearch('name', `'${map}'`).single(),
-  upsertServer: (ip: string, name: string) =>
-    client.from('servers').upsert({ ip, name }).select().single(),
+  upsertServer: (values: ServersInsert) =>
+    client.from('servers').upsert(values).select().single(),
+  upsertServerRcon: (values: ServerRconsInsert) =>
+    client.from('server_rcons').upsert(values).select().single(),
   getMatchAdmins: () => client.from('admin_roles').select('*').eq('match_admin', true),
   getAdminRoles: (userId: string) =>
     client.from('admin_roles').select('*').eq('user_id', userId).single(),
