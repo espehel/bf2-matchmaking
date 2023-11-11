@@ -9,7 +9,7 @@ import {
 } from '../net/RconManager';
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { createRconBF2Server } from '../services/servers';
-import { isOffline, reconnectLiveServer } from '../net/ServerManager';
+import { initLiveServer, isOffline, reconnectLiveServer } from '../net/ServerManager';
 import { info } from '@bf2-matchmaking/logging';
 const router = express.Router();
 
@@ -126,6 +126,7 @@ router.post('/', async (req, res) => {
     const serverRcon = await client()
       .upsertServerRcon({ id: ip, rcon_port, rcon_pw })
       .then(verifySingleResult);
+    await initLiveServer(serverRcon);
 
     info(
       'routes/servers',
