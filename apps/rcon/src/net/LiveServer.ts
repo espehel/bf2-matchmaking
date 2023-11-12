@@ -22,7 +22,7 @@ export class LiveServer {
   #liveMatch: LiveMatch | null = null;
   info: LiveInfo;
   updatedAt: DateTime = DateTime.now();
-  #errorAt: DateTime | null = null;
+  errorAt: DateTime | null = null;
   #waitingSince: DateTime | null = null;
   constructor(rconInfo: ServerRconsRow, info: LiveInfo) {
     this.ip = rconInfo.id;
@@ -34,7 +34,7 @@ export class LiveServer {
     info('LiveServer', `Resetting ${this.info.serverName}`);
     this.#liveMatch = null;
     this.#waitingSince = null;
-    this.#errorAt = null;
+    this.errorAt = null;
     return this;
   }
   setLiveMatch(liveMatch: LiveMatch) {
@@ -58,7 +58,7 @@ export class LiveServer {
 
   async update() {
     try {
-      if (this.#errorAt && this.#errorAt.diffNow('minutes').minutes < -30) {
+      if (this.errorAt && this.errorAt.diffNow('minutes').minutes < -30) {
         this.reset();
       }
 
@@ -69,15 +69,17 @@ export class LiveServer {
 
       this.info = { ...si, players: pl, ip: this.ip };
       this.updatedAt = DateTime.now();
+      this.errorAt = null;
 
       if (this.#liveMatch) {
         await this.#updateLiveMatch(this.#liveMatch);
       }
 
-      return this.info;
+      return this;
     } catch (e) {
       error('LiveServer', e);
-      this.#errorAt = DateTime.now();
+      this.errorAt = DateTime.now();
+      return this;
     }
   }
   async #updateLiveMatch(liveMatch: LiveMatch) {
@@ -85,7 +87,6 @@ export class LiveServer {
     info('LiveServer', `Received live match state: ${state}`);
 
     if (state !== 'pending') {
-      this.#errorAt = null;
       this.#waitingSince = null;
     }
 

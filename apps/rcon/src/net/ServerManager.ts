@@ -116,11 +116,27 @@ export async function updateActiveLiveServers() {
   if (activeServers.length === 0) {
     return;
   }
-  const serverInfoList = await Promise.all(
+  const updatedServers = await Promise.all(
     activeServers.map((liveServer) => liveServer.update())
+  );
+  const serversWithError = updatedServers.filter((updatedServer) =>
+    Boolean(updatedServer.errorAt)
   );
   info(
     'updateActiveLiveServers',
-    `Updated ${serverInfoList.length}/${activeServers.length} active servers`
+    `Updated ${updatedServers.length - serversWithError.length}/${
+      activeServers.length
+    } active servers successfully`
   );
+
+  for (const serverWithError of serversWithError) {
+    if (serverWithError.updatedAt.diffNow('minutes').minutes < -60) {
+      info(
+        'updateActiveLiveServers',
+        `Server ${serverWithError.info.serverName} is unresponsive, removing from live servers`
+      );
+      serverWithError.reset();
+      liveServers.delete(serverWithError.ip);
+    }
+  }
 }
