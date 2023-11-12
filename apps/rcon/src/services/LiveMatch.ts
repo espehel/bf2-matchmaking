@@ -71,12 +71,12 @@ export class LiveMatch {
         ),
     };
     info(
-      'updateLiveInfo',
-      `${formatSecToMin(liveInfo.roundTime)} (${liveInfo.players.length}/${
+      'LiveMatch',
+      `${formatSecToMin(liveInfo.roundTime)} (${liveInfo.team1_Name} ${
+        liveInfo.team1_tickets
+      } - ${liveInfo.team2_Name} ${liveInfo.team2_tickets}) [${liveInfo.players.length}/${
         this.match.config.size
-      }) ${liveInfo.team1_Name} [${liveInfo.team1_tickets} - ${liveInfo.team2_tickets}] ${
-        liveInfo.team2_Name
-      }`
+      } - ${this.state} - ${liveInfo.serverName}]`
     );
   }
 

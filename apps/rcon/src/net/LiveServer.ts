@@ -84,7 +84,7 @@ export class LiveServer {
   }
   async #updateLiveMatch(liveMatch: LiveMatch) {
     const { state, payload } = await liveMatch.updateState(this.info);
-    info('LiveServer', `Received live match state: ${state}`);
+    //info('LiveServer', `Received live match state: ${state}`);
 
     if (state !== 'pending') {
       this.#waitingSince = null;

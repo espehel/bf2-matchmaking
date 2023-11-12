@@ -102,12 +102,19 @@ export async function updateIdleLiveServers() {
     info('updateIdleLiveServers', 'No idle live servers found');
     return;
   }
-  const serverInfoList = await Promise.all(
-    idleServers.map((liveServer) => liveServer.update())
-  );
+
+  const numberOfUpdated = updateServers(idleServers, (liveServer) => {
+    info(
+      'updateIdleLiveServers',
+      `Server ${liveServer.info.serverName} is unresponsive, removing from live servers`
+    );
+    liveServer.reset();
+    liveServers.delete(liveServer.ip);
+  });
+
   info(
     'updateIdleLiveServers',
-    `Updated ${serverInfoList.length}/${idleServers.length} idle servers`
+    `Updated ${numberOfUpdated}/${idleServers.length} idle servers`
   );
 }
 
@@ -116,27 +123,33 @@ export async function updateActiveLiveServers() {
   if (activeServers.length === 0) {
     return;
   }
+
+  await updateServers(activeServers, (liveServer) => {
+    info(
+      'updateActiveLiveServers',
+      `Server ${liveServer.info.serverName} is unresponsive, resetting live server`
+    );
+    liveServer.reset();
+  });
+}
+
+async function updateServers(
+  servers: Array<LiveServer>,
+  onUnresponsive: (liveServer: LiveServer) => void
+) {
   const updatedServers = await Promise.all(
-    activeServers.map((liveServer) => liveServer.update())
+    servers.map((liveServer) => liveServer.update())
   );
+
   const serversWithError = updatedServers.filter((updatedServer) =>
     Boolean(updatedServer.errorAt)
   );
-  info(
-    'updateActiveLiveServers',
-    `Updated ${updatedServers.length - serversWithError.length}/${
-      activeServers.length
-    } active servers successfully`
-  );
 
-  for (const serverWithError of serversWithError) {
-    if (serverWithError.updatedAt.diffNow('minutes').minutes < -60) {
-      info(
-        'updateActiveLiveServers',
-        `Server ${serverWithError.info.serverName} is unresponsive, removing from live servers`
-      );
-      serverWithError.reset();
-      liveServers.delete(serverWithError.ip);
-    }
-  }
+  serversWithError.filter(isUnresponsive).forEach(onUnresponsive);
+
+  return updatedServers.length - serversWithError.length;
+}
+
+function isUnresponsive(liveServer: LiveServer) {
+  return liveServer.updatedAt.diffNow('minutes').minutes < -60;
 }
