@@ -1,5 +1,6 @@
 import Vultr from '@vultr/vultr-node';
 import { assertString } from '@bf2-matchmaking/utils';
+import { info } from '@bf2-matchmaking/logging';
 
 assertString(process.env.VULTR_API_KEY, 'VULTR_API_KEY is not set.');
 
@@ -13,6 +14,7 @@ export async function getServerInstances() {
 }
 
 export async function createServerInstance(serverName: string, region: string) {
+  info('createServerInstance', `Creating server ${serverName} - ${region}`);
   const script = Buffer.from(generateStartupScript(serverName), 'utf8').toString(
     'base64'
   );
@@ -20,13 +22,14 @@ export async function createServerInstance(serverName: string, region: string) {
     name: `${serverName} script`,
     script,
   });
-
+  info('createServerInstance', `Created startup script ${startup_script.id}`);
   const { instance } = await client.instances.createInstance({
     region,
-    plan: 'vc2-1c-1gb',
+    plan: 'vhp-1c-1gb',
     os_id: '2136',
     script_id: startup_script.id,
   });
+  info('createServerInstance', `Created instance ${instance.id}`);
 
   //await client.startupScripts.deleteStartupScript({ 'startup-id': startup_script.id });
 
