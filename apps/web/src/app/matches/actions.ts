@@ -1,14 +1,13 @@
 'use server';
-import { api, assertString } from '@bf2-matchmaking/utils';
+import { assertString } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { isScheduledMatch, isString } from '@bf2-matchmaking/types';
-import { revalidatePath } from 'next/cache';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { postGuildScheduledEvent } from '@bf2-matchmaking/discord';
-import { match } from 'assert';
 import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
+import { redirect } from 'next/navigation';
 export async function createScheduledMatch(formData: FormData) {
   try {
     const {
@@ -58,8 +57,7 @@ export async function createScheduledMatch(formData: FormData) {
         match.config.guild,
         createScheduledMatchEvent(match)
       );
-      console.log('EVENT:');
-      console.log(event);
+
       if (event) {
         await supabase(cookies).updateMatch(match.id, { events: [event.id] });
       } else {
@@ -68,7 +66,6 @@ export async function createScheduledMatch(formData: FormData) {
         });
       }
 
-      revalidatePath('/matches/scheduled');
       logMessage(`Match ${result.data.id} scheduled by ${player?.full_name}`, {
         match: result.data,
         player,
@@ -76,6 +73,7 @@ export async function createScheduledMatch(formData: FormData) {
         timezone,
         event,
       });
+      redirect(`/matches/${match.id}`);
     }
 
     return result;
