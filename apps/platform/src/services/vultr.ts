@@ -15,6 +15,7 @@ export async function getServerInstances() {
 
 export async function createServerInstance(serverName: string, region: string) {
   info('createServerInstance', `Creating server ${serverName} - ${region}`);
+
   const script = Buffer.from(generateStartupScript(serverName), 'utf8').toString(
     'base64'
   );
@@ -23,17 +24,18 @@ export async function createServerInstance(serverName: string, region: string) {
     script,
   });
   info('createServerInstance', `Created startup script ${startup_script.id}`);
-  const { instance } = await client.instances.createInstance({
+
+  const instance = await client.instances.createInstance({
     region,
     plan: 'vhp-1c-1gb',
     os_id: '2136',
     script_id: startup_script.id,
   });
-  info('createServerInstance', `Created instance ${instance.id}`);
+  info('createServerInstance', `Created instance \n${JSON.stringify(instance)}\n`);
 
   //await client.startupScripts.deleteStartupScript({ 'startup-id': startup_script.id });
 
-  return instance;
+  return instance.instance;
 }
 
 export async function deleteServerInstance(instanceId: string) {
