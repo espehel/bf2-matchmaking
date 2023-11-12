@@ -28,7 +28,7 @@ export async function createServerInstance(serverName: string, region: string) {
     script_id: startup_script.id,
   });
 
-  await client.startupScripts.deleteStartupScript({ 'startup-id': startup_script.id });
+  //await client.startupScripts.deleteStartupScript({ 'startup-id': startup_script.id });
 
   return instance;
 }
