@@ -8,7 +8,7 @@ import ScheduleMatchForm from '@/components/match/ScheduleMatchForm';
 
 export default async function ScheduledMatchesPage() {
   const matches = await supabase(cookies)
-    .getScheduledMatches(DateTime.now().set({ hour: 23, minute: 59 }).toISO())
+    .getScheduledMatches(DateTime.now().set({ hour: 0, minute: 0 }).toISO())
     .then(verifyResult);
   const scheduledMatches = matches
     .filter(isScheduledMatch)
