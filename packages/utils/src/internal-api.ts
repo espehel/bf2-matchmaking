@@ -99,8 +99,20 @@ const bot = () => {
   };
 };
 
+const platform = () => {
+  const basePath = 'https://bf2-platform.up.railway.app';
+  const paths = {
+    servers: '/servers',
+  };
+  return {
+    postServers: (name: string, region: string) =>
+      postJSON(basePath.concat(paths.servers), { name, region }),
+  };
+};
+
 export const api = {
   rcon,
   bot,
   web,
+  platform,
 };
