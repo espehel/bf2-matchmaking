@@ -103,7 +103,7 @@ export async function updateIdleLiveServers() {
     return;
   }
 
-  const numberOfUpdated = updateServers(idleServers, (liveServer) => {
+  const numberOfUpdated = await updateServers(idleServers, (liveServer) => {
     info(
       'updateIdleLiveServers',
       `Server ${liveServer.info.serverName} is unresponsive, removing from live servers`
