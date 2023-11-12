@@ -10,7 +10,7 @@ import {
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { createRconBF2Server } from '../services/servers';
 import { initLiveServer, isOffline, reconnectLiveServer } from '../net/ServerManager';
-import { info } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
@@ -135,6 +135,7 @@ router.post('/', async (req, res) => {
 
     res.status(200).send({ info: serverInfo, server, rcon: serverRcon });
   } catch (e) {
+    error('POST /servers', e);
     res.status(502).send(e);
   }
 });
