@@ -27,7 +27,7 @@ export async function createServerInstance(serverName: string, region: string) {
 
   const instance = await client.instances.createInstance({
     region,
-    plan: 'vhp-1c-1gb',
+    plan: 'vhf-1c-1gb',
     os_id: '2136',
     script_id: startup_script.id,
   });
