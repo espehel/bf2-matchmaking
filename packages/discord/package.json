@@ -4,7 +4,7 @@
   "types": "src/index.ts",
   "version": "1.0.0",
   "engines": {
-    "node": ">=19.0.0"
+    "node": "18 || 19"
   },
   "scripts": {
     "verify": "tsc --noEmit"
