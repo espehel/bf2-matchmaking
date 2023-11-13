@@ -361,7 +361,7 @@ export interface Database {
           away_team: number
           closed_at: string | null
           config: number
-          created_at: string | null
+          created_at: string
           events: string[]
           home_team: number
           id: number
@@ -376,7 +376,7 @@ export interface Database {
           away_team?: number
           closed_at?: string | null
           config: number
-          created_at?: string | null
+          created_at?: string
           events?: string[]
           home_team?: number
           id?: number
@@ -391,7 +391,7 @@ export interface Database {
           away_team?: number
           closed_at?: string | null
           config?: number
-          created_at?: string | null
+          created_at?: string
           events?: string[]
           home_team?: number
           id?: number

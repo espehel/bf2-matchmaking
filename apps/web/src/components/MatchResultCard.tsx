@@ -2,6 +2,7 @@ import { MatchResultsJoined, RoundsJoined } from '@bf2-matchmaking/types';
 import { isUniqueObject } from '@bf2-matchmaking/utils';
 import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Image from 'next/image';
+import Time from '@/components/commons/Time';
 
 interface Props {
   matchResult: [MatchResultsJoined, MatchResultsJoined] | null;
@@ -19,7 +20,15 @@ export default function MatchResultCard({ matchId, matchResult, rounds }: Props)
 
   return (
     <section className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100">
-      <h2 className="text-xl">{`Match ${matchId}`}</h2>
+      <div className="stat">
+        <div className="stat-title">{`Match ${matchId}`}</div>
+        <div className="stat-value capitalize">
+          <Time date={team1.created_at} format="HH:mm" />
+        </div>
+        <div className="stat-desc">
+          <Time date={team1.created_at} format="EEEE, MMMM d" />
+        </div>
+      </div>
       <div className="flex">
         <div className="stat">
           <div className="stat-title">{`Team ${team1.team.name}`}</div>

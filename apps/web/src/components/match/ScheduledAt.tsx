@@ -8,6 +8,7 @@ import { ArrowUpOnSquareIcon } from '@heroicons/react/24/outline';
 import { useFormStatus } from 'react-dom';
 import { useMatch } from '@/state/MatchContext';
 import { updateMatchScheduledAt } from '@/app/matches/[match]/actions';
+import Time from '@/components/commons/Time';
 
 interface Props {
   match: MatchesJoined;
@@ -16,9 +17,12 @@ interface Props {
 export default function ScheduledAt({ match }: Props) {
   const [edit, setEdit] = useState(false);
   const { isMatchOfficer } = useMatch();
+  const date = match.scheduled_at || match.started_at || match.created_at;
+
   if (!match.scheduled_at) {
     return (
       <p className="text-gray font-bold">
+        <Time date={date} format="HH:mm - EEEE, MMMM d" />
         {moment(match.created_at).format('HH:mm - dddd Do MMMM')}
       </p>
     );
