@@ -125,6 +125,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('channel', channelId)
       .single(),
   getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
+  getMatchConfig: (id: number) =>
+    client.from('match_configs').select('*').eq('id', id).single(),
   createRound: (round: RoundsInsert) =>
     client.from('rounds').insert([round]).select().single(),
   getMaps: () => client.from('maps').select('*'),

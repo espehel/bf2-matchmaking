@@ -45,8 +45,16 @@ export async function createServer(data: FormData) {
 }
 
 export async function generateServer(data: FormData) {
-  const { nameInput, regionInput } = Object.fromEntries(data);
+  const { nameInput, regionInput, configInput } = Object.fromEntries(data);
   assertString(nameInput);
   assertString(regionInput);
-  return api.platform().postServers(nameInput, regionInput);
+  assertString(configInput);
+
+  const config = await supabase(cookies).getMatchConfig(Number(configInput));
+  if (config.error) {
+    console.error(config.error);
+    return config;
+  }
+
+  return api.platform().postServers(nameInput, regionInput, config.data.name);
 }

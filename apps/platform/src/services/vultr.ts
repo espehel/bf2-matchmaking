@@ -1,6 +1,5 @@
 import Vultr from '@vultr/vultr-node';
-import { assertString } from '@bf2-matchmaking/utils';
-import { info } from '@bf2-matchmaking/logging';
+import { assertArray, assertString } from '@bf2-matchmaking/utils';
 
 assertString(process.env.VULTR_API_KEY, 'VULTR_API_KEY is not set.');
 
@@ -9,33 +8,58 @@ const client = Vultr.initialize({
   rateLimit: 600,
 });
 
+let startupScripts = new Map<string, string>();
+export async function loadStartupScripts() {
+  const { startup_scripts } = await client.startupScripts.listStartupScripts({});
+  assertArray(startup_scripts);
+  startupScripts = new Map(
+    (startup_scripts as Array<{ name: string; id: string }>).map(({ name, id }) => [
+      name,
+      id,
+    ])
+  );
+  return startupScripts;
+}
+
+async function upsertStartupScript(name: string, script: string) {
+  const startupScriptId = startupScripts.get(name);
+  if (startupScriptId) {
+    const { startup_script } = await client.startupScripts.updateStartupScript({
+      id: startupScriptId,
+      script,
+    });
+    return startup_script;
+  }
+  const { startup_script } = await client.startupScripts.createStartupScript({
+    name,
+    script,
+  });
+  return startup_script;
+}
+
 export async function getServerInstances() {
   return client.instances.listInstances({});
 }
 
-export async function createServerInstance(serverName: string, region: string) {
-  info('createServerInstance', `Creating server ${serverName} - ${region}`);
-
+export async function createServerInstance(
+  serverName: string,
+  region: string,
+  label: string
+) {
   const script = Buffer.from(generateStartupScript(serverName), 'utf8').toString(
     'base64'
   );
-  const { startup_script } = await client.startupScripts.createStartupScript({
-    name: `${serverName} script`,
-    script,
-  });
-  info('createServerInstance', `Created startup script ${startup_script.id}`);
+  const startupScript = await upsertStartupScript(label, script);
 
-  const instance = await client.instances.createInstance({
+  const { instance } = await client.instances.createInstance({
     region,
     plan: 'vhf-1c-1gb',
     os_id: '2136',
-    script_id: startup_script.id,
+    script_id: startupScript.id,
+    label,
+    tag: 'test tag',
   });
-  info('createServerInstance', `Created instance \n${JSON.stringify(instance)}\n`);
-
-  //await client.startupScripts.deleteStartupScript({ 'startup-id': startup_script.id });
-
-  return instance.instance;
+  return instance;
 }
 
 export async function deleteServerInstance(instanceId: string) {

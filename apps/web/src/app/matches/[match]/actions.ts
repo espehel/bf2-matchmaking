@@ -31,13 +31,15 @@ export async function addMatchPlayer(
   const { data } = await supabase(cookies).getPlayerRating(playerId, config);
   const result = await supabase(cookies).createMatchPlayer(matchId, playerId, {
     team,
-    rating: data?.rating,
+    rating: data?.rating || 1500,
   });
 
-  if (!result.error) {
-    revalidatePath(`/matches/${matchId}`);
+  if (result.error) {
+    console.error(result.error);
+    return result;
   }
 
+  revalidatePath(`/matches/${matchId}`);
   return result;
 }
 

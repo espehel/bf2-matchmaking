@@ -12,3 +12,12 @@ export function assertString(
     throw new Error(message || `${typeof object} is not a string`);
   }
 }
+
+export function assertArray(
+  object: unknown,
+  message?: string
+): asserts object is Array<unknown> {
+  if (Array.isArray(object)) {
+    throw new Error(message ? `Verify failed: ${message}` : 'Verify failed');
+  }
+}

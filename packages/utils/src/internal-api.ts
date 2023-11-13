@@ -105,8 +105,8 @@ const platform = () => {
     servers: '/servers',
   };
   return {
-    postServers: (name: string, region: string) =>
-      postJSON(basePath.concat(paths.servers), { name, region }),
+    postServers: (name: string, region: string, label: string) =>
+      postJSON(basePath.concat(paths.servers), { name, region, label }),
   };
 };
 

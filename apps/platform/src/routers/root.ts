@@ -14,13 +14,23 @@ rootRouter.get('/servers', async (ctx) => {
 
 rootRouter.post('/servers', async (ctx) => {
   const { body } = ctx.request;
-  if (!body.name || !body.region) {
+  if (!body.name || !body.region || !body.label) {
     ctx.status = 400;
+    ctx.body = { message: 'Missing name, region or label' };
     return;
   }
 
-  const instance = await createServerInstance(body.name, body.region);
-  info('POST /servers', `Instance created: ${instance.main_ip} - ${instance.status}`);
+  const instance = await createServerInstance(body.name, body.region, body.label);
+  if (!instance) {
+    ctx.status = 500;
+    ctx.body = { message: 'Failed to create server' };
+    return;
+  }
+
+  info(
+    'POST /servers',
+    `Instance created. [region: "${instance.region}", label: "${instance.label}", status: "${instance.status}"]`
+  );
   ctx.body = instance;
 });
 
