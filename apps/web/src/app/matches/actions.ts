@@ -7,7 +7,6 @@ import { isScheduledMatch, isString } from '@bf2-matchmaking/types';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { postGuildScheduledEvent } from '@bf2-matchmaking/discord';
 import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
-import { redirect } from 'next/navigation';
 export async function createScheduledMatch(formData: FormData) {
   try {
     const {
@@ -73,14 +72,16 @@ export async function createScheduledMatch(formData: FormData) {
         timezone,
         event,
       });
-      redirect(`/matches/${match.id}`);
     }
-
+    revalidatePath('/matches/schedule');
     return result;
   } catch (e) {
     if (isString(e)) {
       return { data: null, error: { message: e } };
     }
-    return { data: null, error: e };
+    if (e instanceof Error) {
+      return { data: null, error: { message: e.message } };
+    }
+    return { data: null, error: JSON.stringify(e) };
   }
 }
