@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { isNotNull, isString, ServerRconsUpdate } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
 import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
+import { api } from '@bf2-matchmaking/utils';
 
 export async function updateServer(ip: string, data: FormData) {
   const portInput = data.get('portInput');
@@ -46,6 +47,7 @@ const toRconUpdateValues = (data: FormData) => {
 };
 
 export async function deleteServer(ip: string) {
+  const res = await api.platform().deleteServer(ip);
   const rconResult = await supabase(cookies).deleteServerRcon(ip);
   if (rconResult.error) {
     return rconResult;

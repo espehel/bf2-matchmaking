@@ -11,7 +11,7 @@ import {
   GetMatchLiveResponseBody,
   LiveInfo,
 } from '@bf2-matchmaking/types';
-import { getJSON, postJSON } from './fetcher';
+import { deleteJSON, getJSON, postJSON } from './fetcher';
 
 const web = () => {
   const basePath = 'https://bf2-matchmaking.vercel.app';
@@ -107,6 +107,7 @@ const platform = () => {
   return {
     postServers: (name: string, region: string, label: string) =>
       postJSON(basePath.concat(paths.servers), { name, region, label }),
+    deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.servers, ip)),
   };
 };
 

@@ -1,5 +1,5 @@
 import Vultr from '@vultr/vultr-node';
-import { assertArray, assertString } from '@bf2-matchmaking/utils';
+import { assertArray, assertObj, assertString } from '@bf2-matchmaking/utils';
 
 assertString(process.env.VULTR_API_KEY, 'VULTR_API_KEY is not set.');
 
@@ -62,8 +62,14 @@ export async function createServerInstance(
   return instance;
 }
 
-export async function deleteServerInstance(instanceId: string) {
-  return client.instances.deleteInstance({ 'instance-id': instanceId });
+export async function deleteServerInstance(ip: string) {
+  const { instances } = await client.instances.listInstances({});
+  assertArray(instances, 'Failed to get instances');
+
+  const instance: any = instances.find((i: any) => i.main_ip === ip);
+  assertObj(instance, `Failed to find instance with ip ${ip}`);
+
+  return client.instances.deleteInstance({ 'instance-id': instance.id });
 }
 
 function generateStartupScript(serverName: string) {

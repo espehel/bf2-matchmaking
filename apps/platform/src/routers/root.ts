@@ -34,8 +34,8 @@ rootRouter.post('/servers', async (ctx) => {
   ctx.body = instance;
 });
 
-rootRouter.delete('/servers/:id', async (ctx) => {
-  ctx.body = await deleteServerInstance(ctx.params.id);
+rootRouter.delete('/servers/:ip', async (ctx) => {
+  ctx.body = await deleteServerInstance(ctx.params.ip);
 });
 
 rootRouter.get('/health', (ctx) => {

@@ -17,7 +17,7 @@ export function assertArray(
   object: unknown,
   message?: string
 ): asserts object is Array<unknown> {
-  if (Array.isArray(object)) {
+  if (!Array.isArray(object)) {
     throw new Error(message ? `Verify failed: ${message}` : 'Verify failed');
   }
 }
