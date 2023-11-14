@@ -102,12 +102,13 @@ const bot = () => {
 const platform = () => {
   const basePath = 'https://bf2-platform.up.railway.app';
   const paths = {
-    servers: '/servers',
+    servers: () => '/servers',
+    server: (ip: string) => `/servers/${ip}`,
   };
   return {
     postServers: (name: string, region: string, label: string) =>
-      postJSON(basePath.concat(paths.servers), { name, region, label }),
-    deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.servers, ip)),
+      postJSON(basePath.concat(paths.servers()), { name, region, label }),
+    deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.server(ip))),
   };
 };
 
