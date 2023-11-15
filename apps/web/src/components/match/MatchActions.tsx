@@ -1,4 +1,4 @@
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { isScheduledMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import {
   closeMatch,
   deleteMatch,
@@ -11,6 +11,10 @@ import SelectServerForm from '@/components/match/SelectServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import MatchMapsSelect from '@/components/match/MatchMapsSelect';
+import copy from 'copy-text-to-clipboard';
+import { ClipboardIcon } from '@heroicons/react/24/solid';
+import { toRaidOrganizerCommand } from '@bf2-matchmaking/utils';
+import OrganizerCommandCopyButton from '@/components/match/OrganizerCommandCopyButton';
 
 interface Props {
   match: MatchesJoined;
@@ -53,14 +57,17 @@ export default async function MatchActions({ match }: Props) {
       <div className="divider mt-0" />
       <div className="flex gap-4 flex-col">
         {isScheduled && (
-          <ActionButton
-            action={deleteMatchSA}
-            successMessage="Match deleted."
-            errorMessage="Failed to delete match"
-            kind="btn-error"
-          >
-            Delete match
-          </ActionButton>
+          <div className=" flex gap-2 text-left">
+            <ActionButton
+              action={deleteMatchSA}
+              successMessage="Match deleted."
+              errorMessage="Failed to delete match"
+              kind="btn-error"
+            >
+              Delete match
+            </ActionButton>
+            <OrganizerCommandCopyButton match={match} />
+          </div>
         )}
         {isOngoing && (
           <ActionButton

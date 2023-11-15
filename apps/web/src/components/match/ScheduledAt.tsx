@@ -1,7 +1,6 @@
 'use client';
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import { useState } from 'react';
-import moment from 'moment';
 import IconBtn from '@/components/commons/IconBtn';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 import { ArrowUpOnSquareIcon } from '@heroicons/react/24/outline';
@@ -23,7 +22,6 @@ export default function ScheduledAt({ match }: Props) {
     return (
       <p className="text-gray font-bold">
         <Time date={date} format="HH:mm - EEEE, MMMM d" />
-        {moment(match.created_at).format('HH:mm - dddd Do MMMM')}
       </p>
     );
   }
@@ -52,7 +50,9 @@ export default function ScheduledAt({ match }: Props) {
 
   return (
     <div className="flex items-center gap-1 text-gray font-bold">
-      <span>{moment(match.scheduled_at).format('HH:mm - dddd Do MMMM')}</span>
+      <span>
+        <Time date={date} format="HH:mm - EEEE, MMMM d" />
+      </span>
       {/* TODO: reenable this with update of discord event
       isMatchOfficer && (
         <IconBtn size="xs" Icon={PencilSquareIcon} onClick={() => setEdit(true)} />
