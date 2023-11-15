@@ -1,6 +1,6 @@
 import { ServersRow } from '@bf2-matchmaking/types';
 import ServerUpdateForm from '@/components/servers/ServerUpdateForm';
-import AsyncActionButton from '@/components/AsyncActionButton';
+import ActionButton from '@/components/ActionButton';
 import { deleteServer } from '@/app/servers/[server]/actions';
 
 interface Props {
@@ -16,7 +16,7 @@ export default function ServerActions({ server }: Props) {
   return (
     <section className="section">
       <div>
-        <AsyncActionButton
+        <ActionButton
           action={deleteServerSA}
           successMessage={`Deleted server ${server.name}`}
           errorMessage={'Failed to delete server'}
@@ -24,7 +24,7 @@ export default function ServerActions({ server }: Props) {
           redirect="/servers"
         >
           Delete server
-        </AsyncActionButton>
+        </ActionButton>
       </div>
       <ServerUpdateForm server={server} />
     </section>

@@ -4,7 +4,9 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import { isScheduledMatch } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import MatchDateItems from '@/components/match/MatchDateItems';
-import ScheduleMatchForm from '@/components/match/ScheduleMatchForm';
+import ScheduleMatchForm, {
+  ScheduledMatchFormFallback,
+} from '@/components/match/ScheduleMatchForm';
 import { Suspense } from 'react';
 
 export default async function ScheduledMatchesPage() {
@@ -27,7 +29,7 @@ export default async function ScheduledMatchesPage() {
   return (
     <main className="main text-center">
       <h1 className="mb-8">Scheduled matches</h1>
-      <Suspense fallback={null}>
+      <Suspense fallback={<ScheduledMatchFormFallback />}>
         <ScheduleMatchForm />
       </Suspense>
       {!hasMatches && <p>Currently no scheduled matches...</p>}

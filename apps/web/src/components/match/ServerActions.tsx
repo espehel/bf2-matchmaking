@@ -6,7 +6,7 @@ import {
   setTeams,
   unpauseRound,
 } from '@/app/matches/[match]/actions';
-import AsyncActionButton from '@/components/AsyncActionButton';
+import ActionButton from '@/components/ActionButton';
 import { useServerRestart } from '@/state/server-hooks';
 
 interface Props {
@@ -28,37 +28,37 @@ export default function ServerActions({ match, server }: Props) {
   return (
     <div>
       <div className="flex flex-wrap gap-2 mt-4">
-        <AsyncActionButton
+        <ActionButton
           action={handleRestartServerAction}
           errorMessage="Failed to restart server"
           successMessage="Restarting server"
         >
           Restart server
-        </AsyncActionButton>
-        <AsyncActionButton
+        </ActionButton>
+        <ActionButton
           action={() => restartRound(match.id, server.ip)}
           errorMessage="Failed to restart round"
           successMessage="Round restarted"
         >
           Restart round
-        </AsyncActionButton>
+        </ActionButton>
         {server.info.currentGameStatus === GameStatus.Playing && (
-          <AsyncActionButton
+          <ActionButton
             action={() => pauseRound(match.id, server.ip)}
             errorMessage="Failed to pause round"
             successMessage="Round paused"
           >
             Pause
-          </AsyncActionButton>
+          </ActionButton>
         )}
         {server.info.currentGameStatus === GameStatus.Paused && (
-          <AsyncActionButton
+          <ActionButton
             action={() => unpauseRound(match.id, server.ip)}
             errorMessage="Failed to unpause round"
             successMessage="Round unpaused"
           >
             Unpause
-          </AsyncActionButton>
+          </ActionButton>
         )}
         <button className="btn btn-primary w-fit" disabled>
           Change map

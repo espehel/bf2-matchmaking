@@ -1,17 +1,4 @@
-import moment from 'moment/moment';
-
-/**
- *
- * @param target ISO 8601 date format
- */
-export const getTimeLeft = (target: string) =>
-  moment.duration(moment(target).diff(moment()));
-
-export const getDurationString = (duration: moment.Duration) =>
-  `${duration.minutes().toString().padStart(2, '0')}:${duration
-    .seconds()
-    .toString()
-    .padStart(2, '0')}`;
+import { DateTime } from 'luxon';
 
 export const formatSecToMin = (seconds: string) => {
   const mm = Math.floor(parseInt(seconds) / 60)
@@ -22,3 +9,7 @@ export const formatSecToMin = (seconds: string) => {
     .padStart(2, '0');
   return `${mm}:${ss}`;
 };
+
+export function toLocalISO(date: string | undefined | null, zone: string) {
+  return date ? DateTime.fromISO(date).setZone(zone).toISO() || undefined : undefined;
+}

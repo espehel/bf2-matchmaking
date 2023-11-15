@@ -1,13 +1,15 @@
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import moment from 'moment';
 import FormSubmitButton from '@/components/FormSubmitButton';
 import Select from '@/components/commons/Select';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { createScheduledMatch } from '@/app/matches/actions';
 import CollapseControl from '@/components/commons/CollapseControl';
 import MapsSelect from '@/components/commons/MapsSelect';
+import { DateTime } from 'luxon';
+import ActionForm from '@/components/commons/ActionForm';
+import React from 'react';
 
 export default async function ScheduleMatchForm() {
   const configs = await supabase(cookies)
@@ -25,7 +27,12 @@ export default async function ScheduleMatchForm() {
   return (
     <div className="max-w-5xl mx-auto">
       <CollapseControl label="Schedule match" disabled={!isTeamOfficer}>
-        <form action={createScheduledMatch} className="flex flex-col gap-4">
+        <ActionForm
+          action={createScheduledMatch}
+          successMessage="Match scheduled."
+          errorMessage="Failed to schedule match"
+          className="flex flex-col gap-4"
+        >
           <div className="flex gap-4">
             <Select
               label="Match type"
@@ -35,12 +42,11 @@ export default async function ScheduleMatchForm() {
             <DatetimeInput
               label="Match start"
               name="scheduledInput"
-              defaultValue={moment()
-                .add(1, 'day')
-                .hours(21)
-                .minute(0)
-                .format('YYYY-MM-DDTHH:mm')}
-              min={moment().format('YYYY-MM-DDTHH:mm')}
+              defaultValue={DateTime.utc()
+                .plus({ day: 1 })
+                .set({ hour: 20, minute: 0 })
+                .toISO()}
+              min={DateTime.utc().toISO()}
             />
           </div>
           <div className="flex gap-4">
@@ -58,13 +64,14 @@ export default async function ScheduleMatchForm() {
           <Select
             label="Server"
             name="serverSelect"
+            placeholder="No server set"
             options={servers.map(({ ip, name }) => [ip, name])}
           />
           <MapsSelect maps={maps} />
           <div className="flex items-center justify-end">
             <FormSubmitButton>Schedule match</FormSubmitButton>
           </div>
-        </form>
+        </ActionForm>
       </CollapseControl>
     </div>
   );
@@ -72,4 +79,16 @@ export default async function ScheduleMatchForm() {
 
 function filterVisible<T extends { visible: boolean }>(array: Array<T>): Array<T> {
   return array.filter((e) => e.visible);
+}
+
+export function ScheduledMatchFormFallback() {
+  return (
+    <div className="max-w-5xl mx-auto">
+      <div className="text-right">
+        <button className="btn btn-primary ml-auto" disabled={true}>
+          Schedule match
+        </button>
+      </div>
+    </div>
+  );
 }

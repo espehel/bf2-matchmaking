@@ -17,12 +17,8 @@ export default function Select({
       <label className="label" htmlFor={name}>
         <span className="label-text">{label}</span>
       </label>
-      <select
-        name={name}
-        className="select select-bordered"
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-      >
+      <select name={name} className="select select-bordered" defaultValue={defaultValue}>
+        {placeholder && <option value="">{placeholder}</option>}
         {options.map(([value, name]) => (
           <option key={value} value={value}>
             {name}

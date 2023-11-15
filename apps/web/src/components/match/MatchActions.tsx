@@ -6,7 +6,7 @@ import {
   reopenMatch,
 } from '@/app/matches/[match]/actions';
 import { closeMatch as createResults } from '@/app/results/[match]/actions';
-import AsyncActionButton from '@/components/AsyncActionButton';
+import ActionButton from '@/components/ActionButton';
 import SelectServerForm from '@/components/match/SelectServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
@@ -53,50 +53,50 @@ export default async function MatchActions({ match }: Props) {
       <div className="divider mt-0" />
       <div className="flex gap-4 flex-col">
         {isScheduled && (
-          <AsyncActionButton
+          <ActionButton
             action={deleteMatchSA}
             successMessage="Match deleted."
             errorMessage="Failed to delete match"
             kind="btn-error"
           >
             Delete match
-          </AsyncActionButton>
+          </ActionButton>
         )}
         {isOngoing && (
-          <AsyncActionButton
+          <ActionButton
             action={finishMatchSA}
             successMessage="Match closed and results created."
             errorMessage="Match set to finished but results not created"
           >
             Finish match
-          </AsyncActionButton>
+          </ActionButton>
         )}
         {isFinished && (
           <div className="flex gap-4">
-            <AsyncActionButton
+            <ActionButton
               action={closeMatchSA}
               successMessage="Match closed without results."
               errorMessage="Failed to close match"
             >
               Close match
-            </AsyncActionButton>
-            <AsyncActionButton
+            </ActionButton>
+            <ActionButton
               action={createResultsSA}
               successMessage="Match closed and results created."
               errorMessage="Failed to create results"
             >
               Create results
-            </AsyncActionButton>
+            </ActionButton>
           </div>
         )}
         {isClosed && (
-          <AsyncActionButton
+          <ActionButton
             action={reopenMatchSA}
             successMessage="Match reopened."
             errorMessage="Failed to reopen match"
           >
             Reopen match
-          </AsyncActionButton>
+          </ActionButton>
         )}
         {servers && !isClosed && <SelectServerForm match={match} servers={servers} />}
         {maps && !isClosed && <MatchMapsSelect match={match} maps={maps} />}

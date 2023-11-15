@@ -1,11 +1,10 @@
 'use client';
-import React, { useCallback, useTransition } from 'react';
+import React, { PropsWithChildren, useCallback, useTransition } from 'react';
 import { FetchResult } from '@bf2-matchmaking/utils';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
-interface Props {
-  children: React.ReactNode;
+interface Props extends PropsWithChildren {
   action: () => Promise<FetchResult<unknown>>;
   successMessage: string;
   errorMessage: string;
@@ -13,7 +12,7 @@ interface Props {
   redirect?: string;
 }
 
-export default function AsyncActionButton({
+export default function ActionButton({
   children,
   action,
   successMessage,

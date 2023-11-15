@@ -9,7 +9,7 @@
     "noEmit": true,
     "strict": true,
     "module": "ES2022",
-    "lib": ["dom", "ES2019"]
+    "lib": ["dom", "dom.iterable", "esnext"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]

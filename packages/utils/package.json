@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@bf2-matchmaking/types": "*",
-    "moment": "^2.29.4",
+    "luxon": "^3.4.4",
     "node-cache": "^5.1.2"
   }
 }
