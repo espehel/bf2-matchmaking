@@ -5,6 +5,7 @@ import { isNotNull, isString, ServerRconsUpdate } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
 import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
 import { api } from '@bf2-matchmaking/utils';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 
 export async function updateServer(ip: string, data: FormData) {
   const portInput = data.get('portInput');
@@ -47,16 +48,31 @@ const toRconUpdateValues = (data: FormData) => {
 };
 
 export async function deleteServer(ip: string) {
-  const res = await api.platform().deleteServer(ip);
+  const platformResult = await api.platform().deleteServer(ip);
+  if (platformResult.error) {
+    logErrorMessage(`Server ${ip}: Failed to delete from platform`, platformResult.error);
+  }
   const rconResult = await supabase(cookies).deleteServerRcon(ip);
   if (rconResult.error) {
+    logErrorMessage(
+      `Server ${ip}: Failed to delete rcon from database`,
+      rconResult.error
+    );
     return rconResult;
   }
 
   const serverResult = await supabase(cookies).deleteServer(ip);
   if (serverResult.error) {
+    logErrorMessage(
+      `Server ${ip}: Failed to delete server from database`,
+      serverResult.error
+    );
     return serverResult;
   }
-
+  logMessage(`Server ${ip}: Deleted successfully`, {
+    platformResult,
+    rconResult,
+    serverResult,
+  });
   return serverResult;
 }

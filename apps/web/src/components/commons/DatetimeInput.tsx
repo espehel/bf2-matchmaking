@@ -1,5 +1,4 @@
-import moment from 'moment';
-
+'use client';
 interface Props {
   defaultValue?: string;
   min?: string;

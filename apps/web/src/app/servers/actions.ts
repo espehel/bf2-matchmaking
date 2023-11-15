@@ -3,6 +3,7 @@ import { assertString, api, verify } from '@bf2-matchmaking/utils';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 export async function createServer(data: FormData) {
   const { addressInput, portInput, rconPortInput, rconPwInput } =
     Object.fromEntries(data);
@@ -56,5 +57,15 @@ export async function generateServer(data: FormData) {
     return config;
   }
 
-  return api.platform().postServers(nameInput, regionInput, config.data.name);
+  const result = await api
+    .platform()
+    .postServers(nameInput, regionInput, config.data.name);
+
+  if (result.error) {
+    logErrorMessage(`Server ${nameInput}: Generation failed`, result.error);
+    return result;
+  }
+
+  logMessage(`Server ${nameInput}: Generation started`, { regionInput, configInput });
+  return result;
 }
