@@ -7,6 +7,7 @@ import { isScheduledMatch, isString } from '@bf2-matchmaking/types';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { postGuildScheduledEvent } from '@bf2-matchmaking/discord';
 import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
+import { revalidatePath } from 'next/cache';
 export async function createScheduledMatch(formData: FormData) {
   try {
     const {
