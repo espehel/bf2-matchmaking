@@ -17,28 +17,16 @@ export default function GenerateServerForm() {
   return (
     <form action={handleFormAction} className="form-control grid grid-cols-2 gap-4">
       <div>
-        <label className="label" htmlFor="nameInput">
-          <span className="label-text">Name</span>
+        <label className="label" htmlFor="matchInput">
+          <span className="label-text">Match ID</span>
         </label>
-        <input className="input input-bordered" name="nameInput" />
+        <input className="input input-bordered" name="matchInput" />
       </div>
       <div>
         <label className="label" htmlFor="regionInput">
           <span className="label-text">Region</span>
         </label>
         <input className="input input-bordered" name="regionInput" />
-      </div>
-      <div>
-        <label className="label" htmlFor="configInput">
-          <span className="label-text">Config</span>
-        </label>
-        <input className="input input-bordered" name="configInput" />
-      </div>
-      <div>
-        <label className="label" htmlFor="tagInput">
-          <span className="label-text">Match id</span>
-        </label>
-        <input className="input input-bordered" name="tagInput" />
       </div>
       <FormSubmitButton>Generate</FormSubmitButton>
     </form>
