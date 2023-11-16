@@ -34,6 +34,12 @@ export default function GenerateServerForm() {
         </label>
         <input className="input input-bordered" name="configInput" />
       </div>
+      <div>
+        <label className="label" htmlFor="tagInput">
+          <span className="label-text">Match id</span>
+        </label>
+        <input className="input input-bordered" name="tagInput" />
+      </div>
       <FormSubmitButton>Generate</FormSubmitButton>
     </form>
   );

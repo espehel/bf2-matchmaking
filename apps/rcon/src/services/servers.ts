@@ -8,7 +8,6 @@ import {
 import { getPlayerList, getServerInfo, rcon } from '../net/RconManager';
 import { externalApi, getJoinmeHref } from '@bf2-matchmaking/utils';
 import { getLiveServer } from '../net/ServerManager';
-import { supabase } from 'web/src/lib/supabase/supabase';
 import { client } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
 

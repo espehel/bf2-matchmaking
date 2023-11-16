@@ -12,6 +12,7 @@ import {
   LiveInfo,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
+import { Instance } from '@bf2-matchmaking/types/src/vultr';
 
 const web = () => {
   const basePath = 'https://bf2-matchmaking.vercel.app';
@@ -106,8 +107,9 @@ const platform = () => {
     server: (ip: string) => `/servers/${ip}`,
   };
   return {
-    postServers: (name: string, region: string, label: string) =>
-      postJSON(basePath.concat(paths.servers()), { name, region, label }),
+    postServers: (name: string, region: string, label: string, tag: string) =>
+      postJSON(basePath.concat(paths.servers()), { name, region, label, tag }),
+    getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
     deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.server(ip))),
   };
 };

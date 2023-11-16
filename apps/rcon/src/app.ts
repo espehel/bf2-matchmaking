@@ -37,7 +37,6 @@ initLiveServers()
     activeTasks.start();
   })
   .catch((err) => error('app', err));
-
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));

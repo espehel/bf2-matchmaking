@@ -1,5 +1,6 @@
 import {
   DraftStep,
+  isString,
   MatchesJoined,
   MatchesRow,
   MatchStatus,
@@ -98,4 +99,11 @@ export function toRaidOrganizerCommand(match: ScheduledMatch) {
   }`;
 
   return `/event create ${title} ${eventStart} ${template} ${description}`;
+}
+
+export function getMatchIdFromInstanceTag(tag: string | undefined | null) {
+  if (isString(tag) && tag.includes('Match ')) {
+    return Number(tag.replace('Match ', '')) ?? null;
+  }
+  return null;
 }

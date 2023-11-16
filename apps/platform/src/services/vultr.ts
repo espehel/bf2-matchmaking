@@ -24,17 +24,17 @@ export async function loadStartupScripts() {
 async function upsertStartupScript(name: string, script: string) {
   const startupScriptId = startupScripts.get(name);
   if (startupScriptId) {
-    const { startup_script } = await client.startupScripts.updateStartupScript({
-      id: startupScriptId,
+    await client.startupScripts.updateStartupScript({
+      'startup-id': startupScriptId,
       script,
     });
-    return startup_script;
+    return startupScriptId;
   }
   const { startup_script } = await client.startupScripts.createStartupScript({
     name,
     script,
   });
-  return startup_script;
+  return startup_script.id;
 }
 
 export async function getServerInstances() {
@@ -44,32 +44,41 @@ export async function getServerInstances() {
 export async function createServerInstance(
   serverName: string,
   region: string,
-  label: string
+  label: string,
+  tag: string | undefined
 ) {
   const script = Buffer.from(generateStartupScript(serverName), 'utf8').toString(
     'base64'
   );
-  const startupScript = await upsertStartupScript(label, script);
+  const script_id = await upsertStartupScript(label, script);
 
   const { instance } = await client.instances.createInstance({
     region,
     plan: 'vhf-1c-1gb',
     os_id: '2136',
-    script_id: startupScript.id,
+    script_id,
     label,
-    tag: 'test tag',
+    tag,
   });
   return instance;
 }
 
 export async function deleteServerInstance(ip: string) {
+  const instance = await getInstanceByIp(ip);
+  return client.instances.deleteInstance({ 'instance-id': instance.id });
+}
+
+export async function getServerInstance(ip: string) {
+  return getInstanceByIp(ip);
+}
+
+async function getInstanceByIp(ip: string) {
   const { instances } = await client.instances.listInstances({});
   assertArray(instances, 'Failed to get instances');
 
   const instance: any = instances.find((i: any) => i.main_ip === ip);
   assertObj(instance, `Failed to find instance with ip ${ip}`);
-
-  return client.instances.deleteInstance({ 'instance-id': instance.id });
+  return instance;
 }
 
 function generateStartupScript(serverName: string) {

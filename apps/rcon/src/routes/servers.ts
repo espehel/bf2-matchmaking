@@ -11,6 +11,8 @@ import { RconBf2Server } from '@bf2-matchmaking/types';
 import { createRconBF2Server } from '../services/servers';
 import { initLiveServer, isOffline, reconnectLiveServer } from '../net/ServerManager';
 import { error, info } from '@bf2-matchmaking/logging';
+import { api, getMatchIdFromInstanceTag } from '@bf2-matchmaking/utils';
+import { createDnsRecord } from '../services/cloudflare';
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
@@ -117,20 +119,34 @@ router.get('/:ip', async (req, res) => {
 router.post('/', async (req, res) => {
   const { ip, port, rcon_port, rcon_pw } = req.body;
   try {
-    const serverInfo = await rcon(ip, rcon_port, rcon_pw).then(getServerInfo);
+    const { data: serverInstance } = await api.platform().getServer(ip);
+    const matchId = serverInstance && getMatchIdFromInstanceTag(serverInstance.tag);
 
+    let hostname = ip;
+    if (matchId) {
+      const dns = await createDnsRecord(`m${matchId}`, ip);
+      if (dns) {
+        hostname = dns.name;
+      }
+    }
+
+    const serverInfo = await rcon(hostname, rcon_port, rcon_pw).then(getServerInfo);
     const server = await client()
-      .upsertServer({ ip, port, name: serverInfo.serverName })
+      .upsertServer({ ip: hostname, port, name: serverInfo.serverName })
       .then(verifySingleResult);
 
     const serverRcon = await client()
-      .upsertServerRcon({ id: ip, rcon_port, rcon_pw })
+      .upsertServerRcon({ id: hostname, rcon_port, rcon_pw })
       .then(verifySingleResult);
     await initLiveServer(serverRcon);
 
+    if (matchId) {
+      await client().updateMatch(matchId, { server: server.ip });
+    }
+
     info(
       'routes/servers',
-      `Upserted server ${serverInfo.serverName} with ip ${ip}:${port}`
+      `Upserted server ${serverInfo.serverName} with ip ${hostname}:${port}`
     );
 
     res.status(200).send({ info: serverInfo, server, rcon: serverRcon });

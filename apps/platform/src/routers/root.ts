@@ -2,6 +2,7 @@ import Router from '@koa/router';
 import {
   createServerInstance,
   deleteServerInstance,
+  getServerInstance,
   getServerInstances,
 } from '../services/vultr';
 import { info } from '@bf2-matchmaking/logging';
@@ -20,7 +21,12 @@ rootRouter.post('/servers', async (ctx) => {
     return;
   }
 
-  const instance = await createServerInstance(body.name, body.region, body.label);
+  const instance = await createServerInstance(
+    body.name,
+    body.region,
+    body.label,
+    body.tag
+  );
   if (!instance) {
     ctx.status = 500;
     ctx.body = { message: 'Failed to create server' };
@@ -34,6 +40,9 @@ rootRouter.post('/servers', async (ctx) => {
   ctx.body = instance;
 });
 
+rootRouter.get('/servers/:ip', async (ctx) => {
+  ctx.body = await getServerInstance(ctx.params.ip);
+});
 rootRouter.delete('/servers/:ip', async (ctx) => {
   ctx.body = await deleteServerInstance(ctx.params.ip);
 });

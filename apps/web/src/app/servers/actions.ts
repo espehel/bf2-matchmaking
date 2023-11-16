@@ -46,10 +46,11 @@ export async function createServer(data: FormData) {
 }
 
 export async function generateServer(data: FormData) {
-  const { nameInput, regionInput, configInput } = Object.fromEntries(data);
+  const { nameInput, regionInput, configInput, tagInput } = Object.fromEntries(data);
   assertString(nameInput);
   assertString(regionInput);
   assertString(configInput);
+  assertString(tagInput);
 
   const config = await supabase(cookies).getMatchConfig(Number(configInput));
   if (config.error) {
@@ -59,7 +60,7 @@ export async function generateServer(data: FormData) {
 
   const result = await api
     .platform()
-    .postServers(nameInput, regionInput, config.data.name);
+    .postServers(nameInput, regionInput, config.data.name, `Match ${tagInput}`);
 
   if (result.error) {
     logErrorMessage(`Server ${nameInput}: Generation failed`, result.error);
