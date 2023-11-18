@@ -6,18 +6,27 @@ import { LogtailTransport } from '@logtail/winston';
 
 const { combine, timestamp, printf, colorize, json } = format;
 
-const APP_FORMAT = printf(({ level, message, label, timestamp }) => {
+const DEV_FORMAT = printf(({ level, message, label, timestamp }) => {
   return `${timestamp} [${level.toLocaleUpperCase()}] [${label}] ${message}`;
+});
+const PROD_FORMAT = printf(({ level, message, label }) => {
+  return `[${level.toLocaleUpperCase()}] [${label}] ${message}`;
 });
 const EXPRESS_FORMAT = printf(({ message, timestamp }) => {
   return `${timestamp} ${message}`;
 });
 const TRANSPORTS = [new transports.Console()];
 
-const logger = createLogger({
-  format: combine(timestamp(), APP_FORMAT, colorize()),
-  transports: TRANSPORTS,
-});
+const logger =
+  process.env.NODE_ENV === 'development'
+    ? createLogger({
+        format: combine(timestamp(), DEV_FORMAT, colorize()),
+        transports: TRANSPORTS,
+      })
+    : createLogger({
+        format: combine(PROD_FORMAT, colorize()),
+        transports: TRANSPORTS,
+      });
 export const error = (label: string, error: unknown) => {
   if (error instanceof Error) {
     logger.log({ level: 'error', label, message: error.message });

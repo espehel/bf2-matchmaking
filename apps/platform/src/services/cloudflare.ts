@@ -17,6 +17,7 @@ export async function getDnsByName(name: string) {
 }
 
 export async function createDnsRecord(name: string, ip: string) {
+  console.log('1');
   const response = (await client.dnsRecords.add('e553f5c69485773f5aae5b2818ba3308', {
     name,
     content: ip,
@@ -24,6 +25,7 @@ export async function createDnsRecord(name: string, ip: string) {
     type: 'A',
     ttl: 1,
   })) as ResponseObject<DnsRecordByType<'A'>>;
+  console.log('2');
   if (response.success) {
     logMessage(`Created DNS record for ${name}.`, { response, ip });
     return response.result;

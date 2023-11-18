@@ -1,4 +1,6 @@
 import {
+  error,
+  info,
   logChangeMatchStatus,
   logErrorMessage,
   logMessage,
@@ -209,12 +211,15 @@ export async function createLiveMatchFromDns(
 ) {
   const matchId = getMatchIdFromDnsName(dns.name);
   if (!matchId) {
+    info('createLiveMatchFromDns', `Failed to get match id for ${dns.name}`);
     return;
   }
 
-  const { data: match } = await client().updateMatch(matchId, { server: server.ip });
-  if (!match) {
+  info('createLiveMatchFromDns', `Match ${matchId}: Updating to server ${server.ip}`);
+  const result = await client().updateMatch(matchId, { server: server.ip });
+  if (result.error) {
+    error('createLiveMatchFromDns', result.error);
     return;
   }
-  initLiveMatch(match, { prelive: false });
+  initLiveMatch(result.data, { prelive: false });
 }

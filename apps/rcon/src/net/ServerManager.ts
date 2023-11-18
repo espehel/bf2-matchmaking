@@ -143,10 +143,10 @@ export async function updatePendingServers() {
 
   info(
     'updatePendingServers',
-    `Connected ${connectedServers}/${pendingServers.length} servers`
+    `Connected ${connectedServers.length}/${pendingServers.length} servers`
   );
-  pendingServers = pendingServers.filter(({ dns }) =>
-    connectedServers.includes(dns.name)
+  pendingServers = pendingServers.filter(
+    ({ dns }) => !connectedServers.includes(dns.name)
   );
 }
 
