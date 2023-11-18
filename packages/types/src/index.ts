@@ -6,6 +6,7 @@ export * from './api-types';
 export * from './database-types';
 export * from './type-guards';
 export * from './cloudflare';
+export * from './vultr';
 
 type WebhookPostgresChangesPayloadBase = {
   schema: string;

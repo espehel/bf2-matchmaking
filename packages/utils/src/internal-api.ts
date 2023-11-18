@@ -115,6 +115,8 @@ const platform = () => {
     deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.server(ip))),
     postServerDns: (ip: string) =>
       postJSON<DnsRecordWithoutPriority>(basePath.concat(paths.serverDns(ip)), {}),
+    getServerDns: (ip: string) =>
+      getJSON<DnsRecordWithoutPriority>(basePath.concat(paths.serverDns(ip))),
   };
 };
 

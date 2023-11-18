@@ -4,9 +4,11 @@ import {
   deleteServerInstance,
   getInstanceByIp,
   getServerInstances,
+  pollInstance,
 } from '../services/vultr';
 import { info } from '@bf2-matchmaking/logging';
-import { createDnsRecord, getDnsByName } from '../services/cloudflare';
+import { createDnsRecord, getDnsByIp, getDnsByName } from '../services/cloudflare';
+import { Instance } from '@bf2-matchmaking/types/src/vultr';
 
 export const rootRouter = new Router();
 
@@ -33,6 +35,14 @@ rootRouter.post('/servers', async (ctx) => {
     ctx.body = { message: 'Failed to create server' };
     return;
   }
+
+  pollInstance(instance.id, async (instance: Instance) => {
+    if (instance.main_ip !== '0.0.0.0') {
+      await createDnsRecord(instance.tag, ctx.params.ip);
+      return true;
+    }
+    return false;
+  });
 
   info(
     'POST /servers',
@@ -63,6 +73,16 @@ rootRouter.post('/servers/:ip/dns', async (ctx) => {
   if (!dns) {
     ctx.status = 500;
     ctx.body = { message: 'Failed to create DNS record' };
+    return;
+  }
+  ctx.body = dns;
+});
+
+rootRouter.get('/servers/:ip/dns', async (ctx) => {
+  const dns = await getDnsByIp(ctx.params.ip);
+  if (!dns) {
+    ctx.status = 400;
+    ctx.body = { message: `Could not find DNS record for ${ctx.params.ip}` };
     return;
   }
   ctx.body = dns;

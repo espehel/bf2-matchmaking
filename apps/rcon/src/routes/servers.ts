@@ -124,7 +124,7 @@ router.get('/:ip', async (req, res) => {
 router.post('/', async (req, res) => {
   const { ip, port, rcon_port, rcon_pw } = req.body;
   try {
-    const { data: dns } = await api.platform().postServerDns(ip);
+    const { data: dns } = await api.platform().getServerDns(ip);
 
     let hostname: string = ip;
     if (dns) {
