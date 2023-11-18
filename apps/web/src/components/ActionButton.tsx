@@ -36,7 +36,7 @@ export default function ActionButton({
           }
         }
       }),
-    [action, errorMessage, successMessage, startTransition]
+    [action, errorMessage, successMessage, startTransition, redirect, router]
   );
 
   return (

@@ -15,10 +15,16 @@ export default function DatetimeInput({ label, name, defaultValue, min, max }: P
   const localZone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
   const localDefaultValue = useMemo(
     () => toLocalISO(defaultValue, localZone)?.substring(0, 16),
-    []
+    [defaultValue, localZone]
   );
-  const localMin = useMemo(() => toLocalISO(min, localZone)?.substring(0, 16), []);
-  const localMax = useMemo(() => toLocalISO(max, localZone)?.substring(0, 16), []);
+  const localMin = useMemo(
+    () => toLocalISO(min, localZone)?.substring(0, 16),
+    [localZone, min]
+  );
+  const localMax = useMemo(
+    () => toLocalISO(max, localZone)?.substring(0, 16),
+    [localZone, max]
+  );
   return (
     <div className="form-control grow">
       <label className="label" htmlFor={name}>

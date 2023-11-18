@@ -39,7 +39,7 @@ export default function ActionForm({
           }
         }
       }),
-    [action, errorMessage, successMessage, startTransition]
+    [action, errorMessage, successMessage, startTransition, redirect, router]
   );
 
   return (

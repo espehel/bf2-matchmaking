@@ -16,14 +16,16 @@ export default function OrganizerCommandCopyButton({ match }: Props) {
     [match]
   );
 
+  const handleClick = useCallback(() => {
+    if (command) {
+      copy(command);
+      toast.info('Copied Raid-Organizer command to clipboard');
+    }
+  }, [command]);
+
   if (!command) {
     return null;
   }
-
-  const handleClick = useCallback(() => {
-    copy(command);
-    toast.info('Copied Raid-Organizer command to clipboard');
-  }, [command]);
 
   return (
     <div className="tooltip tooltip-info" data-tip={command}>

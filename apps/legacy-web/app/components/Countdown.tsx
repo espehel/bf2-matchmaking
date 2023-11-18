@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import moment from 'moment';
-import { SUMMONING_DURATION, getDurationString, getTimeLeft } from '@bf2-matchmaking/utils';
+import { SUMMONING_DURATION } from '@bf2-matchmaking/utils';
 
 interface Props {
   target: string;
@@ -8,7 +8,7 @@ interface Props {
 }
 const circumference = 30 * 2 * Math.PI;
 const Countdown: FC<Props> = ({ target, onTimedOut }) => {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(target));
+  const [timeLeft, setTimeLeft] = useState(moment.duration()); //getTimeLeft(target));
   const percent = (timeLeft.asMilliseconds() / SUMMONING_DURATION) * 100;
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const Countdown: FC<Props> = ({ target, onTimedOut }) => {
           cy="40"
         />
       </svg>
-      <span className="absolute text-xl text-blue-700">{getDurationString(timeLeft)}</span>
+      <span className="absolute text-xl text-blue-700">{/*getDurationString(timeLeft)*/}</span>
     </div>
   );
 };
