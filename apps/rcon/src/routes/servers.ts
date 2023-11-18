@@ -9,10 +9,15 @@ import {
 } from '../net/RconManager';
 import { RconBf2Server } from '@bf2-matchmaking/types';
 import { createRconBF2Server } from '../services/servers';
-import { initLiveServer, isOffline, reconnectLiveServer } from '../net/ServerManager';
+import {
+  addPendingServer,
+  initLiveServer,
+  isOffline,
+  reconnectLiveServer,
+} from '../net/ServerManager';
 import { error, info } from '@bf2-matchmaking/logging';
-import { api, getMatchIdFromInstanceTag } from '@bf2-matchmaking/utils';
-import { createDnsRecord } from '../services/cloudflare';
+import { api } from '@bf2-matchmaking/utils';
+import { createLiveMatchFromDns } from '../services/matches';
 const router = express.Router();
 
 router.post('/:ip/players/switch', async (req, res) => {
@@ -119,18 +124,26 @@ router.get('/:ip', async (req, res) => {
 router.post('/', async (req, res) => {
   const { ip, port, rcon_port, rcon_pw } = req.body;
   try {
-    const { data: serverInstance } = await api.platform().getServer(ip);
-    const matchId = serverInstance && getMatchIdFromInstanceTag(serverInstance.tag);
+    const { data: dns } = await api.platform().postServerDns(ip);
 
-    let hostname = ip;
-    if (matchId) {
-      const dns = await createDnsRecord(`m${matchId}`, ip);
-      if (dns) {
-        hostname = dns.name;
-      }
+    let hostname: string = ip;
+    if (dns) {
+      hostname = dns.name;
     }
 
-    const serverInfo = await rcon(hostname, rcon_port, rcon_pw).then(getServerInfo);
+    const serverInfo = await rcon(hostname, rcon_port, rcon_pw)
+      .then(getServerInfo)
+      .catch(() => null);
+
+    if (!serverInfo && dns) {
+      addPendingServer({ dns, port, rcon_port, rcon_pw });
+      return res.status(202).send();
+    }
+
+    if (!serverInfo) {
+      return res.status(502).send({ message: 'Failed to connect to server.' });
+    }
+
     const server = await client()
       .upsertServer({ ip: hostname, port, name: serverInfo.serverName })
       .then(verifySingleResult);
@@ -140,19 +153,19 @@ router.post('/', async (req, res) => {
       .then(verifySingleResult);
     await initLiveServer(serverRcon);
 
-    if (matchId) {
-      await client().updateMatch(matchId, { server: server.ip });
+    if (dns) {
+      await createLiveMatchFromDns(dns, server);
     }
 
     info(
       'routes/servers',
-      `Upserted server ${serverInfo.serverName} with ip ${hostname}:${port}`
+      `Upserted server ${hostname} with name ${serverInfo.serverName}`
     );
 
     res.status(200).send({ info: serverInfo, server, rcon: serverRcon });
   } catch (e) {
     error('POST /servers', e);
-    res.status(502).send(e);
+    res.status(500).send(e);
   }
 });
 

@@ -1,9 +1,11 @@
 import { MatchPlayersRow, PlayersRow, RoundsInsert } from './database-types';
+import { DnsRecordWithoutPriority } from './cloudflare';
 
 export * from './database-types.generated';
 export * from './api-types';
 export * from './database-types';
 export * from './type-guards';
+export * from './cloudflare';
 
 type WebhookPostgresChangesPayloadBase = {
   schema: string;
@@ -187,4 +189,11 @@ export interface LiveRound extends Omit<RoundsInsert, 'si' | 'pl' | 'map'> {
   si: ServerInfo;
   pl: Array<PlayerListItem>;
   map: string;
+}
+
+export interface PendingServer {
+  dns: DnsRecordWithoutPriority;
+  port: string;
+  rcon_port: number;
+  rcon_pw: string;
 }

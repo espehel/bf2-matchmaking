@@ -101,9 +101,9 @@ export function toRaidOrganizerCommand(match: ScheduledMatch) {
   return `/event create ${title} ${eventStart} ${template} ${description}`;
 }
 
-export function getMatchIdFromInstanceTag(tag: string | undefined | null) {
-  if (isString(tag) && tag.includes('Match ')) {
-    return Number(tag.replace('Match ', '')) ?? null;
+export function getMatchIdFromDnsName(name: string | undefined | null) {
+  if (isString(name) && name.at(0) === 'm') {
+    return Number(name.replace('m', '')) || null;
   }
   return null;
 }

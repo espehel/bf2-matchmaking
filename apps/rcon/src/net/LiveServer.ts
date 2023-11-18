@@ -31,14 +31,14 @@ export class LiveServer {
     this.info = info;
   }
   reset() {
-    info('LiveServer', `Resetting ${this.info.serverName}`);
+    info('LiveServer', `Resetting ${this.ip}`);
     this.#liveMatch = null;
     this.#waitingSince = null;
     this.errorAt = null;
     return this;
   }
   setLiveMatch(liveMatch: LiveMatch) {
-    info('LiveServer', `Setting match ${liveMatch.match.id} for ${this.info.serverName}`);
+    info('LiveServer', `Setting match ${liveMatch.match.id} for ${this.ip}`);
     this.#liveMatch = liveMatch;
     this.#waitingSince = DateTime.now();
     return this;
@@ -84,7 +84,6 @@ export class LiveServer {
   }
   async #updateLiveMatch(liveMatch: LiveMatch) {
     const { state, payload } = await liveMatch.updateState(this.info);
-    //info('LiveServer', `Received live match state: ${state}`);
 
     if (state !== 'pending') {
       this.#waitingSince = null;
@@ -104,7 +103,7 @@ export class LiveServer {
       this.#waitingSince &&
       this.#waitingSince.diffNow('minutes').minutes < -30
     ) {
-      info('LiveServer', `No players connected, resetting ${this.info.serverName}`);
+      info('LiveServer', `No players connected, resetting ${this.ip}`);
       this.reset();
     }
 

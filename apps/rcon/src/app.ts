@@ -15,6 +15,7 @@ import {
   initLiveServers,
   updateActiveLiveServers,
   updateIdleLiveServers,
+  updatePendingServers,
 } from './net/ServerManager';
 import cron from 'node-cron';
 import { updatePendingLiveMatches } from './services/MatchManager';
@@ -31,10 +32,15 @@ const activeTasks = cron.schedule('*/10 * * * * *', updateActiveLiveServers, {
   scheduled: false,
 });
 
+const pendingServerTask = cron.schedule('*/30 * * * * *', updatePendingServers, {
+  scheduled: false,
+});
+
 initLiveServers()
   .then(() => {
     inactiveTasks.start();
     activeTasks.start();
+    pendingServerTask.start();
   })
   .catch((err) => error('app', err));
 const app = express();

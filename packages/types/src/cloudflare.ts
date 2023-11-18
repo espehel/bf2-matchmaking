@@ -8,3 +8,11 @@ export interface ResponseObject<T> {
   messages: ResponseMessageObject[];
   result: T;
 }
+
+export interface DnsRecordWithoutPriority {
+  type: 'A';
+  name: string;
+  content: string;
+  ttl: number;
+  proxied?: boolean | undefined;
+}

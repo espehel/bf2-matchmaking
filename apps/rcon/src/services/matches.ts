@@ -4,6 +4,7 @@ import {
   logMessage,
 } from '@bf2-matchmaking/logging';
 import {
+  DnsRecordWithoutPriority,
   isNotNull,
   isServerMatch,
   LiveInfo,
@@ -11,6 +12,7 @@ import {
   MatchStatus,
   RoundsInsert,
   ServerInfo,
+  ServersRow,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { LiveMatch } from './LiveMatch';
@@ -26,8 +28,9 @@ import {
   sendChannelMessage,
 } from '@bf2-matchmaking/discord';
 import { toKeyhashList } from '@bf2-matchmaking/utils/src/round-utils';
-import { getJoinmeHref } from '@bf2-matchmaking/utils';
+import { getJoinmeHref, getMatchIdFromDnsName } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
+import { initLiveMatch } from './MatchManager';
 
 export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | null) => {
   logChangeMatchStatus(MatchStatus.Finished, match, liveInfo);
@@ -198,4 +201,20 @@ export async function updateServer(liveMatch: LiveMatch, server: string) {
 
   liveMatch.setMatch(data);
   return data;
+}
+
+export async function createLiveMatchFromDns(
+  dns: DnsRecordWithoutPriority,
+  server: ServersRow
+) {
+  const matchId = getMatchIdFromDnsName(dns.name);
+  if (!matchId) {
+    return;
+  }
+
+  const { data: match } = await client().updateMatch(matchId, { server: server.ip });
+  if (!match) {
+    return;
+  }
+  initLiveMatch(match, { prelive: false });
 }

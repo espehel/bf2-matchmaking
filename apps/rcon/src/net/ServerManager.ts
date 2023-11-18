@@ -1,15 +1,24 @@
 import { LiveServer } from './LiveServer';
-import { client, fallbackResult, verifyResult } from '@bf2-matchmaking/supabase';
+import { client, fallbackResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logSupabaseError } from '@bf2-matchmaking/logging';
-import { ServerRconsRow } from '@bf2-matchmaking/types';
+import {
+  DnsRecordWithoutPriority,
+  LiveInfo,
+  PendingServer,
+  ServerRconsRow,
+} from '@bf2-matchmaking/types';
 import { createLiveInfo, updateServerName } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
-import { verify } from '@bf2-matchmaking/utils';
+import { getMatchIdFromDnsName } from '@bf2-matchmaking/utils';
+import { initLiveMatch } from '../services/MatchManager';
+import { getServerInfo, rcon } from './RconManager';
+import { createLiveMatchFromDns } from '../services/matches';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
 
 const liveServers = new Map<string, LiveServer>();
 const rcons = new Map<string, ServerRconsRow>();
+let pendingServers: Array<PendingServer> = [];
 
 export function getLiveServers() {
   return Array.from(liveServers.values());
@@ -50,9 +59,12 @@ export async function initLiveServer(rcon: ServerRconsRow) {
   rcons.set(rcon.id, rcon);
   const liveInfo = await createLiveInfo(rcon);
   if (liveInfo) {
-    liveServers.set(rcon.id, new LiveServer(rcon, liveInfo));
+    const liveServer = new LiveServer(rcon, liveInfo);
+    liveServers.set(rcon.id, liveServer);
     info('initLiveServer', `Initialized live server ${rcon.id}`);
+    return liveServer;
   }
+  return null;
 }
 
 export function reconnectLiveServer(host: string) {
@@ -96,6 +108,48 @@ export function isServerIdentified(serverPlayers: number, matchSize: number) {
   return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
 }
 
+export function addPendingServer(server: PendingServer) {
+  pendingServers = pendingServers
+    .filter(({ dns }) => server.dns.name === dns.name)
+    .concat(server);
+}
+
+export async function updatePendingServers() {
+  if (pendingServers.length === 0) {
+    return;
+  }
+  const connectedServers: Array<string> = [];
+  for (const { dns, port, rcon_port, rcon_pw } of pendingServers) {
+    const serverInfo = await rcon(dns.name, rcon_port, rcon_pw).then(getServerInfo);
+    if (!serverInfo) {
+      info('updatePendingServers', `Server ${dns.name}: Failed to get info`);
+      continue;
+    }
+
+    const server = await client()
+      .upsertServer({ ip: dns.name, port, name: serverInfo.serverName })
+      .then(verifySingleResult);
+
+    const serverRcon = await client()
+      .upsertServerRcon({ id: dns.name, rcon_port, rcon_pw })
+      .then(verifySingleResult);
+
+    const liveServer = await initLiveServer(serverRcon);
+    await createLiveMatchFromDns(dns, server);
+    if (liveServer) {
+      connectedServers.push(dns.name);
+    }
+  }
+
+  info(
+    'updatePendingServers',
+    `Connected ${connectedServers}/${pendingServers.length} servers`
+  );
+  pendingServers = pendingServers.filter(({ dns }) =>
+    connectedServers.includes(dns.name)
+  );
+}
+
 export async function updateIdleLiveServers() {
   const idleServers = Array.from(liveServers.values()).filter((s) => s.isIdle());
   if (idleServers.length === 0) {
@@ -106,7 +160,7 @@ export async function updateIdleLiveServers() {
   const numberOfUpdated = await updateServers(idleServers, (liveServer) => {
     info(
       'updateIdleLiveServers',
-      `Server ${liveServer.info.serverName} is unresponsive, removing from live servers`
+      `Server ${liveServer.ip} is unresponsive, removing from live servers`
     );
     liveServer.reset();
     liveServers.delete(liveServer.ip);
@@ -127,7 +181,7 @@ export async function updateActiveLiveServers() {
   await updateServers(activeServers, (liveServer) => {
     info(
       'updateActiveLiveServers',
-      `Server ${liveServer.info.serverName} is unresponsive, resetting live server`
+      `Server ${liveServer.ip} is unresponsive, resetting live server`
     );
     liveServer.reset();
   });

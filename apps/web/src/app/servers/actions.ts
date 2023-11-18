@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import * as dns from 'dns';
 export async function createServer(data: FormData) {
   const { addressInput, portInput, rconPortInput, rconPwInput } =
     Object.fromEntries(data);
@@ -57,10 +58,11 @@ export async function generateServer(data: FormData) {
   }
   const { id, config } = matchResult.data;
   const name = `${config.name} Match ${id}`;
+  const dnsName = `m${id}`;
 
   const result = await api
     .platform()
-    .postServers(name, regionInput, config.name, `Match ${id}`);
+    .postServers(name, regionInput, config.name, dnsName);
 
   if (result.error) {
     logErrorMessage(`Server ${name}: Generation failed`, result.error);

@@ -10,6 +10,7 @@ import {
   PostServerPlayersSwitchRequestBody,
   GetMatchLiveResponseBody,
   LiveInfo,
+  DnsRecordWithoutPriority,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
@@ -105,12 +106,15 @@ const platform = () => {
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
+    serverDns: (ip: string) => `/servers/${ip}/dns`,
   };
   return {
     postServers: (name: string, region: string, label: string, tag: string) =>
       postJSON(basePath.concat(paths.servers()), { name, region, label, tag }),
     getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
     deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.server(ip))),
+    postServerDns: (ip: string) =>
+      postJSON<DnsRecordWithoutPriority>(basePath.concat(paths.serverDns(ip)), {}),
   };
 };
 
