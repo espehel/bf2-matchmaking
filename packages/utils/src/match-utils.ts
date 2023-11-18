@@ -102,8 +102,9 @@ export function toRaidOrganizerCommand(match: ScheduledMatch) {
 }
 
 export function getMatchIdFromDnsName(name: string | undefined | null) {
-  if (isString(name) && name.at(0) === 'm') {
-    return Number(name.replace('m', '')) || null;
+  const endIndex = name?.indexOf('.') || -1;
+  if (isString(name) && name.at(0) === 'm' && endIndex > 0) {
+    return Number(name.substring(1, endIndex)) || null;
   }
   return null;
 }

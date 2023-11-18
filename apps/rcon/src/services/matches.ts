@@ -215,7 +215,7 @@ export async function createLiveMatchFromDns(
     return;
   }
 
-  info('createLiveMatchFromDns', `Match ${matchId}: Updating to server ${server.ip}`);
+  info('createLiveMatchFromDns', `Match ${matchId}: Updating server to ${server.ip}`);
   const result = await client().updateMatch(matchId, { server: server.ip });
   if (result.error) {
     error('createLiveMatchFromDns', result.error);

@@ -1,16 +1,9 @@
 import { LiveServer } from './LiveServer';
 import { client, fallbackResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logSupabaseError } from '@bf2-matchmaking/logging';
-import {
-  DnsRecordWithoutPriority,
-  LiveInfo,
-  PendingServer,
-  ServerRconsRow,
-} from '@bf2-matchmaking/types';
+import { PendingServer, ServerRconsRow } from '@bf2-matchmaking/types';
 import { createLiveInfo, updateServerName } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
-import { getMatchIdFromDnsName } from '@bf2-matchmaking/utils';
-import { initLiveMatch } from '../services/MatchManager';
 import { getServerInfo, rcon } from './RconManager';
 import { createLiveMatchFromDns } from '../services/matches';
 

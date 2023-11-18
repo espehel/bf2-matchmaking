@@ -7,7 +7,6 @@ import {
 } from '../services/vultr';
 import { info } from '@bf2-matchmaking/logging';
 import { createDnsRecord, getDnsByName } from '../services/cloudflare';
-import { getMatchIdFromDnsName } from '@bf2-matchmaking/utils';
 
 export const rootRouter = new Router();
 
@@ -66,7 +65,6 @@ rootRouter.post('/servers/:ip/dns', async (ctx) => {
     ctx.body = { message: 'Failed to create DNS record' };
     return;
   }
-  console.log('3');
   ctx.body = dns;
 });
 
