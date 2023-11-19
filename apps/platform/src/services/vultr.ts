@@ -65,18 +65,17 @@ export async function createServerInstance(
   return instance as Instance | undefined;
 }
 
-export async function deleteServerInstance(ip: string) {
-  const instance = await getInstanceByIp(ip);
-  return client.instances.deleteInstance({ 'instance-id': instance.id });
+export async function deleteServerInstance(id: string) {
+  const result = await client.instances.deleteInstance({ 'instance-id': id });
+  return result;
 }
 
-export async function getInstanceByIp(ip: string) {
+export async function getInstanceByIp(ip: string): Promise<Instance | null> {
   const { instances } = await client.instances.listInstances({});
   assertArray(instances, 'Failed to get instances');
 
-  const instance = instances.find((i: any) => i.main_ip === ip);
-  assertObj(instance, `Failed to find instance with ip ${ip}`);
-  return instance as Instance;
+  const instance = (instances as Array<Instance>).find((i: any) => i.main_ip === ip);
+  return instance || null;
 }
 
 export function pollInstance(id: string, cb: (instance: Instance) => Promise<boolean>) {

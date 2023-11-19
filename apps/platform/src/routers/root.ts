@@ -7,8 +7,14 @@ import {
   pollInstance,
 } from '../services/vultr';
 import { info } from '@bf2-matchmaking/logging';
-import { createDnsRecord, getDnsByIp, getDnsByName } from '../services/cloudflare';
+import {
+  createDnsRecord,
+  deleteDnsRecord,
+  getDnsByIp,
+  getDnsByName,
+} from '../services/cloudflare';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
+import { Context } from 'koa';
 
 export const rootRouter = new Router();
 
@@ -38,7 +44,7 @@ rootRouter.post('/servers', async (ctx) => {
 
   pollInstance(instance.id, async (instance: Instance) => {
     if (instance.main_ip !== '0.0.0.0') {
-      await createDnsRecord(instance.tag, ctx.params.ip);
+      await createDnsRecord(instance.tag, instance.main_ip);
       return true;
     }
     return false;
@@ -54,14 +60,23 @@ rootRouter.post('/servers', async (ctx) => {
 rootRouter.get('/servers/:ip', async (ctx) => {
   ctx.body = await getInstanceByIp(ctx.params.ip);
 });
-rootRouter.delete('/servers/:ip', async (ctx) => {
+rootRouter.delete('/servers/:ip', async (ctx: Context) => {
   const dns = await getDnsByName(ctx.params.ip);
-  const ip = dns?.content || ctx.params.ip;
-  ctx.body = await deleteServerInstance(ip);
+
+  const instance = await getInstanceByIp(dns?.content || ctx.params.ip);
+  ctx.assert(instance, 404, 'Server not found');
+
+  await deleteServerInstance(instance.id);
+  if (dns) {
+    await deleteDnsRecord(dns.id);
+  }
+
+  ctx.status = 204;
 });
 
-rootRouter.post('/servers/:ip/dns', async (ctx) => {
+rootRouter.post('/servers/:ip/dns', async (ctx: Context) => {
   const instance = await getInstanceByIp(ctx.params.ip);
+  ctx.assert(instance, 404, 'Server not found');
 
   if (!instance.tag) {
     ctx.status = 400;
@@ -79,7 +94,10 @@ rootRouter.post('/servers/:ip/dns', async (ctx) => {
 });
 
 rootRouter.get('/servers/:ip/dns', async (ctx) => {
-  const dns = await getDnsByIp(ctx.params.ip);
+  const dns =
+    ctx.query.type === 'name'
+      ? await getDnsByName(ctx.params.ip)
+      : await getDnsByIp(ctx.params.ip);
   if (!dns) {
     ctx.status = 400;
     ctx.body = { message: `Could not find DNS record for ${ctx.params.ip}` };
