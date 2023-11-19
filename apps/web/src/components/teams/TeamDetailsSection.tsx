@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default async function TeamDetailsSection({ team }: Props) {
-  const isTeamOfficer = await supabase(cookies).isTeamOfficer(team.id);
+  const isTeamOfficer = await supabase(cookies).isTeamPlayerOfficer(team.id);
 
   return (
     <section className="section flex-row">

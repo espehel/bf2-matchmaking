@@ -17,7 +17,7 @@ export default async function TeamPage({ params, searchParams }: Props) {
     .getTeam(Number(params.team))
     .then(verifySingleResult);
 
-  const isTeamOfficer = await supabase(cookies).isTeamOfficer(team.id);
+  const isTeamOfficer = await supabase(cookies).isTeamPlayerOfficer(team.id);
 
   const edit = isTeamOfficer && searchParams.edit === 'true';
 
