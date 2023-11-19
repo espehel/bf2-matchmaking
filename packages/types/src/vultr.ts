@@ -31,3 +31,28 @@ export interface Instance {
   user_scheme: 'root' | 'limited';
   default_password: string;
 }
+
+export interface Plan {
+  id: string;
+  vcpu_count: number;
+  ram: number;
+  disk: number;
+  disk_count: number;
+  bandwidth: number;
+  monthly_cost: number;
+  type: string;
+  locations: string[];
+}
+type RegionOption =
+  | 'ddos_protection'
+  | 'block_storage_high_perf'
+  | 'block_storage_storage_opt'
+  | 'kubernetes'
+  | 'load_balancers';
+export interface Region {
+  id: string;
+  city: string;
+  country: string;
+  continent: string;
+  options: Array<RegionOption>;
+}

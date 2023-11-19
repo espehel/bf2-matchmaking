@@ -14,6 +14,7 @@ if (process.env.NODE_ENV === 'production') {
   cache = global.__cache;
 }
 
-export const setCachedValue = (key: string, value: unknown) => cache.set(key, value);
+export const setCachedValue = (key: string, value: unknown, ttlSeconds?: number) =>
+  cache.set(key, value, ttlSeconds || 12000);
 
 export const getCachedValue = <T>(key: string) => cache.get<T>(key);

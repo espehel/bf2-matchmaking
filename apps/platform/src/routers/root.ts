@@ -3,6 +3,7 @@ import {
   createServerInstance,
   deleteServerInstance,
   getInstanceByIp,
+  getLocations,
   getServerInstances,
   pollInstance,
 } from '../services/vultr';
@@ -104,6 +105,10 @@ rootRouter.get('/servers/:ip/dns', async (ctx) => {
     return;
   }
   ctx.body = dns;
+});
+
+rootRouter.get('/locations', async (ctx: Context) => {
+  ctx.body = await getLocations();
 });
 
 rootRouter.get('/health', (ctx) => {

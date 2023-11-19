@@ -1,7 +1,9 @@
 import Vultr from '@vultr/vultr-node';
 import { assertArray, assertObj, assertString } from '@bf2-matchmaking/utils';
-import { Instance } from '@bf2-matchmaking/types';
+import { Instance, Plan, Region } from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
+import { VULTR } from '../constants';
+import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 
 assertString(process.env.VULTR_API_KEY, 'VULTR_API_KEY is not set.');
 
@@ -56,8 +58,8 @@ export async function createServerInstance(
 
   const { instance } = await client.instances.createInstance({
     region,
-    plan: 'vhf-1c-1gb',
-    os_id: '2136',
+    plan: VULTR.plan,
+    os_id: VULTR.os_id,
     script_id,
     label,
     tag,
@@ -90,6 +92,28 @@ export function pollInstance(id: string, cb: (instance: Instance) => Promise<boo
   setTimeout(() => {
     clearInterval(interval);
   }, 100000 * 6);
+}
+
+export async function getLocations() {
+  const cache = getCachedValue<Array<Region>>('locations');
+  if (cache) {
+    return cache;
+  }
+
+  const { plans } = await client.plans.listPlans({ type: VULTR.type, os: VULTR.os_id });
+  assertArray(plans, 'Failed to get plans');
+
+  const plan = (plans as Array<Plan>).find((p) => p.id === VULTR.plan);
+  assertObj(plan, 'Failed to find plan');
+
+  const { regions } = await client.regions.listRegions({});
+  assertObj(regions, 'Failed to get regions');
+
+  const locations = (regions as Array<Region>).filter((r) =>
+    plan.locations.includes(r.id)
+  );
+  setCachedValue('locations', locations, 43200);
+  return locations;
 }
 
 function generateStartupScript(serverName: string) {
