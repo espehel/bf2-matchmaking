@@ -2,6 +2,8 @@ import { PlayersRow, TeamsJoined } from '@bf2-matchmaking/types';
 import { StarIcon } from '@heroicons/react/20/solid';
 import AddPlayerForm from '@/components/teams/AddPlayerForm';
 import TeamPlayerItem from '@/components/teams/TeamPlayerItem';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   team: TeamsJoined;
@@ -14,6 +16,7 @@ export default function EditTeamPlayersSection({ team }: Props) {
       captain: team.captains.some((c) => c.player_id === p.id),
     }))
     .sort(compareTeamPlayers);
+  const isTeamOfficer = supabase(cookies).isTeamPlayerOfficer(team.id);
 
   return (
     <section className="section gap-2">
@@ -23,7 +26,7 @@ export default function EditTeamPlayersSection({ team }: Props) {
           <TeamPlayerItem key={p.id} player={p} team={team} />
         ))}
         <li className="flex items-center w-52">
-          <AddPlayerForm teamId={team.id} />
+          <AddPlayerForm teamId={team.id} disabled={!isTeamOfficer} />
         </li>
       </ul>
     </section>

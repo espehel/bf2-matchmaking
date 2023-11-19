@@ -24,8 +24,7 @@ export async function createScheduledMatch(formData: FormData) {
     assertString(awaySelect, 'Away team is required.');
     assertString(scheduledInput, 'Match start is required.');
     assertString(timezone);
-    const scheduled_at = DateTime.fromISO(scheduledInput)
-      .setZone(timezone)
+    const scheduled_at = DateTime.fromISO(scheduledInput, { zone: timezone })
       .toUTC()
       .toISO();
     assertString(scheduled_at);

@@ -5,6 +5,8 @@ import TeamDetailsSection from '@/components/teams/TeamDetailsSection';
 import TeamDetailsForm from '@/components/teams/TeamDetailsForm';
 import EditTeamPlayersSection from '@/components/teams/EditTeamPlayersSection';
 import TeamPlayersSection from '@/components/teams/TeamPlayersSection';
+import { Suspense } from 'react';
+import LoadingSection from '@/components/commons/LoadingSection';
 
 interface Props {
   params: { team: string };
@@ -22,8 +24,16 @@ export default async function TeamPage({ params, searchParams }: Props) {
   return (
     <main className="main flex flex-col gap-6">
       <h1 className="font-serif font-extrabold text-5xl text-center text-accent">{`Team ${team.name}`}</h1>
-      {edit ? <TeamDetailsForm team={team} /> : <TeamDetailsSection team={team} />}
-      {edit ? <EditTeamPlayersSection team={team} /> : <TeamPlayersSection team={team} />}
+      <Suspense fallback={<LoadingSection />}>
+        {edit ? <TeamDetailsForm team={team} /> : <TeamDetailsSection team={team} />}
+      </Suspense>
+      <Suspense fallback={<LoadingSection />}>
+        {edit ? (
+          <EditTeamPlayersSection team={team} />
+        ) : (
+          <TeamPlayersSection team={team} />
+        )}
+      </Suspense>
     </main>
   );
 }

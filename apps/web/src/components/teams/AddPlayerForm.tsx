@@ -9,9 +9,9 @@ import IconBtn from '@/components/commons/IconBtn';
 
 interface Props {
   teamId: number;
+  disabled?: boolean;
 }
-export default function AddPlayerForm({ teamId }: Props) {
-  const { isPlayerAdmin } = usePlayer();
+export default function AddPlayerForm({ teamId, disabled }: Props) {
   const handleFormAction = useCallback(
     async (data: FormData) => {
       const value = data.get('player[id]');
@@ -25,8 +25,8 @@ export default function AddPlayerForm({ teamId }: Props) {
   return (
     <form action={handleFormAction} className="form-control">
       <div className="flex items-center gap-2">
-        <PlayerCombobox placeholder="Add player" disabled={!isPlayerAdmin} />
-        {isPlayerAdmin && (
+        <PlayerCombobox placeholder="Add player" disabled={disabled} />
+        {!disabled && (
           <IconBtn
             type="submit"
             Icon={PlusCircleIcon}
