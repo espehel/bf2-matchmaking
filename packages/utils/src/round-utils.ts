@@ -1,4 +1,5 @@
 import {
+  isNotNull,
   LiveInfo,
   MatchesJoined,
   PlayerListItem,
@@ -25,4 +26,8 @@ export function getTeamTuple(playerList: Array<PlayerListItem>, match: MatchesJo
     .reduce((acc, cur) => (cur?.team === match.home_team.id ? acc + 1 : acc - 1), 0) > 0
     ? [match.home_team.id, match.away_team.id]
     : [match.away_team.id, match.home_team.id];
+}
+
+export function mapToKeyhashes(rounds: Array<RoundsJoined | RoundsRow>) {
+  return rounds.map(toKeyhashList).filter(isNotNull).flat();
 }

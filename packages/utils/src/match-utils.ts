@@ -108,3 +108,11 @@ export function getMatchIdFromDnsName(name: string | undefined | null) {
   }
   return null;
 }
+
+export function hasKeyhash(match: MatchesJoined) {
+  return (keyhash: string) => match.players.some((p) => p.keyhash === keyhash);
+}
+
+export function hasNotKeyhash(match: MatchesJoined) {
+  return (keyhash: string) => !match.players.some((p) => p.keyhash === keyhash);
+}

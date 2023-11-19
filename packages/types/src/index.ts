@@ -198,3 +198,5 @@ export interface PendingServer {
   rcon_port: number;
   rcon_pw: string;
 }
+
+export type MatchProcessError = 'MISSING_PLAYERS' | 'MISSING_ROUNDS' | 'EXTRA_ROUNDS';

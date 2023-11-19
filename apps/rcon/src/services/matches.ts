@@ -7,10 +7,10 @@ import {
 } from '@bf2-matchmaking/logging';
 import {
   DnsRecordWithoutPriority,
-  isNotNull,
   isServerMatch,
   LiveInfo,
   MatchesJoined,
+  MatchProcessError,
   MatchStatus,
   RoundsInsert,
   ServerInfo,
@@ -29,8 +29,12 @@ import {
   getWarmUpStartedEmbed,
   sendChannelMessage,
 } from '@bf2-matchmaking/discord';
-import { toKeyhashList } from '@bf2-matchmaking/utils/src/round-utils';
-import { getJoinmeHref, getMatchIdFromDnsName } from '@bf2-matchmaking/utils';
+import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
+import {
+  getJoinmeHref,
+  getMatchIdFromDnsName,
+  hasNotKeyhash,
+} from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { initLiveMatch } from './MatchManager';
 
@@ -67,7 +71,15 @@ export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | nul
   }
 };
 export const closeMatch = async (match: MatchesJoined) => {
-  const errors = validateMatch(match);
+  let errors = validateMatch(match);
+
+  if (errors.includes('MISSING_PLAYERS')) {
+    const fixedMatch = await fixMissingMatchPlayers(match);
+    if (fixedMatch) {
+      errors = validateMatch(fixedMatch);
+    }
+  }
+
   if (errors.length > 0) {
     logMessage(`Match ${match.id} is not valid, no results created.`, {
       match,
@@ -88,19 +100,22 @@ export const closeMatch = async (match: MatchesJoined) => {
   return { results, errors: null };
 };
 
-function validateMatch(match: MatchesJoined): Array<string> {
-  const errors: Array<string> = [];
-  if (!(match.rounds.length === 2 || match.rounds.length === 4)) {
-    errors.push('Match must have 2 or 4 rounds');
+function validateMatch(match: MatchesJoined): Array<MatchProcessError> {
+  const errors: Array<MatchProcessError> = [];
+  if (match.config.maps * 2 < match.rounds.length) {
+    errors.push('EXTRA_ROUNDS');
+  }
+  if (match.config.maps * 2 > match.rounds.length) {
+    errors.push('MISSING_ROUNDS');
   }
   if (!validateMatchPlayers(match)) {
-    errors.push('Every player must have a keyhash included in the match');
+    errors.push('MISSING_PLAYERS');
   }
   return errors;
 }
 
 function validateMatchPlayers(match: MatchesJoined) {
-  const playerKeys = match.rounds.map(toKeyhashList).filter(isNotNull).flat();
+  const playerKeys = mapToKeyhashes(match.rounds);
 
   return match.players.every(
     (player) => player.keyhash && playerKeys.includes(player.keyhash)
@@ -222,4 +237,24 @@ export async function createLiveMatchFromDns(
     return;
   }
   initLiveMatch(result.data, { prelive: false });
+}
+
+export async function fixMissingMatchPlayers(match: MatchesJoined) {
+  const keyHashes = mapToKeyhashes(match.rounds);
+  const orphanKeys = keyHashes.filter(hasNotKeyhash(match));
+  const orphanPlayers = match.players.filter(
+    (p) => !(p.keyhash && orphanKeys.includes(p.keyhash))
+  );
+  if (orphanPlayers.length === 1 && orphanKeys.length === 1) {
+    const player = orphanPlayers[0];
+    await client().updatePlayer(player.id, { keyhash: orphanKeys[0] });
+    const { data } = await client().getMatch(match.id);
+    logMessage(`Match ${match.id}: Fixed missing player`, {
+      player,
+      keyhash: orphanKeys[0],
+      match: data,
+    });
+    return data;
+  }
+  return null;
 }

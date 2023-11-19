@@ -111,6 +111,7 @@ export interface Database {
           guild: string | null
           id: number
           map_draft: string
+          maps: number
           mode: string
           name: string
           owner: string
@@ -128,6 +129,7 @@ export interface Database {
           guild?: string | null
           id?: number
           map_draft: string
+          maps?: number
           mode?: string
           name: string
           owner: string
@@ -145,6 +147,7 @@ export interface Database {
           guild?: string | null
           id?: number
           map_draft?: string
+          maps?: number
           mode?: string
           name?: string
           owner?: string
