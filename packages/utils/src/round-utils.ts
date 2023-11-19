@@ -8,6 +8,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
 import { getMatchPlayer } from './player-utils';
+import { isUniqueObject, isUniqueString } from './array-utils';
 
 export function toKeyhashList(round: RoundsRow | RoundsJoined) {
   try {
@@ -29,5 +30,5 @@ export function getTeamTuple(playerList: Array<PlayerListItem>, match: MatchesJo
 }
 
 export function mapToKeyhashes(rounds: Array<RoundsJoined | RoundsRow>) {
-  return rounds.map(toKeyhashList).filter(isNotNull).flat();
+  return rounds.map(toKeyhashList).filter(isNotNull).flat().filter(isUniqueString);
 }

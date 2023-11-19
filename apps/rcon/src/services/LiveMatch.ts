@@ -84,7 +84,7 @@ export class LiveMatch {
     this.#updateLiveInfo(liveInfo);
     const next = (state: LiveServerState) => this.handleNextState(state, liveInfo);
 
-    if (hasPlayedAllRounds(this.rounds)) {
+    if (hasPlayedAllRounds(this.match.config, this.rounds)) {
       return next('finished');
     }
 

@@ -29,5 +29,8 @@ export const isUniqueObject = <T extends { id: string | number }>(
   self: Array<T>
 ) => self.findIndex((o) => o.id === value.id) === index;
 
+export const isUniqueString = (value: string, index: number, self: Array<string>) =>
+  self.findIndex((v) => v === value) === index;
+
 export const toTuple = <T>(array: Array<T>): [T, T] | null =>
   array.length === 2 ? [array[0], array[1]] : null;

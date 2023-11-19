@@ -9,6 +9,7 @@ import {
   DnsRecordWithoutPriority,
   isServerMatch,
   LiveInfo,
+  MatchConfigsRow,
   MatchesJoined,
   MatchProcessError,
   MatchStatus,
@@ -155,7 +156,10 @@ export async function processResults(match: MatchesJoined) {
   return data;
 }
 
-export const hasPlayedAllRounds = (rounds: Array<RoundsInsert>) => rounds.length >= 4;
+export const hasPlayedAllRounds = (
+  config: MatchConfigsRow,
+  rounds: Array<RoundsInsert>
+) => rounds.length >= config.maps * 2;
 
 export const isServerEmptied = (rounds: Array<RoundsInsert>, si: ServerInfo) =>
   rounds.length > 0 && si.connectedPlayers === '0';
@@ -243,17 +247,20 @@ export async function fixMissingMatchPlayers(match: MatchesJoined) {
   const keyHashes = mapToKeyhashes(match.rounds);
   const orphanKeys = keyHashes.filter(hasNotKeyhash(match));
   const orphanPlayers = match.players.filter(
-    (p) => !(p.keyhash && orphanKeys.includes(p.keyhash))
+    (p) => !(p.keyhash && keyHashes.includes(p.keyhash))
   );
+
   if (orphanPlayers.length === 1 && orphanKeys.length === 1) {
     const player = orphanPlayers[0];
     await client().updatePlayer(player.id, { keyhash: orphanKeys[0] });
+
     const { data } = await client().getMatch(match.id);
     logMessage(`Match ${match.id}: Fixed missing player`, {
       player,
       keyhash: orphanKeys[0],
       match: data,
     });
+
     return data;
   }
   return null;
