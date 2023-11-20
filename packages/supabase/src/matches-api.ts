@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   Database,
+  MatchesInsert,
   MatchesJoined,
   MatchesRow,
   MatchesUpdate,
@@ -17,10 +18,10 @@ import {
 const MATCHES_JOINED_QUERY =
   '*, players!match_players(*), maps(*), config!inner(*), teams:match_players(*), server(*), rounds(*, map(*), server(*), team1(*), team2(*)), home_team(*, players:team_players(*, player:players(*))), away_team(*, players:team_players(*, player:players(*)))';
 export default (client: SupabaseClient<Database>) => ({
-  createMatchFromConfig: (config: number) =>
+  createMatchFromConfig: (config: number, values?: Omit<MatchesInsert, 'config'>) =>
     client
       .from('matches')
-      .insert([{ config }])
+      .insert([{ config, ...values }])
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
   createScheduledMatch: (

@@ -165,6 +165,15 @@ export enum ServerReaction {
   ACCEPT = '✅',
 }
 
+export enum LocationEmoji {
+  Amsterdam = '🇳🇱',
+  Frankfurt = '🇩🇪',
+  Warsaw = '🇵🇱',
+  Stockholm = '🇸🇪',
+  London = '🇬🇧',
+  Miami = '🇺🇸',
+}
+
 export interface User {
   id: string;
   username: string;

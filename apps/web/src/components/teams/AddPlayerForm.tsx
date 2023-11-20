@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 import { isString } from '@bf2-matchmaking/types';
 import PlayerCombobox from '@/components/PlayerCombobox';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
-import { usePlayer } from '@/state/PlayerContext';
 import { addTeamPlayer } from '@/app/teams/[team]/actions';
 import IconBtn from '@/components/commons/IconBtn';
 

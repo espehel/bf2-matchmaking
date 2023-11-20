@@ -26,8 +26,13 @@ import { removeChannel } from './listeners/member-listener';
 import { api, verify } from '@bf2-matchmaking/utils';
 import interactionRouter from './interactions/interaction-router';
 import { getDiscordClient } from './client';
-import { createMatchFromPubobotEmbed } from './match-tracking-service';
+import {
+  createDraftingMatchFromPubobotEmbed,
+  getTopLocationPollResult,
+  startMatchFromPubobotEmbed,
+} from './match-tracking-service';
 import { initScheduledEventsListener } from './listeners/scheduled-events-listener';
+import { loadServerLocations } from './services/locations';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -39,10 +44,11 @@ app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
   try {
     await getDiscordClient();
     info('app init', 'Discord client initialization complete.');
-    await initChannelListener();
+    //await initChannelListener();
     info('app init', 'Channel listener initialization complete.');
-    await initScheduledEventsListener();
+    //await initScheduledEventsListener();
     info('app init', 'Scheduled events listener initialization complete.');
+    loadServerLocations();
   } catch (err) {
     error('app init', err);
   }
@@ -124,7 +130,7 @@ app.post('/matches', async (req, res) => {
   const message = await channel.messages.fetch(messageId);
 
   try {
-    const match = await createMatchFromPubobotEmbed(
+    const match = await createDraftingMatchFromPubobotEmbed(
       message.embeds[0],
       discordClient.users,
       configId
@@ -162,8 +168,11 @@ app.get('/messages', async (req, res) => {
       return res.send('Message does not belong to a text channel').sendStatus(400);
     }
     const message = await channel.messages.fetch(messageId);
-
-    res.status(200).send(message);
+    const location = await getTopLocationPollResult(message);
+    /*const response = await channel.send({
+      files: ['http://flz.4e.fi/demos/auto_2023_11_05_19_24_12.bf2demo'],
+    });*/
+    res.status(200).send(location);
   } catch (e) {
     return res.status(502).send(e);
   }

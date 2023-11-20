@@ -1,30 +1,87 @@
 import {
   DiscordConfig,
   DiscordMatch,
+  GameStatus,
   isDiscordMatch,
-  MatchesJoined,
+  LocationEmoji,
   MatchStatus,
   RconBf2Server,
 } from '@bf2-matchmaking/types';
-import { Embed, MessageReaction, TextBasedChannel, UserManager } from 'discord.js';
-import { getServerPollEmbed } from '@bf2-matchmaking/discord';
-import { getServerTupleList } from './server-interactions';
-import { compareMessageReactionCount, isTextBasedChannel, toMatchPlayer } from './utils';
-import moment from 'moment';
+import { Embed, EmbedBuilder, Message, MessageReaction, UserManager } from 'discord.js';
 import {
-  info,
-  logCreateChannelMessage,
-  logOngoingMatchCreated,
-} from '@bf2-matchmaking/logging';
+  compareMessageReactionCount,
+  isPubobotMatchDrafting,
+  isPubobotMatchStarted,
+  toMatchPlayer,
+} from './utils';
+import { logMessage } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getOrCreatePlayer } from './match-interactions';
+import { DateTime } from 'luxon';
+import { assertNumber } from '@bf2-matchmaking/utils';
+import {
+  getServerLocation,
+  getServerLocationEmojis,
+  isValidReaction,
+} from './services/locations';
+import { createServerLocationPollField } from '@bf2-matchmaking/discord';
+import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 
-export const createMatchFromPubobotEmbed = async (
+const pubobotMatchMap = new Map<number, number>();
+export function getPubobotId(embed: Embed) {
+  return Number(embed?.footer?.text?.replace('Match id: ', '')) || null;
+}
+
+export function messageFilter(message: Message) {
+  if (message.content === 'test embed') {
+    return true;
+  }
+  const [embed] = message.embeds;
+  const pubobotId = getPubobotId(embed);
+  if (!pubobotId) {
+    return false;
+  }
+  if (isPubobotMatchStarted(embed)) {
+    return true;
+  }
+  return isPubobotMatchDrafting(embed) && !pubobotMatchMap.has(pubobotId);
+}
+
+export async function createDraftingMatchFromPubobotEmbed(
   embed: Embed,
   users: UserManager,
   config: DiscordConfig
-): Promise<DiscordMatch> => {
-  const match = await client().createMatchFromConfig(config.id).then(verifySingleResult);
+): Promise<DiscordMatch> {
+  const pubobotId = getPubobotId(embed);
+  assertNumber(pubobotId, 'Failed to create match, Invalid embed');
+
+  const match = await client()
+    .createMatchFromConfig(config.id, { status: MatchStatus.Drafting })
+    .then(verifySingleResult);
+
+  if (!isDiscordMatch(match)) {
+    throw new Error(`Match ${match.id} is not a Discord match`);
+  }
+  pubobotMatchMap.set(pubobotId, match.id);
+  logMessage(`Match ${match.id}: Created with status ${match.status}`, {
+    match,
+    config,
+  });
+  return match;
+}
+
+export async function startMatchFromPubobotEmbed(
+  embed: Embed,
+  users: UserManager
+): Promise<DiscordMatch> {
+  const pubobotId = getPubobotId(embed);
+  const matchId = pubobotId ? pubobotMatchMap.get(pubobotId) : undefined;
+
+  if (!matchId) {
+    throw new Error(`Failed to get matchId from pubobotId ${pubobotId}`);
+  }
+
+  const match = await client().getMatch(matchId).then(verifySingleResult);
 
   const team1 = await Promise.all(
     getUserIds(embed, 'USMC').map((player) => users.fetch(player).then(getOrCreatePlayer))
@@ -35,7 +92,7 @@ export const createMatchFromPubobotEmbed = async (
 
   const { data: ratings } = await client().getPlayerRatingsByIdList(
     team1.concat(team2).map((p) => p.id),
-    config.id
+    match.config.id
   );
 
   await Promise.all([
@@ -46,7 +103,7 @@ export const createMatchFromPubobotEmbed = async (
   const updatedMatch = await client()
     .updateMatch(match.id, {
       status: MatchStatus.Ongoing,
-      started_at: moment().toISOString(),
+      started_at: DateTime.now().toISO(),
     })
     .then(verifySingleResult);
 
@@ -54,69 +111,50 @@ export const createMatchFromPubobotEmbed = async (
     throw new Error(`Match ${updatedMatch.id} is not a Discord match`);
   }
 
-  logOngoingMatchCreated(updatedMatch);
-  info('passiveCollector', `Created match ${match.id} for ${config.name} channel`);
+  logMessage(`Match ${match.id}: Updated teams, set status ${updatedMatch.status}`, {
+    match: updatedMatch,
+  });
   return updatedMatch;
-};
+}
 
 const getUserIds = (embed: Embed, name: string) =>
   embed.fields
     ?.find((field) => field.name.includes(name))
     ?.value.match(/(?<=<@)\d+(?=>)/g) || [];
 
-export const getTopServerPollResult = async (
-  match: MatchesJoined,
-  channel: TextBasedChannel
-): Promise<RconBf2Server> =>
-  new Promise(async (resolve, reject) => {
-    if (!isTextBasedChannel(channel)) {
-      return reject('Message did not come from text based channel');
-    }
-    const servers = await getServerTupleList();
+export async function getTopLocationPollResult(message: Message): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    const pollEndTime = DateTime.now().plus({ seconds: 30 });
 
-    const pollEndTime = moment().add(1, 'minute');
-    const message = await channel.send({
-      embeds: [getServerPollEmbed(match, servers, pollEndTime)],
+    const pollMessage = await message.channel.send({
+      embeds: [new EmbedBuilder().addFields(createServerLocationPollField())],
     });
-    await Promise.all(servers.map(([, , emoji]) => message.react(emoji)));
-    logCreateChannelMessage(
-      channel.id,
-      message.id,
-      message.embeds[0].description,
-      message.embeds[0]
-    );
+
+    for (const emoji of getServerLocationEmojis()) {
+      await pollMessage.react(emoji);
+    }
 
     setTimeout(async () => {
-      const topEmoji = message.reactions.cache.sort(compareMessageReactionCount).at(0);
-      const { server, error: err } = getTopServer(servers, topEmoji);
-      if (!server) {
-        return reject(err);
+      const topEmoji = pollMessage.reactions.cache
+        .filter(isValidReaction)
+        .sort(compareMessageReactionCount)
+        .at(0);
+
+      const location = getServerLocation(topEmoji?.emoji.name);
+      if (!location) {
+        return reject('Unable to get location');
       }
-      resolve(server);
-    }, pollEndTime.diff(moment()));
+
+      const locationName = getKey(LocationEmoji, topEmoji?.emoji.name);
+      if (locationName) {
+        await pollMessage.edit({
+          embeds: [
+            new EmbedBuilder().addFields(createServerLocationPollField(locationName)),
+          ],
+        });
+      }
+
+      resolve(location);
+    }, pollEndTime.diffNow('milliseconds').milliseconds);
   });
-
-// TODO: Automatically returns frankfurt server if available and no votes, to get some data going
-const PBASE_FRANKFURT = '95.179.167.83';
-function getTopServer(
-  servers: Array<[RconBf2Server, string, string]>,
-  topEmoji: MessageReaction | undefined
-) {
-  if (!topEmoji || topEmoji.count < 2) {
-    const frankFurtServer = servers.find(([server]) => server.ip === PBASE_FRANKFURT);
-    if (
-      frankFurtServer &&
-      frankFurtServer[0].info &&
-      frankFurtServer[0].info.connectedPlayers === '0'
-    ) {
-      return { error: null, server: frankFurtServer[0] };
-    }
-    return { error: 'No votes received.', server: null };
-  }
-
-  const topServer = servers.find(([, , emoji]) => topEmoji.emoji.name === emoji);
-  if (!topServer) {
-    return { error: 'Failed to add match server', server: null };
-  }
-  return { server: topServer[0], error: null };
 }

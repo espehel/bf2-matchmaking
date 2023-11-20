@@ -20,15 +20,15 @@ export const getDiscordClient = () =>
     if (discordClient.isReady()) {
       resolve(discordClient);
     } else {
-      (discordClient as Client).on('ready', () => {
+      discordClient.on('ready', (client) => {
         info('discord-client', 'Connected');
-        resolve(discordClient);
+        resolve(client);
       });
-      (discordClient as Client).on('error', (err) => {
+      discordClient.on('error', (err) => {
         error('discord-client', err);
         reject(err);
       });
       info('discord-client', 'Connecting...');
-      await (discordClient as Client).login(process.env.DISCORD_TOKEN);
+      await discordClient.login(process.env.DISCORD_TOKEN);
     }
   });

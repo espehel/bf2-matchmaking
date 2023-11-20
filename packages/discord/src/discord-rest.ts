@@ -1,7 +1,6 @@
 import { RequestData, REST } from '@discordjs/rest';
 import {
   Routes,
-  APIGuildMember,
   RESTPostAPIChannelMessageJSONBody,
   RESTPostAPIChannelMessageResult,
   APIApplicationCommand,

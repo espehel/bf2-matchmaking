@@ -1,4 +1,5 @@
 export const getKey = (
   object: Record<string, string>,
-  value: string
-): string | undefined => Object.keys(object).at(Object.values(object).indexOf(value));
+  value: string | null | undefined
+): string | undefined =>
+  value ? Object.keys(object).at(Object.values(object).indexOf(value)) : undefined;

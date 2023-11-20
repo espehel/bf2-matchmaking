@@ -110,6 +110,10 @@ export const getMatchCopyWithoutPlayer =
 export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
   Boolean(channel && channel.isTextBased());
 
+export const isPubobotMatchEmbed = (embed?: Embed) =>
+  embed?.footer?.text.startsWith('Match id: ') || false;
+export const isPubobotMatchDrafting = (embed?: Embed) =>
+  embed?.title?.includes('is now on the draft stage!') || false;
 export const isPubobotMatchStarted = (embed?: Embed) =>
   embed?.title?.includes('has started!') || false;
 

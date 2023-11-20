@@ -99,16 +99,6 @@ export const logEditChannelMessage = (
     .finally(flush);
 };
 
-export const logOngoingMatchCreated = (match: MatchesJoined) => {
-  logger
-    .info(`Created ongoing Match ${match.id}`, {
-      match: JSON.stringify(match),
-    })
-    .then((log) => info('logtail', log.message))
-    .catch((e) => error('logtail', e))
-    .finally(flush);
-};
-
 export const logChangeMatchStatus = (
   status: MatchStatus,
   match: MatchesJoined,

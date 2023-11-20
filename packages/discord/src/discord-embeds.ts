@@ -15,8 +15,8 @@ import {
   getPlayerName,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
-import moment, { Moment } from 'moment';
 import { getEmbedTitle, replaceDiscordGG } from './embed-utils';
+import { DateTime } from 'luxon';
 
 export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEmbed => ({
   title: getEmbedTitle(match),
@@ -28,9 +28,11 @@ export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEm
 export const getServerPollEmbed = (
   match: MatchesJoined,
   servers: Array<[RconBf2Server, string, string]>,
-  endTime: Moment
+  endTime: DateTime
 ): APIEmbed => ({
-  description: `Vote for match ${match.id} server, poll ends <t:${endTime.unix()}:R>`,
+  description: `Vote for match ${
+    match.id
+  } server, poll ends <t:${endTime.toUnixInteger()}:R>`,
   fields: createServerPollFields(servers),
 });
 export const getServerEmbed = (server: RconBf2Server) => ({
@@ -133,7 +135,7 @@ const getRulesDescriptionByConfig = (config: MatchConfigsRow): string => {
 
 const getMatchDescription = (match: MatchesJoined): string | undefined => {
   if (match.status === MatchStatus.Summoning && match.ready_at) {
-    return `Ready check ends <t:${moment(match.ready_at).unix()}:R>`;
+    return `Ready check ends <t:${DateTime.fromISO(match.ready_at).toUnixInteger()}:R>`;
   }
   if (match.status === MatchStatus.Drafting) {
     const { captain } = getDraftStep(match);
@@ -229,6 +231,23 @@ const createServerPollFields = (servers: Array<[RconBf2Server, string, string]>)
     value: servers.map(([, description, emoji]) => `${emoji}  ${description}`).join('\n'),
   },
 ];
+
+export function createServerLocationPollField(location?: string) {
+  if (location) {
+    return [
+      {
+        name: 'Server',
+        value: `Creating new server in ${location}.`,
+      },
+    ];
+  }
+  return [
+    {
+      name: 'Server',
+      value: 'Vote for server location!',
+    },
+  ];
+}
 
 const getServerInfoFields = (server: RconBf2Server) => [
   {

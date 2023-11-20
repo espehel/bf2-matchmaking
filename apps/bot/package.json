@@ -17,7 +17,7 @@
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
-    "discord.js": "^14.13.0",
+    "discord.js": "^14.14.1",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "luxon": "^3.4.3",

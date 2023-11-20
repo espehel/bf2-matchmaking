@@ -4,10 +4,10 @@ import {
   isDiscordConfig,
   MatchConfigModeType,
 } from '@bf2-matchmaking/types';
-import { api, verify } from '@bf2-matchmaking/utils';
 import { error, info } from '@bf2-matchmaking/logging';
 import {
   hasSummonEmbed,
+  isPubobotMatchDrafting,
   isPubobotMatchStarted,
   isTextBasedChannel,
   replyMessage,
@@ -16,8 +16,14 @@ import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supab
 import { listenForMatchMessageReaction } from './reaction-listener';
 import { Client, Message, MessageCollector } from 'discord.js';
 import { executeCommand, isCommand } from '../commands';
-import { createMatchFromPubobotEmbed } from '../match-tracking-service';
+import {
+  createDraftingMatchFromPubobotEmbed,
+  getTopLocationPollResult,
+  messageFilter,
+  startMatchFromPubobotEmbed,
+} from '../match-tracking-service';
 import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
+import { api, verify } from '@bf2-matchmaking/utils';
 
 const listenerMap = new Map<string, MessageCollector>();
 export const initChannelListener = async () => {
@@ -92,8 +98,7 @@ export const listenToChannel = async (config: DiscordConfig) => {
   }
 
   if (config.mode === MatchConfigModeType.Passive) {
-    collector.filter = (m) =>
-      isPubobotMatchStarted(m.embeds[0]) || m.content === 'test embed';
+    collector.filter = messageFilter;
     collector.on('collect', passiveCollector(config, discordClient));
   }
 
@@ -130,29 +135,50 @@ const activeCollector = (config: DiscordConfig) => async (message: Message) => {
   }
 };
 
-const passiveCollector =
-  (config: DiscordConfig, discordClient: Client<true>) => async (message: Message) => {
+function passiveCollector(config: DiscordConfig, discordClient: Client<true>) {
+  return async (message: Message) => {
     info(
       'passiveCollector',
       `Received embed with title "${message.embeds[0]?.title}" in ${config.name} channel`
     );
 
-    if (!isPubobotMatchStarted(message.embeds[0])) {
-      return;
+    if (isPubobotMatchDrafting(message.embeds[0])) {
+      return handlePubobotMatchDrafting(message);
     }
+
+    if (isPubobotMatchStarted(message.embeds[0])) {
+      return handlePubobotMatchStarted(message);
+    }
+  };
+
+  async function handlePubobotMatchDrafting(message: Message) {
     try {
-      const match = await createMatchFromPubobotEmbed(
+      const match = await createDraftingMatchFromPubobotEmbed(
         message.embeds[0],
         discordClient.users,
         config
       );
 
-      await replyMessage(message, {
-        embeds: [getMatchStartedEmbed(match), getRulesEmbedByConfig(config)],
-      });
-
-      await api.rcon().postMatchLive(match.id, false).then(verify);
+      const location = await getTopLocationPollResult(message);
+      const name = `${config.name} Match ${match.id}`;
+      const dnsName = `m${match.id}`;
+      await api.platform().postServers(name, location, config.name, dnsName).then(verify);
     } catch (e) {
       error('passiveCollector', e);
     }
-  };
+  }
+  async function handlePubobotMatchStarted(message: Message) {
+    try {
+      const match = await startMatchFromPubobotEmbed(
+        message.embeds[0],
+        discordClient.users
+      );
+
+      await replyMessage(message, {
+        embeds: [getMatchStartedEmbed(match), getRulesEmbedByConfig(config)],
+      });
+    } catch (e) {
+      error('passiveCollector', e);
+    }
+  }
+}
