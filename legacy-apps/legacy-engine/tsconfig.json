@@ -1,6 +1,8 @@
 {
   "include": ["**/*.ts"],
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules"
+  ],
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
@@ -14,6 +16,6 @@
     "useUnknownInCatchVariables": true,
     "skipLibCheck": true,
     "moduleResolution": "Node",
-    "lib": ["ESNext"]
+    "lib": ["ES2019", "dom"]
   }
 }

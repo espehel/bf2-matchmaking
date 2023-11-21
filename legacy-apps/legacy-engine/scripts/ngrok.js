@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const ngrok = require('ngrok');
+const ngrok = require('./ngrok');
 
 ngrok
   .connect({

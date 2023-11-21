@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "concurrently \"npm:dev-*\"",
-    "build": "rimraf ./build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js --external:express",
+    "build": "rimraf build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js --external:express",
     "start": "node --experimental-fetch build/app.js",
     "dev-nodemon": "nodemon",
     "dev-tunnel": "lt --port 5004 --subdomain bf2-matchmaking",

@@ -5,10 +5,10 @@
   "scripts": {
     "build": "npm run build-tailwind && npm run build-remix",
     "build-remix": "remix build",
-    "build-tailwind": "tailwindcss -m -i ./styles/main.css -o app/styles/app.css",
+    "build-tailwind": "tailwindcss -m -i styles/main.css -o app/styles/app.css",
     "dev": "concurrently \"npm:dev-*\"",
     "dev-remix": "remix dev --port 5003",
-    "dev-tailwind": "tailwindcss -w -i ./styles/main.css -o app/styles/app.css",
+    "dev-tailwind": "tailwindcss -w -i styles/main.css -o app/styles/app.css",
     "start": "cross-env NODE_ENV=production netlify dev",
     "verify": "tsc --noEmit"
   },
