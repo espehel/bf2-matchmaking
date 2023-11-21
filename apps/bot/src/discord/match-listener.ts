@@ -1,5 +1,5 @@
 import { DiscordConfig } from '@bf2-matchmaking/types';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { isPubobotMatchDrafting, isPubobotMatchStarted, replyMessage } from './utils';
 import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
 import { Client, Message, MessageCollector } from 'discord.js';
@@ -78,6 +78,9 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
 
       await replyMessage(message, {
         embeds: [getMatchStartedEmbed(match), getRulesEmbedByConfig(config)],
+      });
+      logMessage(`Channel ${message.channel.id}: Match ${match.id} started`, {
+        match,
       });
     } catch (e) {
       error('handlePubobotMatchStarted', e);
