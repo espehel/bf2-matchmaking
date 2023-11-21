@@ -26,9 +26,11 @@ import {
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
 import {
+  getLiveMatchEmbed,
   getMatchResultsEmbed,
   getWarmUpStartedEmbed,
   sendChannelMessage,
+  TEST_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
 import {
@@ -193,16 +195,28 @@ export async function updateLiveAt(liveMatch: LiveMatch) {
   }
 }
 
-export async function sendWarmUpStartedMessage(liveMatch: LiveMatch, liveInfo: LiveInfo) {
+export async function sendLiveMatchServerMessage(liveMatch: LiveMatch) {
+  if (isServerMatch(liveMatch.match)) {
+    const joinmeHref = await getJoinmeHref(liveMatch.match.server);
+    await sendChannelMessage(TEST_CHANNEL_ID, {
+      embeds: [getLiveMatchEmbed(liveMatch.match, joinmeHref)],
+    });
+    logMessage(
+      `Channel ${TEST_CHANNEL_ID}: LiveMatch created for Match ${liveMatch.match.id}`,
+      { liveMatch }
+    );
+  }
+}
+export async function updateLiveMatchServer(liveMatch: LiveMatch, liveInfo: LiveInfo) {
   const match = await updateServer(liveMatch, liveInfo.ip);
   if (match && isServerMatch(match)) {
     const joinmeHref = await getJoinmeHref(match.server);
-    await sendChannelMessage('1046889100369739786', {
+    await sendChannelMessage(TEST_CHANNEL_ID, {
       embeds: [getWarmUpStartedEmbed(match, liveInfo.serverName, joinmeHref)],
     });
     logMessage(
-      `Match ${match.id} warmup started on server ${match.server?.ip};${match.server?.port}`,
-      { match, liveMatch, liveInfo }
+      `Channel ${TEST_CHANNEL_ID}: LiveMatch server updated to ${liveInfo.serverName} for Match ${liveMatch.match.id}`,
+      { liveMatch, liveInfo, match }
     );
   }
 }

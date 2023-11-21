@@ -43,6 +43,14 @@ export const getServerEmbed = (server: RconBf2Server) => ({
   ],
 });
 
+export const getLiveMatchEmbed = (match: ServerMatch, joinmeHref: string) => ({
+  description: `Join [${replaceDiscordGG(match.server.name)}](${joinmeHref})`,
+  fields: [
+    { name: 'ip', value: match.server.ip, inline: true },
+    { name: 'port', value: match.server.port, inline: true },
+    getLiveMatchField(match),
+  ],
+});
 export const getWarmUpStartedEmbed = (
   match: ServerMatch,
   serverName: string,
@@ -234,19 +242,15 @@ const createServerPollFields = (servers: Array<[RconBf2Server, string, string]>)
 
 export function createServerLocationPollField(location?: string) {
   if (location) {
-    return [
-      {
-        name: 'Server',
-        value: `Creating new server in ${location}.`,
-      },
-    ];
-  }
-  return [
-    {
+    return {
       name: 'Server',
-      value: 'Vote for server location!',
-    },
-  ];
+      value: `Creating new server in ${location}.`,
+    };
+  }
+  return {
+    name: 'Server',
+    value: 'Vote for server location!',
+  };
 }
 
 const getServerInfoFields = (server: RconBf2Server) => [
@@ -262,7 +266,7 @@ const getServerInfoFields = (server: RconBf2Server) => [
   },
 ];
 
-const getLiveMatchField = (match: MatchesJoined) => ({
+export const getLiveMatchField = (match: MatchesJoined) => ({
   name: ``,
   value: `[**Match ${match.id}** live score](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
 });

@@ -6,7 +6,7 @@
     "dev": "nodemon",
     "build": "rimraf build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js --external:express  --external:discord.js",
     "start": "node build/app.js",
-    "verify": "node_modules/.bin/tsc --noEmit"
+    "verify": "tsc --noEmit"
   },
   "engines": {
     "node": "18 || 19"

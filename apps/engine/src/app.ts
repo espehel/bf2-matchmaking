@@ -3,7 +3,7 @@ import Koa from 'koa';
 import logger from 'koa-logger';
 import { bodyParser } from '@koa/bodyparser';
 import cron from 'node-cron';
-import { matchesRouter } from './routers/matches';
+import { webhooksRouter } from './routers/webhooks';
 import matches from './state/matches';
 import { closeOldMatches } from './tasks/closeOldMatches';
 import { rootRouter } from './routers/root';
@@ -18,8 +18,8 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 new Koa()
   .use(logger())
   .use(bodyParser())
-  .use(matchesRouter.routes())
-  .use(matchesRouter.allowedMethods())
+  .use(webhooksRouter.routes())
+  .use(webhooksRouter.allowedMethods())
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods())
   .listen(PORT, () => {

@@ -11,7 +11,7 @@ import {
   isFirstTimeFullServer,
   isOngoingRound,
   isServerEmptied,
-  sendWarmUpStartedMessage,
+  updateLiveMatchServer,
   updateLiveAt,
 } from './matches';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
@@ -149,7 +149,7 @@ export class LiveMatch {
     }
 
     if (this.state === 'pending' && nextState === 'warmup') {
-      await sendWarmUpStartedMessage(this, liveInfo);
+      await updateLiveMatchServer(this, liveInfo);
     }
 
     if (nextState === 'prelive') {

@@ -44,47 +44,6 @@ export interface Database {
           }
         ]
       }
-      discord_channels: {
-        Row: {
-          channel_id: string
-          created_at: string | null
-          id: number
-          match_config: number | null
-          name: string
-          server_id: string
-          staging_channel: string | null
-          uri: string
-        }
-        Insert: {
-          channel_id: string
-          created_at?: string | null
-          id?: number
-          match_config?: number | null
-          name: string
-          server_id: string
-          staging_channel?: string | null
-          uri: string
-        }
-        Update: {
-          channel_id?: string
-          created_at?: string | null
-          id?: number
-          match_config?: number | null
-          name?: string
-          server_id?: string
-          staging_channel?: string | null
-          uri?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "discord_channels_match_config_fkey"
-            columns: ["match_config"]
-            isOneToOne: false
-            referencedRelation: "match_configs"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       maps: {
         Row: {
           created_at: string
@@ -112,10 +71,8 @@ export interface Database {
           id: number
           map_draft: string
           maps: number
-          mode: string
           name: string
           owner: string
-          permanent: boolean
           player_expire: number
           size: number
           type: Database["public"]["Enums"]["match_type"]
@@ -130,10 +87,8 @@ export interface Database {
           id?: number
           map_draft: string
           maps?: number
-          mode?: string
           name: string
           owner: string
-          permanent?: boolean
           player_expire?: number
           size: number
           type?: Database["public"]["Enums"]["match_type"]
@@ -148,10 +103,8 @@ export interface Database {
           id?: number
           map_draft?: string
           maps?: number
-          mode?: string
           name?: string
           owner?: string
-          permanent?: boolean
           player_expire?: number
           size?: number
           type?: Database["public"]["Enums"]["match_type"]

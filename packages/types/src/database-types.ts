@@ -57,20 +57,13 @@ export enum MapDraftType {
   Random = 'random',
 }
 
-export enum MatchConfigModeType {
-  Inactive = 'inactive',
-  Passive = 'passive',
-  Active = 'active',
-}
-
 export interface MatchConfigsRow
   extends Omit<
     Database['public']['Tables']['match_configs']['Row'],
-    'draft' | 'map_draft' | 'mode'
+    'draft' | 'map_draft'
   > {
   draft: DraftType;
   map_draft: MapDraftType;
-  mode: MatchConfigModeType;
 }
 export interface MatchTeamPlayer extends TeamPlayersRow {
   player: PlayersRow;

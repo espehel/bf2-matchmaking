@@ -23,20 +23,21 @@ rootRouter.get('/servers', async (ctx) => {
   ctx.body = await getServerInstances();
 });
 
-rootRouter.post('/servers', async (ctx) => {
-  const { body } = ctx.request;
-  if (!body.name || !body.region || !body.label) {
+interface ServersRequestBody extends Omit<Request, 'body'> {
+  name?: string;
+  region?: string;
+  label?: string;
+  tag?: string;
+}
+rootRouter.post('/servers', async (ctx: Context) => {
+  const { name, region, label, tag } = <ServersRequestBody>ctx.request.body;
+  if (!name || !region || !label) {
     ctx.status = 400;
     ctx.body = { message: 'Missing name, region or label' };
     return;
   }
 
-  const instance = await createServerInstance(
-    body.name,
-    body.region,
-    body.label,
-    body.tag
-  );
+  const instance = await createServerInstance(name, region, label, tag);
   if (!instance) {
     ctx.status = 500;
     ctx.body = { message: 'Failed to create server' };

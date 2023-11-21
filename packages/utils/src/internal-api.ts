@@ -88,17 +88,14 @@ const rcon = () => {
 const bot = () => {
   const basePath = 'https://bf2-bot.up.railway.app';
   const paths = {
-    matchEvent: '/api/match_events',
-    matchConfigEvent: '/api/match_config_events',
-    commandsReinstall: '/commands/reinstall',
-    matches: '/matches',
+    channelsListeners: (channelId: string) => `/matches/${channelId}/listeners`,
   };
   return {
     paths,
-    postMatchEvent: (matchId: number, event: MatchEvent) =>
-      postJSON(basePath.concat(paths.matchEvent), event),
-    postMatchConfigEvent: (channelId: string, event: MatchConfigEvent) =>
-      postJSON(basePath.concat(paths.matchConfigEvent), event),
+    postChannelsListeners: (channelId: string) =>
+      postJSON(basePath.concat(paths.channelsListeners(channelId)), {}),
+    deleteChannelsListeners: (channelId: string) =>
+      postJSON(basePath.concat(paths.channelsListeners(channelId)), {}),
   };
 };
 
@@ -112,7 +109,7 @@ const platform = () => {
   };
   return {
     postServers: (name: string, region: string, label: string, tag: string) =>
-      postJSON(basePath.concat(paths.servers()), { name, region, label, tag }),
+      postJSON<Instance>(basePath.concat(paths.servers()), { name, region, label, tag }),
     getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
     deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.server(ip))),
     postServerDns: (ip: string) =>
