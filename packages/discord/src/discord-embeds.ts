@@ -240,16 +240,17 @@ const createServerPollFields = (servers: Array<[RconBf2Server, string, string]>)
   },
 ];
 
-export function createServerLocationPollField(location?: string) {
-  if (location) {
-    return {
-      name: 'Server',
-      value: `Creating new server in ${location}.`,
-    };
-  }
+export function createServerLocationPollField(endTime: DateTime) {
   return {
     name: 'Server',
-    value: 'Vote for server location!',
+    value: `Vote for server location! Poll ends <t:${endTime.toUnixInteger()}:R>`,
+  };
+}
+
+export function createServerLocationPollResultField(location: string) {
+  return {
+    name: 'Server',
+    value: `Creating new server in ${location}.`,
   };
 }
 
@@ -269,4 +270,9 @@ const getServerInfoFields = (server: RconBf2Server) => [
 export const getLiveMatchField = (match: MatchesJoined) => ({
   name: ``,
   value: `[**Match ${match.id}** live score](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
+});
+
+export const getMatchField = (match: MatchesJoined) => ({
+  name: ``,
+  value: `[**Match ${match.id}**](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
 });

@@ -6,7 +6,7 @@ import {
   MatchesJoined,
   MatchStatus,
 } from '@bf2-matchmaking/types';
-import { Embed, EmbedBuilder, Message, UserManager } from 'discord.js';
+import { Embed, Message, UserManager } from 'discord.js';
 import { compareMessageReactionCount, toMatchPlayer } from './utils';
 import { logMessage } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -20,7 +20,8 @@ import {
 } from './location-service';
 import {
   createServerLocationPollField,
-  getLiveMatchField,
+  createServerLocationPollResultField,
+  getMatchField,
 } from '@bf2-matchmaking/discord';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 import { getTestChannel } from '../discord/utils';
@@ -118,10 +119,7 @@ export async function startTopLocationPoll(
     const channel = await getTestChannel();
     const pollMessage = await channel.send({
       embeds: [
-        new EmbedBuilder().addFields(
-          createServerLocationPollField(),
-          getLiveMatchField(match)
-        ),
+        { fields: [createServerLocationPollField(pollEndTime), getMatchField(match)] },
       ],
     }); // TODO: change to message.channel
     logMessage(`Channel ${channel.id}: Poll created for Match ${match.id}`, {
@@ -147,10 +145,12 @@ export async function startTopLocationPoll(
       if (locationName) {
         await pollMessage.edit({
           embeds: [
-            new EmbedBuilder().addFields(
-              createServerLocationPollField(locationName),
-              getLiveMatchField(match)
-            ),
+            {
+              fields: [
+                createServerLocationPollResultField(locationName),
+                getMatchField(match),
+              ],
+            },
           ],
         });
       }
