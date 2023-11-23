@@ -8,6 +8,7 @@ import matches from './state/matches';
 import { closeOldMatches } from './tasks/closeOldMatches';
 import { rootRouter } from './routers/root';
 import { startScheduledMatches } from './tasks/startScheduledMatches';
+import { matchesRouter } from './routers/matches';
 
 matches.loadActive().loadScheduled();
 
@@ -18,6 +19,8 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 new Koa()
   .use(logger())
   .use(bodyParser())
+  .use(matchesRouter.routes())
+  .use(matchesRouter.allowedMethods())
   .use(webhooksRouter.routes())
   .use(webhooksRouter.allowedMethods())
   .use(rootRouter.routes())

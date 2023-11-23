@@ -99,6 +99,18 @@ const bot = () => {
   };
 };
 
+const engine = () => {
+  const basePath = 'https://bf2-engine.up.railway.app';
+  const paths = {
+    matchUsersXml: (matchId: number | string) => `/matches/${matchId}/users.xml`,
+  };
+  return {
+    paths,
+    getMatchUsersXml: (matchId: number | string) =>
+      getJSON<string>(basePath.concat(paths.matchUsersXml(matchId))),
+  };
+};
+
 const platform = () => {
   const basePath = 'https://bf2-platform.up.railway.app';
   const paths = {
@@ -125,4 +137,5 @@ export const api = {
   bot,
   web,
   platform,
+  engine,
 };

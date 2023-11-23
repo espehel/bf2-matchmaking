@@ -3,19 +3,16 @@ import {
   DiscordConfig,
   isDiscordConfig,
   isMatchesRow,
-  MatchConfigsRow,
   MatchesRow,
   WEBHOOK_POSTGRES_CHANGES_TYPE,
-  WebhookPostgresChangesPayload,
   WebhookPostgresDeletePayload,
   WebhookPostgresInsertPayload,
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import matches from '../state/matches';
-import { error, info } from '@bf2-matchmaking/logging';
+import { info } from '@bf2-matchmaking/logging';
 import { api } from '@bf2-matchmaking/utils';
-import { Request } from 'express';
 
 export const webhooksRouter = new Router({
   prefix: '/webhooks',
