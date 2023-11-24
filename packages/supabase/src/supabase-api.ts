@@ -33,6 +33,12 @@ export default (client: SupabaseClient<Database>) => ({
   getPlayersByKeyhashList: (keyhashes: Array<string>) =>
     client.from('players').select('*').in('keyhash', keyhashes),
   getPlayers: () => client.from('players').select('*'),
+  getPlayersByMatchId: (matchId: number) =>
+    client
+      .from('matches')
+      .select('match_id:id, players!match_players(*)')
+      .eq('id', matchId)
+      .single(),
   getPlayersByIdList: (idList: Array<string>) =>
     client.from('players').select('*').in('id', idList),
   getPlayerRatings: (playerId: string) =>

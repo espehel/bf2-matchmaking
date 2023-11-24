@@ -8,6 +8,7 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 interface Props {
   playerList: Array<PlayerListItem>;
   registeredPlayers: Array<PlayersRow>;
+  matchPlayers: Array<PlayersRow>;
   registerPlayer: (
     playerId: string,
     keyhash: string
@@ -21,10 +22,14 @@ export default function PlayersRegisterSection({
   playerList,
   registeredPlayers,
   registerPlayer,
+  matchPlayers,
 }: Props) {
   const sortedPlayers = [...playerList].sort(compareScore);
   const [selectedPlayer, setSelectedPlayer] = useState<PlayersRow | null>(null);
 
+  const nonAttendingPlayers = matchPlayers.filter(
+    (p) => !playerList.some(({ keyhash }) => p.keyhash === keyhash)
+  );
   const getRegisteredBadge = useCallback(
     (keyhash: string) => {
       const player = registeredPlayers.find((p) => p.keyhash === keyhash);
@@ -93,6 +98,16 @@ export default function PlayersRegisterSection({
           ))}
         </tbody>
       </table>
+      {nonAttendingPlayers.length > 0 && (
+        <div className="mt-4 bg-base-100 rounded shadow p-2">
+          <p className="font-bold">Players not attending</p>
+          <ul>
+            {nonAttendingPlayers.map((player) => (
+              <li>{player.full_name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

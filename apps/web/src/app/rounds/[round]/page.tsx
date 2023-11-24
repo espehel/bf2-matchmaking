@@ -28,6 +28,9 @@ export default async function RoundPage({ params, searchParams }: Props) {
   const registeredPlayers = await supabase(cookies)
     .getPlayersByKeyhashList(info.players.map(({ keyhash }) => keyhash).filter(isTruthy))
     .then(verifyResult);
+  const matchPlayers = round.match
+    ? (await supabase(cookies).getPlayersByMatchId(round.match)).data?.players || []
+    : [];
 
   const roundTime =
     parseInt(info.roundTime) < parseInt(info.timeLimit)
@@ -98,6 +101,7 @@ export default async function RoundPage({ params, searchParams }: Props) {
           playerList={info.players}
           registeredPlayers={registeredPlayers}
           registerPlayer={registerPlayer}
+          matchPlayers={matchPlayers}
         />
       )}
     </main>
