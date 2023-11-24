@@ -4,6 +4,7 @@ import {
   isDiscordConfig,
   isMatchesRow,
   MatchesRow,
+  MatchStatus,
   WEBHOOK_POSTGRES_CHANGES_TYPE,
   WebhookPostgresDeletePayload,
   WebhookPostgresInsertPayload,
@@ -13,6 +14,7 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import matches from '../state/matches';
 import { info } from '@bf2-matchmaking/logging';
 import { api } from '@bf2-matchmaking/utils';
+import { handleMatchStatusUpdate } from '../handlers/match-status';
 
 export const webhooksRouter = new Router({
   prefix: '/webhooks',
@@ -23,7 +25,12 @@ webhooksRouter.post('/matches', async (ctx) => {
   if (isMatchesInsert(body)) {
     info('routers/matches', `Match ${body.record.id} ${body.record.status}`);
     const match = await client().getMatch(body.record.id).then(verifySingleResult);
-    matches.pushMatch(match);
+    if (match.status === MatchStatus.Scheduled) {
+      matches.pushScheduledMatch(match);
+    }
+    if (match.status === MatchStatus.Ongoing) {
+      matches.pushActiveMatch(match);
+    }
     ctx.status = 202;
     return;
   }
@@ -33,7 +40,7 @@ webhooksRouter.post('/matches', async (ctx) => {
     info('routers/matches', `Match ${record.id} ${old_record.status}->${record.status}`);
     if (old_record.status !== record.status) {
       const match = await client().getMatch(body.record.id).then(verifySingleResult);
-      matches.pushMatch(match);
+      await handleMatchStatusUpdate(match, old_record.status as MatchStatus);
       ctx.status = 202;
       return;
     }
@@ -75,13 +82,16 @@ function isDiscordConfigsDelete(
 }
 function isDiscordConfigsUpdate(
   payload: unknown
-): payload is WebhookPostgresInsertPayload<DiscordConfig> {
+): payload is WebhookPostgresUpdatePayload<DiscordConfig> {
   return isUpdatePayload(payload) && isDiscordConfig(payload.record);
 }
 
-function isMatchesUpdate(
-  payload: unknown
-): payload is WebhookPostgresUpdatePayload<MatchesRow> {
+function isMatchesUpdate(payload: unknown): payload is Omit<
+  WebhookPostgresUpdatePayload<MatchesRow>,
+  'old_record'
+> & {
+  old_record: MatchesRow;
+} {
   return (
     isUpdatePayload(payload) &&
     isMatchesRow(payload.record) &&

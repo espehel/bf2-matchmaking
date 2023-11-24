@@ -45,6 +45,12 @@ export async function getServerInstances() {
   return client.instances.listInstances({});
 }
 
+export async function getServerInstance(id: string): Promise<Instance> {
+  const { instance } = await client.instances.getInstance({ 'instance-id': id });
+  assertObj(instance, 'Failed to get instances');
+  return instance;
+}
+
 export async function createServerInstance(
   serverName: string,
   region: string,
@@ -71,7 +77,6 @@ export async function deleteServerInstance(id: string) {
   const result = await client.instances.deleteInstance({ 'instance-id': id });
   return result;
 }
-
 export async function getInstanceByIp(ip: string): Promise<Instance | null> {
   const { instances } = await client.instances.listInstances({});
   assertArray(instances, 'Failed to get instances');

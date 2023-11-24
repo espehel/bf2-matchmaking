@@ -8,9 +8,12 @@ assertString(process.env.CLOUDFLARE_TOKEN, 'CLOUDFLARE_TOKEN is not set.');
 const client = new Cloudflare({ token: process.env.CLOUDFLARE_TOKEN });
 
 export async function getDnsByName(name: string) {
+  const hostname = name.endsWith(CLOUDFLARE.zone_name)
+    ? name
+    : `${name}.${CLOUDFLARE.zone_name}`;
   // @ts-expect-error
   const response = (await client.dnsRecords.browse<'A'>(CLOUDFLARE.zone_id, {
-    name,
+    name: hostname,
   })) as ResponseObject<Array<DnsRecord>>;
   return response.result?.at(0) || null;
 }

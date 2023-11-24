@@ -53,20 +53,17 @@ export default {
   getScheduled() {
     return [...scheduled];
   },
-  pushMatch(match: MatchesJoined) {
+  pushActiveMatch(match: MatchesJoined) {
+    if (!this.hasActiveMatch(match)) {
+      info('state/matches', `Pushing match ${match.id} to active matches`);
+      active.push(match);
+    }
+  },
+  pushScheduledMatch(match: MatchesJoined) {
     if (isScheduledMatch(match) && !this.hasScheduledMatch(match)) {
       info('state/matches', `Pushing match ${match.id} to scheduled matches`);
       scheduled.push(match);
-    } else if (match.status === MatchStatus.Ongoing && !this.hasActiveMatch(match)) {
-      info('state/matches', `Pushing match ${match.id} to active matches`);
-      active.push(match);
-    } else {
-      info('state/matches', `Discarding match ${match.id}`);
     }
-  },
-  updateMatch(match: MatchesJoined) {
-    this.removeMatch(match);
-    this.pushMatch(match);
   },
   hasActiveMatch(match: MatchesJoined) {
     return active.some((m) => m.id === match.id);
@@ -74,11 +71,13 @@ export default {
   hasScheduledMatch(match: MatchesJoined) {
     return scheduled.some((m) => m.id === match.id);
   },
-  removeMatch(match: MatchesJoined) {
+  removeActiveMatch(match: MatchesJoined) {
     if (this.hasActiveMatch(match)) {
       info('state/matches', `Removing match ${match.id} from active matches`);
       active = active.filter((m) => m.id !== match.id);
     }
+  },
+  removeScheduledMatch(match: MatchesJoined) {
     if (this.hasScheduledMatch(match)) {
       info('state/matches', `Removing match ${match.id} from scheduled matches`);
       scheduled = scheduled.filter((m) => m.id !== match.id);

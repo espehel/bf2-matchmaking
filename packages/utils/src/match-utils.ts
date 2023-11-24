@@ -116,3 +116,14 @@ export function hasKeyhash(match: MatchesJoined) {
 export function hasNotKeyhash(match: MatchesJoined) {
   return (keyhash: string) => !match.players.some((p) => p.keyhash === keyhash);
 }
+
+export function createServerName(match: MatchesJoined) {
+  return `${match.config.name} Match ${match.id}`;
+}
+export function createServerDnsName(match: MatchesJoined) {
+  return `m${match.id}`;
+}
+
+export function createServerLabel(match: MatchesJoined) {
+  return match.config.name;
+}
