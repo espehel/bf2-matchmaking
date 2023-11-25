@@ -8,3 +8,7 @@ export const CLOUDFLARE = {
   zone_id: 'e553f5c69485773f5aae5b2818ba3308',
   zone_name: '4e.fi',
 };
+
+export const DEFAULTS = {
+  map: 'strike_at_karkand',
+};

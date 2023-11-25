@@ -103,7 +103,7 @@ export default function PlayersRegisterSection({
           <p className="font-bold">Players not attending</p>
           <ul>
             {nonAttendingPlayers.map((player) => (
-              <li>{player.full_name}</li>
+              <li key={player.id}>{player.full_name}</li>
             ))}
           </ul>
         </div>

@@ -77,6 +77,7 @@ export interface Database {
           size: number
           type: Database["public"]["Enums"]["match_type"]
           updated_at: string
+          vehicles: boolean
           visible: boolean
         }
         Insert: {
@@ -93,6 +94,7 @@ export interface Database {
           size: number
           type?: Database["public"]["Enums"]["match_type"]
           updated_at?: string
+          vehicles?: boolean
           visible?: boolean
         }
         Update: {
@@ -109,6 +111,7 @@ export interface Database {
           size?: number
           type?: Database["public"]["Enums"]["match_type"]
           updated_at?: string
+          vehicles?: boolean
           visible?: boolean
         }
         Relationships: [
@@ -682,7 +685,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      match_type: "Mix" | "PCW" | "Match"
+      match_type: "Mix" | "PCW" | "League" | "Cup" | "Ladder"
     }
     CompositeTypes: {
       [_ in never]: never

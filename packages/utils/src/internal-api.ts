@@ -120,8 +120,20 @@ const platform = () => {
     locations: () => '/locations',
   };
   return {
-    postServers: (name: string, region: string, label: string, tag: string) =>
-      postJSON<Instance>(basePath.concat(paths.servers()), { name, region, label, tag }),
+    postServers: (
+      name: string,
+      region: string,
+      match: string | number,
+      map: string | null,
+      vehicles: string | null
+    ) =>
+      postJSON<Instance>(basePath.concat(paths.servers()), {
+        name,
+        region,
+        match,
+        map,
+        vehicles,
+      }),
     getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
     deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.server(ip))),
     postServerDns: (ip: string) =>

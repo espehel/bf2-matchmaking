@@ -1,5 +1,12 @@
 'use server';
-import { assertString, api, verify } from '@bf2-matchmaking/utils';
+import {
+  assertString,
+  api,
+  verify,
+  createServerName,
+  getInitialServerMap,
+  getServerVehicles,
+} from '@bf2-matchmaking/utils';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -57,12 +64,13 @@ export async function generateServer(data: FormData) {
     return matchResult;
   }
   const { id, config } = matchResult.data;
-  const name = `${config.name} Match ${id}`;
-  const dnsName = `m${id}`;
+  const name = createServerName(matchResult.data);
+  const map = getInitialServerMap(matchResult.data);
+  const vehicles = getServerVehicles(matchResult.data);
 
   const result = await api
     .platform()
-    .postServers(name, regionInput, config.name, dnsName);
+    .postServers(name, regionInput, matchResult.data.id, map, vehicles);
 
   if (result.error) {
     logErrorMessage(`Server ${name}: Generation failed`, result.error);

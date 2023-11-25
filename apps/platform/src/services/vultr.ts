@@ -1,5 +1,10 @@
 import Vultr from '@vultr/vultr-node';
-import { assertArray, assertObj, assertString } from '@bf2-matchmaking/utils';
+import {
+  assertArray,
+  assertObj,
+  assertString,
+  createServerDnsName,
+} from '@bf2-matchmaking/utils';
 import { Instance, Plan, Region } from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
 import { VULTR } from '../constants';
@@ -54,12 +59,15 @@ export async function getServerInstance(id: string): Promise<Instance> {
 export async function createServerInstance(
   serverName: string,
   region: string,
-  label: string,
-  tag: string | undefined
+  match: string,
+  map: string,
+  vehicles: string
 ) {
-  const script = Buffer.from(generateStartupScript(serverName), 'utf8').toString(
-    'base64'
-  );
+  const script = Buffer.from(
+    generateStartupScript(serverName, match, map, vehicles),
+    'utf8'
+  ).toString('base64');
+  const label = `Map: ${map}, Vehicles: ${vehicles}`;
   const script_id = await upsertStartupScript(label, script);
 
   const { instance } = await client.instances.createInstance({
@@ -68,7 +76,7 @@ export async function createServerInstance(
     os_id: VULTR.os_id,
     script_id,
     label,
-    tag,
+    tag: createServerDnsName(Number(match)),
   });
   return instance as Instance | undefined;
 }
@@ -121,13 +129,21 @@ export async function getLocations() {
   return locations;
 }
 
-function generateStartupScript(serverName: string) {
+function generateStartupScript(
+  serverName: string,
+  matchId: string,
+  map: string,
+  vehicles: string
+) {
   return `#!/bin/bash
 
 
 wget https://gist.githubusercontent.com/rkantos/308850b4b94a8c8bf5a3220811e93339/raw/bf2server_bf2cc_install.sh
 cat <<"EOF" >/root/bf2.profile
 export BF2SERVER_NAME="${serverName}"
+export MATCH_ID="${matchId}"
+export BF2_MAP="${map}"
+export BF2_VEHICLE="${vehicles}"
 export RCON_PORT="4711"
 export RCON_PASSWORD="super123"
 export GAME_PORT="16567"

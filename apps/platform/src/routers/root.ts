@@ -16,6 +16,7 @@ import {
 } from '../services/cloudflare';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
 import { Context } from 'koa';
+import { DEFAULTS } from '../constants';
 
 export const rootRouter = new Router();
 
@@ -26,18 +27,25 @@ rootRouter.get('/servers', async (ctx) => {
 interface ServersRequestBody extends Omit<Request, 'body'> {
   name?: string;
   region?: string;
-  label?: string;
-  tag?: string;
+  match?: string;
+  map?: string;
+  vehicles?: string;
 }
 rootRouter.post('/servers', async (ctx: Context) => {
-  const { name, region, label, tag } = <ServersRequestBody>ctx.request.body;
-  if (!name || !region || !label) {
+  const { name, region, match, map, vehicles } = <ServersRequestBody>ctx.request.body;
+  if (!name || !region || !match) {
     ctx.status = 400;
-    ctx.body = { message: 'Missing name, region or label' };
+    ctx.body = { message: 'Missing name, region, match, map or vehicles' };
     return;
   }
 
-  const instance = await createServerInstance(name, region, label, tag);
+  const instance = await createServerInstance(
+    name,
+    region,
+    match,
+    map || DEFAULTS.map,
+    vehicles === 'true' ? vehicles : ''
+  );
   if (!instance) {
     ctx.status = 500;
     ctx.body = { message: 'Failed to create server' };
@@ -54,7 +62,7 @@ rootRouter.post('/servers', async (ctx: Context) => {
 
   info(
     'POST /servers',
-    `Instance created. [region: "${instance.region}", label: "${instance.label}", status: "${instance.status}"]`
+    `Instance created. [region: "${instance.region}", label: "${instance.label}", tag: "${instance.tag}"]`
   );
   ctx.body = instance;
 });
@@ -72,7 +80,10 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
   if (dns) {
     await deleteDnsRecord(dns.id);
   }
-
+  info(
+    'DELETE /servers',
+    `Instance deleted. [ip: "${ctx.params.ip}", dns content: "${dns?.content}", label: "${instance.label}"]`
+  );
   ctx.status = 204;
 });
 

@@ -19,6 +19,6 @@ export async function handleMatchStatusUpdate(
     matches.removeActiveMatch(match);
   }
   if (match.status === MatchStatus.Finished) {
-    await api.platform().deleteServer(createServerDnsName(match));
+    await api.platform().deleteServer(createServerDnsName(match.id));
   }
 }

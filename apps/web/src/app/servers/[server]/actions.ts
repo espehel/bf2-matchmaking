@@ -74,5 +74,6 @@ export async function deleteServer(ip: string) {
     rconResult,
     serverResult,
   });
+  revalidatePath(`/servers`);
   return serverResult;
 }

@@ -120,10 +120,15 @@ export function hasNotKeyhash(match: MatchesJoined) {
 export function createServerName(match: MatchesJoined) {
   return `${match.config.name} Match ${match.id}`;
 }
-export function createServerDnsName(match: MatchesJoined) {
-  return `m${match.id}`;
+export function createServerDnsName(matchId: number) {
+  return `m${matchId}`;
 }
 
-export function createServerLabel(match: MatchesJoined) {
-  return match.config.name;
+export function getInitialServerMap(match: MatchesJoined) {
+  const map = match.maps.at(0);
+  return map ? map.name.replace(' ', '_').toLocaleLowerCase() : null;
+}
+
+export function getServerVehicles(match: MatchesJoined) {
+  return match.config.vehicles ? 'true' : 'false';
 }
