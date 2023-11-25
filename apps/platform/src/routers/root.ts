@@ -107,10 +107,7 @@ rootRouter.post('/servers/:ip/dns', async (ctx: Context) => {
 });
 
 rootRouter.get('/servers/:ip/dns', async (ctx) => {
-  const dns =
-    ctx.query.type === 'name'
-      ? await getDnsByName(ctx.params.ip)
-      : await getDnsByIp(ctx.params.ip);
+  const dns = await getDnsByIp(ctx.params.ip);
   if (!dns) {
     ctx.status = 400;
     ctx.body = { message: `Could not find DNS record for ${ctx.params.ip}` };
