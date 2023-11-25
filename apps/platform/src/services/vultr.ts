@@ -67,15 +67,14 @@ export async function createServerInstance(
     generateStartupScript(serverName, match, map, vehicles),
     'utf8'
   ).toString('base64');
-  const label = `Map: ${map}, Vehicles: ${vehicles}`;
-  const script_id = await upsertStartupScript(label, script);
+  const script_id = await upsertStartupScript(VULTR.scriptName, script);
 
   const { instance } = await client.instances.createInstance({
     region,
     plan: VULTR.plan,
     os_id: VULTR.os_id,
     script_id,
-    label,
+    label: serverName,
     tag: createServerDnsName(Number(match)),
   });
   return instance as Instance | undefined;
@@ -141,7 +140,7 @@ function generateStartupScript(
 wget https://gist.githubusercontent.com/rkantos/308850b4b94a8c8bf5a3220811e93339/raw/bf2server_bf2cc_install.sh
 cat <<"EOF" >/root/bf2.profile
 export BF2SERVER_NAME="${serverName}"
-export MATCH_ID="${matchId}"
+export BF2_GG_MATCH_ID="${matchId}"
 export BF2_MAP="${map}"
 export BF2_VEHICLE="${vehicles}"
 export RCON_PORT="4711"

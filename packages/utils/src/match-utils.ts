@@ -124,9 +124,15 @@ export function createServerDnsName(matchId: number) {
   return `m${matchId}`;
 }
 
+// https://stackoverflow.com/questions/32589197/how-can-i-capitalize-the-first-letter-of-each-word-in-a-string-using-javascript
 export function getInitialServerMap(match: MatchesJoined) {
   const map = match.maps.at(0);
-  return map ? map.name.replace(' ', '_').toLocaleLowerCase() : null;
+  return map
+    ? map.name.replace(
+        /(^\w|\s\w)(\S*)/g,
+        (_, m1, m2) => m1.toUpperCase() + m2.toLowerCase()
+      )
+    : null;
 }
 
 export function getServerVehicles(match: MatchesJoined) {
