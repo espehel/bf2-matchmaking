@@ -23,11 +23,11 @@ getDiscordClient()
 
 new Koa()
   .use(logger())
+  .use(interactionsRouter.routes())
+  .use(interactionsRouter.allowedMethods())
   .use(bodyParser())
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods())
-  .use(interactionsRouter.routes())
-  .use(interactionsRouter.allowedMethods())
   .listen(PORT, () => {
     info('app', `bot listening on port ${PORT}`);
   });
