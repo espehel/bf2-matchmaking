@@ -8,6 +8,7 @@ import { initChannelListener } from './discord/channel-manager';
 import { initScheduledEventsListener } from './discord/scheduled-events-listener';
 import { getDiscordClient } from './discord/client';
 import { loadServerLocations } from './services/location-service';
+import { interactionsRouter } from './routers/interactions';
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5001;
 
 getDiscordClient()
@@ -25,6 +26,8 @@ new Koa()
   .use(bodyParser())
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods())
+  .use(interactionsRouter.routes())
+  .use(interactionsRouter.allowedMethods())
   .listen(PORT, () => {
     info('app', `bot listening on port ${PORT}`);
   });

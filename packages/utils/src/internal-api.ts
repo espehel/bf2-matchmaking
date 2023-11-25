@@ -17,13 +17,13 @@ import { deleteJSON, getJSON, postJSON } from './fetcher';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
 
 const web = () => {
-  const basePath = 'https://bf2-matchmaking.vercel.app';
+  const basePath = 'https://bf2.gg';
   return {
     basePath,
   };
 };
 const rcon = () => {
-  const basePath = 'https://bf2-rcon.up.railway.app';
+  const basePath = 'https://rcon.bf2.gg';
   const paths = {
     rconServers: () => '/rcon/servers',
     rconServerInfo: () => '/rcon/si',
@@ -86,7 +86,7 @@ const rcon = () => {
   };
 };
 const bot = () => {
-  const basePath = 'https://bf2-bot.up.railway.app';
+  const basePath = 'https://bot.bf2.gg';
   const paths = {
     channelsListeners: (channelId: string) => `/matches/${channelId}/listeners`,
   };
@@ -100,7 +100,7 @@ const bot = () => {
 };
 
 const engine = () => {
-  const basePath = 'https://bf2-engine.up.railway.app';
+  const basePath = 'https://engine.bf2.gg';
   const paths = {
     matchUsersXml: (matchId: number | string) => `/matches/${matchId}/users.xml`,
   };
@@ -112,7 +112,7 @@ const engine = () => {
 };
 
 const platform = () => {
-  const basePath = 'https://bf2-platform.up.railway.app';
+  const basePath = 'https://platform.bf2.gg';
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,

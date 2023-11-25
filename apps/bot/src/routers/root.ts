@@ -7,8 +7,6 @@ import {
 } from '../discord/channel-manager';
 import { getDiscordClient } from '../discord/client';
 import { isTextBasedChannel } from '../discord/utils';
-import { startTopLocationPoll } from '../services/pubobot-service';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 export const rootRouter = new Router();
 
 rootRouter.post('/channels/:channel/listeners', async (ctx) => {

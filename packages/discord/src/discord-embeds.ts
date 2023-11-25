@@ -8,6 +8,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
+  api,
   compareFullName,
   compareIsCaptain,
   compareUpdatedAt,
@@ -80,7 +81,9 @@ export const getMatchResultsEmbed = (
   match: MatchesJoined,
   results: [MatchResultsJoined, MatchResultsJoined]
 ): APIEmbed => ({
-  description: `[**Match ${match.id}** results](https://bf2-matchmaking.vercel.app/results/${match.id})`,
+  description: `[**Match ${match.id}** results](${api.web().basePath}/results/${
+    match.id
+  })`,
   fields:
     results[0] && results[1]
       ? [
@@ -269,10 +272,10 @@ const getServerInfoFields = (server: RconBf2Server) => [
 
 export const getLiveMatchField = (match: MatchesJoined) => ({
   name: ``,
-  value: `[**Match ${match.id}** live score](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
+  value: `[**Match ${match.id}** live score](${api.web().basePath}/matches/${match.id})`,
 });
 
 export const getMatchField = (match: MatchesJoined) => ({
   name: ``,
-  value: `[**Match ${match.id}**](https://bf2-matchmaking.vercel.app/matches/${match.id})`,
+  value: `[**Match ${match.id}**](${api.web().basePath}/matches/${match.id})`,
 });

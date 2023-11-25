@@ -15,7 +15,6 @@
     "@bf2-matchmaking/utils": "*",
     "@discordjs/rest": "^1.5.0",
     "discord-api-types": "^0.37.62",
-    "discord-interactions": "^3.2.0",
     "luxon": "^3.4.4",
     "tiny-invariant": "^1.3.1"
   },
