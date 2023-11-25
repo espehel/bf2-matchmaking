@@ -41,7 +41,9 @@ export class RconClient {
       });
 
       setTimeout(() => {
-        reject(`Command ${message} timed out`);
+        this.socket.removeAllListeners('data');
+        this.socket.removeAllListeners('error');
+        reject(`Rcon command ${message} timed out for ${this.ip}`);
       }, TIMEOUT);
     });
   }
