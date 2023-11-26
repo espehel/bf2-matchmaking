@@ -5,7 +5,7 @@ export function generateMatchUsersXml(match: MatchesJoined) {
 <dsdUsers xmlns="http://bf2cc.com/dsdUsers.xsd">
   <Users>
     <Username>admin</Username>
-    <Password>21232f297a57a5a743894a0e4a801fc3</Password>
+    <Password>21232F297A57A5A743894A0E4A801FC3</Password>
     <IsEnabled>true</IsEnabled>
     <Notes>Administrator account</Notes>
     <GroupName>Administrators</GroupName>

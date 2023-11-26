@@ -148,5 +148,5 @@ export RCON_PASSWORD="super123"
 export GAME_PORT="16567"
 EOF
 chmod a+x bf2server_bf2cc_install.sh
-./bf2server_bf2cc_install.sh -y -o -n -j -l`;
+./bf2server_bf2cc_install.sh -y -o -n -j -l -p`;
 }
