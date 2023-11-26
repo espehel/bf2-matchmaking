@@ -16,8 +16,11 @@ export class RconClient {
     this.ip = ip;
     this.port = port;
     this.password = password;
+    this.socket.on('error', (err) => {
+      error(`RconClient(${this.ip})`, err);
+    });
     this.socket.on('timeout', () => {
-      this.socket.destroy();
+      this.socket.destroy(new Error(`Socket ${this.ip} timeout out...`));
     });
     this.socket.setTimeout(TTL);
   }
@@ -28,23 +31,27 @@ export class RconClient {
 
   send(message: string) {
     return new Promise<string>((resolve, reject) => {
-      this.socket.write(message + '\n');
-
-      this.socket.once('data', (response) => {
-        this.socket.removeAllListeners('error');
+      const handleData = (response: Buffer) => {
+        this.socket.removeListener('data', handleData);
+        clearTimeout(timeout);
         resolve(response.toString());
-      });
-
-      this.socket.once('error', (err) => {
-        this.socket.removeAllListeners('data');
+      };
+      const handleError = (err: Error) => {
+        this.socket.removeListener('data', handleData);
+        clearTimeout(timeout);
         reject(err.message);
-      });
+      };
 
-      setTimeout(() => {
-        this.socket.removeAllListeners('data');
-        this.socket.removeAllListeners('error');
+      this.socket.once('data', handleData);
+      this.socket.once('error', handleError);
+
+      const timeout = setTimeout(() => {
+        this.socket.removeListener('data', handleData);
+        this.socket.removeListener('error', handleError);
         reject(`Rcon command ${message} timed out for ${this.ip}`);
       }, TIMEOUT);
+
+      this.socket.write(message + '\n');
     });
   }
 
