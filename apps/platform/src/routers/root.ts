@@ -17,6 +17,7 @@ import {
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
 import { Context } from 'koa';
 import { DEFAULTS } from '../constants';
+import { api } from '@bf2-matchmaking/utils';
 
 export const rootRouter = new Router();
 
@@ -77,6 +78,7 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
   ctx.assert(instance, 404, 'Server not found');
 
   await deleteServerInstance(instance.id);
+  await api.rcon().deleteServerLive(dns?.name || ctx.params.ip);
   if (dns) {
     await deleteDnsRecord(dns.id);
   }

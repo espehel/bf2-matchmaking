@@ -77,7 +77,9 @@ export const deleteJSON = async <T>(
       ...options,
     });
     const { status, statusText } = res;
-    if (res.ok) {
+    if (status === 204 || status === 202) {
+      return { data: {} as T, error: null, status, statusText };
+    } else if (res.ok) {
       try {
         const data: T = await res.json();
         return { data, error: null, status, statusText };

@@ -14,6 +14,7 @@ import {
   initLiveServer,
   isOffline,
   reconnectLiveServer,
+  removeLiveServer,
 } from '../net/ServerManager';
 import { error, info } from '@bf2-matchmaking/logging';
 import { api } from '@bf2-matchmaking/utils';
@@ -118,6 +119,16 @@ router.get('/:ip', async (req, res) => {
     res.send(rconServer);
   } catch (e) {
     res.status(502).send(e);
+  }
+});
+
+router.delete('/:ip/live', async (req, res) => {
+  const { ip } = req.params;
+  const liveServer = removeLiveServer(ip);
+  if (liveServer) {
+    res.status(200).send();
+  } else {
+    res.status(404).send();
   }
 });
 

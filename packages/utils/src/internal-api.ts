@@ -30,6 +30,7 @@ const rcon = () => {
     rconPlayerList: () => '/rcon/pl',
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
+    serverLive: (ip: string) => `/servers/${ip}/live`,
     serverInfo: (ip: string) => `/servers/${ip}/si`,
     serverPlayerList: (ip: string) => `/servers/${ip}/pl`,
     serverExec: (ip: string) => `/servers/${ip}/exec`,
@@ -71,6 +72,8 @@ const rcon = () => {
         cache: 'no-store',
       }),
     getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
+    deleteServerLive: (ip: string) =>
+      deleteJSON<RconBf2Server>(basePath.concat(paths.serverLive(ip))),
     postMatchLive: (matchId: number, prelive: boolean) =>
       postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
     getMatchesLive: () =>

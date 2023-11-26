@@ -21,6 +21,16 @@ export function getLiveServer(ip: string) {
   return liveServers.get(ip) || null;
 }
 
+export function removeLiveServer(ip: string) {
+  const liveServer = liveServers.get(ip);
+  if (liveServer) {
+    liveServer.reset();
+    liveServers.delete(ip);
+    return liveServer;
+  }
+  return null;
+}
+
 export function isOffline(host: string) {
   return !liveServers.has(host) && rcons.has(host);
 }
