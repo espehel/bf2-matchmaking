@@ -1,6 +1,11 @@
 import { MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
+import { info } from '@bf2-matchmaking/logging';
 
 export function generateMatchUsersXml(match: MatchesJoined) {
+  info(
+    'generateMatchUsersXml',
+    `Generating users.xml for match ${match.id} with ${match.players.length} players.`
+  );
   return `<?xml version="1.0" standalone="yes"?>
 <dsdUsers xmlns="http://bf2cc.com/dsdUsers.xsd">
   <Users>

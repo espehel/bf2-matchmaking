@@ -6,7 +6,7 @@ import {
   createServerDnsName,
 } from '@bf2-matchmaking/utils';
 import { Instance, Plan, Region } from '@bf2-matchmaking/types';
-import { info } from '@bf2-matchmaking/logging';
+import { info, logMessage } from '@bf2-matchmaking/logging';
 import { VULTR } from '../constants';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 
@@ -76,6 +76,13 @@ export async function createServerInstance(
     script_id,
     label: serverName,
     tag: createServerDnsName(Number(match)),
+  });
+  logMessage(`Server instance ${instance?.tag} with ip ${instance?.id} created`, {
+    serverName,
+    region,
+    match,
+    map,
+    vehicles,
   });
   return instance as Instance | undefined;
 }

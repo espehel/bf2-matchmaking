@@ -36,7 +36,7 @@ export async function createDnsRecord(name: string, ip: string) {
     ttl: 1,
   })) as ResponseObject<DnsRecord>;
   if (response.success) {
-    logMessage(`Created DNS record for ${name}.`, { response, ip });
+    logMessage(`DNS ${name} created for ip ${ip}.`, { response });
     return response.result;
   }
   logMessage('Could not create DNS record.', { response, name, ip });
