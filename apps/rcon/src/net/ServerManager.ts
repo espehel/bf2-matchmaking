@@ -6,6 +6,7 @@ import { createLiveInfo, updateServerName } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
 import { getServerInfo, rcon } from './RconManager';
 import { createLiveMatchFromDns } from '../services/matches';
+import { assertObj } from '@bf2-matchmaking/utils';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
 
@@ -13,6 +14,11 @@ const liveServers = new Map<string, LiveServer>();
 const rcons = new Map<string, ServerRconsRow>();
 let pendingServers: Array<PendingServer> = [];
 
+export function getServerRcon(ip: string) {
+  const rconInfo = rcons.get(ip);
+  assertObj(rconInfo, `No rcon for ${ip}`);
+  return rcon(rconInfo.id, rconInfo.rcon_port, rconInfo.rcon_pw);
+}
 export function getLiveServers() {
   return Array.from(liveServers.values());
 }

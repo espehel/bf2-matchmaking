@@ -37,6 +37,7 @@ const rcon = () => {
     serverPause: (ip: string) => `/servers/${ip}/pause`,
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
+    serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
     matchesLive: () => '/matches/live',
     matchLive: (matchId: number) => `/matches/${matchId}/live`,
@@ -59,6 +60,8 @@ const rcon = () => {
     postServerExec: (ip: string, body: PostServerExecRequestBody) =>
       postJSON<PostServerExecResponseBody>(basePath.concat(paths.serverExec(ip)), body),
     postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
+    postServerMaps: (ip: string, map: number) =>
+      postJSON(basePath.concat(paths.serverMaps(ip)), { map }),
     postServerUnpause: (ip: string) =>
       postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
     postServerPlayersSwitch: (ip: string, body: PostServerPlayersSwitchRequestBody) =>

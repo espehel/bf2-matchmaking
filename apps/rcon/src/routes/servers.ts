@@ -11,15 +11,38 @@ import { RconBf2Server } from '@bf2-matchmaking/types';
 import { createRconBF2Server } from '../services/servers';
 import {
   addPendingServer,
+  getServerRcon,
   initLiveServer,
   isOffline,
   reconnectLiveServer,
   removeLiveServer,
 } from '../net/ServerManager';
 import { error, info } from '@bf2-matchmaking/logging';
-import { api } from '@bf2-matchmaking/utils';
+import { api, assertArray, assertObj } from '@bf2-matchmaking/utils';
 import { createLiveMatchFromDns } from '../services/matches';
+import { mapMapList } from '../mappers/rcon';
+import { findMap } from '../services/maps';
 const router = express.Router();
+
+router.post('/:ip/maps', async (req, res) => {
+  try {
+    const rconClient = await getServerRcon(req.params.ip);
+    const map = findMap(req.body.map);
+    const mapList = await rconClient.send('exec maplist.list').then(mapMapList);
+    assertObj(map);
+    assertArray(mapList);
+    const id = mapList.indexOf(map.name.toLowerCase().replace(/ /g, '_'));
+    await rconClient.send(`exec admin.setNextLevel ${id}`);
+    await rconClient.send('exec admin.runNextLevel');
+    const { currentMapName, nextMapName } = await getServerInfo(rconClient);
+    res.send({ currentMapName, nextMapName });
+  } catch (e) {
+    if (e instanceof Error) {
+      res.status(502).send(e.message);
+    }
+    res.status(502).send(e);
+  }
+});
 
 router.post('/:ip/players/switch', async (req, res) => {
   const { players } = req.body;

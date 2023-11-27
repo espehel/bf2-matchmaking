@@ -19,6 +19,7 @@ import {
 } from './net/ServerManager';
 import cron from 'node-cron';
 import { updatePendingLiveMatches } from './services/MatchManager';
+import { loadMapsCache } from './services/maps';
 
 const inactiveTasks = cron.schedule(
   '*/2 * * * *',
@@ -36,6 +37,7 @@ const pendingServerTask = cron.schedule('*/30 * * * * *', updatePendingServers, 
   scheduled: false,
 });
 
+loadMapsCache();
 initLiveServers()
   .then(() => {
     inactiveTasks.start();

@@ -96,3 +96,15 @@ export const mapListPlayers = (data?: string): Array<PlayerListItem> | null =>
           };
         })
     : null;
+
+export function mapMapList(data?: string): Array<string> | null {
+  return data
+    ? data
+        .split(/(\r\n|\r|\n)/)
+        .filter((text) => Boolean(text.trim()))
+        .map((mapData) => {
+          const [id, name, mode, size] = mapData.split(' ');
+          return name.replace(/"/g, '');
+        })
+    : [];
+}
