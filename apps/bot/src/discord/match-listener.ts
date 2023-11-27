@@ -49,6 +49,10 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
       `Received embed with title "${message.embeds[0]?.title}" in ${config.name} channel`
     );
 
+    if (!message.inGuild()) {
+      return;
+    }
+
     if (isPubobotMatchDrafting(message.embeds[0])) {
       return handlePubobotMatchDrafting(message);
     }
@@ -58,10 +62,11 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
     }
   };
 
-  async function handlePubobotMatchDrafting(message: Message) {
+  async function handlePubobotMatchDrafting(message: Message<true>) {
     try {
       const match = await createDraftingMatchFromPubobotEmbed(
         message.embeds[0],
+        message.guild.members,
         client.users,
         config
       );

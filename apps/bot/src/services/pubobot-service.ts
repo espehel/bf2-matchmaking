@@ -2,11 +2,19 @@ import {
   DiscordConfig,
   DiscordMatch,
   isDiscordMatch,
+  isNotNull,
   LocationEmoji,
   MatchesJoined,
   MatchStatus,
 } from '@bf2-matchmaking/types';
-import { Embed, Message, UserManager } from 'discord.js';
+import {
+  Client,
+  Embed,
+  Message,
+  UserManager,
+  GuildMemberManager,
+  Guild,
+} from 'discord.js';
 import { compareMessageReactionCount, toMatchPlayer } from './utils';
 import { logMessage } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -34,8 +42,38 @@ export function hasPubotId(id: number) {
   return pubobotMatchMap.has(id);
 }
 
+export async function getGuildMemberIds(embed: Embed, guild: GuildMemberManager) {
+  const searchGuild = async (nick: string) => {
+    const result = await guild.search({ query: nick });
+    return result.at(0)?.id || null;
+  };
+  return (
+    await Promise.all(
+      [
+        getUserNames(embed, 'MEC'),
+        getUserNames(embed, 'USMC'),
+        getUserNames(embed, 'Unpicked'),
+      ]
+        .flat()
+        .map(searchGuild)
+    )
+  ).filter(isNotNull);
+}
+
+async function createDraftingMatchPlayers(match_id: number, playerIds: Array<string>) {
+  const { data: players } = await client().getPlayersByIdList(playerIds);
+  if (!players) {
+    return [];
+  }
+  const { data: matchPlayers } = await client().createMatchPlayers(
+    players.map(({ id }) => ({ player_id: id, match_id }))
+  );
+  return matchPlayers || [];
+}
+
 export async function createDraftingMatchFromPubobotEmbed(
   embed: Embed,
+  guildMembers: GuildMemberManager,
   users: UserManager,
   config: DiscordConfig
 ): Promise<DiscordMatch> {
@@ -50,9 +88,15 @@ export async function createDraftingMatchFromPubobotEmbed(
     throw new Error(`Match ${match.id} is not a Discord match`);
   }
   pubobotMatchMap.set(pubobotId, match.id);
+
+  const members = await getGuildMemberIds(embed, guildMembers);
+  const matchPlayers = await createDraftingMatchPlayers(match.id, members);
+
   logMessage(`Match ${match.id}: Created with status ${match.status}`, {
     match,
     config,
+    members,
+    matchPlayers,
   });
   return match;
 }
@@ -83,8 +127,8 @@ export async function startMatchFromPubobotEmbed(
   );
 
   await Promise.all([
-    client().createMatchPlayers(team1.map(toMatchPlayer(match.id, 1, ratings || []))),
-    client().createMatchPlayers(team2.map(toMatchPlayer(match.id, 2, ratings || []))),
+    client().upsertMatchPlayers(team1.map(toMatchPlayer(match.id, 1, ratings || []))),
+    client().upsertMatchPlayers(team2.map(toMatchPlayer(match.id, 2, ratings || []))),
   ]);
 
   const updatedMatch = await client()
@@ -108,6 +152,11 @@ const getUserIds = (embed: Embed, name: string) =>
   embed.fields
     ?.find((field) => field.name.includes(name))
     ?.value.match(/(?<=<@)\d+(?=>)/g) || [];
+
+const getUserNames = (embed: Embed, name: string) =>
+  embed.fields
+    ?.find((field) => field.name.includes(name))
+    ?.value.match(/(?<=`)([^`\n]+)(?=`)/g) || [];
 
 export async function startTopLocationPoll(
   match: MatchesJoined,

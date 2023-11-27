@@ -7,6 +7,7 @@ import {
 } from '../discord/channel-manager';
 import { getDiscordClient } from '../discord/client';
 import { isTextBasedChannel } from '../discord/utils';
+import { getGuildMemberIds } from '../services/pubobot-service';
 export const rootRouter = new Router();
 
 rootRouter.post('/channels/:channel/listeners', async (ctx) => {
@@ -29,7 +30,7 @@ rootRouter.delete('/channels/:channel/listeners', async (ctx) => {
 
 rootRouter.post('/messages', async (ctx) => {
   const { messageLink } = ctx.request.body;
-  const [, channelId, messageId] = messageLink.split('/').filter(Number);
+  const [guildId, channelId, messageId] = messageLink.split('/').filter(Number);
   try {
     const discordClient = await getDiscordClient();
     const channel = await discordClient.channels.fetch(channelId);
