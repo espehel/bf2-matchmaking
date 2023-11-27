@@ -7,7 +7,6 @@ import {
 } from '../discord/channel-manager';
 import { getDiscordClient } from '../discord/client';
 import { isTextBasedChannel } from '../discord/utils';
-import { getGuildMemberIds } from '../services/pubobot-service';
 export const rootRouter = new Router();
 
 rootRouter.post('/channels/:channel/listeners', async (ctx) => {

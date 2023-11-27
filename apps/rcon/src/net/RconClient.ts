@@ -32,7 +32,7 @@ export class RconClient {
   send(message: string) {
     return new Promise<string>((resolve, reject) => {
       const handleData = (response: Buffer) => {
-        this.socket.removeListener('data', handleData);
+        this.socket.removeListener('error', handleError);
         clearTimeout(timeout);
         resolve(response.toString());
       };
