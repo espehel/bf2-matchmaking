@@ -15,6 +15,7 @@ export default async function ServerSection({ match }: Props) {
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
   const isMatchPlayer = await supabase(cookies).isMatchPlayer(match);
   const { data: server } = await api.rcon().getServer(match.server.ip);
+  const { data: maps } = await supabase(cookies).getMaps();
 
   return (
     <section className="section max-w-md text-left">
@@ -48,7 +49,7 @@ export default async function ServerSection({ match }: Props) {
       {isMatchOfficer && MatchStatus.Ongoing && (
         <div>
           <div className="divider mt-0" />
-          <ServerActions match={match} server={server} />
+          <ServerActions match={match} server={server} maps={maps} />
         </div>
       )}
     </section>

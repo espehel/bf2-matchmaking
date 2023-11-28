@@ -4,11 +4,12 @@ import { useCallback } from 'react';
 import { isString } from '@bf2-matchmaking/types';
 
 interface Props {
+  label: string;
   options: Array<[string | number, string]>;
   defaultValue?: string | number;
   action: (value: string) => void;
 }
-export default function SelectForm({ options, action, defaultValue }: Props) {
+export default function SelectForm({ options, action, defaultValue, label }: Props) {
   const handleFormAction = useCallback(
     (data: FormData) => {
       const value = data.get('select');
@@ -22,7 +23,7 @@ export default function SelectForm({ options, action, defaultValue }: Props) {
   return (
     <form action={handleFormAction} className="form-control">
       <label className="label">
-        <span className="label-text">Set server</span>
+        <span className="label-text">{label}</span>
       </label>
       <div className="flex items-center gap-2">
         <select

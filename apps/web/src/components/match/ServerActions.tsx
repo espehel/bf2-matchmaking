@@ -1,20 +1,22 @@
 'use client';
-import { GameStatus, MatchesJoined, RconBf2Server } from '@bf2-matchmaking/types';
 import {
-  pauseRound,
-  restartRound,
-  setTeams,
-  unpauseRound,
-} from '@/app/matches/[match]/actions';
+  GameStatus,
+  MapsRow,
+  MatchesJoined,
+  RconBf2Server,
+} from '@bf2-matchmaking/types';
+import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
 import { useServerRestart } from '@/state/server-hooks';
+import ChangeMapForm from '@/components/match/ChangeMapForm';
 
 interface Props {
   match: MatchesJoined;
   server: RconBf2Server | null;
+  maps: Array<MapsRow> | null;
 }
 
-export default function ServerActions({ match, server }: Props) {
+export default function ServerActions({ match, server, maps }: Props) {
   const [isRestarting, handleRestartServerAction] = useServerRestart(match, server);
 
   if (isRestarting) {
@@ -60,9 +62,6 @@ export default function ServerActions({ match, server }: Props) {
             Unpause
           </ActionButton>
         )}
-        <button className="btn btn-primary w-fit" disabled>
-          Change map
-        </button>
         {/*<AsyncActionButton
           action={() => setTeams(match, server.ip)}
           errorMessage="Failed to set teams"
@@ -71,6 +70,7 @@ export default function ServerActions({ match, server }: Props) {
           Set teams
         </AsyncActionButton>*/}
       </div>
+      {maps && <ChangeMapForm server={server} maps={maps} />}
     </div>
   );
 }

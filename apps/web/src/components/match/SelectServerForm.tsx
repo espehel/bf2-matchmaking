@@ -26,6 +26,7 @@ export default function SelectServerForm({ match, servers }: Props) {
 
   return (
     <SelectForm
+      label="Set server"
       options={servers.map(({ ip, name }) => [ip, name])}
       defaultValue={match.server?.ip}
       action={handleSetServer}

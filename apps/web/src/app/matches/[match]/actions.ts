@@ -270,3 +270,7 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
 
   return apiResult;
 }
+
+export async function changeServerMap(serverIp: string, mapId: number) {
+  return api.rcon().postServerMaps(serverIp, mapId);
+}
