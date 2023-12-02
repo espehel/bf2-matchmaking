@@ -41,7 +41,15 @@ export default function ActionButton({
           }
         }
       }),
-    [action, errorMessage, successMessage, startTransition, redirect, router]
+    [
+      action,
+      errorMessage,
+      successMessage,
+      startTransition,
+      redirect,
+      router,
+      errorRedirect,
+    ]
   );
 
   return (
