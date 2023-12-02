@@ -1,5 +1,5 @@
 'use server';
-import { assertString } from '@bf2-matchmaking/utils';
+import { api, assertString } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
@@ -57,8 +57,12 @@ export async function createScheduledMatch(formData: FormData) {
     }
     const match = result.data;
 
+    let serverName = 'TBD';
     if (isString(regionSelect)) {
       await supabase(cookies).createMatchServer(match.id, regionSelect);
+      const { data: regions } = await api.platform().getLocations();
+      const city = regions?.find((r) => r.id === regionSelect)?.city;
+      serverName = `${city} server`;
     }
 
     const mapsResult = await supabase(cookies).createMatchMaps(
@@ -76,9 +80,10 @@ export async function createScheduledMatch(formData: FormData) {
     if (match.config.guild && isScheduledMatch(match)) {
       const { data } = await supabase(cookies).getMatch(match.id);
       const updatedMatch = data && isScheduledMatch(data) ? data : match;
+
       const { data: event, error: discordError } = await postGuildScheduledEvent(
         match.config.guild,
-        createScheduledMatchEvent(updatedMatch)
+        createScheduledMatchEvent(updatedMatch, serverName)
       );
 
       if (event) {

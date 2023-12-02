@@ -198,7 +198,7 @@ export async function setServer(matchId: number, serverIp: string) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match),
+          description: getMatchDescription(match, 'TBD'),
         })
       )
     );
@@ -244,7 +244,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match),
+          description: getMatchDescription(match, 'TBD'),
         })
       )
     );
