@@ -6,8 +6,9 @@ const nextConfig = {
     '@bf2-matchmaking/utils',
   ],
   logging: {
-    level: 'verbose',
-    fullUrl: true,
+    fetches: {
+      fullUrl: true,
+    },
   },
 };
 

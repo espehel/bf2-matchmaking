@@ -251,11 +251,11 @@ export default (client: SupabaseClient<Database>) => ({
       .select(),
   deleteMatchServer: (id: number) =>
     client.from('match_servers').delete().eq('id', id).select('*'),
-  getMatchServer: (match_id: number) =>
+  getMatchServer: (id: number) =>
     client
       .from('match_servers')
       .select('*, server:ip(*)')
-      .eq('match_id', match_id)
+      .eq('id', id)
       .single<MatchServer>(),
   updateMatchServer: (matchId: number | undefined, values: MatchServersUpdate) =>
     client

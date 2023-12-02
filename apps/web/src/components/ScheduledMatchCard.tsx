@@ -5,6 +5,7 @@ import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Time from '@/components/commons/Time';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import { api } from '@bf2-matchmaking/utils';
 
 interface Props {
   match: MatchesJoined;
@@ -12,8 +13,9 @@ interface Props {
 
 export default async function ScheduledMatchCard({ match }: Props) {
   const { data: server } = await supabase(cookies).getMatchServer(match.id);
-  const serverText =
-    match.server?.name ?? (server?.region ? `${server.region} server` : 'No server set');
+  const { data: regions } = await api.platform().getLocations();
+  const city = regions?.find((r) => r.id === server?.region)?.city;
+  const serverText = match.server?.name ?? (city ? `${city} server` : 'No server set');
 
   return (
     <section className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100">
