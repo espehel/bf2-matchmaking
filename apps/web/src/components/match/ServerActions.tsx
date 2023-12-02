@@ -1,23 +1,21 @@
 'use client';
-import {
-  GameStatus,
-  MapsRow,
-  MatchesJoined,
-  RconBf2Server,
-} from '@bf2-matchmaking/types';
+import { GameStatus, MapsRow, MatchServer, RconBf2Server } from '@bf2-matchmaking/types';
 import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
 import { useServerRestart } from '@/state/server-hooks';
 import ChangeMapForm from '@/components/match/ChangeMapForm';
 
 interface Props {
-  match: MatchesJoined;
+  matchServer: MatchServer;
   server: RconBf2Server | null;
   maps: Array<MapsRow> | null;
 }
 
-export default function ServerActions({ match, server, maps }: Props) {
-  const [isRestarting, handleRestartServerAction] = useServerRestart(match, server);
+export default function ServerActions({ matchServer, server, maps }: Props) {
+  const [isRestarting, handleRestartServerAction] = useServerRestart(
+    matchServer.id,
+    server
+  );
 
   if (isRestarting) {
     return <p className="font-bold text-info">Server is restarting...</p>;
@@ -38,7 +36,7 @@ export default function ServerActions({ match, server, maps }: Props) {
           Restart server
         </ActionButton>
         <ActionButton
-          action={() => restartRound(match.id, server.ip)}
+          action={() => restartRound(matchServer.id, server.ip)}
           errorMessage="Failed to restart round"
           successMessage="Round restarted"
         >
@@ -46,7 +44,7 @@ export default function ServerActions({ match, server, maps }: Props) {
         </ActionButton>
         {server.info.currentGameStatus === GameStatus.Playing && (
           <ActionButton
-            action={() => pauseRound(match.id, server.ip)}
+            action={() => pauseRound(matchServer.id, server.ip)}
             errorMessage="Failed to pause round"
             successMessage="Round paused"
           >
@@ -55,7 +53,7 @@ export default function ServerActions({ match, server, maps }: Props) {
         )}
         {server.info.currentGameStatus === GameStatus.Paused && (
           <ActionButton
-            action={() => unpauseRound(match.id, server.ip)}
+            action={() => unpauseRound(matchServer.id, server.ip)}
             errorMessage="Failed to unpause round"
             successMessage="Round unpaused"
           >

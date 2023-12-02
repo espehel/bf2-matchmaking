@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { restartServer } from '@/app/matches/[match]/actions';
 
 export function useServerRestart(
-  match: MatchesJoined,
+  matchId: number,
   server: RconBf2Server | null
 ): [boolean, () => Promise<FetchResult<unknown>>] {
   const router = useRouter();
@@ -20,8 +20,8 @@ export function useServerRestart(
       router.refresh();
       setRestarted(true);
     }, 15000);
-    return restartServer(match.id, server?.ip || '');
-  }, [match, server, router]);
+    return restartServer(matchId, server?.ip || '');
+  }, [matchId, server, router]);
 
   useEffect(() => {
     if (isRestarting && isRestarted && server?.info) {

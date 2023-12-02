@@ -10,6 +10,8 @@ import MapsSelect from '@/components/commons/MapsSelect';
 import { DateTime } from 'luxon';
 import ActionForm from '@/components/commons/ActionForm';
 import React from 'react';
+import MatchServerSelect from '@/components/match/MatchServerSelect';
+import { api } from '@bf2-matchmaking/utils';
 
 export default async function ScheduleMatchForm() {
   const configs = await supabase(cookies)
@@ -23,6 +25,7 @@ export default async function ScheduleMatchForm() {
   const servers = await supabase(cookies).getServers().then(verifyResult);
   const isTeamOfficer = await supabase(cookies).isTeamOfficer();
   const maps = await supabase(cookies).getMaps().then(verifyResult);
+  const { data: regions } = await api.platform().getLocations();
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -61,12 +64,7 @@ export default async function ScheduleMatchForm() {
               options={teams.map(({ id, name }) => [id, name])}
             />
           </div>
-          <Select
-            label="Server"
-            name="serverSelect"
-            placeholder="No server set"
-            options={servers.map(({ ip, name }) => [ip, name])}
-          />
+          <MatchServerSelect servers={servers} regions={regions} />
           <MapsSelect maps={maps} />
           <div className="flex items-center justify-end">
             <FormSubmitButton>Schedule match</FormSubmitButton>

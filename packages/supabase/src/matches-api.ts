@@ -11,6 +11,8 @@ import {
   MatchPlayersRow,
   MatchResultsInsert,
   MatchResultsJoined,
+  MatchServer,
+  MatchServersUpdate,
   MatchStatus,
   PlayerResultsJoined,
 } from '@bf2-matchmaking/types';
@@ -239,4 +241,25 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('player_id', playerId)
       .order('created_at', { ascending: false })
       .returns<Array<PlayerResultsJoined>>(),
+  createMatchServer: (match_id: number, region: string) =>
+    client
+      .from('match_servers')
+      .insert({
+        match_id,
+        region,
+      })
+      .select(),
+  getMatchServer: (match_id: number) =>
+    client
+      .from('match_servers')
+      .select('*, server:ip(*)')
+      .eq('match_id', match_id)
+      .single<MatchServer>(),
+  updateMatchServer: (matchId: number | undefined, values: MatchServersUpdate) =>
+    client
+      .from('match_servers')
+      .update(values)
+      .eq('id', matchId)
+      .select('*, server:ip(*)')
+      .single<MatchServer>(),
 });
