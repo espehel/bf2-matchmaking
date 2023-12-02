@@ -2,6 +2,8 @@ import { ScheduledMatch } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import ScheduledMatchCard from '@/components/ScheduledMatchCard';
 import { DateTime } from 'luxon';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   date: string;
@@ -16,7 +18,7 @@ export default function MatchDateItems({ date, matches }: Props) {
     <>
       <li className="font-extrabold text-left">{date}</li>
       {thisDaysMatches.map((match) => (
-        <li className="" key={match.id}>
+        <li key={match.id}>
           <Link href={`/matches/${match.id}`}>
             <ScheduledMatchCard match={match} />
           </Link>

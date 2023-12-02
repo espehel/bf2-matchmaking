@@ -1,19 +1,16 @@
-import { isScheduledMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import {
   closeMatch,
   deleteMatch,
   finishMatch,
   reopenMatch,
+  createResults,
 } from '@/app/matches/[match]/actions';
-import { closeMatch as createResults } from '@/app/results/[match]/actions';
 import ActionButton from '@/components/ActionButton';
 import SelectServerForm from '@/components/match/SelectServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import MatchMapsSelect from '@/components/match/MatchMapsSelect';
-import copy from 'copy-text-to-clipboard';
-import { ClipboardIcon } from '@heroicons/react/24/solid';
-import { toRaidOrganizerCommand } from '@bf2-matchmaking/utils';
 import OrganizerCommandCopyButton from '@/components/match/OrganizerCommandCopyButton';
 
 interface Props {
@@ -91,6 +88,7 @@ export default async function MatchActions({ match }: Props) {
               action={createResultsSA}
               successMessage="Match closed and results created."
               errorMessage="Failed to create results"
+              errorRedirect={`/results/${match.id}`}
             >
               Create results
             </ActionButton>

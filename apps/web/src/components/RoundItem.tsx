@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Link from 'next/link';
 import { parseJSON, parseNullableJSON } from '@bf2-matchmaking/utils/src/json-utils';
+import Time from '@/components/commons/Time';
 
 interface Props {
   round: RoundsJoined;
@@ -49,18 +50,20 @@ export default function RoundItem({ round }: Props) {
             alt={round.map.name}
           />
         </figure>
-        <button className="card-body flex-row" onClick={onRoundClick}>
+        <button className="card-body flex-row gap-6" onClick={onRoundClick}>
           <div className="mr-auto text-left">
             <p className="text-xl">{round.map.name}</p>
             <p className="text-sm">{`Round time: ${roundTime}`}</p>
           </div>
-          <div>
-            <p className="text-md font-bold">{info.team1_Name}</p>
-            <p className="text-md">{info.team1_tickets}</p>
+          <div className="">
+            <div className="text-md font-bold">{`Team ${round.team1.name}`}</div>
+            <div className="text-lg">{info.team1_tickets}</div>
+            <div className="text-xs">{info.team1_Name}</div>
           </div>
-          <div>
-            <p className="text-md font-bold">{info.team2_Name}</p>
-            <p className="text-md">{info.team2_tickets}</p>
+          <div className="">
+            <div className="text-md font-bold">{`Team ${round.team2.name}`}</div>
+            <div className="text-lg">{info.team2_tickets}</div>
+            <div className="text-xs">{info.team2_Name}</div>
           </div>
         </button>
       </div>

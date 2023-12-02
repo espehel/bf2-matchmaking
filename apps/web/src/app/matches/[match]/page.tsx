@@ -9,15 +9,17 @@ import { Suspense } from 'react';
 import ServerSectionLoading from '@/components/match/ServerSectionLoading';
 import MapsSection from '@/components/match/MapsSection';
 import ScheduledAt from '@/components/match/ScheduledAt';
-import { isServerMatch } from '@bf2-matchmaking/types';
 
 interface Props {
   params: { match: string };
 }
 export default async function ResultsMatch({ params }: Props) {
   const match = await supabase(cookies)
-    .getMatch(parseInt(params.match))
+    .getMatch(Number(params.match))
     .then(verifySingleResult);
+  const { data: matchServer } = await supabase(cookies).getMatchServer(
+    Number(params.match)
+  );
 
   return (
     <main className="main flex flex-col items-center text-center">
@@ -27,9 +29,9 @@ export default async function ResultsMatch({ params }: Props) {
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
         <MatchSection match={match} />
-        {isServerMatch(match) && (
+        {matchServer && (
           <Suspense fallback={<ServerSectionLoading match={match} />}>
-            <ServerSection match={match} />
+            <ServerSection matchServer={matchServer} match={match} />
           </Suspense>
         )}
         <MapsSection match={match} key={match.maps.map((m) => m.id).join()} />

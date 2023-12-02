@@ -10,6 +10,7 @@ interface Props extends PropsWithChildren {
   errorMessage: string;
   kind?: 'btn-primary' | 'btn-secondary' | 'btn-error';
   redirect?: string;
+  errorRedirect?: string;
 }
 
 export default function ActionButton({
@@ -19,6 +20,7 @@ export default function ActionButton({
   errorMessage,
   kind = 'btn-secondary',
   redirect,
+  errorRedirect,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -29,6 +31,9 @@ export default function ActionButton({
         const result = await action();
         if (result.error) {
           toast.error(`${errorMessage}: ${result.error.message}`);
+          if (errorRedirect) {
+            router.push(errorRedirect);
+          }
         } else {
           toast.success(successMessage);
           if (redirect) {

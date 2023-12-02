@@ -34,3 +34,18 @@ export const isUniqueString = (value: string, index: number, self: Array<string>
 
 export const toTuple = <T>(array: Array<T>): [T, T] | null =>
   array.length === 2 ? [array[0], array[1]] : null;
+
+export function groupBy<T>(
+  array: Array<T>,
+  groupFn: (el: T) => string
+): Array<[string, Array<T>]> {
+  const group = array.reduce<Record<string, Array<T>>>((groups, curr) => {
+    if (groups[groupFn(curr)]) {
+      return { ...groups, [groupFn(curr)]: [...groups[groupFn(curr)], curr] };
+    } else {
+      return { ...groups, [groupFn(curr)]: [curr] };
+    }
+  }, {});
+
+  return Object.entries(group);
+}

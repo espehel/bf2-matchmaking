@@ -17,6 +17,7 @@ export async function createScheduledMatch(formData: FormData) {
       homeSelect,
       awaySelect,
       serverSelect,
+      regionSelect,
       timezone,
     } = Object.fromEntries(formData);
     assertString(configSelect, 'Match type is required.');
@@ -55,6 +56,10 @@ export async function createScheduledMatch(formData: FormData) {
       return result;
     }
     const match = result.data;
+
+    if (isString(regionSelect)) {
+      await supabase(cookies).createMatchServer(match.id, regionSelect);
+    }
 
     const mapsResult = await supabase(cookies).createMatchMaps(
       match.id,

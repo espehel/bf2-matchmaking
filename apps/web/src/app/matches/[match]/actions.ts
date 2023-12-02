@@ -11,6 +11,7 @@ import {
   patchGuildScheduledEvent,
 } from '@bf2-matchmaking/discord';
 import { getMatchDescription } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
+import { DateTime } from 'luxon';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const result = await supabase(cookies).deleteMatchPlayer(matchId, playerId);
@@ -55,6 +56,15 @@ export async function reopenMatch(matchId: number) {
 
   return result;
 }
+
+export async function createResults(matchId: number) {
+  const result = await api.rcon().postMatchResults(matchId);
+
+  if (!result.error) {
+    revalidatePath(`/results/${matchId}`);
+  }
+  return result;
+}
 export async function finishMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Finished,
@@ -72,7 +82,7 @@ export async function finishMatch(matchId: number) {
 export async function closeMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Closed,
-    closed_at: moment().toISOString(),
+    closed_at: DateTime.now().toISO(),
   });
 
   if (!result.error) {

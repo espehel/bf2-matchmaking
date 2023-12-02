@@ -19,6 +19,9 @@ export default async function TeamResultTable({ playerResults }: Props) {
     playerResults.some(
       ({ player_id, rating_inc }) => player_id === player?.id && rating_inc
     );
+  if (playerResults.length === 0) {
+    return null;
+  }
   return (
     <table className="table bg-base-100 shadow-xl">
       <thead>

@@ -106,15 +106,28 @@ export function getMapsTuple(rounds: Array<RoundsJoined>, match: MatchesJoined) 
   return mapsWon;
 }
 
+export function calculateWinner(
+  homeTuple: [number, number, number],
+  awayTuple: [number, number, number]
+) {
+  const [mapsHome, roundsHome, ticketsHome] = homeTuple;
+  const [mapsAway, roundsAway, ticketsAway] = awayTuple;
+  const scoreHome = mapsHome * 1000 + ticketsHome;
+  const scoreAway = mapsAway * 1000 + ticketsAway;
+  return [scoreHome > scoreAway, scoreAway > scoreHome];
+}
+
 export function calculateMatchResults(
   match: MatchesJoined
 ): [MatchResultsInsert, MatchResultsInsert] {
-  const [mapsHome, mapsAway] = getMapsTuple(match.rounds, match);
   const [roundsHome, roundsAway] = getRoundsTuple(match.rounds, match);
+  const [mapsHome, mapsAway] = getMapsTuple(match.rounds, match);
   const [ticketsHome, ticketsAway] = getTicketsTuple(match.rounds, match);
 
-  const scoreHome = mapsHome * 1000 + ticketsHome;
-  const scoreAway = mapsAway * 1000 + ticketsAway;
+  const [isHomeWinner, isAwayWinner] = calculateWinner(
+    [mapsHome, roundsHome, ticketsHome],
+    [mapsAway, roundsAway, ticketsAway]
+  );
 
   return [
     {
@@ -123,7 +136,7 @@ export function calculateMatchResults(
       maps: mapsHome,
       rounds: roundsHome,
       tickets: ticketsHome,
-      is_winner: scoreHome > scoreAway,
+      is_winner: isHomeWinner,
     },
     {
       match_id: match.id,
@@ -131,7 +144,7 @@ export function calculateMatchResults(
       maps: mapsAway,
       rounds: roundsAway,
       tickets: ticketsAway,
-      is_winner: scoreAway > scoreHome,
+      is_winner: isAwayWinner,
     },
   ];
 }

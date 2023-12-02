@@ -18,7 +18,8 @@ export default async function ResultsMatch({ params }: Props) {
 
   const isFinished = match.status === MatchStatus.Finished;
   const isClosed = match.status === MatchStatus.Closed;
-  const isOngoing = match.status === MatchStatus.Ongoing;
+  const isOngoing =
+    match.status === MatchStatus.Ongoing || match.status === MatchStatus.Scheduled;
 
   return (
     <main className="main text-center">

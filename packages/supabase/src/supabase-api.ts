@@ -3,6 +3,7 @@ import matches from './matches-api';
 import {
   Database,
   DiscordConfig,
+  MatchConfigResults,
   MatchConfigsRow,
   PlayerRatingsInsert,
   PlayerRatingsJoined,
@@ -125,6 +126,14 @@ export default (client: SupabaseClient<Database>) => ({
   getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
   getMatchConfig: (id: number) =>
     client.from('match_configs').select('*').eq('id', id).single(),
+  getMatchConfigResults: (id: number) =>
+    client
+      .from('match_configs')
+      .select(
+        '*, matches(id, scheduled_at, status, home_team(*), away_team(*), results:match_results(*))'
+      )
+      .eq('id', id)
+      .single<MatchConfigResults>(),
   createRound: (round: RoundsInsert) =>
     client.from('rounds').insert([round]).select().single(),
   getMaps: () => client.from('maps').select('*'),

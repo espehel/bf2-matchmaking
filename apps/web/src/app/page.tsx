@@ -8,13 +8,20 @@ export default function Home() {
           <div className="max-w-md">
             <h1 className="text-5xl font-bold">Matchmaking and stats for BF2</h1>
             <p className="py-6">
-              This page is currently under development, but it aims to set up mixes
-              swiftly with match making functions, as well as provide stats and rankings
-              for Battlefield 2.
+              This page is currently under development, but it aims to support mixes with
+              stats and rankings, as well as a tool for managing leagues and cups.
             </p>
-            <Link className="btn btn-primary" href="/results">
-              See match results
-            </Link>
+            <div className="flex flex-col gap-4">
+              <Link className="btn btn-primary" href="/matches/scheduled">
+                Scheduled matches
+              </Link>
+              <Link className="btn btn-primary" href="/matches">
+                Live matches
+              </Link>
+              <Link className="btn btn-primary" href="/results/leagues/16">
+                PB 8v8 League
+              </Link>
+            </div>
           </div>
         </div>
       </div>

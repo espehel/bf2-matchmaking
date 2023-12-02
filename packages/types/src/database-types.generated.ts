@@ -315,6 +315,45 @@ export interface Database {
           }
         ]
       }
+      match_servers: {
+        Row: {
+          created_at: string
+          id: number
+          instance: string | null
+          ip: string | null
+          region: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          instance?: string | null
+          ip?: string | null
+          region?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          instance?: string | null
+          ip?: string | null
+          region?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_servers_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_servers_ip_fkey"
+            columns: ["ip"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          }
+        ]
+      }
       matches: {
         Row: {
           away_team: number

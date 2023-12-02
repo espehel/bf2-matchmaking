@@ -15,6 +15,7 @@ export type MatchPlayerResultsRow =
 export type TeamsRow = Database['public']['Tables']['teams']['Row'];
 export type TeamPlayersRow = Database['public']['Tables']['team_players']['Row'];
 export type PlayerRatingsRow = Database['public']['Tables']['player_ratings']['Row'];
+export type MatchServersRow = Database['public']['Tables']['match_servers']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -36,6 +37,7 @@ export type ServersUpdate = Database['public']['Tables']['servers']['Update'];
 export type ServerRconsUpdate = Database['public']['Tables']['server_rcons']['Update'];
 export type TeamsUpdate = Database['public']['Tables']['teams']['Update'];
 export type TeamPlayersUpdate = Database['public']['Tables']['team_players']['Update'];
+export type MatchServersUpdate = Database['public']['Tables']['match_servers']['Update'];
 
 export enum MatchStatus {
   Open = 'Open',
@@ -159,4 +161,18 @@ export interface PlayerResultInfo extends MatchResultInfo {
 
 export interface PlayerRatingsJoined extends Omit<PlayerRatingsRow, 'config'> {
   config: { id: number; name: string };
+}
+export interface MatchConfigResults extends MatchConfigsRow {
+  matches: Array<{
+    id: number;
+    scheduled_at: string;
+    status: MatchStatus;
+    home_team: TeamsRow;
+    away_team: TeamsRow;
+    results: Array<MatchResultsRow>;
+  }>;
+}
+
+export interface MatchServer extends Omit<MatchServersRow, 'ip'> {
+  server: ServersRow | null;
 }

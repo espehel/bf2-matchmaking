@@ -12,6 +12,9 @@ export default function MapsSelect({ maps }: Props) {
     (id: number) => maps.find((map) => map.id === id)?.name,
     [maps]
   );
+
+  const sortedMaps = [...maps].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <div className="dropdown dropdown-bottom min-w-[360px]">
       <label className="label" htmlFor="mapsSelect">
@@ -24,7 +27,7 @@ export default function MapsSelect({ maps }: Props) {
           }
         </Listbox.Button>
         <Listbox.Options className="menu dropdown-content z-[1] shadow bg-base-100 border border-1 rounded-box p-0 w-full max-h-[200px]">
-          {maps.map((map) => (
+          {sortedMaps.map((map) => (
             <Listbox.Option
               className="m-1 p-1.5 text-md text-left rounded cursor-pointer ui-active:bg-accent ui-active:text-accent-content ui-selected:bg-primary ui-selected:text-primary-content"
               key={map.id}

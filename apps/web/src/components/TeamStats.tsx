@@ -6,13 +6,8 @@ interface Props {
 
 export default function TeamStats({ matchResult }: Props) {
   return (
-    <div className="flex gap-2 items-start justify-around">
-      <div>
-        <p className="font-extrabold text-5xl text-secondary">{`Team ${matchResult.team.name}`}</p>
-        {matchResult.is_winner && (
-          <div className="text-left text-xl font-bold text-success">Winner</div>
-        )}
-      </div>
+    <div className="flex flex-col gap-2 items-center justify-around">
+      <p className="font-extrabold text-5xl text-secondary">{`Team ${matchResult.team.name}`}</p>
       <div className="stats stats-horizontal shadow h-fit">
         <div className="stat">
           <div className="stat-title">Maps</div>
@@ -27,6 +22,11 @@ export default function TeamStats({ matchResult }: Props) {
           <div className="stat-value">{matchResult.tickets}</div>
         </div>
       </div>
+      {matchResult.is_winner ? (
+        <div className="text-left text-xl font-bold text-success">Winner</div>
+      ) : (
+        <div className="h-7" />
+      )}
     </div>
   );
 }
