@@ -30,6 +30,7 @@ export type TeamsInsert = Database['public']['Tables']['teams']['Insert'];
 export type TeamPlayersInsert = Database['public']['Tables']['team_players']['Insert'];
 export type PlayerRatingsInsert =
   Database['public']['Tables']['player_ratings']['Insert'];
+export type MatchServersInsert = Database['public']['Tables']['match_servers']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];

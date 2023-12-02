@@ -12,6 +12,7 @@ import {
   MatchResultsInsert,
   MatchResultsJoined,
   MatchServer,
+  MatchServersInsert,
   MatchServersUpdate,
   MatchStatus,
   PlayerResultsJoined,
@@ -241,14 +242,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('player_id', playerId)
       .order('created_at', { ascending: false })
       .returns<Array<PlayerResultsJoined>>(),
-  createMatchServer: (id: number, region: string) =>
-    client
-      .from('match_servers')
-      .insert({
-        id,
-        region,
-      })
-      .select(),
+  createMatchServer: (values: MatchServersInsert) =>
+    client.from('match_servers').insert(values).select(),
   deleteMatchServer: (id: number) =>
     client.from('match_servers').delete().eq('id', id).select('*'),
   getMatchServer: (id: number) =>
