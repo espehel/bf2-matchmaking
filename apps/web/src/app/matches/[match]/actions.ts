@@ -96,12 +96,15 @@ export async function deleteMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Deleted,
   });
+
   const { data: player } = await supabase(cookies).getSessionPlayer();
 
   if (result.error) {
     logErrorMessage('Failed to delete match', result.error, { matchId, player });
     return result;
   }
+
+  await supabase(cookies).deleteMatchServer(matchId);
 
   const match = result.data;
   const guild = match.config.guild;

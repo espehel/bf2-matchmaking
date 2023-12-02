@@ -241,14 +241,16 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('player_id', playerId)
       .order('created_at', { ascending: false })
       .returns<Array<PlayerResultsJoined>>(),
-  createMatchServer: (match_id: number, region: string) =>
+  createMatchServer: (id: number, region: string) =>
     client
       .from('match_servers')
       .insert({
-        match_id,
+        id,
         region,
       })
       .select(),
+  deleteMatchServer: (id: number) =>
+    client.from('match_servers').delete().eq('id', id).select('*'),
   getMatchServer: (match_id: number) =>
     client
       .from('match_servers')

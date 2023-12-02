@@ -12,7 +12,6 @@ interface Props {
 
 export default async function ScheduledMatchCard({ match }: Props) {
   const { data: server } = await supabase(cookies).getMatchServer(match.id);
-
   const serverText =
     match.server?.name ?? (server?.region ? `${server.region} server` : 'No server set');
 
