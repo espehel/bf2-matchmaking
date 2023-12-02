@@ -165,13 +165,12 @@ export async function startTopLocationPoll(
   return new Promise(async (resolve, reject) => {
     const pollEndTime = DateTime.now().plus({ seconds: 30 });
 
-    const channel = await getTestChannel();
-    const pollMessage = await channel.send({
+    const pollMessage = await message.channel.send({
       embeds: [
         { fields: [createServerLocationPollField(pollEndTime), getMatchField(match)] },
       ],
-    }); // TODO: change to message.channel
-    logMessage(`Channel ${channel.id}: Poll created for Match ${match.id}`, {
+    });
+    logMessage(`Channel ${message.channel.id}: Poll created for Match ${match.id}`, {
       match,
     });
 

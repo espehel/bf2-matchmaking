@@ -7,6 +7,7 @@ import {
 } from '@bf2-matchmaking/logging';
 import {
   DnsRecordWithoutPriority,
+  isDiscordMatch,
   isServerMatch,
   LiveInfo,
   MatchConfigsRow,
@@ -151,10 +152,11 @@ export async function processResults(match: MatchesJoined) {
     playerResults,
     updatedRatings,
   });
-
-  await sendChannelMessage('1046889100369739786', {
-    embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
-  });
+  if (isDiscordMatch(match)) {
+    await sendChannelMessage(match.config.channel, {
+      embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
+    });
+  }
   return data;
 }
 
@@ -209,33 +211,31 @@ export async function sendLiveMatchServerMessage(liveMatch: LiveMatch) {
 }
 export async function updateLiveMatchServer(liveMatch: LiveMatch, liveInfo: LiveInfo) {
   const match = await updateServer(liveMatch, liveInfo.ip);
-  if (match && isServerMatch(match)) {
+  if (match && isServerMatch(match) && isDiscordMatch(match)) {
     const joinmeHref = await getJoinmeHref(match.server);
-    await sendChannelMessage(TEST_CHANNEL_ID, {
+    await sendChannelMessage(match.config.channel, {
       embeds: [getWarmUpStartedEmbed(match, liveInfo.serverName, joinmeHref)],
     });
     logMessage(
-      `Channel ${TEST_CHANNEL_ID}: LiveMatch server updated to ${liveInfo.serverName} for Match ${liveMatch.match.id}`,
+      `Channel ${match.config.channel}: LiveMatch server updated to ${liveInfo.serverName} for Match ${liveMatch.match.id}`,
       { liveMatch, liveInfo, match }
     );
   }
 }
 
 export async function updateServer(liveMatch: LiveMatch, server: string) {
-  const { data, error } = await client().updateMatch(liveMatch.match.id, {
-    server,
-  });
+  const result = await client().upsertMatchServer({ id: liveMatch.match.id, ip: server });
 
-  if (error) {
+  if (result.error) {
     logErrorMessage(
       `Match ${liveMatch.match.id}: Failed to update server for LiveMatch`,
-      error
+      result.error
     );
     return null;
   }
-
-  liveMatch.setMatch(data);
-  return data;
+  const match = await client().getMatch(liveMatch.match.id).then(verifySingleResult);
+  liveMatch.setMatch(match);
+  return match;
 }
 
 export async function createLiveMatchFromDns(
@@ -249,12 +249,13 @@ export async function createLiveMatchFromDns(
   }
 
   info('createLiveMatchFromDns', `Match ${matchId}: Updating server to ${server.ip}`);
-  const result = await client().updateMatch(matchId, { server: server.ip });
+  const result = await client().upsertMatchServer({ id: matchId, ip: server.ip });
   if (result.error) {
     error('createLiveMatchFromDns', result.error);
     return;
   }
-  initLiveMatch(result.data, { prelive: false });
+  const match = await client().getMatch(matchId).then(verifySingleResult);
+  initLiveMatch(match, { prelive: false });
 }
 
 export async function fixMissingMatchPlayers(match: MatchesJoined) {
