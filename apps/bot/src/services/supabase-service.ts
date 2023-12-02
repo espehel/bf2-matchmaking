@@ -46,11 +46,18 @@ export async function createScheduledMatch(options: CreateScheduledMatchOptions)
     .createMatchFromConfig(options.config)
     .then(verifySingleResult);
   logMessage(`Match ${match.id} created`, { match });
+
+  if (server) {
+    await client().createMatchServer({
+      id: match.id,
+      ip: server,
+    });
+  }
+
   const { data: updatedMatch, error: err } = await client().updateMatch(match.id, {
     home_team,
     away_team,
     scheduled_at: options.startTime,
-    server,
     status: MatchStatus.Scheduled,
   });
 

@@ -244,6 +244,8 @@ export default (client: SupabaseClient<Database>) => ({
       .returns<Array<PlayerResultsJoined>>(),
   createMatchServer: (values: MatchServersInsert) =>
     client.from('match_servers').insert(values).select(),
+  upsertMatchServer: (values: MatchServersInsert) =>
+    client.from('match_servers').upsert(values).select().single(),
   deleteMatchServer: (id: number) =>
     client.from('match_servers').delete().eq('id', id).select('*'),
   getMatchServer: (id: number) =>

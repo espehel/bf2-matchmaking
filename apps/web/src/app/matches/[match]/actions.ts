@@ -12,6 +12,7 @@ import {
 } from '@bf2-matchmaking/discord';
 import { getMatchDescription } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
 import { DateTime } from 'luxon';
+import { verifySingleResult } from '@bf2-matchmaking/supabase';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const result = await supabase(cookies).deleteMatchPlayer(matchId, playerId);
@@ -181,16 +182,14 @@ export async function setTeams(match: MatchesJoined, serverIp: string) {
 }
 
 export async function setServer(matchId: number, serverIp: string) {
-  const result = await supabase(cookies).updateMatch(matchId, {
-    server: serverIp,
-  });
   const { data: player } = await supabase(cookies).getSessionPlayer();
+  const result = await supabase(cookies).upsertMatchServer({ id: matchId, ip: serverIp });
 
   if (result.error) {
     logErrorMessage('Failed to set server', result.error, { matchId, serverIp, player });
     return result;
   }
-  const match = result.data;
+  const match = await supabase(cookies).getMatch(matchId).then(verifySingleResult);
   const guild = match.config.guild;
 
   let events: unknown = null;

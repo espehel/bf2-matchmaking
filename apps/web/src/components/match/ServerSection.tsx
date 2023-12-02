@@ -18,11 +18,15 @@ interface Props {
 }
 
 export default async function ServerSection({ matchServer, match }: Props) {
+  const { data: regions } = await api.platform().getLocations();
+  const city = regions?.find((r) => r.id === matchServer.region)?.city;
   if (!matchServer.server) {
     return (
       <section className="section max-w-md text-left">
         <div className="flex justify-between items-center gap-2">
-          <h2 className="text-xl">{`Server will be created in ${matchServer.region} 15 min before match start.`}</h2>
+          <h2 className="text-xl">{`Server will be created${
+            ` in ${city}` || ''
+          } 15 min before match start.`}</h2>
           <RevalidateForm path={`/matches/${matchServer.id}`} />
         </div>
       </section>

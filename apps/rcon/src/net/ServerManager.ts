@@ -1,6 +1,6 @@
 import { LiveServer } from './LiveServer';
 import { client, fallbackResult, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { info, logSupabaseError } from '@bf2-matchmaking/logging';
+import { info, logErrorMessage, logSupabaseError } from '@bf2-matchmaking/logging';
 import { PendingServer, ServerRconsRow } from '@bf2-matchmaking/types';
 import { createLiveInfo, updateServerName } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
@@ -134,19 +134,22 @@ export async function updatePendingServers() {
       info('updatePendingServers', `Server ${dns.name}: Failed to get info`);
       continue;
     }
+    try {
+      const server = await client()
+        .upsertServer({ ip: dns.name, port, name: serverInfo.serverName })
+        .then(verifySingleResult);
 
-    const server = await client()
-      .upsertServer({ ip: dns.name, port, name: serverInfo.serverName })
-      .then(verifySingleResult);
+      const serverRcon = await client()
+        .upsertServerRcon({ id: dns.name, rcon_port, rcon_pw })
+        .then(verifySingleResult);
 
-    const serverRcon = await client()
-      .upsertServerRcon({ id: dns.name, rcon_port, rcon_pw })
-      .then(verifySingleResult);
-
-    const liveServer = await initLiveServer(serverRcon);
-    await createLiveMatchFromDns(dns, server);
-    if (liveServer) {
-      connectedServers.push(dns.name);
+      const liveServer = await initLiveServer(serverRcon);
+      await createLiveMatchFromDns(dns, server);
+      if (liveServer) {
+        connectedServers.push(dns.name);
+      }
+    } catch (e) {
+      logErrorMessage(`Server ${dns.name}: Failed to update pending server`, e);
     }
   }
 

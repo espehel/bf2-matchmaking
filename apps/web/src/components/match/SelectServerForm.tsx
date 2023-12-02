@@ -18,7 +18,7 @@ export default function SelectServerForm({ match, servers }: Props) {
       if (error) {
         toast.error('Failed to set server');
       } else {
-        toast.success(`Changed server to ${data.server?.name}`);
+        toast.success(`Changed server to ${data.ip}`);
       }
     },
     [match.id]
