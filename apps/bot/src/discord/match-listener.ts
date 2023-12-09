@@ -83,7 +83,6 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
       const match = await createDraftingMatchFromPubobotEmbed(
         message.embeds[0],
         message.guild.members,
-        client.users,
         config
       );
 

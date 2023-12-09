@@ -88,7 +88,6 @@ async function createMatchMap(match_id: number, embed: Embed) {
 export async function createDraftingMatchFromPubobotEmbed(
   embed: Embed,
   guildMembers: GuildMemberManager,
-  users: UserManager,
   config: DiscordConfig
 ): Promise<DiscordMatch> {
   const pubobotId = getPubobotId(embed);
@@ -104,17 +103,19 @@ export async function createDraftingMatchFromPubobotEmbed(
   pubobotMatchMap.set(pubobotId, match.id);
 
   const members = await getGuildMemberIds(embed, guildMembers);
-  const matchPlayers = await createDraftingMatchPlayers(match.id, members);
-  const maps = createMatchMap(match.id, embed);
+  await Promise.all([
+    createDraftingMatchPlayers(match.id, members),
+    createMatchMap(match.id, embed),
+  ]);
+  const { data: updatedMatch } = await client().getMatch(match.id);
 
   logMessage(`Match ${match.id}: Created with status ${match.status}`, {
-    match,
+    match: updatedMatch,
     config,
     members,
-    matchPlayers,
-    maps,
   });
-  return match;
+
+  return updatedMatch && isDiscordMatch(updatedMatch) ? updatedMatch : match;
 }
 
 export async function startMatchFromPubobotEmbed(
