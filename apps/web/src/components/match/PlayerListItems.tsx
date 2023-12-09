@@ -8,6 +8,8 @@ import {
 } from '@bf2-matchmaking/types';
 import PlayerItem from '@/components/match/PlayerItem';
 import { api } from '@bf2-matchmaking/utils';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
@@ -33,8 +35,9 @@ export default async function PlayerListItems({ players, team, captains, match }
     </>
   );
   async function fetchPlayerInfo(): Promise<Array<PlayerListItem>> {
-    if (match.server && match.status === MatchStatus.Ongoing) {
-      const { data } = await api.rcon().getServerPlayerList(match.server.ip);
+    const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
+    if (matchServer && matchServer.server && match.status === MatchStatus.Ongoing) {
+      const { data } = await api.rcon().getServerPlayerList(matchServer.server.ip);
       if (data) {
         return data;
       }
