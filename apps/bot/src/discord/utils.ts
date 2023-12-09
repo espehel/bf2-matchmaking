@@ -7,6 +7,8 @@ import { TEST_CHANNEL_ID } from '@bf2-matchmaking/discord';
 export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
   Boolean(channel && channel.isTextBased());
 
+export const isPubobotMatchCheckIn = (embed?: Embed) =>
+  embed?.title?.includes('is now on the check-in stage!') || false;
 export const isPubobotMatchDrafting = (embed?: Embed) =>
   embed?.title?.includes('is now on the draft stage!') || false;
 export const isPubobotMatchStarted = (embed?: Embed) =>

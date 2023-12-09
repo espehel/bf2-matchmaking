@@ -7,20 +7,13 @@ import {
   MatchesJoined,
   MatchStatus,
 } from '@bf2-matchmaking/types';
-import {
-  Client,
-  Embed,
-  Message,
-  UserManager,
-  GuildMemberManager,
-  Guild,
-} from 'discord.js';
+import { Embed, Message, UserManager, GuildMemberManager } from 'discord.js';
 import { compareMessageReactionCount, toMatchPlayer } from './utils';
 import { logMessage } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { findMapId, getOrCreatePlayer } from './supabase-service';
 import { DateTime } from 'luxon';
-import { assertNumber } from '@bf2-matchmaking/utils';
+import { assertNumber, assertObj } from '@bf2-matchmaking/utils';
 import {
   getServerLocation,
   getServerLocationEmojis,
@@ -32,14 +25,40 @@ import {
   getMatchField,
 } from '@bf2-matchmaking/discord';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
-import { getTestChannel } from '../discord/utils';
+import { PubobotMatch } from './PubobotMatch';
 
-const pubobotMatchMap = new Map<number, number>();
+let pubobotMatches: Array<PubobotMatch> = [];
+function addMatch(match: PubobotMatch) {
+  pubobotMatches = [...pubobotMatches.filter((m) => m.id !== match.id), match];
+}
+
+export function addCheckinMatch(embed: Embed) {
+  let match = PubobotMatch.fromCheckInEmbed(embed);
+  if (match) {
+    match.addCheckinPlayers(embed);
+    addMatch(match);
+  }
+  return match;
+}
+export async function addDraftingMatch(message: Message<true>) {
+  const [embed] = message.embeds;
+  const match = getPubobotMatch(embed) || PubobotMatch.fromDraftingEmbed(embed);
+  if (!match) {
+    return null;
+  }
+  await match.addDraftingPlayers(embed, message.guild.members);
+  match.setMap(embed);
+  addMatch(match);
+  return match;
+}
 export function getPubobotId(embed: Embed) {
   return Number(embed?.footer?.text?.replace('Match id: ', '')) || null;
 }
-export function hasPubotId(id: number) {
-  return pubobotMatchMap.has(id);
+export function getPubobotMatch(embed: Embed) {
+  return pubobotMatches.find((m) => m.id === getPubobotId(embed));
+}
+export function hasPubotId(id: number, state: 'drafting' | 'checkin') {
+  return pubobotMatches.some((match) => match.id === id && match.state === state);
 }
 
 export async function getGuildMemberIds(embed: Embed, guild: GuildMemberManager) {
@@ -71,28 +90,12 @@ async function createDraftingMatchPlayers(match_id: number, playerIds: Array<str
   return matchPlayers || [];
 }
 
-async function createMatchMap(match_id: number, embed: Embed) {
-  const mapName = embed.fields?.find((f) => f.name === 'Map')?.value || null;
-  if (!mapName) {
-    return null;
-  }
-  const mapId = await findMapId(mapName);
-  if (!mapId) {
-    return null;
-  }
-  const { data: matchMap } = await client().createMatchMaps(match_id, mapId);
-
-  return matchMap;
-}
-
 export async function createDraftingMatchFromPubobotEmbed(
-  embed: Embed,
-  guildMembers: GuildMemberManager,
-  users: UserManager,
+  message: Message<true>,
   config: DiscordConfig
 ): Promise<DiscordMatch> {
-  const pubobotId = getPubobotId(embed);
-  assertNumber(pubobotId, 'Failed to create match, Invalid embed');
+  const pubobotMatch = await addDraftingMatch(message);
+  assertObj(pubobotMatch, 'Failed to parse pubobot match');
 
   const match = await client()
     .createMatchFromConfig(config.id, { status: MatchStatus.Drafting })
@@ -101,18 +104,23 @@ export async function createDraftingMatchFromPubobotEmbed(
   if (!isDiscordMatch(match)) {
     throw new Error(`Match ${match.id} is not a Discord match`);
   }
-  pubobotMatchMap.set(pubobotId, match.id);
+  pubobotMatch.setMatchId(match.id);
 
-  const members = await getGuildMemberIds(embed, guildMembers);
-  const matchPlayers = await createDraftingMatchPlayers(match.id, members);
-  const maps = createMatchMap(match.id, embed);
+  const matchPlayers = await createDraftingMatchPlayers(
+    match.id,
+    pubobotMatch.getPlayers()
+  );
+
+  const map = pubobotMatch.map ? await findMapId(pubobotMatch.map) : null;
+  if (map) {
+    await client().createMatchMaps(match.id, map).then(verifySingleResult);
+  }
 
   logMessage(`Match ${match.id}: Created with status ${match.status}`, {
     match,
     config,
-    members,
+    pubobotMatch,
     matchPlayers,
-    maps,
   });
   return match;
 }
@@ -121,15 +129,11 @@ export async function startMatchFromPubobotEmbed(
   embed: Embed,
   users: UserManager
 ): Promise<DiscordMatch> {
-  const pubobotId = getPubobotId(embed);
-  const matchId = pubobotId ? pubobotMatchMap.get(pubobotId) : undefined;
+  const pubobotMatch = getPubobotMatch(embed);
+  assertObj(pubobotMatch, 'Failed to get pubobot match');
+  assertNumber(pubobotMatch.matchId, 'Pubobotmatch does not have a match id');
 
-  if (!matchId) {
-    throw new Error(`Failed to get matchId from pubobotId ${pubobotId}`);
-  }
-
-  const match = await client().getMatch(matchId).then(verifySingleResult);
-
+  const match = await client().getMatch(pubobotMatch.matchId).then(verifySingleResult);
   const team1 = await Promise.all(
     getUserIds(embed, 'USMC').map((player) => users.fetch(player).then(getOrCreatePlayer))
   );
@@ -164,12 +168,15 @@ export async function startMatchFromPubobotEmbed(
   return updatedMatch;
 }
 
-const getUserIds = (embed: Embed, name: string) =>
-  embed.fields
-    ?.find((field) => field.name.includes(name))
-    ?.value.match(/(?<=<@)\d+(?=>)/g) || [];
+export function getUserIds(embed: Embed, name: string) {
+  return (
+    embed.fields
+      ?.find((field) => field.name.includes(name))
+      ?.value.match(/(?<=<@)\d+(?=>)/g) || []
+  );
+}
 
-const getUserNames = (embed: Embed, name: string) =>
+export const getUserNames = (embed: Embed, name: string) =>
   embed.fields
     ?.find((field) => field.name.includes(name))
     ?.value.match(/(?<=`)([^`\n]+)(?=`)/g) || [];

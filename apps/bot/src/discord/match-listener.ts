@@ -1,6 +1,11 @@
 import { DiscordConfig } from '@bf2-matchmaking/types';
 import { error, info, logMessage } from '@bf2-matchmaking/logging';
-import { isPubobotMatchDrafting, isPubobotMatchStarted, replyMessage } from './utils';
+import {
+  isPubobotMatchCheckIn,
+  isPubobotMatchDrafting,
+  isPubobotMatchStarted,
+  replyMessage,
+} from './utils';
 import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
 import { Client, Message, MessageCollector } from 'discord.js';
 import {
@@ -40,6 +45,10 @@ function messageFilter(message: Message) {
   if (isPubobotMatchStarted(embed)) {
     return true;
   }
+  /*if (isPubobotMatchDrafting(embed)) {
+    return !hasPubotId(pubobotId, 'drafting');
+  }
+  return isPubobotMatchCheckIn(embed) && !hasPubotId(pubobotId, 'checkin');*/
   return isPubobotMatchDrafting(embed) && !hasPubotId(pubobotId);
 }
 function handleCollect(config: DiscordConfig, client: Client<true>) {
@@ -53,6 +62,9 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
       return;
     }
 
+    if (isPubobotMatchCheckIn(message.embeds[0])) {
+      return handlePubobotMatchCheckIn(message);
+    }
     if (isPubobotMatchDrafting(message.embeds[0])) {
       return handlePubobotMatchDrafting(message);
     }
@@ -61,6 +73,10 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
       return handlePubobotMatchStarted(message);
     }
   };
+
+  function handlePubobotMatchCheckIn(message: Message<true>) {
+    //addCheckinMatch(message.embeds[0], 'checkin');
+  }
 
   async function handlePubobotMatchDrafting(message: Message<true>) {
     try {

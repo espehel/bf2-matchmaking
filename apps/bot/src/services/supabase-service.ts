@@ -1,7 +1,8 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { User, APIUser } from 'discord.js';
-import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
+import { isNotNull, MapsRow, MatchStatus } from '@bf2-matchmaking/types';
+import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 
 export const getOrCreatePlayer = async ({
   id,
@@ -71,7 +72,7 @@ export async function createScheduledMatch(options: CreateScheduledMatchOptions)
     });
   }
 
-  const maps = (await Promise.all(options.maps.map(findMap))).filter(isNotNull);
+  const maps = (await Promise.all(options.maps.map(findMapId))).filter(isNotNull);
   const { data: matchMaps, error: mapErr } = await client().createMatchMaps(
     match.id,
     ...maps
@@ -88,11 +89,18 @@ export async function createScheduledMatch(options: CreateScheduledMatchOptions)
   }
 }
 
-async function findMap(mapName: string) {
+export async function findMapId(mapName: string): Promise<number | null> {
+  const cachedMap = getCachedValue<number>(mapName);
+  if (cachedMap) {
+    return cachedMap;
+  }
+
   const { data } = await client().searchMap(mapName);
   if (data) {
+    setCachedValue(mapName, data.id);
     return data.id;
   }
+
   return null;
 }
 
