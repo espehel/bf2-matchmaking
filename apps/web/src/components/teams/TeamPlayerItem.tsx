@@ -13,7 +13,7 @@ interface Props {
 export default function TeamPlayerItem({ player, team }: Props) {
   return (
     <li className="flex gap-1 items-center">
-      <span className="text-lg">{player.full_name}</span>
+      <span className="text-lg">{player.nick}</span>
       {player.captain ? (
         <IconBtn
           Icon={StarIconSolid}

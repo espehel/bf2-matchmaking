@@ -39,7 +39,7 @@ export default function TeamDetailsForm({ team }: Props) {
             <span className="mr-1">Owner:</span>
             <PlayerCombobox
               defaultValue={team.owner}
-              placeholder={team.owner.full_name}
+              placeholder={team.owner.nick}
               size="xs"
             />
           </div>

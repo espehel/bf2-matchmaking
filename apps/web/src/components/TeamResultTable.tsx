@@ -38,7 +38,7 @@ export default async function TeamResultTable({ playerResults }: Props) {
         {playerResults.map((result, i) => (
           <tr key={result.player.id} className="hover">
             <th>{i + 1}</th>
-            <td className="truncate">{result.player.full_name}</td>
+            <td className="truncate">{result.player.nick}</td>
             {result && (
               <>
                 <td>{result.score}</td>

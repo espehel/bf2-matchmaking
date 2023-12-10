@@ -28,7 +28,7 @@ export default async function TeamDetailsSection({ team }: Props) {
           </div>
           <div>
             <span className="mr-1">Owner:</span>
-            <span>{team.owner.full_name}</span>
+            <span>{team.owner.nick}</span>
           </div>
         </div>
       </div>

@@ -116,7 +116,7 @@ export async function deleteMatch(matchId: number) {
     );
   }
 
-  logMessage(`Match ${matchId}: Deleted by ${player?.full_name}`, {
+  logMessage(`Match ${matchId}: Deleted by ${player?.nick}`, {
     match,
     player,
     events,
@@ -203,7 +203,7 @@ export async function setServer(matchId: number, serverIp: string) {
     );
   }
 
-  logMessage(`Match ${match.id}: Server ${serverIp} set by ${player?.full_name}`, {
+  logMessage(`Match ${match.id}: Server ${serverIp} set by ${player?.nick}`, {
     match,
     player,
     events,
@@ -249,15 +249,12 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     );
   }
 
-  logMessage(
-    `Match ${matchId}: Maps ${JSON.stringify(maps)} set by ${player?.full_name}`,
-    {
-      match,
-      player,
-      events,
-      maps: result.data,
-    }
-  );
+  logMessage(`Match ${matchId}: Maps ${JSON.stringify(maps)} set by ${player?.nick}`, {
+    match,
+    player,
+    events,
+    maps: result.data,
+  });
 
   revalidatePath(`/matches/${matchId}`);
   return result;

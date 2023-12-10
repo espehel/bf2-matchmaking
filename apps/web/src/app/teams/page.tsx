@@ -18,7 +18,7 @@ export default async function TeamsPage() {
               <Avatar team={t} />
               <p className="text-3xl font-bold font-serif text-accent">{t.name}</p>
               <p className="text-lg font-bold ml-auto self-end">{`Players: ${t.players.length}`}</p>
-              <p className="text-lg font-bold self-end">{`Owner: ${t.owner.full_name}`}</p>
+              <p className="text-lg font-bold self-end">{`Owner: ${t.owner.nick}`}</p>
             </Link>
           </li>
         ))}

@@ -10,7 +10,7 @@ export const shuffleArray = <T = unknown>(array: Array<T>) => {
 };
 
 export const compareFullName = (nameA: TeamPlayer, nameB: TeamPlayer) =>
-  nameA.player.full_name.localeCompare(nameB.player.full_name);
+  nameA.player.nick.localeCompare(nameB.player.nick);
 export const compareIsCaptain = (mpA: MatchPlayersRow, mpB: MatchPlayersRow) =>
   Number(mpB.captain) - Number(mpA.captain);
 

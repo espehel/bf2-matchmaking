@@ -46,15 +46,14 @@ export default (api: ReturnType<typeof supabaseApi>) => ({
 
     return [config, match];
   },
-  getOrCreatePlayer: async ({ id, username, discriminator, avatar }: User) => {
+  getOrCreatePlayer: async ({ id, username, avatar }: User) => {
     const { error, data } = await api.getPlayer(id);
     if (error) {
       console.log('getOrCreatePlayer', `Inserting Player <${username}> with id ${id}`);
       return api
         .createPlayer({
           id,
-          username: `${username}#${discriminator}`,
-          full_name: username,
+          nick: username,
           avatar_url: avatar || '',
         })
         .then(verifySingleResult);

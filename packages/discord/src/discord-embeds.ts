@@ -150,7 +150,7 @@ const getMatchDescription = (match: MatchesJoined): string | undefined => {
   }
   if (match.status === MatchStatus.Drafting) {
     const { captain } = getDraftStep(match);
-    return captain ? `${captain.username} is picking` : undefined;
+    return captain ? `${captain.nick} is picking` : undefined;
   }
 };
 
@@ -183,7 +183,7 @@ const createSummoningFields = (match: MatchesJoined) =>
           name: 'Ready players',
           value: [...getTeamPlayers(match)]
             .sort(compareFullName)
-            .map(({ player, ready }) => `${ready ? '✅' : '❌'}  ${player.full_name}`)
+            .map(({ player, ready }) => `${ready ? '✅' : '❌'}  ${player.nick}`)
             .join('\n'),
         },
       ]

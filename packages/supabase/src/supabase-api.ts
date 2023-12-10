@@ -69,6 +69,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('players').select('*').eq('id', playerId).single(),
   createPlayer: (player: PlayersInsert) =>
     client.from('players').insert([player]).select().single(),
+  upsertPlayers: (players: Array<PlayersInsert>) =>
+    client.from('players').upsert(players).select(),
   updatePlayer: (playerId: string, values: PlayersUpdate) =>
     client.from('players').update(values).eq('id', playerId).select('*').single(),
   updatePlayers: (values: Array<PlayersUpdate>) =>

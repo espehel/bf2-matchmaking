@@ -38,6 +38,6 @@ export default function PlayerListItemsLoading({
     return players
       .map((mp) => match.players.find((p) => p.id === mp.player_id))
       .filter(isDefined)
-      .sort((a, b) => a.full_name.localeCompare(b.full_name));
+      .sort((a, b) => a.nick.localeCompare(b.nick));
   }
 }

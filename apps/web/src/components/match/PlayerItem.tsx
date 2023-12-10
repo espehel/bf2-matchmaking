@@ -35,13 +35,13 @@ export default function PlayerItem({ player, playerInfo, match, team, captains }
         expectedTeam={expectedTeam}
       />
       <div className="flex items-center m-1 truncate">
-        {player.full_name}
+        {player.nick}
         {isCaptain && <StarIcon height={16} viewBox="0 2 20 20" />}
       </div>
       <TeamPlayerActionButton
         action={removeMatchPlayerSA}
-        errorMessage={`Failed to remove ${player.full_name}`}
-        successMessage={`Removed ${player.full_name}`}
+        errorMessage={`Failed to remove ${player.nick}`}
+        successMessage={`Removed ${player.nick}`}
       >
         <XCircleIcon className="text-error" />
       </TeamPlayerActionButton>

@@ -36,5 +36,5 @@ function compareTeamPlayers(
   if (a.captain !== b.captain) {
     return a.captain ? -1 : 1;
   }
-  return a.full_name.localeCompare(b.full_name);
+  return a.nick.localeCompare(b.nick);
 }

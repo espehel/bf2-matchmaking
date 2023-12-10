@@ -17,7 +17,7 @@ export default async function PlayerPage({ params }: Props) {
 
   return (
     <main className="main">
-      <h1 className="mb-8">{player.full_name}</h1>
+      <h1 className="mb-8">{player.nick}</h1>
       {showResults && (
         <Suspense fallback={<Loading />}>
           <ResultsSection player={player} />

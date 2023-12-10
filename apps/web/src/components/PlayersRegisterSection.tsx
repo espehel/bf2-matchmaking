@@ -35,7 +35,7 @@ export default function PlayersRegisterSection({
       const player = registeredPlayers.find((p) => p.keyhash === keyhash);
       if (player) {
         return (
-          <div className="tooltip" data-tip={player.full_name}>
+          <div className="tooltip" data-tip={player.nick}>
             <div className="badge badge-success badge-sm"></div>
           </div>
         );
@@ -52,9 +52,9 @@ export default function PlayersRegisterSection({
       }
       const { error } = await registerPlayer(selectedPlayer.id, keyhash);
       if (error) {
-        toast.error(`Failed to register keyhash of ${selectedPlayer.full_name}`);
+        toast.error(`Failed to register keyhash of ${selectedPlayer.nick}`);
       } else {
-        toast.success(`Updated keyhash of ${selectedPlayer.full_name}`);
+        toast.success(`Updated keyhash of ${selectedPlayer.nick}`);
       }
     },
     [registerPlayer, selectedPlayer]
@@ -65,7 +65,7 @@ export default function PlayersRegisterSection({
       <div className="flex items-center gap-6">
         <PlayerCombobox onPlayerSelected={setSelectedPlayer} />
         <div className="grow bg-base-100 rounded shadow p-2">
-          <p>{`Selected: ${selectedPlayer?.full_name || 'None'}`}</p>
+          <p>{`Selected: ${selectedPlayer?.nick || 'None'}`}</p>
           <p>{`Keyhash: ${selectedPlayer?.keyhash || 'None'}`}</p>
         </div>
       </div>
@@ -103,7 +103,7 @@ export default function PlayersRegisterSection({
           <p className="font-bold">Players not attending</p>
           <ul>
             {nonAttendingPlayers.map((player) => (
-              <li key={player.id}>{player.full_name}</li>
+              <li key={player.id}>{player.nick}</li>
             ))}
           </ul>
         </div>

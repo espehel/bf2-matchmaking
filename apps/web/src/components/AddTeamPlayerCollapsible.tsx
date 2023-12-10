@@ -39,13 +39,13 @@ export default function AddTeamPlayerCollapsible({ match, team }: Props) {
         <ul>
           {players.map(({ player }) => (
             <div key={player.id} className="flex items-center gap-2">
-              <p>{player.full_name}</p>
+              <p>{player.nick}</p>
               <TeamPlayerActionButton
                 action={() =>
                   addMatchPlayer(match.id, player.id, team.id, match.config.id)
                 }
-                successMessage={`Added ${player.full_name}`}
-                errorMessage={`Failed to add ${player.full_name}`}
+                successMessage={`Added ${player.nick}`}
+                errorMessage={`Failed to add ${player.nick}`}
               >
                 <PlusCircleIcon className="text-success" />
               </TeamPlayerActionButton>

@@ -1,29 +1,33 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { User, APIUser } from 'discord.js';
+import { User, APIUser, GuildMember } from 'discord.js';
 import { isNotNull, MapsRow, MatchStatus } from '@bf2-matchmaking/types';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 
-export const getOrCreatePlayer = async ({
-  id,
-  username,
-  discriminator,
-  avatar,
-}: User | APIUser) => {
+export async function upsertMembers(members: Array<GuildMember>) {
+  const { data } = await client().upsertPlayers(
+    members.map((m) => ({
+      id: m.id,
+      nick: m.displayName,
+      avatar_url: m.user.avatarURL() || '',
+    }))
+  );
+  return data ? data.map((p) => p.id) : [];
+}
+export async function getOrCreatePlayer({ id, username, avatar }: User | APIUser) {
   const { error, data } = await client().getPlayer(id);
   if (error) {
     info('getOrCreatePlayer', `Inserting Player <${username}> with id ${id}`);
     return client()
       .createPlayer({
         id,
-        username: `${username}#${discriminator}`,
-        full_name: username,
+        nick: username,
         avatar_url: avatar || '',
       })
       .then(verifySingleResult);
   }
   return data;
-};
+}
 interface CreateScheduledMatchOptions {
   config: number;
   home_team: string;

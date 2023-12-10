@@ -18,7 +18,7 @@ import {
 import { compareMessageReactionCount, toMatchPlayer } from './utils';
 import { logMessage } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { findMapId, getOrCreatePlayer } from './supabase-service';
+import { findMapId, getOrCreatePlayer, upsertMembers } from './supabase-service';
 import { DateTime } from 'luxon';
 import { assertNumber } from '@bf2-matchmaking/utils';
 import {
@@ -42,10 +42,10 @@ export function hasPubotId(id: number) {
   return pubobotMatchMap.has(id);
 }
 
-export async function getGuildMemberIds(embed: Embed, guild: GuildMemberManager) {
+export async function getGuildMember(embed: Embed, guild: GuildMemberManager) {
   const searchGuild = async (nick: string) => {
     const result = await guild.search({ query: nick });
-    return result.at(0)?.id || null;
+    return result.at(0) || null;
   };
   return (
     await Promise.all(
@@ -102,7 +102,7 @@ export async function createDraftingMatchFromPubobotEmbed(
   }
   pubobotMatchMap.set(pubobotId, match.id);
 
-  const members = await getGuildMemberIds(embed, guildMembers);
+  const members = await getGuildMember(embed, guildMembers).then(upsertMembers);
   await Promise.all([
     createDraftingMatchPlayers(match.id, members),
     createMatchMap(match.id, embed),

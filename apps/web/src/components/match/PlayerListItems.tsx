@@ -56,7 +56,7 @@ export default async function PlayerListItems({ players, team, captains, match }
       ])
       .sort(([aP, aI], [bP, bI]) => {
         if (!aI && !bI) {
-          return aP.full_name.localeCompare(bP.full_name);
+          return aP.nick.localeCompare(bP.nick);
         }
         return (
           (aI ? Number(aI.index) : Number.MAX_VALUE) -

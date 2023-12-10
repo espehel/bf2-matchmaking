@@ -94,7 +94,7 @@ export async function createScheduledMatch(formData: FormData) {
         });
       }
 
-      logMessage(`Match ${result.data.id} scheduled by ${player?.full_name}`, {
+      logMessage(`Match ${result.data.id} scheduled by ${player?.nick}`, {
         match: result.data,
         player,
         scheduledInput,

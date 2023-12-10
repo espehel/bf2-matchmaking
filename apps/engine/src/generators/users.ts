@@ -26,14 +26,14 @@ function getUserElement(player: PlayersRow) {
     return '';
   }
   return `  <Users>
-    <Username>${player.full_name}</Username>
+    <Username>${player.nick}</Username>
     <Password>2023</Password>
     <IsEnabled>true</IsEnabled>
-    <Notes>${player.full_name}</Notes>
+    <Notes>${player.nick}</Notes>
     <GroupName>Administrators</GroupName>
   </Users>
   <UserProperties>
-    <Username>${player.full_name}</Username>
+    <Username>${player.nick}</Username>
     <PropName>Hash</PropName>
     <PropValue>${player.keyhash}</PropValue>
   </UserProperties>`;

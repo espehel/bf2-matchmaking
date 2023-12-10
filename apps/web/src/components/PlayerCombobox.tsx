@@ -69,7 +69,7 @@ export default function PlayerCombobox({
           placeholder={placeholder}
           name="player-select"
           onChange={handleInputChange}
-          displayValue={(player: PlayersRow) => player?.full_name || ''}
+          displayValue={(player: PlayersRow) => player?.nick || ''}
         />
         <Combobox.Options className="menu dropdown-content z-[1] shadow bg-base-100 rounded-box p-0 w-full">
           {players.map((player) => (
@@ -83,7 +83,7 @@ export default function PlayerCombobox({
                   }`}
                 >
                   {selected && <CheckIcon className="text-success" />}
-                  {player.full_name}
+                  {player.nick}
                 </li>
               )}
             </Combobox.Option>

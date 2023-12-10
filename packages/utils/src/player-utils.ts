@@ -26,13 +26,12 @@ export const getTeamPlayers = (
     .filter(isTeamPlayer);
 
 export const getPlayerName = (tp: TeamPlayer) =>
-  tp.captain ? `**${tp.player.full_name}**` : tp.player.full_name;
+  tp.captain ? `**${tp.player.nick}**` : tp.player.nick;
 
 export const findPlayerName = (
   match: MatchesJoined,
   playerId: string | undefined
-): string | undefined =>
-  playerId && match.players.find((p) => p.id === playerId)?.full_name;
+): string | undefined => playerId && match.players.find((p) => p.id === playerId)?.nick;
 
 export const getPlayerTeam = (playerId: string, match: MatchesJoined): number | null =>
   match.teams.find((mp) => mp.player_id === playerId)?.team || null;

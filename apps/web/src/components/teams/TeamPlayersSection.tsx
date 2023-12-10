@@ -19,7 +19,7 @@ export default function TeamPlayersSection({ team }: Props) {
       <ul className="ml-2">
         {players.map((p) => (
           <li key={p.id} className="flex items-center w-52 text-lg">
-            {p.full_name}
+            {p.nick}
             {p.captain && <StarIcon height={16} viewBox="0 2 20 20" />}
           </li>
         ))}
@@ -35,5 +35,5 @@ function compareTeamPlayers(
   if (a.captain !== b.captain) {
     return a.captain ? -1 : 1;
   }
-  return a.full_name.localeCompare(b.full_name);
+  return a.nick.localeCompare(b.nick);
 }
