@@ -76,7 +76,10 @@ const rcon = () => {
       getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers()), {
         cache: 'no-store',
       }),
-    getServer: (ip: string) => getJSON<RconBf2Server>(basePath.concat(paths.server(ip))),
+    getServer: (ip: string) =>
+      getJSON<RconBf2Server>(basePath.concat(paths.server(ip)), {
+        cache: 'no-store',
+      }),
     deleteServerLive: (ip: string) =>
       deleteJSON<RconBf2Server>(basePath.concat(paths.serverLive(ip))),
     postMatchLive: (matchId: number, prelive: boolean) =>
