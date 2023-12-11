@@ -2,7 +2,7 @@ import { Channel, Embed, Message, MessageCreateOptions, TextChannel } from 'disc
 import { info, logCreateChannelMessage, logErrorMessage } from '@bf2-matchmaking/logging';
 import { getDiscordClient } from './client';
 import { assertObj } from '@bf2-matchmaking/utils';
-import { TEST_CHANNEL_ID } from '@bf2-matchmaking/discord';
+import { DEMO_CHANNEL_ID, TEST_CHANNEL_ID } from '@bf2-matchmaking/discord';
 
 export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
   Boolean(channel && channel.isTextBased());
@@ -39,6 +39,15 @@ export async function getTestChannel() {
   const channel = await client.channels.fetch(TEST_CHANNEL_ID);
   if (!isTextBasedChannel(channel)) {
     throw new Error('Test channel not found');
+  }
+  return channel;
+}
+
+export async function getDemoChannel() {
+  const client = await getDiscordClient();
+  const channel = await client.channels.fetch(DEMO_CHANNEL_ID);
+  if (!isTextBasedChannel(channel)) {
+    throw new Error('Failed to fetch demo channel');
   }
   return channel;
 }

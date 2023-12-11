@@ -56,3 +56,11 @@ export interface Region {
   continent: string;
   options: Array<RegionOption>;
 }
+
+export interface StartupScript {
+  id: string;
+  date_created: string;
+  date_modified: string;
+  name: string;
+  type: 'boot';
+}

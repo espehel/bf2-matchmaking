@@ -6,8 +6,25 @@ import {
   updateChannelListener,
 } from '../discord/channel-manager';
 import { getDiscordClient } from '../discord/client';
-import { isTextBasedChannel } from '../discord/utils';
+import { getDemoChannel, isTextBasedChannel } from '../discord/utils';
+import { client } from '@bf2-matchmaking/supabase';
+import { PostDemosRequestBody } from '@bf2-matchmaking/types';
 export const rootRouter = new Router();
+
+rootRouter.post('/demos', async (ctx) => {
+  const { server, demos } = ctx.request.body as PostDemosRequestBody;
+  const channel = await getDemoChannel();
+
+  const response = await channel.send({
+    content: server,
+    files: demos,
+  });
+  ctx.body = {
+    channel: response.channel.id,
+    message: response.id,
+  };
+  ctx.status = 201;
+});
 
 rootRouter.post('/channels/:channel/listeners', async (ctx) => {
   const { channel } = ctx.params;

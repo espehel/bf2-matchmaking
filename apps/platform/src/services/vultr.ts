@@ -5,7 +5,7 @@ import {
   assertString,
   createServerDnsName,
 } from '@bf2-matchmaking/utils';
-import { Instance, Plan, Region } from '@bf2-matchmaking/types';
+import { Instance, Plan, Region, StartupScript } from '@bf2-matchmaking/types';
 import { info, logMessage } from '@bf2-matchmaking/logging';
 import { VULTR } from '../constants';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
@@ -30,6 +30,17 @@ export async function loadStartupScripts() {
   return startupScripts;
 }
 
+export async function deleteStartupScript(name: string) {
+  const { startup_scripts } = (await client.startupScripts.listStartupScripts({})) as {
+    startup_scripts: Array<StartupScript>;
+  };
+
+  const script = startup_scripts.find((s) => s.name === name);
+  if (script) {
+    await client.startupScripts.deleteStartupScript({ 'startup-id': script.id });
+  }
+}
+
 async function upsertStartupScript(name: string, script: string) {
   const startupScriptId = startupScripts.get(name);
   if (startupScriptId) {
@@ -39,6 +50,14 @@ async function upsertStartupScript(name: string, script: string) {
     });
     return startupScriptId;
   }
+  const { startup_script } = await client.startupScripts.createStartupScript({
+    name,
+    script,
+  });
+  return startup_script.id;
+}
+
+async function createStartupScript(name: string, script: string) {
   const { startup_script } = await client.startupScripts.createStartupScript({
     name,
     script,
@@ -67,7 +86,7 @@ export async function createServerInstance(
     generateStartupScript(serverName, match, map, vehicles),
     'utf8'
   ).toString('base64');
-  const script_id = await upsertStartupScript(VULTR.scriptName, script);
+  const script_id = await createStartupScript(serverName, script);
 
   const { instance } = await client.instances.createInstance({
     region,

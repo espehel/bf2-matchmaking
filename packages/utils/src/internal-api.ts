@@ -12,6 +12,8 @@ import {
   LiveInfo,
   DnsRecordWithoutPriority,
   Region,
+  PostDemosRequestBody,
+  PostDemosResponseBody,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
@@ -95,6 +97,7 @@ const bot = () => {
   const basePath = 'https://bot.bf2.gg';
   const paths = {
     channelsListeners: (channelId: string) => `/matches/${channelId}/listeners`,
+    demos: () => `/demos`,
   };
   return {
     paths,
@@ -102,6 +105,8 @@ const bot = () => {
       postJSON(basePath.concat(paths.channelsListeners(channelId)), {}),
     deleteChannelsListeners: (channelId: string) =>
       postJSON(basePath.concat(paths.channelsListeners(channelId)), {}),
+    postDemos: (body: PostDemosRequestBody) =>
+      postJSON<PostDemosResponseBody>(basePath.concat(paths.demos()), body),
   };
 };
 

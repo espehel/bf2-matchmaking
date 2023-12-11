@@ -31,6 +31,36 @@ const parseError = (error: any): FetchError => {
   }
   return { message: JSON.stringify(error) };
 };
+export const getText = async (
+  url: string,
+  options: Partial<RequestInit> & { next?: any } = {}
+): Promise<FetchResult<string>> => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    const res = await fetch(url, {
+      headers,
+      method: 'GET',
+      ...options,
+    });
+    const { status, statusText } = res;
+    if (res.ok) {
+      try {
+        const data = await res.text();
+        return { data, error: null, status, statusText };
+      } catch (e) {
+        return { data: null, error: parseError(e), status, statusText };
+      }
+    } else {
+      const error = await res.text();
+      return { data: null, error: parseError(error), status, statusText };
+    }
+  } catch (error) {
+    return { data: null, error: parseError(error), status: -1, statusText: '' };
+  }
+};
 export const getJSON = async <T>(
   url: string,
   options: Partial<RequestInit> & { next?: any } = {}

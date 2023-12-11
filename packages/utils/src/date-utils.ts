@@ -13,3 +13,8 @@ export const formatSecToMin = (seconds: string) => {
 export function toLocalISO(date: string | undefined | null, zone: string) {
   return date ? DateTime.fromISO(date).setZone(zone).toISO() || undefined : undefined;
 }
+
+export function formatDemoFilename(name: string) {
+  const dateString = name.replace(/auto_|\.bf2demo/g, '');
+  return DateTime.fromFormat(dateString, 'yyyy_MM_dd_HH_mm_ss', { zone: 'utc' });
+}

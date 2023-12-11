@@ -95,3 +95,12 @@ export type GetMatchLiveResponseBody = {
   liveState: LiveServerState;
   matchId: number;
 };
+
+export interface PostDemosRequestBody {
+  server: string;
+  demos: Array<string>;
+}
+export interface PostDemosResponseBody {
+  channel: string;
+  message: string;
+}
