@@ -4,7 +4,7 @@ import {
   MatchResultsJoined,
   MatchStatus,
   RconBf2Server,
-  ServerMatch,
+  ServersRow,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -19,10 +19,14 @@ import {
 import { getEmbedTitle, replaceDiscordGG } from './embed-utils';
 import { DateTime } from 'luxon';
 
-export const getMatchEmbed = (match: MatchesJoined, description?: string): APIEmbed => ({
+export const getMatchEmbed = (
+  match: MatchesJoined,
+  server: ServersRow | null | undefined,
+  description?: string
+): APIEmbed => ({
   title: getEmbedTitle(match),
   description: description || getMatchDescription(match),
-  fields: getMatchFields(match),
+  fields: getMatchFields(match, server),
   url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
 });
 
@@ -44,23 +48,28 @@ export const getServerEmbed = (server: RconBf2Server) => ({
   ],
 });
 
-export const getLiveMatchEmbed = (match: ServerMatch, joinmeHref: string) => ({
-  description: `Join [${replaceDiscordGG(match.server.name)}](${joinmeHref})`,
+export const getLiveMatchEmbed = (
+  match: MatchesJoined,
+  server: ServersRow,
+  joinmeHref: string
+) => ({
+  description: `Join [${replaceDiscordGG(server.name)}](${joinmeHref})`,
   fields: [
-    { name: 'ip', value: match.server.ip, inline: true },
-    { name: 'port', value: match.server.port, inline: true },
+    { name: 'ip', value: server.ip, inline: true },
+    { name: 'port', value: server.port, inline: true },
     getLiveMatchField(match),
   ],
 });
 export const getWarmUpStartedEmbed = (
-  match: ServerMatch,
+  match: MatchesJoined,
+  server: ServersRow,
   serverName: string,
   joinmeHref: string
 ) => ({
   description: `Warm up started on [${replaceDiscordGG(serverName)}](${joinmeHref})`,
   fields: [
-    { name: 'ip', value: match.server.ip, inline: true },
-    { name: 'port', value: match.server.port, inline: true },
+    { name: 'ip', value: server.ip, inline: true },
+    { name: 'port', value: server.port, inline: true },
     getLiveMatchField(match),
   ],
 });
@@ -154,12 +163,12 @@ const getMatchDescription = (match: MatchesJoined): string | undefined => {
   }
 };
 
-const getMatchFields = (match: MatchesJoined) =>
+const getMatchFields = (match: MatchesJoined, server: ServersRow | null | undefined) =>
   createCurrentPlayersFields(match)
     .concat(createSummoningFields(match))
     .concat(createPoolFields(match))
     .concat(createTeamFields(match))
-    .concat(createServerFields(match));
+    .concat(createServerFields(match, server));
 
 const createCurrentPlayersFields = (match: MatchesJoined) =>
   match.status === MatchStatus.Open
@@ -226,13 +235,16 @@ const createTeamFields = (match: MatchesJoined) =>
       ]
     : [];
 
-const createServerFields = (match: MatchesJoined) =>
+const createServerFields = (
+  match: MatchesJoined,
+  server: ServersRow | null | undefined
+) =>
   (match.status === MatchStatus.Drafting || match.status === MatchStatus.Ongoing) &&
-  match.server
+  server
     ? [
         {
-          name: match.server.name,
-          value: `https://joinme.click/g/bf2/${match.server.ip}:${match.server.port}`,
+          name: server.name,
+          value: `https://joinme.click/g/bf2/${server.ip}:${server.port}`,
         },
       ]
     : [];

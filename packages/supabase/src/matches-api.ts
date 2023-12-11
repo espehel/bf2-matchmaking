@@ -19,7 +19,7 @@ import {
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
-  '*, players!match_players(*), maps(*), config!inner(*), teams:match_players(*), server(*), rounds(*, map(*), server(*), team1(*), team2(*)), home_team(*, players:team_players(*, player:players(*))), away_team(*, players:team_players(*, player:players(*)))';
+  '*, players!match_players(*), maps(*), config!inner(*), teams:match_players(*), rounds(*, map(*), team1(*), team2(*)), home_team(*, players:team_players(*, player:players(*))), away_team(*, players:team_players(*, player:players(*)))';
 export default (client: SupabaseClient<Database>) => ({
   createMatchFromConfig: (config: number, values?: Omit<MatchesInsert, 'config'>) =>
     client
@@ -31,8 +31,7 @@ export default (client: SupabaseClient<Database>) => ({
     config: number,
     home_team: number,
     away_team: number,
-    scheduled_at: string,
-    server?: string | null
+    scheduled_at: string
   ) =>
     client
       .from('matches')
@@ -43,7 +42,6 @@ export default (client: SupabaseClient<Database>) => ({
           home_team,
           away_team,
           scheduled_at,
-          server,
         },
       ])
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
@@ -201,12 +199,6 @@ export default (client: SupabaseClient<Database>) => ({
       .from('match_maps')
       .insert(maps.map((mapId) => ({ match_id, map_id: mapId })))
       .select('*'),
-  getOngoingMatchesByServer: (serverIp: string) =>
-    client
-      .from('matches')
-      .select('*')
-      .eq('status', MatchStatus.Ongoing)
-      .eq('server', serverIp),
   createMatchResult: (...results: Array<MatchResultsInsert>) =>
     client
       .from('match_results')
@@ -243,9 +235,17 @@ export default (client: SupabaseClient<Database>) => ({
       .order('created_at', { ascending: false })
       .returns<Array<PlayerResultsJoined>>(),
   createMatchServer: (values: MatchServersInsert) =>
-    client.from('match_servers').insert(values).select(),
+    client
+      .from('match_servers')
+      .insert(values)
+      .select('*, server:ip(*)')
+      .single<MatchServer>(),
   upsertMatchServer: (values: MatchServersInsert) =>
-    client.from('match_servers').upsert(values).select().single(),
+    client
+      .from('match_servers')
+      .upsert(values)
+      .select('*, server:ip(*)')
+      .single<MatchServer>(),
   deleteMatchServer: (id: number) =>
     client.from('match_servers').delete().eq('id', id).select('*'),
   getMatchServer: (id: number) =>

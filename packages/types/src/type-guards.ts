@@ -7,7 +7,6 @@ import {
   MatchPlayersRow,
   MatchStatus,
   ScheduledMatch,
-  ServerMatch,
   TeamsJoined,
 } from './database-types';
 import { PostgrestError, TeamPlayer } from './index';
@@ -21,9 +20,6 @@ export const isDiscordConfig = (
 ): config is DiscordConfig => Boolean(config.channel);
 export const isDiscordMatch = (match: MatchesJoined): match is DiscordMatch =>
   isDiscordConfig(match.config);
-
-export const isServerMatch = (match: MatchesJoined): match is ServerMatch =>
-  Boolean(match.server);
 
 export const isScheduledMatch = (match: MatchesJoined): match is ScheduledMatch =>
   Boolean(match.status === MatchStatus.Scheduled && match.scheduled_at);

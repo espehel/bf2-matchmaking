@@ -30,7 +30,9 @@ export default async function ResultsMatch({ params }: Props) {
       <div className="flex flex-wrap gap-8 justify-center w-full">
         <MatchSection match={match} />
         {matchServer && (
-          <Suspense fallback={<ServerSectionLoading match={match} />}>
+          <Suspense
+            fallback={<ServerSectionLoading match={match} matchServer={matchServer} />}
+          >
             <ServerSection matchServer={matchServer} match={match} />
           </Suspense>
         )}

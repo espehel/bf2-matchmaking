@@ -108,17 +108,6 @@ export default (client: SupabaseClient<Database>) => ({
       type: 'websearch',
       config: 'english',
     }),
-  getServerRoundsByTimestampRange: (
-    serverIp: string,
-    timestampFrom: string,
-    timestampTo: string
-  ) =>
-    client
-      .from('rounds')
-      .select<'*, map(*), server(*)', RoundsJoined>('*, map(*), server(*)')
-      .gt('created_at', timestampFrom)
-      .lt('created_at', timestampTo)
-      .eq('server.ip', serverIp),
   getMatchConfigByChannelId: (channelId: string) =>
     client
       .from('match_configs')

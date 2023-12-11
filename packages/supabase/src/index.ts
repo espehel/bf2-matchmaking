@@ -6,18 +6,12 @@ import {
 } from '@supabase/supabase-js';
 import invariant from 'tiny-invariant';
 import { createServerClient } from '@supabase/auth-helpers-remix';
-import matchServices from './services/match-service';
 import { Database } from '@bf2-matchmaking/types';
 import supabaseApi from './supabase-api';
-import {
-  PostgrestResponseFailure,
-  PostgrestResponseSuccess,
-} from '@supabase/postgrest-js/src/types';
 
 export const getSupabaseApi = (client: SupabaseClient<Database>) => {
   const api = supabaseApi(client);
-  const services = matchServices(api);
-  return { ...api, services };
+  return { ...api };
 };
 export const client = () => {
   invariant(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
@@ -42,23 +36,14 @@ export const remixClient = (request: Request) => {
   });
 
   const api = supabaseApi(supabase);
-  const services = matchServices(api);
 
   return {
     ...api,
-    services,
     response,
     SUPABASE_URL,
     SUPABASE_ANON_KEY,
     getSession: () => supabase.auth.getSession(),
     getUser: () => supabase.auth.getUser().then(({ data }) => data.user),
-    signInUser: (redirectTo: string) =>
-      supabase.auth.signInWithOAuth({
-        provider: 'discord',
-        options: {
-          redirectTo,
-        },
-      }),
   };
 };
 

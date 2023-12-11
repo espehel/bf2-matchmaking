@@ -3,6 +3,7 @@ import {
   MatchesJoined,
   LiveInfo,
   RoundsRow,
+  MatchServer,
 } from '@bf2-matchmaking/types';
 import { insertRound } from './round-service';
 import {
@@ -37,6 +38,7 @@ export type LiveServerUpdate = LiveServerBaseUpdate | LiveServerPreliveUpdate;
 export class LiveMatch {
   pendingSince: DateTime | null = DateTime.now();
   match: MatchesJoined;
+  matchServer: MatchServer | null = null;
   state: LiveServerState = 'pending';
   rounds: Array<RoundsRow> = [];
   liveInfo: LiveInfo | null = null;
@@ -48,6 +50,9 @@ export class LiveMatch {
 
   setMatch(match: MatchesJoined) {
     this.match = match;
+  }
+  setServer(server: MatchServer | null) {
+    this.matchServer = server;
   }
 
   isPending() {

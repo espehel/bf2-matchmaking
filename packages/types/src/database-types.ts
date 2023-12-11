@@ -79,7 +79,6 @@ export interface MatchesJoined
   maps: Array<MapsRow>;
   players: Array<PlayersRow>;
   teams: Array<MatchPlayersRow>;
-  server: ServersRow | null;
   status: MatchStatus;
   config: MatchConfigsRow;
   rounds: Array<RoundsJoined>;
@@ -108,10 +107,6 @@ export interface DiscordConfig extends MatchConfigsRow {
 
 export interface DiscordMatch extends MatchesJoined {
   config: DiscordConfig;
-}
-
-export interface ServerMatch extends MatchesJoined {
-  server: ServersRow;
 }
 
 export interface ScheduledMatch extends MatchesJoined {

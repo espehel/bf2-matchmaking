@@ -1,4 +1,4 @@
-import { isServerMatch, MatchesJoined } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
 import { LiveMatch, LiveMatchOptions } from './LiveMatch';
 import { info, logMessage } from '@bf2-matchmaking/logging';
 import {
@@ -25,7 +25,11 @@ export function findLiveMatch(matchId: number): LiveMatch | undefined {
   return liveMatches.get(matchId);
 }
 
-export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
+export function initLiveMatch(
+  match: MatchesJoined,
+  matchServer: MatchServer | null | undefined,
+  options: LiveMatchOptions
+) {
   let liveMatch = liveMatches.get(match.id);
 
   if (liveMatch) {
@@ -43,9 +47,10 @@ export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
     });
   }
 
-  if (isServerMatch(match) && isIdle(match.server.ip)) {
+  if (matchServer && matchServer.server && isIdle(matchServer.server.ip)) {
     resetLiveMatchServers(liveMatch);
-    setServerLiveMatch(match.server.ip, liveMatch);
+    setServerLiveMatch(matchServer.server.ip, liveMatch);
+    liveMatch.setServer(matchServer);
     logMessage(`Match ${match.id}: Setting live match server`, {
       match,
       options,

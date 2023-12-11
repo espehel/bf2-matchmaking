@@ -366,7 +366,6 @@ export interface Database {
           live_at: string | null
           ready_at: string | null
           scheduled_at: string | null
-          server: string | null
           started_at: string | null
           status: string
         }
@@ -381,7 +380,6 @@ export interface Database {
           live_at?: string | null
           ready_at?: string | null
           scheduled_at?: string | null
-          server?: string | null
           started_at?: string | null
           status?: string
         }
@@ -396,7 +394,6 @@ export interface Database {
           live_at?: string | null
           ready_at?: string | null
           scheduled_at?: string | null
-          server?: string | null
           started_at?: string | null
           status?: string
         }
@@ -421,13 +418,6 @@ export interface Database {
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matches_server_fkey"
-            columns: ["server"]
-            isOneToOne: false
-            referencedRelation: "servers"
-            referencedColumns: ["ip"]
           }
         ]
       }

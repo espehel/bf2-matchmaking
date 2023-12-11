@@ -1,6 +1,7 @@
 import { LiveInfo, LiveServerState, MatchesJoined } from '@bf2-matchmaking/types';
-import moment from 'moment';
 import Time from '@/components/commons/Time';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
@@ -8,9 +9,10 @@ interface Props {
   liveState: LiveServerState;
 }
 
-export default function LiveMatchCard({ match, liveInfo, liveState }: Props) {
+export default async function LiveMatchCard({ match, liveInfo, liveState }: Props) {
+  const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
   const date = match.scheduled_at || match.started_at || match.created_at;
-  const serverName = liveInfo?.serverName || match.server?.name || 'No server set';
+  const serverName = liveInfo?.serverName || matchServer?.server?.name || 'No server set';
   const teamText =
     match.config.type === 'Mix'
       ? ''

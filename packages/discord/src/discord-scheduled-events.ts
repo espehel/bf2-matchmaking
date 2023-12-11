@@ -1,4 +1,4 @@
-import { MatchesJoined, ScheduledMatch } from '@bf2-matchmaking/types';
+import { MatchesJoined, ScheduledMatch, ServersRow } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import { api } from '@bf2-matchmaking/utils';
 import { RESTPostAPIGuildScheduledEventJSONBody } from 'discord-api-types/v10';
@@ -10,7 +10,7 @@ export function createScheduledMatchEvent(
   serverName: string
 ): RESTPostAPIGuildScheduledEventJSONBody {
   const name = `${match.config.type}: ${match.home_team.name} vs. ${match.away_team.name}`;
-  const description = getMatchDescription(match, serverName);
+  const description = getMatchDescription(match, null, serverName);
   const scheduled_start_time = match.scheduled_at;
   const scheduled_end_time =
     DateTime.fromISO(match.scheduled_at).plus({ hours: 2 }).toISO() || undefined;
@@ -33,8 +33,12 @@ export function createScheduledMatchEvent(
   };
 }
 
-export const getMatchDescription = (match: MatchesJoined, serverName: string) => {
+export const getMatchDescription = (
+  match: MatchesJoined,
+  server: ServersRow | null | undefined,
+  serverName: string
+) => {
   const mapText = match.maps.length ? match.maps.map((m) => m.name).join(', ') : 'TBD';
-  const serverText = match.server?.name || serverName;
+  const serverText = server?.name || serverName;
   return `Maps: ${mapText} | Server: ${serverText}`;
 };

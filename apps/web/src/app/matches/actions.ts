@@ -40,8 +40,7 @@ export async function createScheduledMatch(formData: FormData) {
       Number(configSelect),
       Number(homeSelect),
       Number(awaySelect),
-      scheduled_at,
-      isString(serverSelect) && serverSelect.length > 0 ? serverSelect : null
+      scheduled_at
     );
 
     if (result.error) {
@@ -63,6 +62,9 @@ export async function createScheduledMatch(formData: FormData) {
       const { data: regions } = await api.platform().getLocations();
       const city = regions?.find((r) => r.id === regionSelect)?.city;
       serverName = `${city} server`;
+    } else if (isString(serverSelect) && serverSelect.length > 0) {
+      await supabase(cookies).createMatchServer({ id: match.id, ip: serverSelect });
+      serverName = serverSelect;
     }
 
     const mapsResult = await supabase(cookies).createMatchMaps(

@@ -190,6 +190,7 @@ export async function setServer(matchId: number, serverIp: string) {
     return result;
   }
   const match = await supabase(cookies).getMatch(matchId).then(verifySingleResult);
+  const { data: server } = await supabase(cookies).getMatchServer(matchId);
   const guild = match.config.guild;
 
   let events: unknown = null;
@@ -197,7 +198,7 @@ export async function setServer(matchId: number, serverIp: string) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, 'TBD'),
+          description: getMatchDescription(match, server?.server, 'TBD'),
         })
       )
     );
@@ -236,6 +237,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
   }
 
   const { data: match } = await supabase(cookies).getMatch(matchId);
+  const { data: server } = await supabase(cookies).getMatchServer(matchId);
 
   const guild = match?.config.guild;
   let events: unknown = null;
@@ -243,7 +245,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, 'TBD'),
+          description: getMatchDescription(match, server?.server, 'TBD'),
         })
       )
     );

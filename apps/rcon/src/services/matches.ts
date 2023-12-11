@@ -8,11 +8,12 @@ import {
 import {
   DnsRecordWithoutPriority,
   isDiscordMatch,
-  isServerMatch,
   LiveInfo,
   MatchConfigsRow,
   MatchesJoined,
   MatchProcessError,
+  MatchServer,
+  MatchServersRow,
   MatchStatus,
   RoundsInsert,
   ServerInfo,
@@ -191,17 +192,21 @@ export async function updateLiveAt(liveMatch: LiveMatch) {
     const { data } = await client().updateMatch(liveMatch.match.id, {
       live_at: DateTime.now().toISO(),
     });
-    if (data && isServerMatch(data)) {
+    const { data: matchServer } = await client().getMatchServer(liveMatch.match.id);
+    if (data && matchServer?.server) {
       liveMatch.setMatch(data);
+      liveMatch.setServer(matchServer);
     }
   }
 }
 
 export async function sendLiveMatchServerMessage(liveMatch: LiveMatch) {
-  if (isServerMatch(liveMatch.match)) {
-    const joinmeHref = await getJoinmeHref(liveMatch.match.server);
+  if (liveMatch.matchServer?.server) {
+    const joinmeHref = await getJoinmeHref(liveMatch.matchServer.server);
     await sendChannelMessage(TEST_CHANNEL_ID, {
-      embeds: [getLiveMatchEmbed(liveMatch.match, joinmeHref)],
+      embeds: [
+        getLiveMatchEmbed(liveMatch.match, liveMatch.matchServer.server, joinmeHref),
+      ],
     });
     logMessage(
       `Channel ${TEST_CHANNEL_ID}: LiveMatch created for Match ${liveMatch.match.id}`,
@@ -210,11 +215,11 @@ export async function sendLiveMatchServerMessage(liveMatch: LiveMatch) {
   }
 }
 export async function updateLiveMatchServer(liveMatch: LiveMatch, liveInfo: LiveInfo) {
-  const match = await updateServer(liveMatch, liveInfo.ip);
-  if (match && isServerMatch(match) && isDiscordMatch(match)) {
-    const joinmeHref = await getJoinmeHref(match.server);
+  const [match, server] = await updateServer(liveMatch, liveInfo.ip);
+  if (match && isDiscordMatch(match) && server) {
+    const joinmeHref = await getJoinmeHref(server);
     await sendChannelMessage(match.config.channel, {
-      embeds: [getWarmUpStartedEmbed(match, liveInfo.serverName, joinmeHref)],
+      embeds: [getWarmUpStartedEmbed(match, server, liveInfo.serverName, joinmeHref)],
     });
     logMessage(
       `Channel ${match.config.channel}: LiveMatch server updated to ${liveInfo.serverName} for Match ${liveMatch.match.id}`,
@@ -223,19 +228,22 @@ export async function updateLiveMatchServer(liveMatch: LiveMatch, liveInfo: Live
   }
 }
 
-export async function updateServer(liveMatch: LiveMatch, server: string) {
+export async function updateServer(
+  liveMatch: LiveMatch,
+  server: string
+): Promise<[MatchesJoined, ServersRow] | []> {
   const result = await client().upsertMatchServer({ id: liveMatch.match.id, ip: server });
 
-  if (result.error) {
+  if (result.error || !result.data.server) {
     logErrorMessage(
       `Match ${liveMatch.match.id}: Failed to update server for LiveMatch`,
       result.error
     );
-    return null;
+    return [];
   }
   const match = await client().getMatch(liveMatch.match.id).then(verifySingleResult);
   liveMatch.setMatch(match);
-  return match;
+  return [match, result.data.server];
 }
 
 export async function createLiveMatchFromDns(
@@ -255,7 +263,7 @@ export async function createLiveMatchFromDns(
     return;
   }
   const match = await client().getMatch(matchId).then(verifySingleResult);
-  initLiveMatch(match, { prelive: false });
+  initLiveMatch(match, result.data, { prelive: false });
 }
 
 export async function fixMissingMatchPlayers(match: MatchesJoined) {
