@@ -66,6 +66,8 @@ router.get('/:matchid/live', async (req, res) => {
     liveInfo: match.liveInfo,
     liveState: match.state,
     matchId: match.match.id,
+    players: match.match.players,
+    server: match.matchServer,
   };
   return res.send(body);
 });
@@ -74,10 +76,12 @@ router.get('/live', async (req, res) => {
   const liveMatches = getLiveMatches();
 
   const body: Array<GetMatchLiveResponseBody> = liveMatches.map(
-    ({ liveInfo, state, match }) => ({
+    ({ liveInfo, state, match, matchServer }) => ({
       liveInfo: liveInfo,
       liveState: state,
       matchId: match.id,
+      players: match.players,
+      server: matchServer,
     })
   );
   return res.send(body);

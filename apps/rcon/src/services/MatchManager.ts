@@ -61,7 +61,7 @@ export function initLiveMatch(
 
 export async function updatePendingLiveMatches() {
   if (liveMatches.size === 0) {
-    info('updateWaitingLiveMatches', 'No live matches found');
+    info('updatePendingLiveMatches', 'No live matches found');
     return;
   }
   for (const liveMatch of liveMatches.values()) {
@@ -83,6 +83,6 @@ export async function updatePendingLiveMatches() {
       continue;
     }
 
-    info('updateWaitingLiveMatches', `Match ${liveMatch.match.id} is pending...`);
+    info('updatePendingLiveMatches', `Match ${liveMatch.match.id} is pending...`);
   }
 }

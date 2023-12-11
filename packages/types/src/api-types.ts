@@ -1,4 +1,11 @@
-import { MatchesJoined, RoundsInsert, ServersJoined, ServersRow } from './database-types';
+import {
+  MatchesJoined,
+  MatchServer,
+  PlayersRow,
+  RoundsInsert,
+  ServersJoined,
+  ServersRow,
+} from './database-types';
 import { LiveRound, LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
 export enum ApiErrorType {
@@ -94,6 +101,8 @@ export type GetMatchLiveResponseBody = {
   liveInfo: LiveInfo | null;
   liveState: LiveServerState;
   matchId: number;
+  players: Array<PlayersRow>;
+  server: MatchServer | null;
 };
 
 export interface PostDemosRequestBody {
