@@ -79,7 +79,7 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
   const instance = await getInstanceByIp(dns?.content || ctx.params.ip);
   ctx.assert(instance, 404, 'Server not found');
 
-  await saveDemos(ctx.params.ip);
+  await saveDemos(dns?.name || ctx.params.ip);
 
   await Promise.all([
     await deleteServerInstance(instance.id),
