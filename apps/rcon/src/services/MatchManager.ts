@@ -25,11 +25,7 @@ export function findLiveMatch(matchId: number): LiveMatch | undefined {
   return liveMatches.get(matchId);
 }
 
-export function initLiveMatch(
-  match: MatchesJoined,
-  matchServer: MatchServer | null | undefined,
-  options: LiveMatchOptions
-) {
+export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
   let liveMatch = liveMatches.get(match.id);
 
   if (liveMatch) {
@@ -47,15 +43,6 @@ export function initLiveMatch(
     });
   }
 
-  if (matchServer && matchServer.server && isIdle(matchServer.server.ip)) {
-    resetLiveMatchServers(liveMatch);
-    setServerLiveMatch(matchServer.server.ip, liveMatch);
-    liveMatch.setServer(matchServer);
-    logMessage(`Match ${match.id}: Setting live match server`, {
-      match,
-      options,
-    });
-  }
   return liveMatch;
 }
 

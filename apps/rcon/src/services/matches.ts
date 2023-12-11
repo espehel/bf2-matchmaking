@@ -187,16 +187,17 @@ export const isOngoingRound = (si: ServerInfo) => {
   return true;
 };
 
-export async function updateLiveAt(liveMatch: LiveMatch) {
-  if (!liveMatch.match.live_at) {
-    const { data } = await client().updateMatch(liveMatch.match.id, {
-      live_at: DateTime.now().toISO(),
-    });
-    const { data: matchServer } = await client().getMatchServer(liveMatch.match.id);
-    if (data && matchServer?.server) {
-      liveMatch.setMatch(data);
-      liveMatch.setServer(matchServer);
-    }
+export async function setLiveAt(liveMatch: LiveMatch) {
+  if (liveMatch.match.live_at) {
+    return;
+  }
+
+  const { data } = await client().updateMatch(liveMatch.match.id, {
+    live_at: DateTime.now().toISO(),
+  });
+
+  if (data) {
+    liveMatch.setMatch(data);
   }
 }
 
@@ -215,15 +216,28 @@ export async function sendLiveMatchServerMessage(liveMatch: LiveMatch) {
   }
 }
 export async function updateLiveMatchServer(liveMatch: LiveMatch, liveInfo: LiveInfo) {
-  const [match, server] = await updateServer(liveMatch, liveInfo.ip);
-  if (match && isDiscordMatch(match) && server) {
-    const joinmeHref = await getJoinmeHref(server);
-    await sendChannelMessage(match.config.channel, {
-      embeds: [getWarmUpStartedEmbed(match, server, liveInfo.serverName, joinmeHref)],
+  if (liveInfo.ip === liveMatch.matchServer?.server?.ip) {
+    return;
+  }
+
+  const matchServer = await updateServer(liveMatch, liveInfo.ip);
+  if (isDiscordMatch(liveMatch.match) && matchServer?.server) {
+    liveMatch.setServer(matchServer);
+
+    const joinmeHref = await getJoinmeHref(matchServer.server);
+    await sendChannelMessage(liveMatch.match.config.channel, {
+      embeds: [
+        getWarmUpStartedEmbed(
+          liveMatch.match,
+          matchServer.server,
+          liveInfo.serverName,
+          joinmeHref
+        ),
+      ],
     });
     logMessage(
-      `Channel ${match.config.channel}: LiveMatch server updated to ${liveInfo.serverName} for Match ${liveMatch.match.id}`,
-      { liveMatch, liveInfo, match }
+      `Channel ${liveMatch.match.config.channel}: LiveMatch server updated to ${liveInfo.serverName} for Match ${liveMatch.match.id}`,
+      { liveMatch, liveInfo, matchServer }
     );
   }
 }
@@ -231,19 +245,19 @@ export async function updateLiveMatchServer(liveMatch: LiveMatch, liveInfo: Live
 export async function updateServer(
   liveMatch: LiveMatch,
   server: string
-): Promise<[MatchesJoined, ServersRow] | []> {
+): Promise<MatchServer | null> {
   const result = await client().upsertMatchServer({ id: liveMatch.match.id, ip: server });
 
   if (result.error || !result.data.server) {
     logErrorMessage(
-      `Match ${liveMatch.match.id}: Failed to update server for LiveMatch`,
-      result.error
+      `Match ${liveMatch.match.id}: Failed to update server ${server} for LiveMatch`,
+      result.error,
+      { match: LiveMatch }
     );
-    return [];
+    return null;
   }
-  const match = await client().getMatch(liveMatch.match.id).then(verifySingleResult);
-  liveMatch.setMatch(match);
-  return [match, result.data.server];
+
+  return result.data;
 }
 
 export async function createLiveMatchFromDns(
@@ -256,14 +270,17 @@ export async function createLiveMatchFromDns(
     return;
   }
 
-  info('createLiveMatchFromDns', `Match ${matchId}: Updating server to ${server.ip}`);
+  info(
+    'createLiveMatchFromDns',
+    `Match ${matchId}: Upserting match server with ip ${server.ip}`
+  );
   const result = await client().upsertMatchServer({ id: matchId, ip: server.ip });
   if (result.error) {
     error('createLiveMatchFromDns', result.error);
-    return;
   }
+
   const match = await client().getMatch(matchId).then(verifySingleResult);
-  initLiveMatch(match, result.data, { prelive: false });
+  initLiveMatch(match, { prelive: false });
 }
 
 export async function fixMissingMatchPlayers(match: MatchesJoined) {

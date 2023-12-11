@@ -13,7 +13,7 @@ import {
   isOngoingRound,
   isServerEmptied,
   updateLiveMatchServer,
-  updateLiveAt,
+  setLiveAt,
 } from './matches';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
@@ -158,11 +158,15 @@ export class LiveMatch {
     }
 
     if (nextState === 'prelive') {
-      await updateLiveAt(this);
+      await setLiveAt(this);
       return {
         state: nextState,
         payload: getPlayersToSwitch(this.match, liveInfo.players),
       };
+    }
+
+    if (nextState === 'live') {
+      await setLiveAt(this);
     }
 
     if (nextState === 'finished') {

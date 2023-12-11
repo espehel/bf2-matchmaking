@@ -40,13 +40,12 @@ router.post('/:matchid/live', async (req, res) => {
     const match = await client()
       .getMatch(parseInt(req.params.matchid))
       .then(verifySingleResult);
-    const { data: matchServer } = await client().getMatchServer(match.id);
 
     if (match.status !== MatchStatus.Ongoing) {
       return res.status(400).send({ message: `Match ${match.id} is not ongoing.` });
     }
 
-    const liveMatch = initLiveMatch(match, matchServer, { prelive });
+    const liveMatch = initLiveMatch(match, { prelive });
     return res.status(201).send(liveMatch);
   } catch (e) {
     if (e instanceof Error) {
