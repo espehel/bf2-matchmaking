@@ -29,8 +29,8 @@ router.post('/:ip/maps', async (req, res) => {
     const rconClient = await getServerRcon(req.params.ip);
     const map = findMap(req.body.map);
     const mapList = await rconClient.send('exec maplist.list').then(mapMapList);
-    assertObj(map);
-    assertArray(mapList);
+    assertObj(map, 'Could not find map');
+    assertArray(mapList, 'Could get map list from server');
     const id = mapList.indexOf(map.name.toLowerCase().replace(/ /g, '_'));
     await rconClient.send(`exec admin.setNextLevel ${id}`);
     await rconClient.send('exec admin.runNextLevel');
