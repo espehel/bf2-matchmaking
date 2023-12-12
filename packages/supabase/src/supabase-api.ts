@@ -64,7 +64,7 @@ export default (client: SupabaseClient<Database>) => ({
   upsertPlayerRatings: (playerRatings: Array<PlayerRatingsInsert>) =>
     client.from('player_ratings').upsert(playerRatings).select('*'),
   searchPlayers: (query: string) =>
-    client.from('players').select('*').ilike('username', `%${query}%`).limit(10),
+    client.from('players').select('*').ilike('nick', `%${query}%`).limit(10),
   getPlayer: (playerId: string | undefined) =>
     client.from('players').select('*').eq('id', playerId).single(),
   createPlayer: (player: PlayersInsert) =>
