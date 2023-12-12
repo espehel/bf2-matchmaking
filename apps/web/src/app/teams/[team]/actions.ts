@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { isString } from '@bf2-matchmaking/types';
-import { redirect } from 'next/navigation';
 
 export async function setTeamCaptain(teamId: number, playerId: string, value: boolean) {
   const result = await supabase(cookies).updateTeamPlayer(teamId, playerId, {
@@ -51,7 +50,7 @@ export async function updateTeam(teamId: number, data: FormData) {
       discord_role,
     });
     if (!result.error) {
-      redirect(`/teams/${teamId}`);
+      revalidatePath(`/teams/${teamId}`);
     }
 
     return result;

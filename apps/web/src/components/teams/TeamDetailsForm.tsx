@@ -1,18 +1,29 @@
-'use client';
 import { TeamsJoined } from '@bf2-matchmaking/types';
 import { ArrowUpOnSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { TeamAvatar } from '@/components/TeamAvatar';
 import { updateTeam } from '@/app/teams/[team]/actions';
 import PlayerCombobox from '@/components/PlayerCombobox';
 import IconBtn from '@/components/commons/IconBtn';
+import ActionForm from '@/components/commons/ActionForm';
 
 interface Props {
   team: TeamsJoined;
 }
 
 export default function TeamDetailsForm({ team }: Props) {
+  async function updateTeamSA(data: FormData) {
+    'use server';
+    return updateTeam(team.id, data);
+  }
+
   return (
-    <form action={(data) => updateTeam(team.id, data)} className="section flex-row">
+    <ActionForm
+      action={updateTeamSA}
+      successMessage="Team updated"
+      errorMessage="Failed to update team"
+      className="section flex-row"
+      redirect={`/teams/${team.id}`}
+    >
       <h2 className="hidden">Team details</h2>
       <div className="flex items-center gap-6">
         <TeamAvatar team={team} />
@@ -59,6 +70,6 @@ export default function TeamDetailsForm({ team }: Props) {
           className="text-error"
         />
       </div>
-    </form>
+    </ActionForm>
   );
 }
