@@ -1,6 +1,9 @@
 import { PlayersRow, TeamsJoined } from '@bf2-matchmaking/types';
 import AddPlayerForm from '@/components/teams/AddPlayerForm';
 import TeamPlayerItem from '@/components/teams/TeamPlayerItem';
+import ActionForm from '@/components/commons/ActionForm';
+import { createAndAddPlayer } from '@/app/teams/[team]/actions';
+import FormSubmitButton from '@/components/FormSubmitButton';
 
 interface Props {
   team: TeamsJoined;
@@ -14,6 +17,11 @@ export default function EditTeamPlayersSection({ team }: Props) {
     }))
     .sort(compareTeamPlayers);
 
+  async function createAndAddPlayerSA(data: FormData) {
+    'use server';
+    return createAndAddPlayer(team.id, data);
+  }
+
   return (
     <section className="section gap-2">
       <h2 className="text-xl">Players:</h2>
@@ -25,6 +33,14 @@ export default function EditTeamPlayersSection({ team }: Props) {
           <AddPlayerForm teamId={team.id} />
         </li>
       </ul>
+      <ActionForm
+        action={createAndAddPlayerSA}
+        successMessage="Player added"
+        errorMessage="Failed to add player"
+      >
+        <input className="input input-bordered mr-2" name="playerId" />
+        <FormSubmitButton>Add</FormSubmitButton>
+      </ActionForm>
     </section>
   );
 }

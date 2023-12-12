@@ -16,6 +16,7 @@ import {
   RESTPatchAPIGuildScheduledEventJSONBody,
   RESTPatchAPIGuildScheduledEventResult,
   RESTDeleteAPIGuildScheduledEventResult,
+  RESTGetAPIUserResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
 import {
@@ -230,3 +231,7 @@ export const deleteGuildScheduledEvent = (guildId: string, scheduledEventId: str
   deleteDiscordRoute<RESTDeleteAPIGuildScheduledEventResult>(
     Routes.guildScheduledEvent(guildId, scheduledEventId)
   );
+
+export function getDiscordUser(userId: string) {
+  return getDiscordRoute<RESTGetAPIUserResult>(`${Routes.user(userId)}`);
+}
