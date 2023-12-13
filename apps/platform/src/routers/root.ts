@@ -18,7 +18,7 @@ import {
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
 import { Context } from 'koa';
 import { DEFAULTS } from '../constants';
-import { api } from '@bf2-matchmaking/utils';
+import { api, verify } from '@bf2-matchmaking/utils';
 import { saveDemos } from '../services/demos';
 
 export const rootRouter = new Router();
@@ -75,16 +75,25 @@ rootRouter.get('/servers/:ip', async (ctx) => {
 });
 rootRouter.delete('/servers/:ip', async (ctx: Context) => {
   const dns = await getDnsByName(ctx.params.ip);
+  const host = dns?.content || ctx.params.ip;
 
-  const instance = await getInstanceByIp(dns?.content || ctx.params.ip);
+  const instance = await getInstanceByIp(host);
   ctx.assert(instance, 404, 'Server not found');
+
+  const { data: si } = await api.rcon().getServerInfo(host);
+
+  if (si && Number(si.connectedPlayers) > 1) {
+    ctx.status = 409;
+    ctx.body = { message: 'Server is not empty' };
+    return;
+  }
 
   await saveDemos(dns?.name || ctx.params.ip);
 
   await Promise.all([
     await deleteServerInstance(instance.id),
     await deleteStartupScript(instance.label),
-    await api.rcon().deleteServerLive(dns?.name || ctx.params.ip),
+    await api.rcon().deleteServerLive(host),
   ]);
 
   if (dns) {
