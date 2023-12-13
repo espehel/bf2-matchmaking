@@ -1,10 +1,17 @@
 'use server';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchServer, MatchStatus } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { api, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
+import {
+  api,
+  assertString,
+  createServerName,
+  getInitialServerMap,
+  getPlayersToSwitch,
+  getServerVehicles,
+} from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   deleteGuildScheduledEvent,
@@ -284,4 +291,32 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
 
 export async function changeServerMap(serverIp: string, mapId: number) {
   return api.rcon().postServerMaps(serverIp, mapId);
+}
+
+export async function generateMatchServerInstance(
+  match: MatchesJoined,
+  matchServer: MatchServer
+) {
+  if (matchServer?.region && !matchServer?.instance) {
+    const name = createServerName(match);
+    const map = getInitialServerMap(match);
+    const vehicles = getServerVehicles(match);
+    const platformResult = await api
+      .platform()
+      .postServers(name, matchServer.region, match.id, map, vehicles);
+
+    if (platformResult.data) {
+      const result = await supabase(cookies).updateMatchServer(match.id, {
+        instance: platformResult.data.id,
+      });
+
+      if (result.data) {
+        revalidatePath(`/matches/${match.id}`);
+      }
+
+      return result;
+    }
+    return platformResult;
+  }
+  return { data: null, error: { message: 'Invalid match for generating server' } };
 }

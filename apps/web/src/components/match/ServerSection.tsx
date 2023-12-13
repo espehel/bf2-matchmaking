@@ -11,6 +11,8 @@ import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import ActionButton from '@/components/ActionButton';
+import { generateMatchServerInstance } from '@/app/matches/[match]/actions';
 
 interface Props {
   matchServer: MatchServer;
@@ -20,6 +22,11 @@ interface Props {
 export default async function ServerSection({ matchServer, match }: Props) {
   const { data: regions } = await api.platform().getLocations();
   const city = regions?.find((r) => r.id === matchServer.region)?.city;
+
+  async function generateMatchServerInstanceSA() {
+    'use server';
+    return generateMatchServerInstance(match, matchServer);
+  }
 
   if (!matchServer.server && matchServer.instance && city) {
     return (
@@ -41,6 +48,13 @@ export default async function ServerSection({ matchServer, match }: Props) {
           } 15 min before match start.`}</h2>
           <RevalidateForm path={`/matches/${matchServer.id}`} />
         </div>
+        <ActionButton
+          action={generateMatchServerInstanceSA}
+          successMessage="Generating server"
+          errorMessage="Failed to generate server"
+        >
+          Generate server now
+        </ActionButton>
       </section>
     );
   }

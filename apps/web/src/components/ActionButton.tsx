@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
 interface Props extends PropsWithChildren {
-  action: () => Promise<FetchResult<unknown>>;
+  action: () => Promise<{ data: unknown; error: { message: string } | null }>;
   successMessage: string;
   errorMessage: string;
   kind?: 'btn-primary' | 'btn-secondary' | 'btn-error';

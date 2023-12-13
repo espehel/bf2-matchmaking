@@ -30,7 +30,7 @@ async function startMatch(scheduledMatch: ScheduledMatch) {
   });
 
   const { data: matchServer } = await client().getMatchServer(scheduledMatch.id);
-  if (matchServer?.region) {
+  if (matchServer?.region && !matchServer?.instance) {
     const name = createServerName(scheduledMatch);
     const map = getInitialServerMap(scheduledMatch);
     const vehicles = getServerVehicles(scheduledMatch);
