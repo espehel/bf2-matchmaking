@@ -71,6 +71,7 @@ export class LiveMatch {
       ...liveInfo,
       players: liveInfo.players
         .concat(this.liveInfo?.players || [])
+        .filter((player) => !player.getName.includes('STREAM'))
         .filter(
           (p, i, self) => self.findIndex((otherP) => otherP.keyhash === p.keyhash) === i
         ),
@@ -126,7 +127,7 @@ export class LiveMatch {
 
     if (
       this.state === 'warmup' &&
-      Number(liveInfo.connectedPlayers) !== this.match.players.length
+      Number(liveInfo.players.length) !== this.match.config.size
     ) {
       return next('warmup');
     }

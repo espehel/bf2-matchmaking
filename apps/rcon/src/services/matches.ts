@@ -176,6 +176,7 @@ export const isFirstTimeFullServer = (
 ) => Number(si.connectedPlayers) === match.players.length && rounds.length === 0;
 
 export const isOngoingRound = (si: ServerInfo) => {
+  si.currentGameStatus;
   if (parseInt(si.roundTime) >= parseInt(si.timeLimit)) {
     return false;
   }
