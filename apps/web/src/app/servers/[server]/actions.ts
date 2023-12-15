@@ -48,9 +48,15 @@ const toRconUpdateValues = (data: FormData) => {
 };
 
 export async function deleteServer(ip: string) {
-  const platformResult = await api.platform().deleteServer(ip);
-  if (platformResult.error) {
-    logErrorMessage(`Server ${ip}: Failed to delete from platform`, platformResult.error);
+  const { data: instance } = await api.platform().getServerByIp(ip);
+  if (instance) {
+    const platformResult = await api.platform().deleteServer(instance.id);
+    if (platformResult.error) {
+      logErrorMessage(
+        `Server ${ip}: Failed to delete from platform`,
+        platformResult.error
+      );
+    }
   }
   const rconResult = await supabase(cookies).deleteServerRcon(ip);
   if (rconResult.error) {
@@ -70,7 +76,7 @@ export async function deleteServer(ip: string) {
     return serverResult;
   }
   logMessage(`Server ${ip}: Deleted successfully`, {
-    platformResult,
+    instance,
     rconResult,
     serverResult,
   });

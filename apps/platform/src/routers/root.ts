@@ -5,6 +5,7 @@ import {
   deleteStartupScript,
   getInstanceByIp,
   getLocations,
+  getServerInstance,
   getServerInstances,
   pollInstance,
 } from '../services/vultr';
@@ -20,10 +21,17 @@ import { Context } from 'koa';
 import { DEFAULTS } from '../constants';
 import { api, verify } from '@bf2-matchmaking/utils';
 import { saveDemos } from '../services/demos';
+import { isString } from '@bf2-matchmaking/types';
 
 export const rootRouter = new Router();
 
-rootRouter.get('/servers', async (ctx) => {
+rootRouter.get('/servers', async (ctx: Context) => {
+  if (isString(ctx.query.ip)) {
+    const instance = await getInstanceByIp(ctx.query.ip);
+    ctx.assert(instance, 404);
+    ctx.body = instance;
+    return;
+  }
   ctx.body = await getServerInstances();
 });
 
@@ -73,22 +81,19 @@ rootRouter.post('/servers', async (ctx: Context) => {
 rootRouter.get('/servers/:ip', async (ctx) => {
   ctx.body = await getInstanceByIp(ctx.params.ip);
 });
-rootRouter.delete('/servers/:ip', async (ctx: Context) => {
-  const dns = await getDnsByName(ctx.params.ip);
-  const host = dns?.content || ctx.params.ip;
-
-  const instance = await getInstanceByIp(host);
+rootRouter.delete('/servers/:id', async (ctx: Context) => {
+  const instance = await getServerInstance(ctx.params.id);
   ctx.assert(instance, 404, 'Server not found');
+  const host = instance.tag;
 
   const { data: si } = await api.rcon().getServerInfo(host);
-
   if (si && Number(si.connectedPlayers) > 1) {
     ctx.status = 409;
     ctx.body = { message: 'Server is not empty' };
     return;
   }
 
-  await saveDemos(dns?.name || ctx.params.ip);
+  await saveDemos(host);
 
   await Promise.all([
     await deleteServerInstance(instance.id),
@@ -96,15 +101,17 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
     await api.rcon().deleteServerLive(host),
   ]);
 
+  const dns = await getDnsByName(host);
   if (dns) {
     await deleteDnsRecord(dns.id);
   }
 
   info(
     'DELETE /servers',
-    `Instance deleted. [ip: "${ctx.params.ip}", dns content: "${dns?.content}", label: "${instance.label}"]`
+    `Instance ${host} deleted. [id: "${instance.id}", dns content: "${dns?.content}", label: "${instance.label}"]`
   );
   ctx.status = 204;
+  ctx.body = instance;
 });
 
 rootRouter.post('/servers/:ip/dns', async (ctx: Context) => {

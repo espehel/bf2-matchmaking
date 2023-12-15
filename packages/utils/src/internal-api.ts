@@ -148,10 +148,9 @@ const platform = () => {
         map,
         vehicles,
       }),
-    getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
-    deleteServer: (ip: string) => deleteJSON(basePath.concat(paths.server(ip))),
-    postServerDns: (ip: string) =>
-      postJSON<DnsRecordWithoutPriority>(basePath.concat(paths.serverDns(ip)), {}),
+    getServerByIp: (ip: string) =>
+      getJSON<Instance>(basePath.concat(paths.servers()).concat(`?ip=${ip}`)),
+    deleteServer: (id: string) => deleteJSON<Instance>(basePath.concat(paths.server(id))),
     getServerDns: (ip: string) =>
       getJSON<DnsRecordWithoutPriority>(basePath.concat(paths.serverDns(ip))),
     getLocations: () => getJSON<Array<Region>>(basePath.concat(paths.locations())),

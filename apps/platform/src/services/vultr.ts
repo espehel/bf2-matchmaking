@@ -71,7 +71,6 @@ export async function getServerInstances() {
 
 export async function getServerInstance(id: string): Promise<Instance> {
   const { instance } = await client.instances.getInstance({ 'instance-id': id });
-  assertObj(instance, 'Failed to get instances');
   return instance;
 }
 

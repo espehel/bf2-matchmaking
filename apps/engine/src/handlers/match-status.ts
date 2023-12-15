@@ -20,12 +20,19 @@ export async function handleMatchStatusUpdate(
     matches.removeActiveMatch(match);
   }
   if (match.status === MatchStatus.Finished) {
-    const { data: matchServer } = await client().getMatchServer(match.id);
-    await api.platform().deleteServer(createServerDnsName(match.id));
-    if (matchServer?.instance && matchServer?.server?.ip) {
-      await api.rcon().deleteServerLive(matchServer.server.ip);
-      await client().deleteServer(matchServer.server.ip);
-      await client().deleteServerRcon(matchServer.server.ip);
-    }
+    await handleMatchFinished(match);
+  }
+}
+
+async function handleMatchFinished(match: MatchesJoined) {
+  const { data: matchServer } = await client().getMatchServer(match.id);
+  if (!matchServer?.instance) {
+    return;
+  }
+
+  const { data: instance } = await api.platform().deleteServer(matchServer.instance);
+  if (instance) {
+    await client().deleteServer(instance.tag);
+    await client().deleteServerRcon(instance.tag);
   }
 }
