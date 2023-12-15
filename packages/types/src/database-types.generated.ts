@@ -44,6 +44,159 @@ export interface Database {
           }
         ]
       }
+      event_matches: {
+        Row: {
+          away_accepted: boolean
+          created_at: string
+          event: number
+          home_accepted: boolean
+          match: number
+          round: number
+        }
+        Insert: {
+          away_accepted?: boolean
+          created_at?: string
+          event: number
+          home_accepted?: boolean
+          match: number
+          round: number
+        }
+        Update: {
+          away_accepted?: boolean
+          created_at?: string
+          event?: number
+          home_accepted?: boolean
+          match?: number
+          round?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_matches_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_matches_match_fkey"
+            columns: ["match"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_matches_round_fkey"
+            columns: ["round"]
+            isOneToOne: false
+            referencedRelation: "event_rounds"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      event_rounds: {
+        Row: {
+          created_at: string
+          event: number
+          id: number
+          label: string
+          start_at: string
+        }
+        Insert: {
+          created_at?: string
+          event: number
+          id?: number
+          label: string
+          start_at: string
+        }
+        Update: {
+          created_at?: string
+          event?: number
+          id?: number
+          label?: string
+          start_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rounds_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      event_teams: {
+        Row: {
+          created_at: string
+          event: number
+          team: number
+        }
+        Insert: {
+          created_at?: string
+          event: number
+          team: number
+        }
+        Update: {
+          created_at?: string
+          event?: number
+          team?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_teams_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_teams_team_fkey"
+            columns: ["team"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      events: {
+        Row: {
+          config: number
+          created_at: string
+          id: number
+          name: string
+          owner: string
+        }
+        Insert: {
+          config: number
+          created_at?: string
+          id?: number
+          name: string
+          owner: string
+        }
+        Update: {
+          config?: number
+          created_at?: string
+          id?: number
+          name?: string
+          owner?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_config_fkey"
+            columns: ["config"]
+            isOneToOne: false
+            referencedRelation: "match_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_owner_fkey"
+            columns: ["owner"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       maps: {
         Row: {
           created_at: string

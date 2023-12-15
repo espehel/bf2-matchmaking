@@ -3,6 +3,7 @@ import matches from './matches-api';
 import {
   Database,
   DiscordConfig,
+  EventsJoined,
   MatchConfigResults,
   MatchConfigsRow,
   PlayerRatingsInsert,
@@ -23,6 +24,8 @@ import {
 } from '@bf2-matchmaking/types';
 
 const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
+const EVENT_QUERY =
+  '*, teams!event_teams(*), rounds:event_rounds!event_rounds_event_fkey(*, matches:event_matches(*)), matches!event_matches(id, home_team(*), away_team(*))';
 
 export default (client: SupabaseClient<Database>) => ({
   ...matches(client),
@@ -159,6 +162,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('teams').select('*').eq('discord_role', roleId).single(),
   updateTeam: (teamId: number, values: TeamsUpdate) =>
     client.from('teams').update(values).eq('id', teamId).select(),
+  searchTeams: (query: string) =>
+    client.from('teams').select('*').ilike('name', `%${query}%`).limit(10),
   createTeamPlayer: (team: TeamPlayersInsert) =>
     client.from('team_players').insert(team).select().single(),
   updateTeamPlayer: (teamId: number, playerId: string, values: TeamPlayersUpdate) =>
@@ -173,4 +178,13 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('team_players').select('*').eq('player_id', playerId),
   deleteTeamPlayer: (teamId: number, playerId: string) =>
     client.from('team_players').delete().eq('team_id', teamId).eq('player_id', playerId),
+  getEvents: () => client.from('events').select('*'),
+  getEvent: (id: number) =>
+    client.from('events').select(EVENT_QUERY).eq('id', id).single<EventsJoined>(),
+  createEventTeam: (event: number, team: number) =>
+    client.from('event_teams').insert({ event, team }).select('*').single(),
+  createEventRound: (event: number, label: string, start_at: string) =>
+    client.from('event_rounds').insert({ event, label, start_at }).select('*').single(),
+  createEventMatch: (event: number, round: number, match: number) =>
+    client.from('event_matches').insert({ event, round, match }).select('*').single(),
 });

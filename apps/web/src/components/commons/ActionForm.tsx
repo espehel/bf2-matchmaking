@@ -1,5 +1,11 @@
 'use client';
-import { DetailedHTMLProps, FormHTMLAttributes, useCallback, useTransition } from 'react';
+import {
+  DetailedHTMLProps,
+  FormHTMLAttributes,
+  useCallback,
+  useRef,
+  useTransition,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
@@ -22,6 +28,7 @@ export default function ActionForm({
   children,
   ...props
 }: Props) {
+  const ref = useRef<HTMLFormElement>(null);
   const [, startTransition] = useTransition();
   const router = useRouter();
 
@@ -33,6 +40,7 @@ export default function ActionForm({
         if (result.error) {
           toast.error(`${errorMessage}: ${result.error.message}`);
         } else {
+          ref.current?.reset();
           toast.success(successMessage);
           if (redirect) {
             router.push(redirect);
@@ -43,7 +51,7 @@ export default function ActionForm({
   );
 
   return (
-    <form action={handleAction} {...props}>
+    <form action={handleAction} ref={ref} {...props}>
       {children}
     </form>
   );

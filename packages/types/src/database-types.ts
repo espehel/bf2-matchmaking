@@ -1,5 +1,6 @@
 import { Database } from './database-types.generated';
 import { TeamPlayer } from './index';
+import { exec } from 'node:child_process';
 
 export type PlayersRow = Database['public']['Tables']['players']['Row'];
 export type MapsRow = Database['public']['Tables']['maps']['Row'];
@@ -16,6 +17,9 @@ export type TeamsRow = Database['public']['Tables']['teams']['Row'];
 export type TeamPlayersRow = Database['public']['Tables']['team_players']['Row'];
 export type PlayerRatingsRow = Database['public']['Tables']['player_ratings']['Row'];
 export type MatchServersRow = Database['public']['Tables']['match_servers']['Row'];
+export type EventsRow = Database['public']['Tables']['events']['Row'];
+export type EventRoundsRow = Database['public']['Tables']['event_rounds']['Row'];
+export type EventMatchesRow = Database['public']['Tables']['event_matches']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -171,4 +175,15 @@ export interface MatchConfigResults extends MatchConfigsRow {
 
 export interface MatchServer extends Omit<MatchServersRow, 'ip'> {
   server: ServersRow | null;
+}
+
+export interface EventsMatch {
+  id: number;
+  home_team: TeamsRow;
+  away_team: TeamsRow;
+}
+export interface EventsJoined extends EventsRow {
+  teams: Array<TeamsRow>;
+  rounds: Array<EventRoundsRow & { matches: Array<EventMatchesRow> }>;
+  matches: Array<EventsMatch>;
 }
