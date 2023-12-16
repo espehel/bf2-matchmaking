@@ -84,31 +84,31 @@ rootRouter.get('/servers/:ip', async (ctx) => {
 rootRouter.delete('/servers/:id', async (ctx: Context) => {
   const instance = await getServerInstance(ctx.params.id);
   ctx.assert(instance, 404, 'Server not found');
-  const host = instance.tag;
+  const dns = await getDnsByName(instance.tag);
+  ctx.assert(dns, 502, 'DNS not found');
 
-  const { data: si } = await api.rcon().getServerInfo(host);
+  const { data: si } = await api.rcon().getServerInfo(dns.name);
   if (si && Number(si.connectedPlayers) > 1) {
     ctx.status = 409;
     ctx.body = { message: 'Server is not empty' };
     return;
   }
 
-  await saveDemos(host);
+  await saveDemos(dns.name);
 
   await Promise.all([
     await deleteServerInstance(instance.id),
     await deleteStartupScript(instance.label),
-    await api.rcon().deleteServerLive(host),
+    await api.rcon().deleteServerLive(dns.name),
   ]);
 
-  const dns = await getDnsByName(host);
   if (dns) {
     await deleteDnsRecord(dns.id);
   }
 
   info(
     'DELETE /servers',
-    `Instance ${host} deleted. [id: "${instance.id}", dns content: "${dns?.content}", label: "${instance.label}"]`
+    `Instance ${dns.name} deleted. [id: "${instance.id}", dns content: "${dns?.content}", tag: "${instance.tag}", label: "${instance.label}"]`
   );
   ctx.status = 204;
   ctx.body = instance;
