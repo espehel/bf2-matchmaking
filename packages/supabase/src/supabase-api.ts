@@ -187,4 +187,16 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('event_rounds').insert({ event, label, start_at }).select('*').single(),
   createEventMatch: (event: number, round: number, match: number) =>
     client.from('event_matches').insert({ event, round, match }).select('*').single(),
+  deleteEventRound: (round: number) =>
+    client.from('event_rounds').delete().eq('id', round).select('*').single(),
+  deleteEventMatch: (match: number) =>
+    client.from('event_matches').delete().eq('match', match).select('*').single(),
+  deleteEventTeam: (event: number, team: number) =>
+    client
+      .from('event_teams')
+      .delete()
+      .eq('team', team)
+      .eq('event', event)
+      .select('*')
+      .single(),
 });

@@ -5,6 +5,7 @@ import TeamCombobox from '@/components/TeamCombobox';
 import TransitionWrapper from '@/components/commons/TransitionWrapper';
 import IconBtn from '@/components/commons/IconBtn';
 import { EventRoundsRow, EventsJoined } from '@bf2-matchmaking/types';
+import EventTeamCombobox from '@/components/events/EventTeamCombobox';
 
 interface Props {
   event: EventsJoined;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function AddMatchForm({ event, round }: Props) {
+  const teams = event.teams.map(({ id }) => id);
   async function addEventTeamSA(data: FormData) {
     'use server';
     return addRoundMatch(event, round, data);
@@ -24,8 +26,8 @@ export default function AddMatchForm({ event, round }: Props) {
       errorMessage="Failed to add team"
     >
       <div className="flex gap-2 items-center">
-        <TeamCombobox name="home_team" placeholder="Home team" size="sm" />
-        <TeamCombobox name="away_team" placeholder="Away team" size="sm" />
+        <EventTeamCombobox name="home_team" placeholder="Home team" teams={teams} />
+        <EventTeamCombobox name="away_team" placeholder="Away team" teams={teams} />
         <TransitionWrapper>
           <IconBtn
             type="submit"

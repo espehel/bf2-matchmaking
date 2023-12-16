@@ -120,6 +120,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('id', matchId)
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
+  deleteMatch: (matchId: number | undefined) =>
+    client.from('matches').delete().eq('id', matchId),
   createMatchPlayer: (
     match_id: number,
     player_id: string,

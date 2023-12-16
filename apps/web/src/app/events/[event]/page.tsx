@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import AddTeamForm from '@/components/events/AddTeamForm';
 import AddRoundForm from '@/components/events/AddRoundForm';
-import { DateTime } from 'luxon';
 import EventRound from '@/components/events/EventRound';
+import TeamsSection from '@/components/events/TeamsSection';
 
 interface Props {
   params: { event: string };
@@ -30,15 +30,7 @@ export default async function EventPage({ params }: Props) {
           </ul>
           <AddRoundForm eventId={event.id} />
         </section>
-        <section className="section gap-2">
-          <h2>Teams</h2>
-          <ul>
-            {event.teams.map((team) => (
-              <li key={team.id}>{team.name}</li>
-            ))}
-          </ul>
-          <AddTeamForm eventId={event.id} />
-        </section>
+        <TeamsSection event={event} />
       </div>
     </main>
   );

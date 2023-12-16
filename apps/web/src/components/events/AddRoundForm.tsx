@@ -1,7 +1,6 @@
 import ActionForm from '@/components/commons/ActionForm';
 import { addEventRound } from '@/app/events/[event]/actions';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
-import TeamCombobox from '@/components/TeamCombobox';
 import TransitionWrapper from '@/components/commons/TransitionWrapper';
 import IconBtn from '@/components/commons/IconBtn';
 
