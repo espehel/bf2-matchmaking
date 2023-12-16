@@ -15,6 +15,10 @@
     @apply flex flex-col gap-6 p-6 border-2 border-primary rounded bg-base-100;
   }
 
+  .section h2 {
+    @apply font-bold text-xl;
+  }
+
   .sheet {
     @apply bg-base-100 shadow-xl p-4 rounded;
   }

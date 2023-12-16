@@ -10,6 +10,7 @@ interface Props extends PropsWithChildren {
   kind?: 'btn-primary' | 'btn-secondary' | 'btn-error';
   redirect?: string;
   errorRedirect?: string;
+  visible?: boolean;
 }
 
 export default function ActionWrapper({
@@ -19,6 +20,7 @@ export default function ActionWrapper({
   errorMessage,
   redirect,
   errorRedirect,
+  visible = true,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -49,12 +51,17 @@ export default function ActionWrapper({
       errorRedirect,
     ]
   );
+
+  if (!visible) {
+    return null;
+  }
+
   if (pending) {
     return <span className="loading loading-spinner" />;
   }
 
   return (
-    <span role="button" onClick={handleAction}>
+    <span role="button" onClick={handleAction} className="w-fit">
       {children}
     </span>
   );

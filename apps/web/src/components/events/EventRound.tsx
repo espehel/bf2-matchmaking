@@ -11,13 +11,15 @@ import IconBtn from '@/components/commons/IconBtn';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import { deleteEventMatch, deleteEventRound } from '@/app/events/[event]/actions';
 import ActionWrapper from '@/components/commons/ActionWrapper';
+import Link from 'next/link';
 
 interface Props {
   event: EventsJoined;
   round: EventRoundsRow & { matches: Array<EventMatchesRow> };
+  edit: boolean;
 }
 
-export default function EventRound({ event, round }: Props) {
+export default function EventRound({ event, round, edit }: Props) {
   const matches = round.matches
     .map((em) => {
       const m = event.matches.find((m) => m.id === em.match);
@@ -46,6 +48,7 @@ export default function EventRound({ event, round }: Props) {
           action={deleteEventRoundSA}
           successMessage="Round deleted"
           errorMessage="Failed to delete round"
+          visible={edit}
         >
           <IconBtn Icon={XCircleIcon} size="xs" className="text-error" />
         </ActionWrapper>
@@ -53,21 +56,22 @@ export default function EventRound({ event, round }: Props) {
       <ul className="flex flex-col gap-2">
         {matches.map((match) => (
           <li key={match.id} className="flex items-center justify-end">
-            <div className="mr-auto">
+            <Link className="link link-hover mr-auto" href={`/matches/${match.id}`}>
               {match.home_team.name} v. {match.away_team.name}
-            </div>
+            </Link>
             <Badge home={match.home_accepted} away={match.away_accepted} />
             <ActionWrapper
               action={deleteEventMatchSA(match)}
               successMessage="Match deleted"
               errorMessage="Failed to delete match"
+              visible={edit}
             >
               <IconBtn Icon={XCircleIcon} size="sm" className="text-error" />
             </ActionWrapper>
           </li>
         ))}
       </ul>
-      <AddMatchForm event={event} round={round} />
+      {edit && <AddMatchForm event={event} round={round} />}
     </section>
   );
 }
