@@ -136,6 +136,10 @@ export class LiveMatch {
       return next('live');
     }
 
+    if (this.state !== 'live') {
+      return next(this.state);
+    }
+
     const round = await insertRound(this.match, this.liveInfo || liveInfo);
     logAddMatchRound(round, this.match, liveInfo);
     info('onLiveServerUpdate', `Created round ${round.id}`);

@@ -78,8 +78,9 @@ export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | nul
 export const closeMatch = async (match: MatchesJoined) => {
   let errors = validateMatch(match);
 
+  let fixedMatch;
   if (errors.includes('MISSING_PLAYERS')) {
-    const fixedMatch = await fixMissingMatchPlayers(match);
+    fixedMatch = await fixMissingMatchPlayers(match);
     if (fixedMatch) {
       errors = validateMatch(fixedMatch);
     }
@@ -93,7 +94,7 @@ export const closeMatch = async (match: MatchesJoined) => {
     return { result: null, errors };
   }
 
-  const results = await processResults(match);
+  const results = await processResults(fixedMatch || match);
 
   await client()
     .updateMatch(match.id, {
