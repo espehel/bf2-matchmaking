@@ -110,7 +110,7 @@ rootRouter.delete('/servers/:id', async (ctx: Context) => {
     'DELETE /servers',
     `Instance ${dns.name} deleted. [id: "${instance.id}", dns content: "${dns?.content}", tag: "${instance.tag}", label: "${instance.label}"]`
   );
-  ctx.status = 204;
+  ctx.status = 200;
   ctx.body = instance;
 });
 
