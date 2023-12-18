@@ -2,6 +2,7 @@ import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { api, createServerDnsName } from '@bf2-matchmaking/utils';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 
 export async function handleMatchStatusUpdate(
   match: MatchesJoined,
@@ -30,9 +31,20 @@ async function handleMatchFinished(match: MatchesJoined) {
     return;
   }
 
-  const { data: instance } = await api.platform().deleteServer(matchServer.instance);
+  const { data: instance, error } = await api
+    .platform()
+    .deleteServer(matchServer.instance);
   if (instance) {
-    await client().deleteServer(instance.tag);
-    await client().deleteServerRcon(instance.tag);
+    const { data: server } = await client().deleteServer(instance.tag);
+    const { data: rcon } = await client().deleteServerRcon(instance.tag);
+    logMessage(`Match ${match.id} deleted server ${instance.tag}`, {
+      matchServer,
+      instance,
+      server,
+      rcon,
+    });
+  }
+  if (error) {
+    logErrorMessage(`Match ${match.id} failed to delete server`, error);
   }
 }
