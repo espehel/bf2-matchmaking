@@ -14,6 +14,7 @@ import {
   Region,
   PostDemosRequestBody,
   PostDemosResponseBody,
+  DeleteServersResponseBody,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
@@ -150,7 +151,8 @@ const platform = () => {
       }),
     getServerByIp: (ip: string) =>
       getJSON<Instance>(basePath.concat(paths.servers()).concat(`?ip=${ip}`)),
-    deleteServer: (id: string) => deleteJSON<Instance>(basePath.concat(paths.server(id))),
+    deleteServer: (id: string) =>
+      deleteJSON<DeleteServersResponseBody>(basePath.concat(paths.server(id))),
     getServerDns: (ip: string) =>
       getJSON<DnsRecordWithoutPriority>(basePath.concat(paths.serverDns(ip))),
     getLocations: () => getJSON<Array<Region>>(basePath.concat(paths.locations())),

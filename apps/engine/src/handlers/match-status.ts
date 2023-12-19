@@ -31,15 +31,14 @@ async function handleMatchFinished(match: MatchesJoined) {
     return;
   }
 
-  const { data: instance, error } = await api
-    .platform()
-    .deleteServer(matchServer.instance);
-  if (instance) {
-    const { data: server } = await client().deleteServer(instance.tag);
-    const { data: rcon } = await client().deleteServerRcon(instance.tag);
-    logMessage(`Match ${match.id} deleted server ${instance.tag}`, {
+  const { data, error } = await api.platform().deleteServer(matchServer.instance);
+  if (data) {
+    const { data: server } = await client().deleteServer(data.dns.name);
+    const { data: rcon } = await client().deleteServerRcon(data.dns.name);
+    logMessage(`Match ${match.id} deleted server ${data.dns.name}`, {
       matchServer,
-      instance,
+      instance: data.instance,
+      dns: data.dns,
       server,
       rcon,
     });

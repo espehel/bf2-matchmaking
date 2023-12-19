@@ -6,7 +6,15 @@ import {
   ServersJoined,
   ServersRow,
 } from './database-types';
-import { LiveRound, LiveServerState, PlayerListItem, ServerInfo, User } from './index';
+import {
+  DnsRecord,
+  Instance,
+  LiveRound,
+  LiveServerState,
+  PlayerListItem,
+  ServerInfo,
+  User,
+} from './index';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -112,4 +120,9 @@ export interface PostDemosRequestBody {
 export interface PostDemosResponseBody {
   channel: string;
   message: string;
+}
+
+export interface DeleteServersResponseBody {
+  instance: Instance;
+  dns: DnsRecord;
 }
