@@ -30,7 +30,7 @@ export default async function Page() {
         <tbody>
           {servers.map((server) => (
             <tr key={server.ip} className="hover">
-              <td className="truncate">{server.info?.serverName || server.name}</td>
+              <td className="truncate">{server.name}</td>
               <td>{server.ip}</td>
               <td>{server.port}</td>
               <td className="truncate">{`${server.city}, ${server.country}`}</td>
