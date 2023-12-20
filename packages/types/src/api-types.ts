@@ -121,8 +121,3 @@ export interface PostDemosResponseBody {
   channel: string;
   message: string;
 }
-
-export interface DeleteServersResponseBody {
-  instance: Instance;
-  dns: DnsRecord;
-}

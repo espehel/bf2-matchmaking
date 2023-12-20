@@ -27,23 +27,22 @@ export async function handleMatchStatusUpdate(
 
 async function handleMatchFinished(match: MatchesJoined) {
   const { data: matchServer } = await client().getMatchServer(match.id);
-  if (!matchServer?.instance) {
+  if (!matchServer?.server?.ip) {
     return;
   }
 
-  const { data, error } = await api.platform().deleteServer(matchServer.instance);
+  const { data, error } = await api.platform().deleteServer(matchServer.server.ip);
   if (data) {
-    const { data: server } = await client().deleteServer(data.dns.name);
-    const { data: rcon } = await client().deleteServerRcon(data.dns.name);
-    logMessage(`Match ${match.id} deleted server ${data.dns.name}`, {
+    const { data: server } = await client().deleteServer(matchServer.server.ip);
+    const { data: rcon } = await client().deleteServerRcon(matchServer.server.ip);
+    logMessage(`Match ${match.id} deleted server ${matchServer.server.ip}`, {
       matchServer,
       instance: data.instance,
-      dns: data.dns,
       server,
       rcon,
     });
   }
   if (error) {
-    logErrorMessage(`Match ${match.id} failed to delete server`, error);
+    logErrorMessage(`Match ${match.id} failed to delete server`, error, { matchServer });
   }
 }
