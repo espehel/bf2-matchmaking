@@ -15,19 +15,31 @@ rootRouter.post('/demos', async (ctx) => {
   const { server, demos } = ctx.request.body as PostDemosRequestBody;
   try {
     const channel = await getDemoChannel();
-    const response = await channel.send({
-      content: server,
-      files: demos,
-    });
+
+    const batchSize = 10;
+    const demoBatches = [];
+    for (let i = 0; i < demos.length; i += batchSize) {
+      const batch = demos.slice(i, Math.min(demos.length, i + batchSize));
+      demoBatches.push(batch);
+    }
+
+    const responses = await Promise.all(
+      demoBatches.map((demoBatch) =>
+        channel.send({
+          content: server,
+          files: demoBatch,
+        })
+      )
+    );
     ctx.body = {
-      channel: response.channel.id,
-      message: response.id,
+      channel: channel.id,
+      messages: responses.map((response) => response.id).join(', '),
     };
     ctx.status = 201;
   } catch (e) {
     error('POST /demos', e);
     ctx.status = 502;
-    ctx.body = e;
+    ctx.body = { message: 'Failed to save demos in discord', demos: demos };
   }
 });
 
