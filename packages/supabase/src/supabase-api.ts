@@ -3,6 +3,7 @@ import matches from './matches-api';
 import {
   Database,
   DiscordConfig,
+  EventMatchesUpdate,
   EventsJoined,
   MatchConfigResults,
   MatchConfigsRow,
@@ -181,6 +182,8 @@ export default (client: SupabaseClient<Database>) => ({
   getEvents: () => client.from('events').select('*'),
   getEvent: (id: number) =>
     client.from('events').select(EVENT_QUERY).eq('id', id).single<EventsJoined>(),
+  getEventMatch: (match: number) =>
+    client.from('event_matches').select('*').eq('match', match).single(),
   createEventTeam: (event: number, team: number) =>
     client.from('event_teams').insert({ event, team }).select('*').single(),
   createEventRound: (event: number, label: string, start_at: string) =>
@@ -191,6 +194,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('event_rounds').delete().eq('id', round).select('*').single(),
   deleteEventMatch: (match: number) =>
     client.from('event_matches').delete().eq('match', match).select('*').single(),
+  updateEventMatch: (match: number, values: EventMatchesUpdate) =>
+    client.from('event_matches').update(values).eq('match', match).select('*').single(),
   deleteEventTeam: (event: number, team: number) =>
     client
       .from('event_teams')

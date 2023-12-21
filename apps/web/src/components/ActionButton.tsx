@@ -1,6 +1,5 @@
 'use client';
 import React, { PropsWithChildren, useCallback, useTransition } from 'react';
-import { FetchResult } from '@bf2-matchmaking/utils';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
@@ -9,6 +8,7 @@ interface Props extends PropsWithChildren {
   successMessage: string;
   errorMessage: string;
   kind?: 'btn-primary' | 'btn-secondary' | 'btn-error';
+  size?: 'btn-lg' | 'btn-md' | 'btn-sm';
   redirect?: string;
   errorRedirect?: string;
 }
@@ -19,6 +19,7 @@ export default function ActionButton({
   successMessage,
   errorMessage,
   kind = 'btn-secondary',
+  size = 'btn-md',
   redirect,
   errorRedirect,
 }: Props) {
@@ -53,7 +54,11 @@ export default function ActionButton({
   );
 
   return (
-    <button className={`btn ${kind} w-fit`} onClick={handleAction} disabled={pending}>
+    <button
+      className={`btn ${kind} ${size} w-fit`}
+      onClick={handleAction}
+      disabled={pending}
+    >
       {pending && <span className="loading loading-spinner"></span>}
       {children}
     </button>

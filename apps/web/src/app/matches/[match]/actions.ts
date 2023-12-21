@@ -1,8 +1,12 @@
 'use server';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { MatchesJoined, MatchServer, MatchStatus } from '@bf2-matchmaking/types';
-import moment from 'moment';
+import {
+  EventMatchesUpdate,
+  MatchesJoined,
+  MatchServer,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import {
   api,
@@ -270,10 +274,12 @@ export async function setMaps(matchId: number, maps: Array<number>) {
 }
 
 export async function updateMatchScheduledAt(matchId: number, formData: FormData) {
-  const { dateInput } = Object.fromEntries(formData);
+  const { dateInput, timezone } = Object.fromEntries(formData);
   assertString(dateInput);
+  assertString(timezone);
 
-  const scheduled_at = moment(dateInput).utcOffset(120).toISOString();
+  const scheduled_at = DateTime.fromISO(dateInput, { zone: timezone }).toUTC().toISO();
+  assertString(scheduled_at);
 
   const result = await supabase(cookies).updateMatch(matchId, {
     scheduled_at,
@@ -283,10 +289,8 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
     return result;
   }
 
-  const apiResult = await api.rcon().postMatchResults(matchId);
   revalidatePath(`/matches/${matchId}`);
-
-  return apiResult;
+  return result;
 }
 
 export async function changeServerMap(serverIp: string, mapId: number) {
@@ -319,4 +323,28 @@ export async function generateMatchServerInstance(
     return platformResult;
   }
   return { data: null, error: { message: 'Invalid match for generating server' } };
+}
+
+export async function acceptMatchTime(
+  match: MatchesJoined,
+  team: 'home' | 'away',
+  clear: boolean
+) {
+  const matchUpdate: EventMatchesUpdate = {};
+  if (clear) {
+    matchUpdate['home_accepted'] = false;
+    matchUpdate['away_accepted'] = false;
+  }
+  if (team === 'home') {
+    matchUpdate['home_accepted'] = true;
+  }
+  if (team === 'away') {
+    matchUpdate['away_accepted'] = true;
+  }
+  const result = await supabase(cookies).updateEventMatch(match.id, matchUpdate);
+
+  if (result.data) {
+    revalidatePath(`/matches/${match.id}`);
+  }
+  return result;
 }

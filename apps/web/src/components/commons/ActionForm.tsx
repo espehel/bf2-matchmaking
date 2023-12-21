@@ -9,7 +9,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
-interface Props
+export interface Props
   extends DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> {
   action: (
     formData: FormData
@@ -18,10 +18,12 @@ interface Props
   errorMessage: string;
   redirect?: string;
   className?: string;
+  onSuccess?: () => void;
 }
 
 export default function ActionForm({
   action,
+  onSuccess,
   successMessage,
   errorMessage,
   redirect,
@@ -44,6 +46,9 @@ export default function ActionForm({
           toast.success(successMessage);
           if (redirect) {
             router.push(redirect);
+          }
+          if (onSuccess) {
+            onSuccess();
           }
         }
       }),

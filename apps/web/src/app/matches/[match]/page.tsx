@@ -8,7 +8,7 @@ import RoundsList from '@/components/RoundsList';
 import { Suspense } from 'react';
 import ServerSectionLoading from '@/components/match/ServerSectionLoading';
 import MapsSection from '@/components/match/MapsSection';
-import ScheduledAt from '@/components/match/ScheduledAt';
+import MatchTimeForm, { MatchTimeFallback } from '@/components/match/MatchTimeForm';
 
 interface Props {
   params: { match: string };
@@ -20,12 +20,15 @@ export default async function ResultsMatch({ params }: Props) {
   const { data: matchServer } = await supabase(cookies).getMatchServer(
     Number(params.match)
   );
+  const date = match.scheduled_at || match.started_at || match.created_at;
 
   return (
     <main className="main flex flex-col items-center text-center">
       <div className="mb-8">
         <h1 className="text-accent font-bold">{`${match.config.name}`}</h1>
-        <ScheduledAt match={match} />
+        <Suspense fallback={<MatchTimeFallback match={match} />}>
+          <MatchTimeForm match={match} />
+        </Suspense>
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
         <MatchSection match={match} />

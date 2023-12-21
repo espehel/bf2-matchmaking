@@ -2,12 +2,7 @@ import { assertNumber, assertString } from '@bf2-matchmaking/utils';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import {
-  EventMatchesRow,
-  EventRoundsRow,
-  EventsJoined,
-  MatchStatus,
-} from '@bf2-matchmaking/types';
+import { EventMatchesRow, EventRoundsRow, EventsJoined } from '@bf2-matchmaking/types';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 
 export async function addRoundMatch(

@@ -43,6 +43,7 @@ export type ServerRconsUpdate = Database['public']['Tables']['server_rcons']['Up
 export type TeamsUpdate = Database['public']['Tables']['teams']['Update'];
 export type TeamPlayersUpdate = Database['public']['Tables']['team_players']['Update'];
 export type MatchServersUpdate = Database['public']['Tables']['match_servers']['Update'];
+export type EventMatchesUpdate = Database['public']['Tables']['event_matches']['Update'];
 
 export enum MatchStatus {
   Open = 'Open',

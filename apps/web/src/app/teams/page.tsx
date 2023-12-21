@@ -9,10 +9,12 @@ export default async function TeamsPage() {
   const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
   const { data: player } = await supabase(cookies).getSessionPlayer();
 
+  const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <main className="main">
       <ul className="flex flex-col gap-2 justify-center items-center">
-        {teams.map((t) => (
+        {sortedTeams.map((t) => (
           <li className="sheet max-w-3xl w-full" key={t.id}>
             <Link className="flex items-center gap-4" href={`/teams/${t.id}`}>
               <Avatar team={t} />
