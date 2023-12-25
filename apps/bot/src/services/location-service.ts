@@ -8,9 +8,11 @@ const validLocations: Array<[LocationEmoji, string]> = [
   [LocationEmoji.Amsterdam, 'ams'],
   [LocationEmoji.Frankfurt, 'fra'],
   [LocationEmoji.Warsaw, 'waw'],
-  [LocationEmoji.Miami, 'mia'],
+  [LocationEmoji.Warsaw, 'waw'],
   [LocationEmoji.London, 'lhr'],
   [LocationEmoji.Stockholm, 'sto'],
+  [LocationEmoji.Miami, 'mia'],
+  [LocationEmoji.NewYork, 'ewr'],
 ];
 export function loadServerLocations() {
   api

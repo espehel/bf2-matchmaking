@@ -198,7 +198,7 @@ export async function startTopLocationPoll(
     setTimeout(async () => {
       const topEmoji = pollMessage.reactions.cache
         .filter(isValidReaction)
-        .sort(compareMessageReactionCount)
+        .sort(compareMessageReactionCount(match))
         .at(0);
 
       const location = getServerLocation(topEmoji?.emoji.name);
