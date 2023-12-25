@@ -20,7 +20,7 @@ export async function startScheduledMatches() {
 
 function isScheduledToStart(match: ScheduledMatch) {
   const startsInMinutes = DateTime.fromISO(match.scheduled_at).diffNow('minutes').minutes;
-  return startsInMinutes <= 15 && startsInMinutes >= -15;
+  return startsInMinutes <= 10 && startsInMinutes >= -10;
 }
 
 async function startMatch(scheduledMatch: ScheduledMatch) {

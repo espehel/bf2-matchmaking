@@ -13,7 +13,7 @@ import { matchesRouter } from './routers/matches';
 matches.loadActive().loadScheduled();
 
 cron.schedule('0 16 * * *', closeOldMatches);
-cron.schedule('0,30 * * * *', startScheduledMatches);
+cron.schedule('0,15,30,45 * * * *', startScheduledMatches);
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 new Koa()
