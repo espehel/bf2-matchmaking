@@ -57,7 +57,7 @@ export default function EventRound({ event, round, edit }: Props) {
         {matches.map((match) => (
           <li key={match.id} className="flex items-center justify-end">
             <Link className="link link-hover mr-auto" href={`/matches/${match.id}`}>
-              {match.home_team.name} v. {match.away_team.name}
+              {match.id} - {match.home_team.name} v. {match.away_team.name}
             </Link>
             <Badge home={match.home_accepted} away={match.away_accepted} />
             <ActionWrapper
