@@ -3,15 +3,11 @@ import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ServerCreateForm from '@/components/servers/ServerCreateForm';
 import { api, verify } from '@bf2-matchmaking/utils';
-import { supabase } from '@/lib/supabase/supabase';
-import { cookies } from 'next/headers';
-import GenerateServerForm from '@/components/servers/GenerateServerForm';
+import { Suspense } from 'react';
+import CreateServerSection from '@/components/servers/CreateServerSection';
 
 export default async function Page() {
   const servers = await api.rcon().getServers().then(verify);
-
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
 
   return (
     <main className="main">
@@ -49,18 +45,9 @@ export default async function Page() {
           ))}
         </tbody>
       </table>
-      {player && (
-        <section className="bg-base-100 border-primary border-2 rounded p-4 mt-6">
-          <h2 className="text-xl">Add server</h2>
-          <ServerCreateForm />
-          {adminRoles?.server_admin && (
-            <>
-              <div className="divider" />
-              <GenerateServerForm />
-            </>
-          )}
-        </section>
-      )}
+      <Suspense fallback={null}>
+        <CreateServerSection />
+      </Suspense>
     </main>
   );
 }
