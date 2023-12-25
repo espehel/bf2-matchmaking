@@ -5,7 +5,6 @@ import {
   deleteStartupScript,
   getInstanceByIp,
   getLocations,
-  getServerInstance,
   getServerInstances,
   pollInstance,
 } from '../services/vultr';
@@ -20,7 +19,7 @@ import { Instance } from '@bf2-matchmaking/types/src/vultr';
 import { Context } from 'koa';
 import { DEFAULTS } from '../constants';
 import { api } from '@bf2-matchmaking/utils';
-import { saveDemos } from '../services/demos';
+import { saveDemosAll } from '@bf2-matchmaking/demo';
 
 export const rootRouter = new Router();
 
@@ -108,7 +107,7 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
     return;
   }
 
-  await saveDemos(host);
+  await saveDemosAll(host);
 
   await Promise.all([
     await deleteServerInstance(instance.id),

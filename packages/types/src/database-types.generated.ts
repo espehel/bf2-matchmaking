@@ -758,6 +758,7 @@ export interface Database {
       servers: {
         Row: {
           created_at: string
+          demos_path: string | null
           ip: string
           name: string
           port: string
@@ -765,6 +766,7 @@ export interface Database {
         }
         Insert: {
           created_at?: string
+          demos_path?: string | null
           ip: string
           name: string
           port?: string
@@ -772,6 +774,7 @@ export interface Database {
         }
         Update: {
           created_at?: string
+          demos_path?: string | null
           ip?: string
           name?: string
           port?: string

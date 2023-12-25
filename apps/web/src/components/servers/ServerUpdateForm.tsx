@@ -20,13 +20,21 @@ export default function ServerUpdateForm({ server }: Props) {
 
   return (
     <form action={handleFormAction} className="form-control">
+      <label className="label" htmlFor="demosInput">
+        Demos:
+      </label>
+      <input
+        className="input input-bordered"
+        name="demosInput"
+        defaultValue={server.demos_path || undefined}
+      />
       <label className="label" htmlFor="portInput">
         Port:
       </label>
       <input
         className="input input-bordered"
         name="portInput"
-        placeholder={server.port}
+        defaultValue={server.port}
       />
       <label className="label" htmlFor="rconPortInput">
         Rcon port:

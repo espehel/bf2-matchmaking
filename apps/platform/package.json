@@ -29,6 +29,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@bf2-matchmaking/demo": "*",
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",

@@ -1,17 +1,30 @@
 'use server';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { isNotNull, isString, ServerRconsUpdate } from '@bf2-matchmaking/types';
+import {
+  isNotNull,
+  isString,
+  ServerRconsUpdate,
+  ServersUpdate,
+} from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
 import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
 import { api } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 
 export async function updateServer(ip: string, data: FormData) {
-  const portInput = data.get('portInput');
+  const { portInput, demosInput } = Object.fromEntries(data);
+  let serverValues: ServersUpdate = {};
+  if (isString(portInput)) {
+    serverValues.port = portInput;
+  }
+  if (isString(demosInput)) {
+    serverValues.demos_path = demosInput;
+  }
+
   const serverUpdate =
-    portInput && isString(portInput)
-      ? supabase(cookies).updateServer(ip, { port: portInput })
+    Object.keys(serverValues).length > 0
+      ? supabase(cookies).updateServer(ip, serverValues)
       : null;
 
   const rconValues = toRconUpdateValues(data);

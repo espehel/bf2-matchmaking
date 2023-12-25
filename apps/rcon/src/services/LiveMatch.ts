@@ -20,6 +20,7 @@ import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
 import { isServerIdentified } from '../net/ServerManager';
 import { DateTime } from 'luxon';
+import { saveDemosSince } from '@bf2-matchmaking/demo';
 
 export interface LiveMatchOptions {
   prelive: boolean;
@@ -188,6 +189,17 @@ export class LiveMatch {
   async finish() {
     await finishMatch(this.match, this.liveInfo);
     removeLiveMatch(this);
+    if (
+      this.rounds.length > 0 &&
+      this.matchServer?.server?.demos_path &&
+      this.match.started_at
+    ) {
+      await saveDemosSince(
+        this.matchServer.server.ip,
+        this.match.started_at,
+        this.matchServer.server.demos_path
+      );
+    }
   }
   #logChangeLiveState(nextState: LiveServerState, liveInfo: LiveInfo) {
     logChangeLiveState(this.state, nextState, this.match, this.rounds, liveInfo);
