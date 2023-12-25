@@ -37,6 +37,7 @@
     "@koa/bodyparser": "^5.0.0",
     "@koa/router": "^11.0.2",
     "@vultr/vultr-node": "^2.7.0",
+    "cloudflare": "^2.9.1",
     "dotenv": "^16.3.1",
     "koa": "^2.14.2",
     "koa-logger": "^3.2.1",
