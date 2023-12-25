@@ -89,7 +89,7 @@ export async function createServerInstance(
 
   const { instance } = await client.instances.createInstance({
     region,
-    plan: VULTR.plan,
+    plan: region === 'sao' ? VULTR.sao_plan : VULTR.plan,
     os_id: VULTR.os_id,
     script_id,
     label: serverName,
@@ -139,15 +139,16 @@ export async function getLocations() {
 
   const { plans } = await client.plans.listPlans({ type: VULTR.type, os: VULTR.os_id });
   assertArray(plans, 'Failed to get plans');
-
-  const plan = (plans as Array<Plan>).find((p) => p.id === VULTR.plan);
-  assertObj(plan, 'Failed to find plan');
+  const validPlans = (plans as Array<Plan>).filter(
+    (p) => p.id === VULTR.plan || p.id === VULTR.sao_plan
+  );
+  assertObj(validPlans.at(0), 'Failed to find plan');
 
   const { regions } = await client.regions.listRegions({});
   assertObj(regions, 'Failed to get regions');
 
   const locations = (regions as Array<Region>).filter((r) =>
-    plan.locations.includes(r.id)
+    validPlans.some((plan) => plan.locations.includes(r.id))
   );
   setCachedValue('locations', locations, 43200);
   return locations;

@@ -1,6 +1,7 @@
 export const VULTR = {
   type: 'vhf',
   plan: 'vhf-1c-1gb',
+  sao_plan: 'vhf-1c-1gb-sc1',
   os_id: '2136',
   scriptName: 'platform.bf2.gg script',
 };
