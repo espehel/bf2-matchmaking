@@ -101,7 +101,7 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
   const host = dns?.name || ctx.params.ip;
 
   const { data: si } = await api.rcon().getServerInfo(host);
-  if (si && Number(si.connectedPlayers) > 1) {
+  if (si && Number(si.connectedPlayers) > 3) {
     ctx.status = 409;
     ctx.body = { message: 'Server is not empty' };
     return;
