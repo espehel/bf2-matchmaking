@@ -210,3 +210,18 @@ export interface PendingServer {
 }
 
 export type MatchProcessError = 'MISSING_PLAYERS' | 'MISSING_ROUNDS' | 'EXTRA_ROUNDS';
+
+interface AsyncSuccessResponse<T> {
+  data: T;
+  error: null;
+}
+
+export interface AsyncError {
+  message: string;
+}
+export interface AsyncErrorResponse {
+  error: AsyncError;
+  data: null;
+}
+
+export type AsyncResult<T> = AsyncSuccessResponse<T> | AsyncErrorResponse;

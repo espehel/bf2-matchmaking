@@ -1,8 +1,14 @@
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  Instance,
+  MatchesJoined,
+  MatchServer,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { api, createServerDnsName } from '@bf2-matchmaking/utils';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { retry, wait } from '@bf2-matchmaking/utils/src/async-actions';
 
 export async function handleMatchStatusUpdate(
   match: MatchesJoined,
@@ -21,28 +27,35 @@ export async function handleMatchStatusUpdate(
     matches.removeActiveMatch(match);
   }
   if (match.status === MatchStatus.Finished) {
-    await handleMatchFinished(match);
+    handleMatchFinished(match);
   }
 }
 
 async function handleMatchFinished(match: MatchesJoined) {
   const { data: matchServer } = await client().getMatchServer(match.id);
-  if (!matchServer?.server?.ip) {
-    return;
+  const ip = matchServer?.server?.ip;
+  if (ip) {
+    await retry(() => deleteServer(match, ip), 5);
   }
+}
 
-  const { data, error } = await api.platform().deleteServer(matchServer.server.ip);
-  if (data) {
-    const { data: server } = await client().deleteServer(matchServer.server.ip);
-    const { data: rcon } = await client().deleteServerRcon(matchServer.server.ip);
-    logMessage(`Match ${match.id} deleted server ${matchServer.server.ip}`, {
-      matchServer,
-      instance: data.instance,
+async function deleteServer(match: MatchesJoined, ip: string) {
+  await wait(30);
+  const result = await api.platform().deleteServer(ip);
+  if (result.data) {
+    const { data: server } = await client().deleteServer(ip);
+    const { data: rcon } = await client().deleteServerRcon(ip);
+    logMessage(`Match ${match.id} deleted server ${ip}`, {
+      ip,
+      instance: result.data,
       server,
       rcon,
     });
   }
-  if (error) {
-    logErrorMessage(`Match ${match.id} failed to delete server`, error, { matchServer });
+  if (result.error) {
+    logErrorMessage(`Match ${match.id} failed to delete server`, result.error, {
+      ip,
+    });
   }
+  return result;
 }
