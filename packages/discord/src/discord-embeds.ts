@@ -74,6 +74,19 @@ export const getWarmUpStartedEmbed = (
   ],
 });
 
+export function getTeamDraftEmbed(
+  draftType: string,
+  teams: { rating: number; players: string[] }[]
+) {
+  return {
+    title: draftType,
+    fields: teams.map(({ rating, players }) => ({
+      name: rating.toString(),
+      value: players.join('\n'),
+      inline: true,
+    })),
+  };
+}
 export const getMatchStartedEmbed = (
   match: MatchesJoined,
   server?: RconBf2Server

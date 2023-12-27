@@ -1,12 +1,17 @@
-import { DiscordConfig } from '@bf2-matchmaking/types';
+import { DiscordConfig, MatchesJoined } from '@bf2-matchmaking/types';
 import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import {
+  getTestChannel,
   isPubobotMatchCheckIn,
   isPubobotMatchDrafting,
   isPubobotMatchStarted,
   replyMessage,
 } from './utils';
-import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
+import {
+  getMatchStartedEmbed,
+  getRulesEmbedByConfig,
+  getTeamDraftEmbed,
+} from '@bf2-matchmaking/discord';
 import { Client, Message, MessageCollector } from 'discord.js';
 import {
   createDraftingMatchFromPubobotEmbed,
@@ -16,6 +21,7 @@ import {
   startMatchFromPubobotEmbed,
 } from '../services/pubobot-service';
 import { generateServer } from '../services/platform-service';
+import { draftTeams, getAverageRating } from '../services/match-service';
 
 export function addMatchListener(
   collector: MessageCollector,
@@ -102,8 +108,23 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
       logMessage(`Channel ${message.channel.id}: Match ${match.id} started`, {
         match,
       });
+
+      await sendDraftMessage(match);
     } catch (e) {
       error('handlePubobotMatchStarted', e);
     }
   }
+}
+
+async function sendDraftMessage(match: MatchesJoined) {
+  const { snakeDraftTeams, teams, actualTeams } = draftTeams(match);
+  const testChannel = await getTestChannel();
+  await testChannel.send({
+    content: `Match: ${match.id}, rating: ${getAverageRating(match.teams)}`,
+    embeds: [
+      getTeamDraftEmbed('Snake Draft', snakeDraftTeams),
+      getTeamDraftEmbed('BF2.gg Draft', teams),
+      getTeamDraftEmbed('Actual Draft', actualTeams),
+    ],
+  });
 }
