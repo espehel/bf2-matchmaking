@@ -100,15 +100,18 @@ function withAverageRatingAndNick(
   return [
     {
       rating: getAverageRating(team1),
-      players: team1
-        .map((p) => match.players.find(({ id }) => id === p.player_id)?.nick)
-        .filter(isDefined),
+      players: team1.map(toPlayerText(match)).filter(isDefined),
     },
     {
       rating: getAverageRating(team2),
-      players: team2
-        .map((p) => match.players.find(({ id }) => id === p.player_id)?.nick)
-        .filter(isDefined),
+      players: team2.map(toPlayerText(match)).filter(isDefined),
     },
   ];
+}
+
+function toPlayerText(match: MatchesJoined) {
+  return (mp: MatchPlayersRow) => {
+    const player = match.players.find(({ id }) => id === mp.player_id);
+    return player && `${player.nick} (${mp.rating})`;
+  };
 }
