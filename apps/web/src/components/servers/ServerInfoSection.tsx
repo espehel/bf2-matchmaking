@@ -1,11 +1,13 @@
-import { GameStatus, ServerInfo } from '@bf2-matchmaking/types';
+import { GameStatus, RconBf2Server } from '@bf2-matchmaking/types';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
+import JoinMeButton from '@/components/servers/JoinMeButton';
 
 interface Props {
-  serverInfo: ServerInfo | null;
+  server: RconBf2Server;
 }
 
-export default function ServerInfoSection({ serverInfo }: Props) {
+export default function ServerInfoSection({ server }: Props) {
+  const serverInfo = server.info;
   if (!serverInfo) {
     return (
       <section className="bg-base-100 border-error border-2 rounded p-4">
@@ -27,6 +29,7 @@ export default function ServerInfoSection({ serverInfo }: Props) {
         <div>{`Time left: ${formatSecToMin(serverInfo.timeLeft)}`}</div>
         <div>{`Time limit: ${formatSecToMin(serverInfo.timeLimit)}`}</div>
       </div>
+      <JoinMeButton server={server} />
     </section>
   );
 }
