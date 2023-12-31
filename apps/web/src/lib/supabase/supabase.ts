@@ -4,10 +4,12 @@ import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adap
 import { cache } from 'react';
 import { getActions } from '@/lib/supabase/supabase-actions';
 
-const createServerSupabaseClient = cache((cookies: () => ReadonlyRequestCookies) => {
-  const cookieStore = cookies();
-  return createServerComponentClient({ cookies: () => cookieStore });
-});
+export const createServerSupabaseClient = cache(
+  (cookies: () => ReadonlyRequestCookies) => {
+    const cookieStore = cookies();
+    return createServerComponentClient({ cookies: () => cookieStore });
+  }
+);
 
 export const supabase = (cookies: () => ReadonlyRequestCookies) => {
   const client = createServerSupabaseClient(cookies);

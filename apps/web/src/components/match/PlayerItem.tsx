@@ -8,16 +8,17 @@ import { removeMatchPlayer } from '@/app/matches/[match]/actions';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import TeamPlayerActionButton from '@/components/TeamPlayerActionButton';
 import { StarIcon } from '@heroicons/react/20/solid';
+import SummoningBadge from '@/components/match/SummoningBadge';
 
 interface Props {
   player: PlayersRow;
   playerInfo: PlayerListItem | undefined;
   match: MatchesJoined;
-  team: number;
+  team?: number;
   captains: Array<string>;
 }
 export default function PlayerItem({ player, playerInfo, match, team, captains }: Props) {
-  const expectedTeam = match.home_team.id === team ? '2' : '1';
+  const expectedTeam = team && match.home_team.id === team ? '2' : '1';
 
   const isCaptain = captains.includes(player.id);
 
@@ -60,6 +61,9 @@ async function PlayerBadge({
   match,
   expectedTeam,
 }: PlayerBadgeProps) {
+  if (match.status === MatchStatus.Summoning) {
+    return <SummoningBadge player={player} />;
+  }
   if (!player.keyhash) {
     return (
       <div className="tooltip" data-tip="Not registered">

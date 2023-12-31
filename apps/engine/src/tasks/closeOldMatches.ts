@@ -6,7 +6,7 @@ import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 
 export async function closeOldMatches() {
-  const oldMatches = matches.getActive().filter(isOlderThan1Day);
+  const oldMatches = matches.getStarted().filter(isOlderThan1Day);
   info('closeOldMatches', `Handling ${oldMatches.length} old matches`);
 
   const matchesWithRounds = oldMatches.filter((m) => m.rounds.length > 0);

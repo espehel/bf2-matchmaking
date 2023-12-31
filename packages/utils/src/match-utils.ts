@@ -138,3 +138,13 @@ export function getInitialServerMap(match: MatchesJoined) {
 export function getServerVehicles(match: MatchesJoined) {
   return match.config.vehicles ? 'true' : 'false';
 }
+
+export function isActiveMatch(match: MatchesJoined) {
+  return (
+    match.status === MatchStatus.Scheduled ||
+    match.status === MatchStatus.Open ||
+    match.status === MatchStatus.Summoning ||
+    match.status === MatchStatus.Drafting ||
+    match.status === MatchStatus.Ongoing
+  );
+}

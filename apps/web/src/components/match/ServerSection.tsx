@@ -23,40 +23,12 @@ export default async function ServerSection({ matchServer, match }: Props) {
   const { data: regions } = await api.platform().getLocations();
   const city = regions?.find((r) => r.id === matchServer.region)?.city;
 
-  async function generateMatchServerInstanceSA() {
-    'use server';
-    return generateMatchServerInstance(match, matchServer);
-  }
-
   if (!matchServer.server && matchServer.instance && city) {
-    return (
-      <section className="section max-w-md text-left">
-        <div className="flex justify-between items-center gap-2">
-          <h2 className="text-xl">{`Generating server in ${city}...`}</h2>
-          <RevalidateForm path={`/matches/${matchServer.id}`} />
-        </div>
-      </section>
-    );
+    return <ServerInstancePendingSection matchServer={matchServer} city={city} />;
   }
 
   if (!matchServer.server) {
-    return (
-      <section className="section max-w-md text-left">
-        <div className="flex justify-between items-center gap-2">
-          <h2 className="text-xl">{`Server will be created${
-            ` in ${city}` || ''
-          } 15 min before match start.`}</h2>
-          <RevalidateForm path={`/matches/${matchServer.id}`} />
-        </div>
-        <ActionButton
-          action={generateMatchServerInstanceSA}
-          successMessage="Generating server"
-          errorMessage="Failed to generate server"
-        >
-          Generate server now
-        </ActionButton>
-      </section>
-    );
+    return <NoServerSection match={match} matchServer={matchServer} city={city} />;
   }
 
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
@@ -99,6 +71,56 @@ export default async function ServerSection({ matchServer, match }: Props) {
           <ServerActions matchServer={matchServer} server={server} maps={maps} />
         </div>
       )}
+    </section>
+  );
+}
+
+function ServerInstancePendingSection({
+  matchServer,
+  city,
+}: {
+  matchServer: MatchServer;
+  city: string;
+}) {
+  return (
+    <section className="section max-w-md text-left">
+      <div className="flex justify-between items-center gap-2">
+        <h2 className="text-xl">{`Generating server in ${city}...`}</h2>
+        <RevalidateForm path={`/matches/${matchServer.id}`} />
+      </div>
+    </section>
+  );
+}
+
+function NoServerSection({
+  match,
+  matchServer,
+  city,
+}: {
+  match: MatchesJoined;
+  matchServer: MatchServer;
+  city?: string;
+}) {
+  async function generateMatchServerInstanceSA() {
+    'use server';
+    return generateMatchServerInstance(match, matchServer);
+  }
+
+  return (
+    <section className="section max-w-md text-left">
+      <div className="flex justify-between items-center gap-2">
+        <h2 className="text-xl">{`Server will be created${
+          ` in ${city}` || ''
+        } 15 min before match start.`}</h2>
+        <RevalidateForm path={`/matches/${matchServer.id}`} />
+      </div>
+      <ActionButton
+        action={generateMatchServerInstanceSA}
+        successMessage="Generating server"
+        errorMessage="Failed to generate server"
+      >
+        Generate server now
+      </ActionButton>
     </section>
   );
 }

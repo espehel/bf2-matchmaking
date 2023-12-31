@@ -3,11 +3,13 @@ import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import { assertObj, isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
 import { usePlayer } from '@/state/PlayerContext';
+import { useMatchRoom } from '@/state/realtime-hooks';
 
 type ContextValue = {
   match: MatchesJoined;
   isMatchOfficer: boolean;
   isMatchPlayer: boolean;
+  room: ReturnType<typeof useMatchRoom>;
 };
 
 const MatchContext = createContext<ContextValue>({} as any);
@@ -34,13 +36,16 @@ export function MatchProvider({ children, match }: Props) {
     [match, player]
   );
 
+  const room = useMatchRoom(match);
+
   const context = useMemo<ContextValue>(
     () => ({
       match,
       isMatchOfficer,
       isMatchPlayer,
+      room,
     }),
-    [match, isMatchOfficer, isMatchPlayer]
+    [match, isMatchOfficer, isMatchPlayer, room]
   );
   return <MatchContext.Provider value={context}>{children}</MatchContext.Provider>;
 }

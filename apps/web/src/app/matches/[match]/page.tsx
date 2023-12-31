@@ -9,6 +9,7 @@ import { Suspense } from 'react';
 import ServerSectionLoading from '@/components/match/ServerSectionLoading';
 import MapsSection from '@/components/match/MapsSection';
 import MatchTimeForm, { MatchTimeFallback } from '@/components/match/MatchTimeForm';
+import { isActiveMatch } from '@bf2-matchmaking/utils';
 
 interface Props {
   params: { match: string };
@@ -20,7 +21,6 @@ export default async function ResultsMatch({ params }: Props) {
   const { data: matchServer } = await supabase(cookies).getMatchServer(
     Number(params.match)
   );
-  const date = match.scheduled_at || match.started_at || match.created_at;
 
   return (
     <main className="main flex flex-col items-center text-center">
@@ -32,7 +32,7 @@ export default async function ResultsMatch({ params }: Props) {
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
         <MatchSection match={match} />
-        {matchServer && (
+        {matchServer && isActiveMatch(match) && (
           <Suspense
             fallback={<ServerSectionLoading match={match} matchServer={matchServer} />}
           >

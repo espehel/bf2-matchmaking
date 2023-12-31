@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { useMatch } from '@/state/MatchContext';
 
 interface Props {
-  teamId: number;
+  teamId?: number;
   matchId: number;
   config: number;
 }
@@ -18,7 +18,7 @@ export default function AddPlayerForm({ teamId, matchId, config }: Props) {
   const handleFormAction = useCallback(
     async (data: FormData) => {
       const value = data.get('player[id]');
-      const name = data.get('player[full_name]');
+      const name = data.get('player[nick]');
       if (isString(value)) {
         const { error } = await addMatchPlayer(matchId, value, teamId, config);
         if (error) {

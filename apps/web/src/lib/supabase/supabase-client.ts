@@ -1,6 +1,6 @@
 'use client';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { getSupabaseApi } from '@bf2-matchmaking/supabase';
+import { getSupabaseApi, getSupabaseRealtimeApi } from '@bf2-matchmaking/supabase';
 interface LoaderParams {
   src: string;
   width: number;
@@ -16,3 +16,8 @@ export const supabaseClient = () => {
   const client = createClientComponentClient();
   return getSupabaseApi(client);
 };
+
+export function supabaseRealtime() {
+  const client = createClientComponentClient();
+  return getSupabaseRealtimeApi(client);
+}

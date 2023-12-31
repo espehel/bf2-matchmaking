@@ -24,9 +24,9 @@ export default async function ServerPage({ params }: Props) {
           <p>{`IP: ${server.ip}`}</p>
           <p>{`Created: ${DateTime.fromISO(server.created_at).toFormat('DDD, T')}`}</p>
         </div>
-        {adminRoles?.server_admin && <ServerActions server={server} />}
       </section>
-      <ServerInfoSection serverInfo={server.info} />
+      <ServerInfoSection server={server} />
+      {adminRoles?.server_admin && <ServerActions server={server} />}
       {server.info && server.info.players.length > 0 && (
         <section>
           <RoundTable liveInfo={server.info} />

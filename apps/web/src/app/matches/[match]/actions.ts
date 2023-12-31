@@ -38,7 +38,7 @@ export async function removeMatchPlayer(matchId: number, playerId: string) {
 export async function addMatchPlayer(
   matchId: number,
   playerId: string,
-  team: number,
+  team: number | undefined,
   config: number
 ) {
   const { data } = await supabase(cookies).getPlayerRating(playerId, config);

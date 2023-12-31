@@ -4,17 +4,15 @@ import {
   isDiscordConfig,
   isMatchesRow,
   MatchesRow,
-  MatchStatus,
   WEBHOOK_POSTGRES_CHANGES_TYPE,
   WebhookPostgresDeletePayload,
   WebhookPostgresInsertPayload,
   WebhookPostgresUpdatePayload,
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import matches from '../state/matches';
 import { info } from '@bf2-matchmaking/logging';
 import { api } from '@bf2-matchmaking/utils';
-import { handleMatchStatusUpdate } from '../handlers/match-status';
+import { handleMatchInserted, handleMatchStatusUpdate } from '../handlers/matches';
 
 export const webhooksRouter = new Router({
   prefix: '/webhooks',
@@ -25,12 +23,7 @@ webhooksRouter.post('/matches', async (ctx) => {
   if (isMatchesInsert(body)) {
     info('routers/matches', `Match ${body.record.id} ${body.record.status}`);
     const match = await client().getMatch(body.record.id).then(verifySingleResult);
-    if (match.status === MatchStatus.Scheduled) {
-      matches.pushScheduledMatch(match);
-    }
-    if (match.status === MatchStatus.Ongoing) {
-      matches.pushActiveMatch(match);
-    }
+    handleMatchInserted(match);
     ctx.status = 202;
     return;
   }
@@ -40,7 +33,7 @@ webhooksRouter.post('/matches', async (ctx) => {
     info('routers/matches', `Match ${record.id} ${old_record.status}->${record.status}`);
     if (old_record.status !== record.status) {
       const match = await client().getMatch(body.record.id).then(verifySingleResult);
-      await handleMatchStatusUpdate(match, old_record.status as MatchStatus);
+      await handleMatchStatusUpdate(match);
       ctx.status = 202;
       return;
     }

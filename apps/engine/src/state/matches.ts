@@ -9,78 +9,69 @@ import { info, logErrorMessage } from '@bf2-matchmaking/logging';
 
 let active: Array<MatchesJoined> = [];
 let scheduled: Array<ScheduledMatch> = [];
+let matches: Array<MatchesJoined> = [];
 
 export default {
-  loadActive() {
-    client()
-      .getMatchesWithStatus(MatchStatus.Ongoing, MatchStatus.Finished)
+  loadMatches() {
+    return client()
+      .getMatchesWithStatus(
+        MatchStatus.Scheduled,
+        MatchStatus.Summoning,
+        MatchStatus.Drafting,
+        MatchStatus.Ongoing,
+        MatchStatus.Finished
+      )
       .then(({ data, error }) => {
         if (data && data.length > 0) {
-          active = data;
-          info('loadActive', `Loaded ${active.length} active matches`);
+          matches = data;
+          info('loadMatches', `Loaded ${matches.length} matches`);
         } else {
-          info('loadActive', 'No active matches found');
+          info('loadMatches', 'No matches found');
         }
         if (error) {
-          logErrorMessage('Failed to load active matches', error);
+          logErrorMessage('Failed to load matches', error);
         }
       });
-    return this;
   },
-  loadScheduled() {
-    client()
-      .getMatchesWithStatus(MatchStatus.Scheduled)
-      .then(({ data, error }) => {
-        if (data && data.length > 0) {
-          scheduled = data.filter(isScheduledMatch);
-          const missingDate = data.length - scheduled.length;
-          info(
-            'loadScheduled',
-            `Loaded ${scheduled.length} scheduled matches. ${missingDate} is missing dates.`
-          );
-        } else {
-          info('loadScheduled', 'No scheduled matches found');
-        }
-        if (error) {
-          logErrorMessage('Failed to load scheduled matches', error);
-        }
-      });
-    return this;
+  get(status: MatchStatus) {
+    return matches.filter((m) => m.status === status);
   },
-  getActive() {
-    return [...active];
+  getStarted() {
+    return matches.filter(isStarted);
   },
   getScheduled() {
-    return [...scheduled];
+    return matches.filter(isScheduledMatch);
   },
-  pushActiveMatch(match: MatchesJoined) {
-    if (!this.hasActiveMatch(match)) {
-      info('state/matches', `Pushing match ${match.id} to active matches`);
-      active.push(match);
+  putMatch(match: MatchesJoined) {
+    if (matches.some(isMatch(match))) {
+      info('state/matches', `Updating match ${match.id} with status ${match.status}`);
+      matches = matches.map((other) => (isMatch(match)(other) ? match : other));
+    } else {
+      info(
+        'state/matches',
+        `Adding match ${match.id} to matches with status ${match.status}`
+      );
+      matches = [...matches, match];
     }
   },
-  pushScheduledMatch(match: MatchesJoined) {
-    if (isScheduledMatch(match) && !this.hasScheduledMatch(match)) {
-      info('state/matches', `Pushing match ${match.id} to scheduled matches`);
-      scheduled.push(match);
-    }
-  },
-  hasActiveMatch(match: MatchesJoined) {
-    return active.some((m) => m.id === match.id);
-  },
-  hasScheduledMatch(match: MatchesJoined) {
-    return scheduled.some((m) => m.id === match.id);
-  },
-  removeActiveMatch(match: MatchesJoined) {
-    if (this.hasActiveMatch(match)) {
-      info('state/matches', `Removing match ${match.id} from active matches`);
-      active = active.filter((m) => m.id !== match.id);
-    }
-  },
-  removeScheduledMatch(match: MatchesJoined) {
-    if (this.hasScheduledMatch(match)) {
-      info('state/matches', `Removing match ${match.id} from scheduled matches`);
-      scheduled = scheduled.filter((m) => m.id !== match.id);
+  removeMatch(match: MatchesJoined) {
+    if (matches.some(isMatch(match))) {
+      info('state/matches', `Removing match ${match.id} with status ${match.status}`);
+      matches = matches.filter(isMatch(match));
+    } else {
+      info('state/matches', `Match ${match.id} not found`);
     }
   },
 };
+
+function isStarted(match: MatchesJoined) {
+  return (
+    match.status === MatchStatus.Drafting ||
+    match.status === MatchStatus.Ongoing ||
+    match.status === MatchStatus.Finished
+  );
+}
+
+function isMatch(match: MatchesJoined) {
+  return (other: MatchesJoined) => other.id === match.id;
+}

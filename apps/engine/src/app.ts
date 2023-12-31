@@ -9,11 +9,20 @@ import { closeOldMatches } from './tasks/closeOldMatches';
 import { rootRouter } from './routers/root';
 import { startScheduledMatches } from './tasks/startScheduledMatches';
 import { matchesRouter } from './routers/matches';
+import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
+import { MatchStatus } from '@bf2-matchmaking/types';
+import { joinRoom } from './state/match-rooms';
 
-matches.loadActive().loadScheduled();
+matches.loadMatches().then(() => {
+  matches.get(MatchStatus.Summoning).forEach((match) => {
+    joinRoom(match);
+  });
+});
 
-cron.schedule('0 16 * * *', closeOldMatches);
-cron.schedule('0,15,30,45 * * * *', startScheduledMatches);
+if (!isDevelopment()) {
+  cron.schedule('0 16 * * *', closeOldMatches);
+  cron.schedule('0,15,30,45 * * * *', startScheduledMatches);
+}
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 new Koa()

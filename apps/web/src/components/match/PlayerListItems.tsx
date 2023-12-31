@@ -13,7 +13,7 @@ import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
-  team: number;
+  team?: number;
   captains: Array<string>;
   players: Array<MatchPlayersRow>;
 }
