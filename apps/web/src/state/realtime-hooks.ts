@@ -7,19 +7,18 @@ import { useSearchParams } from 'next/navigation';
 export function useMatchRoom(match: MatchesJoined) {
   const { player } = usePlayer();
   const searchParams = useSearchParams();
-  const playerId = searchParams.get('player') || player?.id;
+  const playerId = searchParams?.get('player') || player?.id;
 
   const realtime = supabaseRealtime();
   const [activePlayers, setActivePlayers] = useState<Array<string>>([]);
   useEffect(() => {
-    const { listenActivePlayers, join, leave } = realtime(match, playerId);
-    join().then(() => {
-      listenActivePlayers((players) => {
+    realtime.getRealtimeMatch(match, playerId).then((realtimeMatch) => {
+      realtimeMatch.listenActivePlayers((players) => {
         setActivePlayers(players);
       });
     });
     return () => {
-      leave();
+      realtime.leaveRealtimeMatch(match);
     };
   }, [match.id, playerId]);
   return { activePlayers };

@@ -1,10 +1,63 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
-import { REALTIME_PRESENCE_LISTEN_EVENTS, SupabaseClient } from '@supabase/supabase-js';
+import { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
 
 type ListenCB = (players: Array<string>) => void;
 
+const matches: Map<number, RealtimeMatch> = new Map();
 export function realtime(client: SupabaseClient) {
-  return (match: MatchesJoined, user?: string) => {
+  return {
+    getRealtimeMatch: async (match: MatchesJoined, user?: string) => {
+      let realtimeMatch = matches.get(match.id);
+      if (realtimeMatch && realtimeMatch.hasJoined()) {
+        return matches.get(match.id) as RealtimeMatch;
+      }
+
+      realtimeMatch = await RealtimeMatch.open(client, match, user);
+      matches.set(match.id, realtimeMatch);
+
+      return realtimeMatch;
+    },
+    leaveRealtimeMatch: (match: MatchesJoined) => {
+      const realtimeMatch = matches.get(match.id);
+      if (realtimeMatch) {
+        realtimeMatch.leave();
+        matches.delete(match.id);
+      }
+    },
+  };
+}
+
+export class RealtimeMatch {
+  match: MatchesJoined;
+  room: RealtimeChannel;
+
+  constructor(match: MatchesJoined, room: RealtimeChannel) {
+    this.match = match;
+    this.room = room;
+  }
+
+  hasJoined() {
+    return this.room.state === 'joined';
+  }
+
+  leave() {
+    this.room.untrack();
+  }
+  listenActivePlayers(cb: ListenCB) {
+    this.room.on('presence', { event: 'sync' }, () => {
+      const newState = this.room.presenceState();
+      cb(
+        Object.keys(newState).filter((p) =>
+          this.match.players.some((player) => player.id === p)
+        )
+      );
+    });
+  }
+  static open(
+    client: SupabaseClient,
+    match: MatchesJoined,
+    user?: string
+  ): Promise<RealtimeMatch> {
     const room = client.channel(`room_${match.id}`, {
       config: {
         presence: {
@@ -12,62 +65,17 @@ export function realtime(client: SupabaseClient) {
         },
       },
     });
-
-    return {
-      join: () => {
-        return new Promise<void>((resolve, reject) => {
-          room.subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-              const res = await room.track({});
-              if (res === 'ok') {
-                resolve();
-              } else {
-                reject(res);
-              }
-            }
-          });
-        });
-      },
-      leave: async () => {
-        await room.untrack();
-      },
-      listenActivePlayers: (cb: ListenCB) => {
-        room.on('presence', { event: 'sync' }, () => {
-          const newState = room.presenceState();
-          cb(
-            Object.keys(newState).filter((p) =>
-              match.players.some((player) => player.id === p)
-            )
-          );
-        });
-      },
-      listen: (event: REALTIME_PRESENCE_LISTEN_EVENTS, cb: ListenCB) => {
-        switch (event) {
-          case REALTIME_PRESENCE_LISTEN_EVENTS.SYNC: {
-            room.on('presence', { event: 'sync' }, () => {
-              const newState = room.presenceState();
-              cb(Object.keys(newState));
-            });
-            break;
-          }
-          case REALTIME_PRESENCE_LISTEN_EVENTS.JOIN: {
-            room.on(
-              'presence',
-              { event: 'join' },
-              ({ key, newPresences, currentPresences }) => {
-                console.log('join/currentPresences', key, currentPresences);
-                console.log('join/newPresences', key, newPresences);
-              }
-            );
-            break;
-          }
-          case REALTIME_PRESENCE_LISTEN_EVENTS.LEAVE: {
-            room.on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-              console.log('leave', key, leftPresences);
-            });
+    return new Promise<RealtimeMatch>((resolve, reject) => {
+      room.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          const res = await room.track({});
+          if (res === 'ok') {
+            resolve(new RealtimeMatch(match, room));
+          } else {
+            reject(res);
           }
         }
-      },
-    };
-  };
+      });
+    });
+  }
 }
