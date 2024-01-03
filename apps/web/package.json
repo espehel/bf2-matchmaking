@@ -9,6 +9,7 @@
     "verify": "next lint && tsc --noEmit"
   },
   "dependencies": {
+    "@bf2-matchmaking/discord": "*",
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",
@@ -27,8 +28,8 @@
     "classnames": "^2.3.2",
     "copy-text-to-clipboard": "^3.2.0",
     "daisyui": "^4.4.17",
-    "eslint": "^8.45.0",
-    "eslint-config-next": "^13.4.12",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.0.4",
     "luxon": "^3.4.3",
     "moment": "^2.29.4",
     "next": "^14.0.4",

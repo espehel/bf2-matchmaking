@@ -7,7 +7,11 @@ export function baseApi<
   Table extends PublicSchema['Tables'][TableName]
 >(table: PostgrestQueryBuilder<PublicSchema, Table>) {
   return {
-    insert: (values: Table['Insert']) => table.insert(values).select('*').single(),
+    insert: (values: Table['Insert']) =>
+      table
+        .insert(values as any)
+        .select('*')
+        .single(),
     update: () => table.update,
     delete: () => table.delete,
   };

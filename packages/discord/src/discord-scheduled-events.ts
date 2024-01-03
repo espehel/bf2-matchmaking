@@ -2,8 +2,6 @@ import { MatchesJoined, ScheduledMatch, ServersRow } from '@bf2-matchmaking/type
 import { DateTime } from 'luxon';
 import { api } from '@bf2-matchmaking/utils';
 import { RESTPostAPIGuildScheduledEventJSONBody } from 'discord-api-types/v10';
-import { matchthumb } from '../resources/matchthumb-base64';
-import { pcwthumb } from '../resources/pcwthumb-base64';
 import { getMatchThumbnail } from './discord-services';
 
 export function createScheduledMatchEvent(
