@@ -165,7 +165,8 @@ export default (client: SupabaseClient<Database>) => ({
       .update(values)
       .eq('match_id', matchId)
       .eq('player_id', playerId)
-      .select(),
+      .select()
+      .single(),
   updateMatchPlayersForMatchId: async (
     matchId: number,
     players: Array<{ player_id: string }>,

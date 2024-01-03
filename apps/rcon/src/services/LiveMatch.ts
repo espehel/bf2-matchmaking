@@ -4,6 +4,7 @@ import {
   LiveInfo,
   RoundsRow,
   MatchServer,
+  MatchPlayersRow,
 } from '@bf2-matchmaking/types';
 import { insertRound } from './round-service';
 import {
@@ -16,11 +17,12 @@ import {
   setLiveAt,
 } from './matches';
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
-import { formatSecToMin, getPlayersToSwitch } from '@bf2-matchmaking/utils';
+import { formatSecToMin, getPlayersToSwitch, hasKeyhash } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
 import { isServerIdentified } from '../net/ServerManager';
 import { DateTime } from 'luxon';
 import { saveDemosSince } from '@bf2-matchmaking/demo';
+import { client } from '@bf2-matchmaking/supabase';
 
 export interface LiveMatchOptions {
   prelive: boolean;
@@ -39,6 +41,7 @@ export type LiveServerUpdate = LiveServerBaseUpdate | LiveServerPreliveUpdate;
 export class LiveMatch {
   pendingSince: DateTime | null = DateTime.now();
   match: MatchesJoined;
+  connectedPlayers: Map<string, MatchPlayersRow> = new Map();
   matchServer: MatchServer | null = null;
   state: LiveServerState = 'pending';
   rounds: Array<RoundsRow> = [];
@@ -87,7 +90,28 @@ export class LiveMatch {
     );
   }
 
+  async #updateConnectedPlayers(liveInfo: LiveInfo) {
+    for (const bf2Player of liveInfo.players) {
+      if (this.connectedPlayers.has(bf2Player.keyhash)) {
+        continue;
+      }
+
+      const player = this.match.players.find(hasKeyhash(bf2Player.keyhash));
+      if (!player) {
+        continue;
+      }
+
+      const { data: mp } = await client().updateMatchPlayer(this.match.id, player.id, {
+        connected_at: DateTime.now().toISO(),
+      });
+      if (mp) {
+        this.connectedPlayers.set(bf2Player.keyhash, mp);
+      }
+    }
+  }
+
   async updateState(liveInfo: LiveInfo): Promise<LiveServerUpdate> {
+    await this.#updateConnectedPlayers(liveInfo);
     this.#updateLiveInfo(liveInfo);
     const next = (state: LiveServerState) => this.handleNextState(state, liveInfo);
 

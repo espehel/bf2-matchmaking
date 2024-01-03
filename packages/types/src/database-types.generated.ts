@@ -371,6 +371,7 @@ export interface Database {
       match_players: {
         Row: {
           captain: boolean
+          connected_at: string | null
           expire_at: string | null
           match_id: number
           player_id: string
@@ -381,6 +382,7 @@ export interface Database {
         }
         Insert: {
           captain?: boolean
+          connected_at?: string | null
           expire_at?: string | null
           match_id: number
           player_id: string
@@ -391,6 +393,7 @@ export interface Database {
         }
         Update: {
           captain?: boolean
+          connected_at?: string | null
           expire_at?: string | null
           match_id?: number
           player_id?: string
