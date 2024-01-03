@@ -8,6 +8,9 @@ import { MatchesJoined, MatchReaction } from '@bf2-matchmaking/types';
 import { isMatchTitle } from './embed-utils';
 import { APIEmbed, APIMessage } from 'discord-api-types/v10';
 import { info } from '@bf2-matchmaking/logging';
+import { matchthumb } from '../resources/matchthumb-base64';
+import { match5v5thumb } from '../resources/5v5match-base64';
+import { pcwthumb } from '../resources/pcwthumb-base64';
 
 const hasEmbeds = (message: APIMessage) => message.embeds.length > 0;
 const someMatch = (embed: APIEmbed, matches: Array<MatchesJoined>) =>
@@ -64,3 +67,14 @@ export const createSummonedReactions = (channelId: string, message: APIMessage) 
     createMessageReaction(channelId, message.id, MatchReaction.READY),
     createMessageReaction(channelId, message.id, MatchReaction.CANCEL),
   ]);
+
+export function getMatchThumbnail(match: MatchesJoined) {
+  switch (match.config.id) {
+    case 16:
+      return matchthumb;
+    case 17:
+      return match5v5thumb;
+    default:
+      return pcwthumb;
+  }
+}
