@@ -32,7 +32,6 @@ export default async function ServerSection({ matchServer, match }: Props) {
   }
 
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
-  const isMatchPlayer = await supabase(cookies).isMatchPlayer(match);
   const { data: server } = await api.rcon().getServer(matchServer.server.ip);
   const { data: maps } = await supabase(cookies).getMaps();
 
@@ -56,7 +55,7 @@ export default async function ServerSection({ matchServer, match }: Props) {
           </div>
         )}
       </div>
-      {server && isMatchPlayer && (
+      {server && (
         <Link
           className="btn btn-primary btn-lg btn-wide m-auto"
           href={server.joinmeHref}
