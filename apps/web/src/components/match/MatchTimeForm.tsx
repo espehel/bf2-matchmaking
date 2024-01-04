@@ -14,13 +14,36 @@ interface Props {
 }
 
 export default async function MatchTimeForm({ match }: Props) {
-  if (!match.scheduled_at || match.config.type === 'Mix' || match.config.type === 'PCW') {
+  if (!match.scheduled_at || match.config.type === 'Mix') {
     return <MatchTimeFallback match={match} />;
   }
 
   const { data: eventMatch } = await supabase(cookies).getEventMatch(match.id);
+
+  async function updateMatchScheduledAtSA(data: FormData) {
+    'use server';
+    return updateMatchScheduledAt(match.id, data);
+  }
+
   if (!eventMatch) {
-    return <MatchTimeFallback match={match} />;
+    return (
+      <div className="flex gap-2 items-center text-gray font-bold mb-2">
+        <Time date={match.scheduled_at} format="HH:mm - EEEE, MMMM d" />
+        <ActionFormModal
+          title="Change time"
+          openBtnLabel="Change time"
+          action={updateMatchScheduledAtSA}
+          errorMessage="Something went wrong"
+          successMessage="Time changed"
+        >
+          <DatetimeInput
+            label="Match time"
+            name="dateInput"
+            defaultValue={match.scheduled_at}
+          />
+        </ActionFormModal>
+      </div>
+    );
   }
   const isOfficer = await supabase(cookies).isMatchOfficer(match);
 
