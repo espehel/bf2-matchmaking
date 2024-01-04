@@ -619,6 +619,7 @@ export interface Database {
       players: {
         Row: {
           avatar_url: string
+          beta_tester: boolean
           created_at: string
           id: string
           keyhash: string | null
@@ -628,6 +629,7 @@ export interface Database {
         }
         Insert: {
           avatar_url: string
+          beta_tester?: boolean
           created_at?: string
           id: string
           keyhash?: string | null
@@ -637,6 +639,7 @@ export interface Database {
         }
         Update: {
           avatar_url?: string
+          beta_tester?: boolean
           created_at?: string
           id?: string
           keyhash?: string | null

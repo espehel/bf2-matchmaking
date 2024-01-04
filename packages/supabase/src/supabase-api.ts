@@ -38,6 +38,7 @@ export default (client: SupabaseClient<Database>) => ({
   getPlayersByKeyhashList: (keyhashes: Array<string>) =>
     client.from('players').select('*').in('keyhash', keyhashes),
   getPlayers: () => client.from('players').select('*'),
+  getBetaPlayers: () => client.from('players').select('*').eq('beta_tester', true),
   getPlayersByMatchId: (matchId: number) =>
     client
       .from('matches')

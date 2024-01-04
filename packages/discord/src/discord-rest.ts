@@ -17,6 +17,8 @@ import {
   RESTPatchAPIGuildScheduledEventResult,
   RESTDeleteAPIGuildScheduledEventResult,
   RESTGetAPIUserResult,
+  RESTGetAPIGuildMembersResult,
+  RESTDeleteAPIChannelMessageResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
 import {
@@ -24,7 +26,6 @@ import {
   logCreateChannelMessage,
   logEditChannelMessage,
 } from '@bf2-matchmaking/logging';
-import { RESTDeleteAPIChannelMessageResult } from 'discord-api-types/rest/v10/channel';
 
 invariant(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
@@ -234,4 +235,10 @@ export const deleteGuildScheduledEvent = (guildId: string, scheduledEventId: str
 
 export function getDiscordUser(userId: string) {
   return getDiscordRoute<RESTGetAPIUserResult>(`${Routes.user(userId)}`);
+}
+
+export function listGuildMembers(guildId: string) {
+  return getDiscordRoute<RESTGetAPIGuildMembersResult>(
+    `${Routes.guildMembers(guildId)}?limit=1000`
+  );
 }
