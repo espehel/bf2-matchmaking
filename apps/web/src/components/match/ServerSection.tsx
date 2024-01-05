@@ -58,7 +58,7 @@ export default async function ServerSection({ matchServer, match }: Props) {
       {server && (
         <Link
           className="btn btn-primary btn-lg btn-wide m-auto"
-          href={server.joinmeHref}
+          href={server.joinmeDirect}
           target="_blank"
         >
           Join match

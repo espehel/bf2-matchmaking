@@ -68,6 +68,7 @@ export interface RconBf2Server extends ServersRow {
   info: LiveInfo | null;
   match: MatchesJoined | null;
   joinmeHref: string;
+  joinmeDirect: string;
   country: string | null;
   city: string | null;
 }

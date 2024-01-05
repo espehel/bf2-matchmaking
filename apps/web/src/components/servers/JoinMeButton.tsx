@@ -8,7 +8,7 @@ interface Props {
 
 export default function JoinMeButton({ server }: Props) {
   const handleClick = useCallback(() => {
-    window.open(server.joinmeHref, '_blank');
+    window.open(server.joinmeDirect, '_blank');
   }, [server]);
 
   return (
