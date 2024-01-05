@@ -102,6 +102,7 @@ function handleCollect(config: DiscordConfig) {
           message.guild.members,
           embed
         );
+        addMatch(pubMatch);
       }
 
       const location = await startTopLocationPoll(pubMatch.match, message);
