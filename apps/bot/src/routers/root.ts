@@ -10,8 +10,8 @@ import { isTextBasedChannel } from '../discord/utils';
 import { PostDemosRequestBody } from '@bf2-matchmaking/types';
 import { error } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { draftTeams } from '../services/match-service';
 import { getDemoChannel } from '../services/message-service';
+import { draftTeams } from '../services/draft-utils';
 export const rootRouter = new Router();
 
 rootRouter.post('/demos', async (ctx) => {
