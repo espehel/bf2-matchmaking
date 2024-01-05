@@ -1,23 +1,5 @@
-import {
-  MatchesJoined,
-  MatchPlayersInsert,
-  PlayerRatingsRow,
-  PlayersRow,
-} from '@bf2-matchmaking/types';
-import { MessageReaction } from 'discord.js';
-
-export function compareMessageReactionCount(match: MatchesJoined) {
-  const matchPlayers = match.players.map((player) => player.id);
-  return (firstValue: MessageReaction, secondValue: MessageReaction) =>
-    getValidUsersCount(secondValue, matchPlayers) -
-    getValidUsersCount(firstValue, matchPlayers);
-}
-
-function getValidUsersCount(reaction: MessageReaction, matchPlayers: Array<string>) {
-  return Array.from(reaction.users.cache.keys()).filter((user) =>
-    matchPlayers.includes(user)
-  ).length;
-}
+import { MatchPlayersInsert, PlayerRatingsRow, PlayersRow } from '@bf2-matchmaking/types';
+import { Embed } from 'discord.js';
 export const toMatchPlayer =
   (matchId: number, team: number, ratings: Array<PlayerRatingsRow>) =>
   (player: PlayersRow): MatchPlayersInsert => ({
@@ -26,3 +8,16 @@ export const toMatchPlayer =
     team,
     rating: ratings.find((r) => r.player_id === player.id)?.rating || 1500,
   });
+
+export function getUserIds(embed: Embed, name: string) {
+  return (
+    embed.fields
+      ?.find((field) => field.name.includes(name))
+      ?.value.match(/(?<=<@)\d+(?=>)/g) || []
+  );
+}
+
+export const getUserNames = (embed: Embed, name: string) =>
+  embed.fields
+    ?.find((field) => field.name.includes(name))
+    ?.value.match(/(?<=`)([^`\n]+)(?=`)/g) || [];

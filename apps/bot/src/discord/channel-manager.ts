@@ -87,7 +87,7 @@ async function listenToChannel(config: DiscordConfig) {
     }
 
     const collector = channel.createMessageCollector();
-    addMatchListener(collector, config, discordClient);
+    addMatchListener(collector, config);
     return collector;
   } catch (e) {
     error('listenToChannel', e);

@@ -67,3 +67,7 @@ export function getMatchPlayer(match: MatchesJoined) {
     return match.teams.find((p) => p.player_id === id);
   };
 }
+
+export function isBetaTester(player: PlayersRow) {
+  return player.beta_tester;
+}

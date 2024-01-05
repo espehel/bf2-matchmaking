@@ -1,17 +1,38 @@
 import { Embed, GuildMemberManager } from 'discord.js';
-import { getPubobotId, getUserIds, getUserNames } from './pubobot-serviceV2';
-import { isNotNull } from '@bf2-matchmaking/types';
+import {
+  DiscordConfig,
+  isNotNull,
+  MatchesJoined,
+  MatchesUpdate,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
+import { assertNumber } from '@bf2-matchmaking/utils';
+import {
+  createMatch,
+  createMatchMap,
+  createMatchPlayers,
+  createMatchTeams,
+  updateMatch,
+} from './match-service';
+import { findMapId } from './supabase-service';
+import { DateTime } from 'luxon';
+import { getUserIds, getUserNames } from './utils';
+import { getPubobotId } from './PubobotMatchManager';
 
 export class PubobotMatch {
   id: number;
-  players: Set<string> = new Set();
-  map: string | null = null;
-  state: 'checkin' | 'drafting' | 'started';
-  matchId: number | null = null;
+  match: MatchesJoined;
 
-  constructor(id: number, state: 'checkin' | 'drafting' | 'started') {
+  constructor(id: number, match: MatchesJoined) {
     this.id = id;
-    this.state = state;
+    this.match = match;
+  }
+
+  getStatus() {
+    return this.match.status;
+  }
+  async updateMatch(values: MatchesUpdate) {
+    this.match = await updateMatch(this, values);
   }
 
   async addDraftingPlayers(embed: Embed, guild: GuildMemberManager) {
@@ -28,34 +49,56 @@ export class PubobotMatch {
         .flat()
         .map(searchGuild)
     );
-    this.players = new Set(...this.players, ...members.filter(isNotNull));
+    this.match = await createMatchPlayers(this, members.filter(isNotNull));
   }
 
-  addCheckinPlayers(embed: Embed) {
-    this.players = new Set(...this.players, ...getUserIds(embed, 'Waiting on:'));
+  async addCheckinPlayers(embed: Embed) {
+    const players = getUserIds(embed, 'Waiting on:');
+    this.match = await createMatchPlayers(this, players);
   }
+  async setMap(embed: Embed) {
+    const mapName = embed.fields?.find((f) => f.name === 'Map')?.value || null;
+    const map = mapName ? await findMapId(mapName) : null;
+    if (map) {
+      this.match = await createMatchMap(this, map);
+    }
+  }
+  async startMatch(embed: Embed) {
+    const team1 = getUserIds(embed, 'USMC');
+    const team2 = getUserIds(embed, 'MEC');
 
-  setMap(embed: Embed) {
-    this.map = embed.fields?.find((f) => f.name === 'Map')?.value || null;
+    await createMatchTeams(this, team1, team2);
+    await this.updateMatch({
+      status: MatchStatus.Ongoing,
+      started_at: DateTime.now().toISO(),
+    });
   }
-  setMatchId(matchId: number) {
-    this.matchId = matchId;
-  }
-  getPlayers() {
-    return Array.from(this.players);
-  }
-  static fromCheckInEmbed(embed: Embed) {
+  static async fromCheckInEmbed(config: DiscordConfig, embed: Embed) {
     const id = getPubobotId(embed);
-    if (!id) {
-      return null;
-    }
-    return new PubobotMatch(id, 'checkin');
+    assertNumber(id, 'Failed to get pubobot id from embed');
+
+    const match = await createMatch(config, MatchStatus.Summoning);
+    const pubMatch = new PubobotMatch(id, match);
+
+    await pubMatch.addCheckinPlayers(embed);
+    await pubMatch.setMap(embed);
+
+    return pubMatch;
   }
-  static fromDraftingEmbed(embed: Embed) {
+  static async fromDraftingEmbed(
+    config: DiscordConfig,
+    guild: GuildMemberManager,
+    embed: Embed
+  ) {
     const id = getPubobotId(embed);
-    if (!id) {
-      return null;
-    }
-    return new PubobotMatch(id, 'drafting');
+    assertNumber(id, 'Failed to get pubobot id from embed');
+
+    const match = await createMatch(config, MatchStatus.Drafting);
+    const pubMatch = new PubobotMatch(id, match);
+
+    await pubMatch.addDraftingPlayers(embed, guild);
+    await pubMatch.setMap(embed);
+
+    return pubMatch;
   }
 }

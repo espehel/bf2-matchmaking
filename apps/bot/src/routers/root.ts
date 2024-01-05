@@ -6,9 +6,12 @@ import {
   updateChannelListener,
 } from '../discord/channel-manager';
 import { getDiscordClient } from '../discord/client';
-import { getDemoChannel, isTextBasedChannel } from '../discord/utils';
+import { isTextBasedChannel } from '../discord/utils';
 import { PostDemosRequestBody } from '@bf2-matchmaking/types';
 import { error } from '@bf2-matchmaking/logging';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { draftTeams } from '../services/match-service';
+import { getDemoChannel } from '../services/message-service';
 export const rootRouter = new Router();
 
 rootRouter.post('/demos', async (ctx) => {
@@ -73,7 +76,8 @@ rootRouter.post('/messages', async (ctx) => {
       ctx.body = 'Message does not belong to a text channel';
       return;
     }
-    ctx.body = await channel.messages.fetch(messageId);
+    const match = await client().getMatch(989).then(verifySingleResult);
+    ctx.body = draftTeams(match);
   } catch (e) {
     ctx.status = 502;
     ctx.body = e;

@@ -1,35 +1,32 @@
-import { DiscordConfig, MatchesJoined } from '@bf2-matchmaking/types';
+import { DiscordConfig, MatchStatus } from '@bf2-matchmaking/types';
 import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import {
-  getTestChannel,
   isPubobotMatchCheckIn,
   isPubobotMatchDrafting,
   isPubobotMatchStarted,
-  replyMessage,
-} from './utils';
-import {
-  getMatchStartedEmbed,
-  getRulesEmbedByConfig,
-  getTeamDraftEmbed,
-} from '@bf2-matchmaking/discord';
-import { Client, Message, MessageCollector } from 'discord.js';
-import {
-  createDraftingMatchFromPubobotEmbed,
-  getPubobotId,
   startTopLocationPoll,
-  hasPubotId,
-  startMatchFromPubobotEmbed,
-} from '../services/pubobot-service';
+} from './utils';
+import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
+import { Message, MessageCollector } from 'discord.js';
 import { generateServer } from '../services/platform-service';
-import { draftTeams, getAverageRating } from '../services/match-service';
+import {
+  addMatch,
+  getPubobotId,
+  getPubobotMatch,
+  hasPubotId,
+  removeMatch,
+} from '../services/PubobotMatchManager';
+import { PubobotMatch } from '../services/PubobotMatch';
+import {
+  replyMessage,
+  sendDraftMessage,
+  sendSummoningMessage,
+} from '../services/message-service';
+import { assertObj } from '@bf2-matchmaking/utils';
 
-export function addMatchListener(
-  collector: MessageCollector,
-  config: DiscordConfig,
-  client: Client<true>
-) {
+export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = messageFilter;
-  collector.on('collect', handleCollect(config, client));
+  collector.on('collect', handleCollect(config));
   collector.on('end', (collected, reason) => {
     info(
       'addMatchListener',
@@ -51,13 +48,12 @@ function messageFilter(message: Message) {
   if (isPubobotMatchStarted(embed)) {
     return true;
   }
-  /*if (isPubobotMatchDrafting(embed)) {
-    return !hasPubotId(pubobotId, 'drafting');
+  if (isPubobotMatchDrafting(embed)) {
+    return !hasPubotId(pubobotId, MatchStatus.Drafting);
   }
-  return isPubobotMatchCheckIn(embed) && !hasPubotId(pubobotId, 'checkin');*/
-  return isPubobotMatchDrafting(embed) && !hasPubotId(pubobotId);
+  return isPubobotMatchCheckIn(embed) && !hasPubotId(pubobotId, MatchStatus.Summoning);
 }
-function handleCollect(config: DiscordConfig, client: Client<true>) {
+function handleCollect(config: DiscordConfig) {
   return async (message: Message) => {
     info(
       'handleCollect',
@@ -80,51 +76,61 @@ function handleCollect(config: DiscordConfig, client: Client<true>) {
     }
   };
 
-  function handlePubobotMatchCheckIn(message: Message<true>) {
-    //addCheckinMatch(message.embeds[0], 'checkin');
+  async function handlePubobotMatchCheckIn(message: Message<true>) {
+    const embed = message.embeds[0];
+    try {
+      const match = await PubobotMatch.fromCheckInEmbed(config, embed);
+      addMatch(match);
+
+      if (match?.match) {
+        await sendSummoningMessage(match.match);
+      }
+    } catch (e) {
+      error('handlePubobotMatchCheckIn', e);
+    }
   }
 
   async function handlePubobotMatchDrafting(message: Message<true>) {
+    const embed = message.embeds[0];
     try {
-      const match = await createDraftingMatchFromPubobotEmbed(
-        message.embeds[0],
-        message.guild.members,
-        config
-      );
+      let pubMatch = getPubobotMatch(embed);
+      if (pubMatch) {
+        await pubMatch.updateMatch({ status: MatchStatus.Drafting });
+      } else {
+        pubMatch = await PubobotMatch.fromDraftingEmbed(
+          config,
+          message.guild.members,
+          embed
+        );
+      }
 
-      const location = await startTopLocationPoll(match, message);
-      await generateServer(location, match);
+      const location = await startTopLocationPoll(pubMatch.match, message);
+      await generateServer(location, pubMatch.match);
     } catch (e) {
       error('handlePubobotMatchDrafting', e);
     }
   }
   async function handlePubobotMatchStarted(message: Message) {
+    const embed = message.embeds[0];
     try {
-      const match = await startMatchFromPubobotEmbed(message.embeds[0], client.users);
+      const pubMatch = getPubobotMatch(embed);
+      assertObj(pubMatch, 'No pubobot match found');
+
+      await pubMatch.startMatch(embed);
 
       await replyMessage(message, {
-        embeds: [getMatchStartedEmbed(match), getRulesEmbedByConfig(config)],
+        embeds: [getMatchStartedEmbed(pubMatch.match), getRulesEmbedByConfig(config)],
       });
-      logMessage(`Channel ${message.channel.id}: Match ${match.id} started`, {
-        match,
+      logMessage(`Channel ${message.channel.id}: Match ${pubMatch.match.id} started`, {
+        match: pubMatch.match,
       });
 
-      await sendDraftMessage(match);
+      await sendDraftMessage(pubMatch.match);
     } catch (e) {
       error('handlePubobotMatchStarted', e);
+    } finally {
+      const id = removeMatch(embed);
+      info('handlePubobotMatchStarted', `Removed pubobot match ${id}`);
     }
   }
-}
-
-async function sendDraftMessage(match: MatchesJoined) {
-  const { snakeDraftTeams, teams, actualTeams } = draftTeams(match);
-  const testChannel = await getTestChannel();
-  await testChannel.send({
-    content: `Match: ${match.id}, rating: ${getAverageRating(match.teams)}`,
-    embeds: [
-      getTeamDraftEmbed('Snake Draft', snakeDraftTeams),
-      getTeamDraftEmbed('BF2.gg Draft', teams),
-      getTeamDraftEmbed('Actual Draft', actualTeams),
-    ],
-  });
 }

@@ -1,7 +1,7 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { User, APIUser, GuildMember } from 'discord.js';
-import { isNotNull, MapsRow, MatchStatus } from '@bf2-matchmaking/types';
+import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 
 export async function upsertMembers(members: Array<GuildMember>) {

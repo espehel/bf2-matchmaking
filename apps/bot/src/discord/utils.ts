@@ -1,8 +1,18 @@
-import { Channel, Embed, Message, MessageCreateOptions, TextChannel } from 'discord.js';
-import { info, logCreateChannelMessage, logErrorMessage } from '@bf2-matchmaking/logging';
-import { getDiscordClient } from './client';
-import { assertObj } from '@bf2-matchmaking/utils';
-import { DEMO_CHANNEL_ID, TEST_CHANNEL_ID } from '@bf2-matchmaking/discord';
+import { Channel, Embed, Message, MessageReaction, TextChannel } from 'discord.js';
+import { logMessage } from '@bf2-matchmaking/logging';
+import {
+  createServerLocationPollField,
+  createServerLocationPollResultField,
+  getMatchField,
+} from '@bf2-matchmaking/discord';
+import { LocationEmoji, MatchesJoined } from '@bf2-matchmaking/types';
+import { DateTime } from 'luxon';
+import {
+  getServerLocation,
+  getServerLocationEmojis,
+  isValidReaction,
+} from '../services/location-service';
+import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 
 export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
   Boolean(channel && channel.isTextBased());
@@ -13,41 +23,71 @@ export const isPubobotMatchDrafting = (embed?: Embed) =>
   embed?.title?.includes('is now on the draft stage!') || false;
 export const isPubobotMatchStarted = (embed?: Embed) =>
   embed?.title?.includes('has started!') || false;
+export async function startTopLocationPoll(
+  match: MatchesJoined,
+  message: Message
+): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    const pollEndTime = DateTime.now().plus({ seconds: 30 });
 
-export async function replyMessage(message: Message, content: MessageCreateOptions) {
-  if (!isTextBasedChannel(message.channel)) {
-    info('replyMessage', 'Message did not come from text based channel');
-    return null;
-  }
-  try {
-    const replyMessage = await message.channel.send(content);
-    logCreateChannelMessage(
-      message.channel.id,
-      replyMessage.id,
-      replyMessage.embeds[0].description,
-      replyMessage.embeds
-    );
-    return replyMessage;
-  } catch (e) {
-    logErrorMessage('Failed to reply to message', e, { message, content });
-    return null;
-  }
+    const pollMessage = await message.channel.send({
+      embeds: [
+        { fields: [createServerLocationPollField(pollEndTime), getMatchField(match)] },
+      ],
+    });
+    logMessage(`Channel ${message.channel.id}: Poll created for Match ${match.id}`, {
+      match,
+    });
+
+    for (const emoji of getServerLocationEmojis()) {
+      await pollMessage.react(emoji);
+    }
+
+    setTimeout(async () => {
+      const topEmoji = pollMessage.reactions.cache
+        .filter(isValidReaction)
+        .sort(compareMessageReactionCount(match))
+        .at(0);
+
+      const location = getServerLocation(topEmoji?.emoji.name);
+      if (!location) {
+        return reject('Unable to get location');
+      }
+
+      const locationName = getKey(LocationEmoji, topEmoji?.emoji.name);
+      if (locationName) {
+        await pollMessage.edit({
+          embeds: [
+            {
+              fields: [
+                createServerLocationPollResultField(locationName),
+                getMatchField(match),
+              ],
+            },
+          ],
+        });
+      }
+      logMessage(
+        `Channel ${pollMessage.channel.id}: Poll updated with result for Match ${match.id}`,
+        {
+          match,
+          locationName,
+        }
+      );
+
+      resolve(location);
+    }, pollEndTime.diffNow('milliseconds').milliseconds);
+  });
+}
+function compareMessageReactionCount(match: MatchesJoined) {
+  const matchPlayers = match.players.map((player) => player.id);
+  return (firstValue: MessageReaction, secondValue: MessageReaction) =>
+    getValidUsersCount(secondValue, matchPlayers) -
+    getValidUsersCount(firstValue, matchPlayers);
 }
 
-export async function getTestChannel() {
-  const client = await getDiscordClient();
-  const channel = await client.channels.fetch(TEST_CHANNEL_ID);
-  if (!isTextBasedChannel(channel)) {
-    throw new Error('Test channel not found');
-  }
-  return channel;
-}
-
-export async function getDemoChannel() {
-  const client = await getDiscordClient();
-  const channel = await client.channels.fetch(DEMO_CHANNEL_ID);
-  if (!isTextBasedChannel(channel)) {
-    throw new Error('Failed to fetch demo channel');
-  }
-  return channel;
+function getValidUsersCount(reaction: MessageReaction, matchPlayers: Array<string>) {
+  return Array.from(reaction.users.cache.keys()).filter((user) =>
+    matchPlayers.includes(user)
+  ).length;
 }
