@@ -72,6 +72,7 @@ export async function startTopLocationPoll(
         {
           match,
           locationName,
+          reactions: pollMessage.reactions.cache,
         }
       );
 
