@@ -13,7 +13,6 @@ import {
   MatchesJoined,
   MatchProcessError,
   MatchServer,
-  MatchServersRow,
   MatchStatus,
   RoundsInsert,
   ServerInfo,
@@ -159,6 +158,12 @@ export async function processResults(match: MatchesJoined) {
       embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
     });
   }
+  if (match.config.type === 'Mix') {
+    await sendChannelMessage(TEST_CHANNEL_ID, {
+      embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
+    });
+  }
+
   return data;
 }
 
