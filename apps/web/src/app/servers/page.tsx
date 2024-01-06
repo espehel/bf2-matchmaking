@@ -17,7 +17,7 @@ export default async function Page() {
             <th>Name</th>
             <th>Address</th>
             <th>Port</th>
-            <th>Location</th>
+            <th>Server location</th>
             <th>Status</th>
             <th>Players</th>
             <th>Details</th>

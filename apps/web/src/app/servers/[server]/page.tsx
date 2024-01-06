@@ -16,13 +16,14 @@ export default async function ServerPage({ params }: Props) {
   return (
     <main className="main flex flex-col gap-6">
       <h1>Server details</h1>
-      <section>
+      <section className="section">
         <div className="flex items-center">
           <h2 className="text-xl">{server.name}</h2>
         </div>
-        <div className="flex gap-2 font-bold mb-2">
-          <p>{`IP: ${server.ip}`}</p>
+        <div className="flex gap-4 font-bold mb-2">
+          <p>{`Address: ${server.ip}`}</p>
           <p>{`Created: ${DateTime.fromISO(server.created_at).toFormat('DDD, T')}`}</p>
+          <p>{`Server location: ${server.city}, ${server.country}`}</p>
         </div>
       </section>
       <ServerInfoSection server={server} />

@@ -24,7 +24,7 @@ export default function MatchServerSelect({ servers, regions }: Props) {
       </label>
       {generate && regions ? (
         <Select
-          label="Region"
+          label="Server location"
           name="regionSelect"
           options={regions.map(({ id, city, country }) => [id, `${city}, ${country}`])}
         />
