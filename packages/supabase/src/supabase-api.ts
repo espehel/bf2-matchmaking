@@ -66,6 +66,10 @@ export default (client: SupabaseClient<Database>) => ({
       .select('*')
       .eq('config', config)
       .in('player_id', idList),
+  getPlayerRatingsByConfig: (config: number) =>
+    client.from('player_ratings').select('*, player:players(nick)').eq('config', config),
+  getPlayersWithJoinTime: () =>
+    client.from('players').select('*, match_players(connected_at, matches(started_at))'),
   upsertPlayerRatings: (playerRatings: Array<PlayerRatingsInsert>) =>
     client.from('player_ratings').upsert(playerRatings).select('*'),
   searchPlayers: (query: string) =>
