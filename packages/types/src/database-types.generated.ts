@@ -315,6 +315,7 @@ export interface Database {
           created_at: string
           deaths: number
           info: Json | null
+          join_time: number
           kills: number
           match_id: number
           player_id: string
@@ -326,6 +327,7 @@ export interface Database {
           created_at?: string
           deaths: number
           info?: Json | null
+          join_time?: number
           kills: number
           match_id?: number
           player_id: string
@@ -337,6 +339,7 @@ export interface Database {
           created_at?: string
           deaths?: number
           info?: Json | null
+          join_time?: number
           kills?: number
           match_id?: number
           player_id?: string

@@ -23,6 +23,7 @@ import { LiveMatch } from './LiveMatch';
 import {
   calculateMatchResults,
   calculatePlayerResults,
+  withJoinTime,
   withMixRatingIncrement,
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
@@ -136,9 +137,9 @@ export async function processResults(match: MatchesJoined) {
   let playerResults = calculatePlayerResults(match);
 
   if (match.config.type === 'Mix') {
-    playerResults = playerResults.map(
-      withMixRatingIncrement(match, resultsHome, resultsAway)
-    );
+    playerResults = playerResults
+      .map(withMixRatingIncrement(match, resultsHome, resultsAway))
+      .map(withJoinTime(match));
   }
 
   await client()

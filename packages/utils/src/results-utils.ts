@@ -14,6 +14,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
 import { isTeam } from './team-utils';
+import { DateTime } from 'luxon';
 
 const K_FACTOR = 32;
 export const getPlayerRoundStats = (
@@ -232,6 +233,25 @@ export function withMixRatingIncrement(
         ...createPlayerResultInfo(match, actualScore, mp),
       },
       rating_inc,
+    };
+  };
+}
+
+export function withJoinTime(match: MatchesJoined) {
+  return (playerResult: MatchPlayerResultsInsert): MatchPlayerResultsInsert => {
+    const joinedAt = match.teams.find(
+      ({ player_id }) => player_id === playerResult.player_id
+    )?.connected_at;
+
+    if (!joinedAt || !match.started_at) {
+      return playerResult;
+    }
+
+    return {
+      ...playerResult,
+      join_time:
+        DateTime.fromISO(joinedAt).toMillis() -
+        DateTime.fromISO(match.started_at).toMillis(),
     };
   };
 }
