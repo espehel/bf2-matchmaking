@@ -5,13 +5,14 @@ import {
 } from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import { DateTime } from 'luxon';
 
 interface Props {
   playerResults: Array<MatchPlayerResultsJoined>;
   match: MatchesJoined;
 }
 
-export default async function TeamResultTable({ playerResults }: Props) {
+export default async function TeamResultTable({ playerResults, match }: Props) {
   const { data: player } = await supabase(cookies).getSessionPlayer();
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   const showRatingCol =
@@ -31,6 +32,7 @@ export default async function TeamResultTable({ playerResults }: Props) {
           <th>Score</th>
           <th>Kills</th>
           <th>Deaths</th>
+          <th>Join time</th>
           {showRatingCol && <th>Rating</th>}
         </tr>
       </thead>
@@ -44,6 +46,7 @@ export default async function TeamResultTable({ playerResults }: Props) {
                 <td>{result.score}</td>
                 <td>{result.kills}</td>
                 <td>{result.deaths}</td>
+                <td>{getJoinTime(result.player_id)}</td>
                 <RatingCell
                   result={result}
                   player={player}
@@ -56,6 +59,17 @@ export default async function TeamResultTable({ playerResults }: Props) {
       </tbody>
     </table>
   );
+  function getJoinTime(playerId: string) {
+    const joinedAt = match.teams.find(
+      ({ player_id }) => player_id === playerId
+    )?.connected_at;
+    if (!joinedAt || !match.started_at) {
+      return '-';
+    }
+    return DateTime.fromISO(joinedAt)
+      .diff(DateTime.fromISO(match.started_at), 'seconds')
+      .toFormat(`m'm' ss's'`);
+  }
 }
 
 interface RatingCellProps {

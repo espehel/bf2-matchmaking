@@ -6,7 +6,8 @@ import MatchResultSection from '@/components/result/MatchResultSection';
 import { MatchStatus } from '@bf2-matchmaking/types';
 import MatchFinishedSection from '@/components/result/MatchFinishedSection';
 import Link from 'next/link';
-import moment from 'moment/moment';
+import Time from '@/components/commons/Time';
+import React from 'react';
 
 interface Props {
   params: { match: string };
@@ -26,7 +27,10 @@ export default async function ResultsMatch({ params }: Props) {
       <div className="mb-8">
         <h1 className="text-accent font-bold">{`Match ${match.id}`}</h1>
         <p className="text-sm text-gray font-bold">
-          {moment(match.closed_at || match.created_at).format('HH:mm - dddd Do MMMM')}
+          <Time
+            date={match.closed_at || match.created_at}
+            format="HH:mm - EEEE, MMMM d"
+          />
         </p>
       </div>
       {isFinished && <MatchFinishedSection match={match} />}
