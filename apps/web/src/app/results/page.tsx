@@ -28,7 +28,7 @@ export default async function Results() {
       <h1 className="mb-8">Match Results</h1>
       <ul className="grid justify-center gap-4">
         {Object.entries(groupedByMatchid)
-          .sort(([a], [b]) => b.localeCompare(a))
+          .sort(([a], [b]) => Number(b) - Number(a))
           .map(([matchId, match]) => (
             <li className="" key={matchId}>
               <Link href={`/results/${matchId}`}>
