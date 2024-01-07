@@ -21,7 +21,7 @@ const web = () => {
   return {
     basePath,
     matchPage: (matchId: number | string, playerId?: string) =>
-      `${basePath}/match/${matchId}${playerId ? `?player=${playerId}` : ''}`,
+      `${basePath}/matches/${matchId}${playerId ? `?player=${playerId}` : ''}`,
   };
 };
 const rcon = () => {
