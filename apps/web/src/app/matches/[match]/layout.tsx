@@ -13,9 +13,15 @@ export default async function MatchLayout({
     match: string;
   };
 }) {
-  const match = await supabase(cookies)
-    .getMatch(parseInt(params.match))
-    .then(verifySingleResult);
+  const matchId = Number(params.match);
+  const [match, serverRes] = await Promise.all([
+    supabase(cookies).getMatch(matchId).then(verifySingleResult),
+    supabase(cookies).getMatchServer(matchId),
+  ]);
 
-  return <MatchProvider match={match}>{children}</MatchProvider>;
+  return (
+    <MatchProvider match={match} server={serverRes.data}>
+      {children}
+    </MatchProvider>
+  );
 }

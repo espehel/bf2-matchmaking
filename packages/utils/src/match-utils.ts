@@ -148,3 +148,11 @@ export function isActiveMatch(match: MatchesJoined) {
     match.status === MatchStatus.Ongoing
   );
 }
+
+export function isOpenMatch(match: MatchesJoined) {
+  return isActiveMatch(match) || match.status === MatchStatus.Finished;
+}
+
+export function isClosedMatch(match: MatchesJoined) {
+  return match.status === MatchStatus.Closed || match.status === MatchStatus.Deleted;
+}

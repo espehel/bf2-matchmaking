@@ -1,48 +1,50 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { api, isActiveMatch } from '@bf2-matchmaking/utils';
+import { api, isActiveMatch, isClosedMatch, isOpenMatch } from '@bf2-matchmaking/utils';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { retry, wait } from '@bf2-matchmaking/utils/src/async-actions';
-import { joinRoom } from '../state/match-rooms';
+import { broadcastMatchStart, joinMatchRoom, leaveMatchRoom } from '../state/match-rooms';
 
 export function handleMatchInserted(match: MatchesJoined) {
-  if (isActiveMatch(match)) {
+  if (isOpenMatch(match)) {
     matches.putMatch(match);
   }
   if (match.status === MatchStatus.Summoning) {
-    joinRoom(match);
+    joinMatchRoom(match);
   }
 }
-export async function handleMatchStatusUpdate(match: MatchesJoined) {
-  if (isActiveMatch(match)) {
+export function handleMatchStatusUpdate(match: MatchesJoined) {
+  if (isOpenMatch(match)) {
     matches.putMatch(match);
   }
+  if (isClosedMatch(match)) {
+    matches.removeMatch(match);
+  }
+
   if (match.status === MatchStatus.Summoning) {
-    joinRoom(match);
+    joinMatchRoom(match);
+  }
+  if (match.status === MatchStatus.Ongoing) {
+    broadcastMatchStart(match);
   }
   if (match.status === MatchStatus.Finished) {
-    matches.putMatch(match);
     handleMatchFinished(match);
-  }
-  if (match.status === MatchStatus.Closed) {
-    matches.removeMatch(match);
   }
 }
 
-function handleMatchFinished(match: MatchesJoined) {
-  client()
-    .getMatchServer(match.id)
-    .then(async ({ data: matchServer }) => {
-      const ip = matchServer?.server?.ip;
-      if (ip) {
-        await retry(() => deleteServer(match, ip), 5);
-      }
-    });
+async function handleMatchFinished(match: MatchesJoined) {
+  const { data: matchServer } = await client().getMatchServer(match.id);
+  const ip = matchServer?.server?.ip;
+  if (ip) {
+    await retry(() => deleteServer(match, ip), 5);
+  }
+
+  leaveMatchRoom(match);
 }
 
 function handleMatchSummoning(match: MatchesJoined) {
-  joinRoom(match);
+  joinMatchRoom(match);
 }
 
 async function deleteServer(match: MatchesJoined, ip: string) {

@@ -11,11 +11,11 @@ import { startScheduledMatches } from './tasks/startScheduledMatches';
 import { matchesRouter } from './routers/matches';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 import { MatchStatus } from '@bf2-matchmaking/types';
-import { joinRoom } from './state/match-rooms';
+import { joinMatchRoom } from './state/match-rooms';
 
 matches.loadMatches().then(() => {
   matches.get(MatchStatus.Summoning).forEach((match) => {
-    joinRoom(match);
+    joinMatchRoom(match);
   });
 });
 

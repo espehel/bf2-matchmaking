@@ -1,7 +1,8 @@
-import { MatchesJoined } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
 
 type ListenCB = (players: Array<string>) => void;
+type ListenStatusCB = (status: MatchStatus) => void;
 
 const matches: Map<number, RealtimeMatch> = new Map();
 export function realtime(client: SupabaseClient) {
@@ -42,6 +43,18 @@ export class RealtimeMatch {
 
   leave() {
     this.room.untrack();
+  }
+  broadcastStatusUpdate(status: MatchStatus) {
+    return this.room.send({
+      type: 'broadcast',
+      event: 'status-updated',
+      payload: { status },
+    });
+  }
+  listenStatusUpdate(cb: ListenStatusCB) {
+    this.room.on('broadcast', { event: 'status-updated' }, ({ payload }) => {
+      cb(payload.status);
+    });
   }
   listenActivePlayers(cb: ListenCB) {
     this.room.on('presence', { event: 'sync' }, () => {
