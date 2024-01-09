@@ -12,7 +12,7 @@ export async function joinMatchRoom(match: MatchesJoined) {
         'joinRoom',
         `Match ${match.id}: All players active, setting status to Drafting`
       );
-      await client().updateMatch(match.id, { status: MatchStatus.Drafting });
+      // await client().updateMatch(match.id, { status: MatchStatus.Drafting });
     }
   });
 }

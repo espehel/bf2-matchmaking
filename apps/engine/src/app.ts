@@ -15,7 +15,7 @@ import { joinMatchRoom } from './state/match-rooms';
 
 matches.loadMatches().then(() => {
   matches.get(MatchStatus.Summoning).forEach((match) => {
-    joinMatchRoom(match);
+    //joinMatchRoom(match);
   });
 });
 
