@@ -10,6 +10,7 @@ import { isTextBasedChannel } from '../discord/utils';
 import { PostDemosRequestBody } from '@bf2-matchmaking/types';
 import { error } from '@bf2-matchmaking/logging';
 import { getDemoChannel } from '../services/message-service';
+import { messageFilter } from '../discord/match-listener';
 export const rootRouter = new Router();
 
 rootRouter.post('/demos', async (ctx) => {
@@ -74,7 +75,8 @@ rootRouter.post('/messages', async (ctx) => {
       ctx.body = 'Message does not belong to a text channel';
       return;
     }
-    ctx.body = await channel.messages.fetch(messageId);
+    const message = await channel.messages.fetch(messageId);
+    ctx.body = messageFilter(message);
   } catch (e) {
     ctx.status = 502;
     ctx.body = e;

@@ -22,6 +22,7 @@ export default function RoundTable({ liveInfo }: Props) {
           <th>Kills</th>
           <th>Deaths</th>
           <th>Team</th>
+          <th>Id</th>
         </tr>
       </thead>
       <tbody>
@@ -33,6 +34,7 @@ export default function RoundTable({ liveInfo }: Props) {
             <td>{player.scoreKills}</td>
             <td>{player.deaths}</td>
             <td>{getTeam(player.getTeam)}</td>
+            <td>{player.index}</td>
           </tr>
         ))}
       </tbody>

@@ -36,7 +36,7 @@ export function addMatchListener(collector: MessageCollector, config: DiscordCon
   info('addMatchListener', `Listening to ${config.name}`);
 }
 
-function messageFilter(message: Message) {
+export function messageFilter(message: Message) {
   if (message.content === 'test embed') {
     return true;
   }
@@ -46,9 +46,11 @@ function messageFilter(message: Message) {
     return false;
   }
   if (isPubobotMatchStarted(embed)) {
+    info('messageFilter', `Pubobot match ${pubobotId} started`);
     return true;
   }
   if (isPubobotMatchDrafting(embed)) {
+    info('messageFilter', `Pubobot match ${pubobotId} drafting`);
     return !hasPubotId(pubobotId, MatchStatus.Drafting);
   }
   return isPubobotMatchCheckIn(embed) && !hasPubotId(pubobotId, MatchStatus.Summoning);
