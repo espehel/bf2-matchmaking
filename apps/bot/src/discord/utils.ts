@@ -13,6 +13,7 @@ import {
   isValidReaction,
 } from '../services/location-service';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
+import { editLocationPollMessageWithResults } from '../services/message-service';
 
 export const isTextBasedChannel = (channel: Channel | null): channel is TextChannel =>
   Boolean(channel && channel.isTextBased());
@@ -42,6 +43,7 @@ export async function startTopLocationPoll(
     for (const emoji of getServerLocationEmojis()) {
       await pollMessage.react(emoji);
     }
+    await pollMessage.react(LocationEmoji.Existing);
 
     setTimeout(async () => {
       const topEmoji = pollMessage.reactions.cache
@@ -49,33 +51,16 @@ export async function startTopLocationPoll(
         .sort(compareMessageReactionCount(match))
         .at(0);
 
-      const location = getServerLocation(topEmoji?.emoji.name);
+      if (!topEmoji) {
+        return reject('Unable to get top emoji');
+      }
+
+      const location = getServerLocation(topEmoji.emoji.name);
       if (!location) {
         return reject('Unable to get location');
       }
 
-      const locationName = getKey(LocationEmoji, topEmoji?.emoji.name);
-      if (locationName) {
-        await pollMessage.edit({
-          embeds: [
-            {
-              fields: [
-                createServerLocationPollResultField(locationName),
-                getMatchField(match),
-              ],
-            },
-          ],
-        });
-      }
-      logMessage(
-        `Channel ${pollMessage.channel.id}: Poll updated with result for Match ${match.id}`,
-        {
-          match,
-          locationName,
-          reactions: pollMessage.reactions.cache,
-        }
-      );
-
+      await editLocationPollMessageWithResults(pollMessage, match, topEmoji);
       resolve(location);
     }, pollEndTime.diffNow('milliseconds').milliseconds);
   });

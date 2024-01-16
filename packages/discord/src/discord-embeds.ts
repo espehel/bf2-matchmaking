@@ -1,4 +1,5 @@
 import {
+  LocationEmoji,
   MatchConfigsRow,
   MatchesJoined,
   MatchResultsJoined,
@@ -13,6 +14,7 @@ import {
   compareIsCaptain,
   compareUpdatedAt,
   getDraftStep,
+  getMatchIdFromDnsName,
   getPlayerName,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
@@ -271,7 +273,9 @@ const createServerPollFields = (servers: Array<[RconBf2Server, string, string]>)
 export function createServerLocationPollField(endTime: DateTime) {
   return {
     name: 'Server',
-    value: `Vote for server location! Poll ends <t:${endTime.toUnixInteger()}:R>`,
+    value: `Vote for server location! Poll ends <t:${endTime.toUnixInteger()}:R>`
+      .concat(`\n${LocationEmoji.NewYork}: New York`)
+      .concat(`\n${LocationEmoji.Existing}: Existing server`),
   };
 }
 
@@ -304,3 +308,16 @@ export const getMatchField = (match: MatchesJoined) => ({
   name: ``,
   value: `[**Match ${match.id}**](${api.web().basePath}/matches/${match.id})`,
 });
+
+export function getServerFields(servers: Array<RconBf2Server>) {
+  return servers
+    .filter((server) => !getMatchIdFromDnsName(server.ip))
+    .map((server) => ({
+      name: server.name.concat(
+        server.info
+          ? ` (${server.info.connectedPlayers}/${server.info.maxPlayers})`
+          : ' (offline)'
+      ),
+      value: `[${server.ip}:${server.port}](${server.joinmeHref})`,
+    }));
+}

@@ -173,6 +173,7 @@ export enum LocationEmoji {
   London = '🇬🇧',
   Miami = '🇺🇸',
   NewYork = '🍎',
+  Existing = '💎',
 }
 
 export interface User {

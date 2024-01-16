@@ -108,7 +108,9 @@ function handleCollect(config: DiscordConfig) {
       }
 
       const location = await startTopLocationPoll(pubMatch.match, message);
-      await generateServer(location, pubMatch.match);
+      if (location !== 'existing') {
+        await generateServer(location, pubMatch.match);
+      }
     } catch (e) {
       error('handlePubobotMatchDrafting', e);
     }

@@ -1,4 +1,4 @@
-import { Message, MessageCreateOptions } from 'discord.js';
+import { Message, MessageCreateOptions, MessageReaction } from 'discord.js';
 import {
   info,
   logCreateChannelMessage,
@@ -7,14 +7,18 @@ import {
 } from '@bf2-matchmaking/logging';
 import { getDiscordClient } from '../discord/client';
 import {
+  createServerLocationPollResultField,
   DEMO_CHANNEL_ID,
+  getMatchField,
+  getServerFields,
   getTeamDraftEmbed,
   TEST_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
 import { isTextBasedChannel } from '../discord/utils';
-import { MatchesJoined } from '@bf2-matchmaking/types';
+import { LocationEmoji, MatchesJoined } from '@bf2-matchmaking/types';
 import { api, isBetaTester } from '@bf2-matchmaking/utils';
 import { draftTeams, getAverageRating } from './draft-utils';
+import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 
 export async function sendSummoningMessage(match: MatchesJoined) {
   const client = await getDiscordClient();
@@ -64,6 +68,42 @@ export async function replyMessage(message: Message, content: MessageCreateOptio
     logErrorMessage('Failed to reply to message', e, { message, content });
     return null;
   }
+}
+
+export async function editLocationPollMessageWithResults(
+  message: Message,
+  match: MatchesJoined,
+  topEmoji: MessageReaction
+) {
+  const locationName = getKey(LocationEmoji, topEmoji.emoji.name);
+
+  if (topEmoji.emoji.name === LocationEmoji.Existing) {
+    const { data: servers } = await api.rcon().getServers();
+    if (servers?.length) {
+      await message.edit({
+        embeds: [{ fields: [...getServerFields(servers), getMatchField(match)] }],
+      });
+    }
+  } else if (locationName) {
+    await message.edit({
+      embeds: [
+        {
+          fields: [
+            createServerLocationPollResultField(locationName),
+            getMatchField(match),
+          ],
+        },
+      ],
+    });
+  }
+  logMessage(
+    `Channel ${message.channel.id}: Poll updated with result for Match ${match.id}`,
+    {
+      match,
+      locationName,
+      reactions: message.reactions.cache,
+    }
+  );
 }
 
 export async function getTestChannel() {

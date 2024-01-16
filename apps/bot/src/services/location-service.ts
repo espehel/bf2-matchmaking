@@ -8,8 +8,6 @@ const validLocations: Array<[LocationEmoji, string]> = [
   [LocationEmoji.Amsterdam, 'ams'],
   [LocationEmoji.Frankfurt, 'fra'],
   [LocationEmoji.Warsaw, 'waw'],
-  [LocationEmoji.Warsaw, 'waw'],
-  [LocationEmoji.London, 'lhr'],
   [LocationEmoji.Stockholm, 'sto'],
   [LocationEmoji.Miami, 'mia'],
   [LocationEmoji.NewYork, 'ewr'],
@@ -35,9 +33,18 @@ export function getServerLocationEmojis() {
 }
 
 export function getServerLocation(reaction: string | null | undefined) {
-  return reaction ? serverLocations.get(reaction as LocationEmoji) : undefined;
+  if (!reaction) {
+    return undefined;
+  }
+  if (reaction === LocationEmoji.Existing) {
+    return 'existing';
+  }
+  return serverLocations.get(reaction as LocationEmoji);
 }
 
 export function isValidReaction(reaction: MessageReaction) {
-  return Array.from(serverLocations.keys()).some((k) => k === reaction.emoji.name);
+  return (
+    Array.from(serverLocations.keys()).some((k) => k === reaction.emoji.name) ||
+    reaction.emoji.name === LocationEmoji.Existing
+  );
 }
