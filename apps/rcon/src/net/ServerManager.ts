@@ -5,7 +5,7 @@ import { PendingServer, ServerRconsRow } from '@bf2-matchmaking/types';
 import { createLiveInfo, updateServerName } from '../services/servers';
 import { LiveMatch } from '../services/LiveMatch';
 import { getServerInfo, rcon } from './RconManager';
-import { createLiveMatchFromDns } from '../services/matches';
+import { updateMatchServer } from '../services/matches';
 import { assertObj } from '@bf2-matchmaking/utils';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
@@ -144,7 +144,7 @@ export async function updatePendingServers() {
         .then(verifySingleResult);
 
       const liveServer = await initLiveServer(serverRcon);
-      await createLiveMatchFromDns(dns, server);
+      await updateMatchServer(dns, server);
       if (liveServer) {
         connectedServers.push(dns.name);
       }

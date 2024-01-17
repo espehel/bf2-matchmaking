@@ -43,19 +43,11 @@ async function startMatch(scheduledMatch: ScheduledMatch) {
     }
   }
 
-  const { data: liveMatch, error: rconError } = await api
-    .rcon()
-    .postMatchLive(scheduledMatch.id, false);
-
   if (error) {
     logErrorMessage(`Match ${scheduledMatch.id} failed to set status ongoing`, error, {
       match: scheduledMatch,
     });
-  } else if (rconError) {
-    logErrorMessage(`Match ${match.id} failed to start live match`, rconError, {
-      match,
-    });
   } else {
-    logMessage(`Match ${match.id} started`, { match, liveMatch });
+    logMessage(`Match ${match.id} started`, { match });
   }
 }

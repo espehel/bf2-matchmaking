@@ -23,7 +23,7 @@ webhooksRouter.post('/matches', async (ctx) => {
   if (isMatchesInsert(body)) {
     info('routers/matches', `Match ${body.record.id} ${body.record.status}`);
     const match = await client().getMatch(body.record.id).then(verifySingleResult);
-    handleMatchInserted(match);
+    await handleMatchInserted(match);
     ctx.status = 202;
     return;
   }

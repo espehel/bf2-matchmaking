@@ -268,7 +268,7 @@ export async function updateServer(
   return result.data;
 }
 
-export async function createLiveMatchFromDns(
+export async function updateMatchServer(
   dns: DnsRecordWithoutPriority,
   server: ServersRow
 ) {
@@ -286,9 +286,6 @@ export async function createLiveMatchFromDns(
   if (result.error) {
     error('createLiveMatchFromDns', result.error);
   }
-
-  const match = await client().getMatch(matchId).then(verifySingleResult);
-  initLiveMatch(match, { prelive: false });
 }
 
 export async function fixMissingMatchPlayers(match: MatchesJoined) {

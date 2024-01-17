@@ -1,20 +1,23 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { api, isActiveMatch, isClosedMatch, isOpenMatch } from '@bf2-matchmaking/utils';
+import { api, isClosedMatch, isOpenMatch } from '@bf2-matchmaking/utils';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { retry, wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { broadcastMatchStart, joinMatchRoom, leaveMatchRoom } from '../state/match-rooms';
 
-export function handleMatchInserted(match: MatchesJoined) {
+export async function handleMatchInserted(match: MatchesJoined) {
   if (isOpenMatch(match)) {
     matches.putMatch(match);
   }
   if (match.status === MatchStatus.Summoning) {
-    joinMatchRoom(match);
+    await joinMatchRoom(match);
+  }
+  if (match.status === MatchStatus.Ongoing) {
+    await handleMatchOngoing(match);
   }
 }
-export function handleMatchStatusUpdate(match: MatchesJoined) {
+export async function handleMatchStatusUpdate(match: MatchesJoined) {
   if (isOpenMatch(match)) {
     matches.putMatch(match);
   }
@@ -23,16 +26,25 @@ export function handleMatchStatusUpdate(match: MatchesJoined) {
   }
 
   if (match.status === MatchStatus.Summoning) {
-    joinMatchRoom(match);
+    await joinMatchRoom(match);
   }
   if (match.status === MatchStatus.Ongoing) {
-    broadcastMatchStart(match);
+    await handleMatchOngoing(match);
+    await broadcastMatchStart(match);
   }
   if (match.status === MatchStatus.Finished) {
-    handleMatchFinished(match);
+    await handleMatchFinished(match);
   }
 }
 
+async function handleMatchOngoing(match: MatchesJoined) {
+  const { data, error } = await api.rcon().postMatchLive(match.id, false);
+  if (error) {
+    logErrorMessage(`Match ${match.id} failed to start`, error, { match });
+  } else {
+    logMessage(`Match ${match.id} started`, { match, live: data });
+  }
+}
 async function handleMatchFinished(match: MatchesJoined) {
   const { data: matchServer } = await client().getMatchServer(match.id);
   const ip = matchServer?.server?.ip;
