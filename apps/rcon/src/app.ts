@@ -40,11 +40,11 @@ const pendingServerTask = cron.schedule('*/30 * * * * *', updatePendingServers, 
 
 loadMapsCache();
 initLiveServers()
-  .then(() => initLiveMatches())
-  .then(() => {
+  .then(async () => {
     if (isDevelopment()) {
       return;
     }
+    await initLiveMatches();
     inactiveTasks.start();
     activeTasks.start();
     pendingServerTask.start();

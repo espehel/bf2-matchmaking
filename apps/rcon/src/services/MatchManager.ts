@@ -1,16 +1,14 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { LiveMatch, LiveMatchOptions } from './LiveMatch';
-import { info, logMessage, logSupabaseError } from '@bf2-matchmaking/logging';
+import { info, logMessage } from '@bf2-matchmaking/logging';
 import { findServer, resetLiveMatchServers } from '../net/ServerManager';
 import { updateMatchServer } from './matches';
 import { client, fallbackResult } from '@bf2-matchmaking/supabase';
-import { createLiveInfo, updateServerName } from './servers';
-import { LiveServer } from '../net/LiveServer';
 
 const liveMatches = new Map<number, LiveMatch>();
 
 export function getLiveMatches() {
-  return Array.from(liveMatches.values());
+  return Array.from(liveMatches.values()).sort((a, b) => b.match.id - a.match.id);
 }
 
 export function removeLiveMatch(liveMatch: LiveMatch) {
@@ -62,11 +60,12 @@ export async function initLiveMatches() {
 }
 
 export async function updatePendingLiveMatches() {
-  if (liveMatches.size === 0) {
+  const matches = getLiveMatches();
+  if (matches.length === 0) {
     info('updatePendingLiveMatches', 'No live matches found');
     return;
   }
-  for (const liveMatch of liveMatches.values()) {
+  for (const liveMatch of matches.values()) {
     if (!liveMatch.isPending()) {
       continue;
     }
