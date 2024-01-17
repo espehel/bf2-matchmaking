@@ -268,24 +268,29 @@ export async function updateServer(
   return result.data;
 }
 
-export async function updateMatchServer(
+export async function updateMatchServerWithDns(
   dns: DnsRecordWithoutPriority,
   server: ServersRow
 ) {
   const matchId = getMatchIdFromDnsName(dns.name);
   if (!matchId) {
-    info('createLiveMatchFromDns', `Failed to get match id for ${dns.name}`);
+    info('updateMatchServerWithDns', `Failed to get match id for ${dns.name}`);
     return;
   }
 
+  return updateMatchServer(matchId, server.ip);
+}
+
+export async function updateMatchServer(matchId: number, serverAddress: string) {
   info(
-    'createLiveMatchFromDns',
-    `Match ${matchId}: Upserting match server with ip ${server.ip}`
+    'updateMatchServer',
+    `Match ${matchId}: Upserting match server with ip ${serverAddress}`
   );
-  const result = await client().upsertMatchServer({ id: matchId, ip: server.ip });
+  const result = await client().upsertMatchServer({ id: matchId, ip: serverAddress });
   if (result.error) {
-    error('createLiveMatchFromDns', result.error);
+    error('updateMatchServer', result.error);
   }
+  return result;
 }
 
 export async function fixMissingMatchPlayers(match: MatchesJoined) {

@@ -19,7 +19,7 @@ import {
 } from '../net/ServerManager';
 import { error, info } from '@bf2-matchmaking/logging';
 import { api, assertArray, assertObj } from '@bf2-matchmaking/utils';
-import { updateMatchServer } from '../services/matches';
+import { updateMatchServerWithDns } from '../services/matches';
 import { mapMapList } from '../mappers/rcon';
 import { findMap } from '../services/maps';
 const router = express.Router();
@@ -188,7 +188,7 @@ router.post('/', async (req, res) => {
     await initLiveServer(serverRcon);
 
     if (dns) {
-      await updateMatchServer(dns, server);
+      await updateMatchServerWithDns(dns, server);
     }
 
     info(

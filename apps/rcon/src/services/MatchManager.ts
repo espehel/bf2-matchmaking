@@ -7,6 +7,7 @@ import {
   findServer,
   resetLiveMatchServers,
 } from '../net/ServerManager';
+import { updateMatchServer } from './matches';
 
 const liveMatches = new Map<number, LiveMatch>();
 
@@ -61,6 +62,7 @@ export async function updatePendingLiveMatches() {
       if (liveServer && liveServer.isIdle()) {
         resetLiveMatchServers(liveMatch);
         liveServer.setLiveMatch(liveMatch);
+        await updateMatchServer(liveMatch.match.id, liveServer.ip);
         continue;
       }
     }
