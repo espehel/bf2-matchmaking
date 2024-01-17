@@ -2,7 +2,7 @@ import express from 'express';
 import { GetMatchLiveResponseBody, MatchStatus } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error } from '@bf2-matchmaking/logging';
-import { findLiveMatch, getLiveMatches, initLiveMatch } from '../services/MatchManager';
+import { findLiveMatch, getLiveMatches, startLiveMatch } from '../services/MatchManager';
 import { closeMatch } from '../services/matches';
 
 const router = express.Router();
@@ -45,7 +45,7 @@ router.post('/:matchid/live', async (req, res) => {
       return res.status(400).send({ message: `Match ${match.id} is not ongoing.` });
     }
 
-    const liveMatch = initLiveMatch(match, { prelive });
+    const liveMatch = startLiveMatch(match, { prelive });
     return res.status(201).send(liveMatch);
   } catch (e) {
     if (e instanceof Error) {

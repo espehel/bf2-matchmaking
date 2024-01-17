@@ -41,7 +41,7 @@ import {
   hasNotKeyhash,
 } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
-import { initLiveMatch } from './MatchManager';
+import { startLiveMatch } from './MatchManager';
 
 export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | null) => {
   logChangeMatchStatus(MatchStatus.Finished, match, liveInfo);

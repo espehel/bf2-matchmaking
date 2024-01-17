@@ -18,7 +18,7 @@ import {
   updatePendingServers,
 } from './net/ServerManager';
 import cron from 'node-cron';
-import { updatePendingLiveMatches } from './services/MatchManager';
+import { initLiveMatches, updatePendingLiveMatches } from './services/MatchManager';
 import { loadMapsCache } from './services/maps';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 
@@ -40,6 +40,7 @@ const pendingServerTask = cron.schedule('*/30 * * * * *', updatePendingServers, 
 
 loadMapsCache();
 initLiveServers()
+  .then(() => initLiveMatches())
   .then(() => {
     if (isDevelopment()) {
       return;

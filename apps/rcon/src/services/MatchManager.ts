@@ -1,13 +1,11 @@
-import { MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { LiveMatch, LiveMatchOptions } from './LiveMatch';
-import { info, logMessage } from '@bf2-matchmaking/logging';
-import {
-  setServerLiveMatch,
-  isIdle,
-  findServer,
-  resetLiveMatchServers,
-} from '../net/ServerManager';
+import { info, logMessage, logSupabaseError } from '@bf2-matchmaking/logging';
+import { findServer, resetLiveMatchServers } from '../net/ServerManager';
 import { updateMatchServer } from './matches';
+import { client, fallbackResult } from '@bf2-matchmaking/supabase';
+import { createLiveInfo, updateServerName } from './servers';
+import { LiveServer } from '../net/LiveServer';
 
 const liveMatches = new Map<number, LiveMatch>();
 
@@ -26,7 +24,7 @@ export function findLiveMatch(matchId: number): LiveMatch | undefined {
   return liveMatches.get(matchId);
 }
 
-export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
+export function startLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
   let liveMatch = liveMatches.get(match.id);
 
   if (liveMatch) {
@@ -38,13 +36,29 @@ export function initLiveMatch(match: MatchesJoined, options: LiveMatchOptions) {
   } else {
     liveMatch = new LiveMatch(match, options);
     liveMatches.set(match.id, liveMatch);
-    logMessage(`Match ${match.id}: Initialized live match`, {
+    logMessage(`Match ${match.id}: Started live match`, {
       match,
       options,
     });
   }
 
   return liveMatch;
+}
+
+export async function initLiveMatches() {
+  const matches = await client()
+    .getMatchesWithStatus(MatchStatus.Ongoing)
+    .then(fallbackResult([]));
+
+  await Promise.all(
+    matches.map((match) => {
+      startLiveMatch(match, { prelive: false });
+    })
+  );
+  info(
+    'initLiveMatches',
+    `Initialized ${liveMatches.size}/${matches.length} live matches`
+  );
 }
 
 export async function updatePendingLiveMatches() {
