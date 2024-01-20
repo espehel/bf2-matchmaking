@@ -7,11 +7,11 @@ import {
   createResults,
 } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
-import SelectServerForm from '@/components/match/SelectServerForm';
+import SelectServerForm from '@/components/matches/SelectServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import MatchMapsSelect from '@/components/match/MatchMapsSelect';
-import OrganizerCommandCopyButton from '@/components/match/OrganizerCommandCopyButton';
+import MatchMapsSelect from '@/components/matches/MatchMapsSelect';
+import OrganizerCommandCopyButton from '@/components/matches/OrganizerCommandCopyButton';
 
 interface Props {
   match: MatchesJoined;
@@ -104,7 +104,7 @@ export default async function MatchActions({ match }: Props) {
             Reopen match
           </ActionButton>
         )}
-        {servers && !isClosed && (
+        {servers && (
           <SelectServerForm match={match} matchServer={matchServer} servers={servers} />
         )}
         {maps && !isClosed && <MatchMapsSelect match={match} maps={maps} />}

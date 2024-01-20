@@ -3,10 +3,10 @@ import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { isScheduledMatch } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
-import MatchDateItems from '@/components/match/MatchDateItems';
+import MatchDateItems from '@/components/matches/MatchDateItems';
 import ScheduleMatchForm, {
   ScheduledMatchFormFallback,
-} from '@/components/match/ScheduleMatchForm';
+} from '@/components/matches/ScheduleMatchForm';
 import { Suspense } from 'react';
 
 export default async function ScheduledMatchesPage() {

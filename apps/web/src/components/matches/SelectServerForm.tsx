@@ -1,6 +1,11 @@
 'use client';
 
-import { MatchesJoined, MatchServer, ServersRow } from '@bf2-matchmaking/types';
+import {
+  MatchesJoined,
+  MatchServer,
+  MatchStatus,
+  ServersRow,
+} from '@bf2-matchmaking/types';
 import SelectForm from '@/components/SelectForm';
 import { useCallback } from 'react';
 import { setServer } from '@/app/matches/[match]/actions';
@@ -24,6 +29,20 @@ export default function SelectServerForm({ match, matchServer, servers }: Props)
     },
     [match.id]
   );
+
+  if (match.status === MatchStatus.Closed) {
+    return (
+      <div className="tooltip" data-tip="Match is closed">
+        <SelectForm
+          label="Set server"
+          options={servers.map(({ ip, name }) => [ip, name])}
+          defaultValue={matchServer?.server?.ip}
+          action={handleSetServer}
+          disabled={true}
+        />
+      </div>
+    );
+  }
 
   return (
     <SelectForm

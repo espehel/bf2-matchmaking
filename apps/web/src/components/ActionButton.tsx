@@ -11,6 +11,7 @@ interface Props extends PropsWithChildren {
   size?: 'btn-lg' | 'btn-md' | 'btn-sm';
   redirect?: string;
   errorRedirect?: string;
+  disabled?: boolean;
 }
 
 export default function ActionButton({
@@ -22,6 +23,7 @@ export default function ActionButton({
   size = 'btn-md',
   redirect,
   errorRedirect,
+  disabled,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -57,7 +59,7 @@ export default function ActionButton({
     <button
       className={`btn ${kind} ${size} w-fit`}
       onClick={handleAction}
-      disabled={pending}
+      disabled={disabled || pending}
     >
       {pending && <span className="loading loading-spinner"></span>}
       {children}

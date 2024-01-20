@@ -1,11 +1,11 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import MatchActions from '@/components/match/MatchActions';
+import MatchActions from '@/components/matches/MatchActions';
 import Link from 'next/link';
-import TeamSection from '@/components/match/TeamSection';
+import TeamSection from '@/components/matches/TeamSection';
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import SummoningSection from '@/components/match/DraftingSection';
+import SummoningSection from '@/components/matches/DraftingSection';
 
 interface Props {
   match: MatchesJoined;

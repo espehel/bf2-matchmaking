@@ -13,19 +13,10 @@ export default async function CreateServerSection({}: Props) {
     return null;
   }
 
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
-  const { data: regions } = await api.platform().getLocations();
-
   return (
     <section className="bg-base-100 border-primary border-2 rounded p-4 mt-6">
       <h2 className="text-xl">Add server</h2>
       <ServerCreateForm />
-      {adminRoles?.server_admin && regions && (
-        <>
-          <div className="divider" />
-          <GenerateServerForm regions={regions} />
-        </>
-      )}
     </section>
   );
 }

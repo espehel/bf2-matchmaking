@@ -1,14 +1,14 @@
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
-import MatchSection from '@/components/match/MatchSection';
-import ServerSection from '@/components/match/ServerSection';
-import LiveSection from '@/components/match/LiveSection';
+import MatchSection from '@/components/matches/MatchSection';
+import MatchServerSection from '@/components/matches/server/MatchServerSection';
+import LiveSection from '@/components/matches/LiveSection';
 import RoundsList from '@/components/RoundsList';
 import { Suspense } from 'react';
-import ServerSectionLoading from '@/components/match/ServerSectionLoading';
-import MapsSection from '@/components/match/MapsSection';
-import MatchTimeForm, { MatchTimeFallback } from '@/components/match/MatchTimeForm';
+import ServerSectionLoading from '@/components/matches/server/ServerSectionLoading';
+import MapsSection from '@/components/matches/MapsSection';
+import MatchTimeForm, { MatchTimeFallback } from '@/components/matches/MatchTimeForm';
 import { isActiveMatch } from '@bf2-matchmaking/utils';
 
 interface Props {
@@ -18,9 +18,6 @@ export default async function ResultsMatch({ params }: Props) {
   const match = await supabase(cookies)
     .getMatch(Number(params.match))
     .then(verifySingleResult);
-  const { data: matchServer } = await supabase(cookies).getMatchServer(
-    Number(params.match)
-  );
 
   return (
     <main className="main flex flex-col items-center text-center">
@@ -32,11 +29,9 @@ export default async function ResultsMatch({ params }: Props) {
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
         <MatchSection match={match} />
-        {matchServer && isActiveMatch(match) && (
-          <Suspense
-            fallback={<ServerSectionLoading match={match} matchServer={matchServer} />}
-          >
-            <ServerSection matchServer={matchServer} match={match} />
+        {isActiveMatch(match) && (
+          <Suspense fallback={<ServerSectionLoading />}>
+            <MatchServerSection match={match} />
           </Suspense>
         )}
         <MapsSection match={match} key={match.maps.map((m) => m.id).join()} />

@@ -5,7 +5,7 @@ import {
   assertString,
   createServerDnsName,
 } from '@bf2-matchmaking/utils';
-import { Instance, Plan, Region, StartupScript } from '@bf2-matchmaking/types';
+import { Instance, isString, Plan, Region, StartupScript } from '@bf2-matchmaking/types';
 import { info, logMessage } from '@bf2-matchmaking/logging';
 import { VULTR } from '../constants';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
@@ -41,22 +41,6 @@ export async function deleteStartupScript(name: string) {
   }
 }
 
-async function upsertStartupScript(name: string, script: string) {
-  const startupScriptId = startupScripts.get(name);
-  if (startupScriptId) {
-    await client.startupScripts.updateStartupScript({
-      'startup-id': startupScriptId,
-      script,
-    });
-    return startupScriptId;
-  }
-  const { startup_script } = await client.startupScripts.createStartupScript({
-    name,
-    script,
-  });
-  return startup_script.id;
-}
-
 async function createStartupScript(name: string, script: string) {
   const { startup_script } = await client.startupScripts.createStartupScript({
     name,
@@ -65,13 +49,15 @@ async function createStartupScript(name: string, script: string) {
   return startup_script.id;
 }
 
-export async function getServerInstances() {
-  return client.instances.listInstances({});
-}
+export async function getServerInstances(match?: unknown) {
+  const { instances } = await client.instances.listInstances({});
+  assertArray(instances, 'Failed to get instances');
 
-export async function getServerInstance(id: string): Promise<Instance> {
-  const { instance } = await client.instances.getInstance({ 'instance-id': id });
-  return instance;
+  if (isString(match)) {
+    return (instances as Array<Instance>).filter((i) => i.tag === match);
+  }
+
+  return instances;
 }
 
 export async function createServerInstance(
@@ -93,7 +79,7 @@ export async function createServerInstance(
     os_id: VULTR.os_id,
     script_id,
     label: serverName,
-    tag: createServerDnsName(Number(match)),
+    tag: match,
   });
   logMessage(`Server instance ${instance?.tag} with ip ${instance?.id} created`, {
     serverName,

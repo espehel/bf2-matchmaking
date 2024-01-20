@@ -34,6 +34,7 @@ export default async function LeaderboardsPage({ searchParams }: Props) {
           </span>
         </div>
       )}
+      //TODO: link text is wrapping on firefox
       <section className="section w-fit">
         <div role="tablist" className="tabs tabs-bordered">
           <Link

@@ -8,8 +8,15 @@ interface Props {
   options: Array<[string | number, string]>;
   defaultValue?: string | number;
   action: (value: string) => void;
+  disabled?: boolean;
 }
-export default function SelectForm({ options, action, defaultValue, label }: Props) {
+export default function SelectForm({
+  options,
+  action,
+  defaultValue,
+  label,
+  disabled,
+}: Props) {
   const handleFormAction = useCallback(
     (data: FormData) => {
       const value = data.get('select');
@@ -30,6 +37,7 @@ export default function SelectForm({ options, action, defaultValue, label }: Pro
           name="select"
           className="select select-bordered"
           defaultValue={defaultValue}
+          disabled={disabled}
         >
           {options.map(([value, label]) => (
             <option key={value} value={value}>

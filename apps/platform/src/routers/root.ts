@@ -18,13 +18,14 @@ import {
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
 import { Context } from 'koa';
 import { DEFAULTS } from '../constants';
-import { api } from '@bf2-matchmaking/utils';
+import { api, createServerDnsName } from '@bf2-matchmaking/utils';
 import { saveDemosAll } from '@bf2-matchmaking/demo';
 
 export const rootRouter = new Router();
 
 rootRouter.get('/servers', async (ctx: Context) => {
-  ctx.body = await getServerInstances();
+  const { match } = ctx.query;
+  ctx.body = await getServerInstances(match);
 });
 
 interface ServersRequestBody extends Omit<Request, 'body'> {
@@ -33,12 +34,22 @@ interface ServersRequestBody extends Omit<Request, 'body'> {
   match?: string;
   map?: string;
   vehicles?: string;
+  subDomain?: string;
 }
 rootRouter.post('/servers', async (ctx: Context) => {
-  const { name, region, match, map, vehicles } = <ServersRequestBody>ctx.request.body;
+  const { name, region, match, map, vehicles, subDomain } = <ServersRequestBody>(
+    ctx.request.body
+  );
   if (!name || !region || !match) {
     ctx.status = 400;
     ctx.body = { message: 'Missing name, region, match, map or vehicles' };
+    return;
+  }
+  const dnsName = subDomain || createServerDnsName(Number(match));
+  const dns = await getDnsByName(dnsName);
+  if (dns) {
+    ctx.status = 409;
+    ctx.body = { message: 'Address already exists' };
     return;
   }
 
@@ -57,7 +68,7 @@ rootRouter.post('/servers', async (ctx: Context) => {
 
   pollInstance(instance.id, async (instance: Instance) => {
     if (instance.main_ip !== '0.0.0.0') {
-      await createDnsRecord(instance.tag, instance.main_ip);
+      await createDnsRecord(dnsName, instance.main_ip);
       return true;
     }
     return false;
@@ -65,7 +76,7 @@ rootRouter.post('/servers', async (ctx: Context) => {
 
   info(
     'POST /servers',
-    `Instance created. [region: "${instance.region}", label: "${instance.label}", tag: "${instance.tag}"]`
+    `Instance created. [region: "${instance.region}", label: "${instance.label}", tag: "${instance.tag}", dns: "${dnsName}"]`
   );
   ctx.body = instance;
 });

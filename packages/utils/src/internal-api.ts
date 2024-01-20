@@ -148,6 +148,10 @@ const platform = () => {
         map,
         vehicles,
       }),
+    getServers: (match?: string | number) =>
+      getJSON<Array<Instance>>(
+        basePath.concat(paths.servers().concat(match ? `?match=${match}` : ''))
+      ),
     getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
     deleteServer: (id: string) => deleteJSON<Instance>(basePath.concat(paths.server(id))),
     getServerDns: (ip: string) =>

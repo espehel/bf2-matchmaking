@@ -8,7 +8,7 @@ import { removeMatchPlayer } from '@/app/matches/[match]/actions';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import TeamPlayerActionButton from '@/components/TeamPlayerActionButton';
 import { StarIcon } from '@heroicons/react/20/solid';
-import SummoningBadge from '@/components/match/SummoningBadge';
+import SummoningBadge from '@/components/matches/SummoningBadge';
 
 interface Props {
   player: PlayersRow;

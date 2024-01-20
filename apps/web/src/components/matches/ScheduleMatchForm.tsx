@@ -10,7 +10,7 @@ import MapsSelect from '@/components/commons/MapsSelect';
 import { DateTime } from 'luxon';
 import ActionForm from '@/components/commons/ActionForm';
 import React from 'react';
-import MatchServerSelect from '@/components/match/MatchServerSelect';
+import MatchServerSelect from '@/components/matches/MatchServerSelect';
 import { api } from '@bf2-matchmaking/utils';
 
 export default async function ScheduleMatchForm() {
