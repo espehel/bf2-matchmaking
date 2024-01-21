@@ -11,7 +11,8 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import * as dns from 'dns';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 export async function createServer(data: FormData) {
   const { addressInput, portInput, rconPortInput, rconPwInput } =
     Object.fromEntries(data);
@@ -54,34 +55,44 @@ export async function createServer(data: FormData) {
 }
 
 export async function generateServer(data: FormData) {
-  const { matchInput, regionInput } = Object.fromEntries(data);
-  assertString(matchInput);
+  const { matchId, vehicles, nameInput, domainInput, mapInput, regionInput } =
+    Object.fromEntries(data);
+  assertString(matchId);
+  assertString(vehicles);
+  assertString(nameInput);
+  assertString(domainInput);
   assertString(regionInput);
+  assertString(mapInput);
 
-  const matchResult = await supabase(cookies).getMatch(Number(matchInput));
-  if (matchResult.error) {
-    console.error(matchResult.error);
-    return matchResult;
+  const map = getInitialServerMap(mapInput);
+
+  const { data: server } = await supabase(cookies).getServerByName(nameInput);
+
+  if (server) {
+    return { data: null, error: { message: 'Server already exists', code: 409 } };
   }
-  const { id, config } = matchResult.data;
-  const name = createServerName(matchResult.data);
-  const map = getInitialServerMap(matchResult.data);
-  const vehicles = getServerVehicles(matchResult.data);
 
   const result = await api
     .platform()
-    .postServers(name, regionInput, matchResult.data.id, map, vehicles);
+    .postServers(nameInput, regionInput, matchId, map, vehicles, domainInput);
 
   if (result.error) {
-    logErrorMessage(`Server ${name}: Generation failed`, result.error);
+    logErrorMessage(`Server ${nameInput}: Generation failed`, result.error);
     return result;
   }
 
-  logMessage(`Server ${name}: Generation started`, {
+  logMessage(`Server ${nameInput}: Generation started`, {
+    nameInput,
     regionInput,
-    matchInput,
-    config,
-    id,
+    matchId,
+    map,
+    vehicles,
+    domainInput,
   });
+
+  await wait(2);
+  revalidateTag('platformGetServers');
+  revalidatePath(`matches/${matchId}/server`);
+
   return result;
 }

@@ -6,7 +6,7 @@ import Select from '@/components/commons/Select';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { createScheduledMatch } from '@/app/matches/actions';
 import CollapseControl from '@/components/commons/CollapseControl';
-import MapsSelect from '@/components/commons/MapsSelect';
+import MapMultiSelect from '@/components/commons/MapMultiSelect';
 import { DateTime } from 'luxon';
 import ActionForm from '@/components/commons/ActionForm';
 import React from 'react';
@@ -65,7 +65,7 @@ export default async function ScheduleMatchForm() {
             />
           </div>
           <MatchServerSelect servers={servers} regions={regions} />
-          <MapsSelect maps={maps} />
+          <MapMultiSelect maps={maps} />
           <div className="flex items-center justify-end">
             <FormSubmitButton>Schedule match</FormSubmitButton>
           </div>

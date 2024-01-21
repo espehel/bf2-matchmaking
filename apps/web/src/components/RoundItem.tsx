@@ -25,7 +25,6 @@ export default function RoundItem({ round }: Props) {
   const onRoundClick = () => {
     setSummaryOpen(!isSummaryOpen);
   };
-
   const info = parseNullableJSON<LiveInfo>(round.info);
 
   if (!info) {

@@ -112,6 +112,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('server_rcons').delete().eq('id', ip).select(),
   getServers: () => client.from('servers').select('*'),
   getServer: (ip: string) => client.from('servers').select('*').eq('ip', ip).single(),
+  getServerByName: (name: string) =>
+    client.from('servers').select('*').eq('name', name).single(),
   getServerByNameSearch: (name: string) =>
     client.from('servers').select('*').textSearch('name', name, {
       type: 'websearch',

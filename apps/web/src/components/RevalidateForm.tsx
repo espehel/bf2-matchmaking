@@ -13,7 +13,7 @@ export default function RevalidateForm({ path }: Props) {
   }
 
   return (
-    <form action={revalidate}>
+    <form className="h-8" action={revalidate}>
       <RefreshButton />
     </form>
   );

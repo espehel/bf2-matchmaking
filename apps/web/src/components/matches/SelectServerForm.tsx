@@ -1,55 +1,38 @@
-'use client';
-
-import {
-  MatchesJoined,
-  MatchServer,
-  MatchStatus,
-  ServersRow,
-} from '@bf2-matchmaking/types';
-import SelectForm from '@/components/SelectForm';
-import { useCallback } from 'react';
+import { cookies } from 'next/headers';
+import { assertString } from '@bf2-matchmaking/utils';
+import { MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
+import { supabase } from '@/lib/supabase/supabase';
+import SelectActionForm from '@/components/SelectActionForm';
 import { setServer } from '@/app/matches/[match]/actions';
-import { toast } from 'react-toastify';
 
 interface Props {
   match: MatchesJoined;
   matchServer: MatchServer | null;
-  servers: Array<ServersRow>;
 }
 
-export default function SelectServerForm({ match, matchServer, servers }: Props) {
-  const handleSetServer = useCallback(
-    async (value: string) => {
-      const { error, data } = await setServer(match.id, value);
-      if (error) {
-        toast.error('Failed to set server');
-      } else {
-        toast.success(`Changed server to ${data.server?.ip}`);
-      }
-    },
-    [match.id]
-  );
+export default async function SelectServerForm({ match, matchServer }: Props) {
+  const { data: servers } = await supabase(cookies).getServers();
 
-  if (match.status === MatchStatus.Closed) {
-    return (
-      <div className="tooltip" data-tip="Match is closed">
-        <SelectForm
-          label="Set server"
-          options={servers.map(({ ip, name }) => [ip, name])}
-          defaultValue={matchServer?.server?.ip}
-          action={handleSetServer}
-          disabled={true}
-        />
-      </div>
-    );
+  if (!servers) {
+    return null;
+  }
+
+  async function setMatchServerSA(data: FormData) {
+    'use server';
+    const value = data.get('select');
+    assertString(value, 'No server selected');
+    return setServer(match.id, value);
   }
 
   return (
-    <SelectForm
-      label="Set server"
+    <SelectActionForm
+      label="Set match server"
       options={servers.map(({ ip, name }) => [ip, name])}
       defaultValue={matchServer?.server?.ip}
-      action={handleSetServer}
+      placeholder={!matchServer?.server?.ip ? 'Select Server' : undefined}
+      action={setMatchServerSA}
+      successMessage="Changed server"
+      errorMessage="Failed to set server"
     />
   );
 }

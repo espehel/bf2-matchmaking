@@ -18,7 +18,6 @@ interface Props {
 }
 
 export default async function MatchActions({ match }: Props) {
-  const { data: servers } = await supabase(cookies).getServers();
   const { data: maps } = await supabase(cookies).getMaps();
   const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
 
@@ -104,9 +103,7 @@ export default async function MatchActions({ match }: Props) {
             Reopen match
           </ActionButton>
         )}
-        {servers && (
-          <SelectServerForm match={match} matchServer={matchServer} servers={servers} />
-        )}
+        <SelectServerForm match={match} matchServer={matchServer} />
         {maps && !isClosed && <MatchMapsSelect match={match} maps={maps} />}
       </div>
     </div>

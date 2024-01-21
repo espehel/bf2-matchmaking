@@ -23,8 +23,8 @@ export default async function MatchServerSection({ match }: Props) {
           <ServerActions match={match} server={server} />
         </>
       )}
-      <Link className="btn btn-primary mt-auto" href={`/matches/${match.id}/server`}>
-        Manage server
+      <Link className="btn btn-secondary mt-auto" href={`/matches/${match.id}/server`}>
+        Manage match server
       </Link>
     </section>
   );

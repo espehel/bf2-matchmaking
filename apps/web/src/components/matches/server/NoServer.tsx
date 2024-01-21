@@ -19,13 +19,15 @@ export default async function NoServer({ match, matchServer }: Props) {
 
   const { data: regions } = await api.platform().getLocations();
   const city = regions?.find((r) => r.id === matchServer.region)?.city;
+  const { data: instances } = await api.platform().getServers(match.id);
+  const instance = instances?.find((i) => i.id === matchServer.instance);
 
   const generateMatchServerInstanceSA = async () => {
     'use server';
     return generateMatchServerInstance(match, matchServer);
   };
 
-  if (matchServer.instance) {
+  if (instance) {
     return (
       <div className="flex justify-between items-center gap-2">
         <h2 className="text-xl">{`Generating server in ${city}...`}</h2>
@@ -46,6 +48,7 @@ export default async function NoServer({ match, matchServer }: Props) {
         action={generateMatchServerInstanceSA}
         successMessage="Generating server"
         errorMessage="Failed to generate server"
+        kind="btn-primary"
       >
         Generate server now
       </ActionButton>

@@ -4,6 +4,7 @@ interface Props {
   placeholder?: string;
   label: string;
   name: string;
+  disabled?: boolean;
 }
 export default function Select({
   options,
@@ -11,13 +12,19 @@ export default function Select({
   placeholder,
   label,
   name,
+  disabled,
 }: Props) {
   return (
-    <div className="form-control grow">
+    <div>
       <label className="label" htmlFor={name}>
         <span className="label-text">{label}</span>
       </label>
-      <select name={name} className="select select-bordered" defaultValue={defaultValue}>
+      <select
+        name={name}
+        className="select select-bordered w-full"
+        defaultValue={defaultValue}
+        disabled={disabled}
+      >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map(([value, name]) => (
           <option key={value} value={value}>

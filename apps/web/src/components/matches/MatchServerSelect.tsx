@@ -11,7 +11,7 @@ interface Props {
 export default function MatchServerSelect({ servers, regions }: Props) {
   const [generate, setGenerate] = useState(Boolean(regions));
   return (
-    <div>
+    <div className="w-fit">
       <label className="label cursor-pointer justify-start gap-2">
         <span className="label-text">Generate server</span>
         <input

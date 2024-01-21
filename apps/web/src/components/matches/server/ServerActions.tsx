@@ -18,7 +18,6 @@ interface Props {
 }
 
 export default async function ServerActions({ server, match }: Props) {
-  const { data: maps } = await supabase(cookies).getMaps();
   const { data } = await api.rcon().getServer(server.ip);
   const serverInfo = data?.info;
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
@@ -88,7 +87,7 @@ export default async function ServerActions({ server, match }: Props) {
           Set teams
         </AsyncActionButton>*/}
       </div>
-      {maps && <ChangeMapForm server={data} maps={maps} />}
+      <ChangeMapForm server={data} />
     </div>
   );
 }

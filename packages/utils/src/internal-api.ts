@@ -139,7 +139,8 @@ const platform = () => {
       region: string,
       match: string | number,
       map: string | null,
-      vehicles: string | null
+      vehicles: string | null,
+      subDomain?: string
     ) =>
       postJSON<Instance>(basePath.concat(paths.servers()), {
         name,
@@ -147,10 +148,15 @@ const platform = () => {
         match,
         map,
         vehicles,
+        subDomain,
       }),
     getServers: (match?: string | number) =>
       getJSON<Array<Instance>>(
-        basePath.concat(paths.servers().concat(match ? `?match=${match}` : ''))
+        basePath.concat(paths.servers().concat(match ? `?match=${match}` : '')),
+        {
+          cache: 'no-store',
+          next: { tags: ['platformGetServers'] },
+        }
       ),
     getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
     deleteServer: (id: string) => deleteJSON<Instance>(basePath.concat(paths.server(id))),

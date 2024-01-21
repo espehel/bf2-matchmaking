@@ -1,8 +1,6 @@
 import ServerCreateForm from '@/components/servers/ServerCreateForm';
-import GenerateServerForm from '@/components/servers/GenerateServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { api } from '@bf2-matchmaking/utils';
 
 interface Props {}
 

@@ -49,7 +49,7 @@ rootRouter.post('/servers', async (ctx: Context) => {
   const dns = await getDnsByName(dnsName);
   if (dns) {
     ctx.status = 409;
-    ctx.body = { message: 'Address already exists' };
+    ctx.body = { message: 'Subdomain already exists' };
     return;
   }
 

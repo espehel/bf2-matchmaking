@@ -54,7 +54,6 @@ export default function ActionForm({
       }),
     [action, errorMessage, successMessage, startTransition, redirect, router]
   );
-
   return (
     <form action={handleAction} ref={ref} {...props}>
       {children}

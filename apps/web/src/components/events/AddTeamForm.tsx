@@ -18,7 +18,7 @@ export default function AddTeamForm({ eventId }: Props) {
   return (
     <ActionForm
       action={addEventTeamSA}
-      successMessage="Successfully aded team"
+      successMessage="Successfully added team"
       errorMessage="Failed to add team"
     >
       <div className="flex gap-2 items-center">

@@ -1,8 +1,7 @@
-import { MatchServer } from '@bf2-matchmaking/types';
+import { Instance, MatchServer } from '@bf2-matchmaking/types';
 import { api } from '@bf2-matchmaking/utils';
-import IconBtn from '@/components/commons/IconBtn';
-import { XCircleIcon } from '@heroicons/react/24/outline';
-import { ArrowRightCircleIcon } from '@heroicons/react/24/solid';
+import RevalidateForm from '@/components/RevalidateForm';
+import InstanceTableActionsCell from '@/components/matches-server/InstanceTableActionsCell';
 
 interface Props {
   matchId: number;
@@ -11,13 +10,19 @@ interface Props {
 
 export default async function InstanceSection({ matchId, matchServer }: Props) {
   const { data: instances } = await api.platform().getServers(matchId);
+
   if (!instances || instances.length === 0) {
     return null;
   }
+
   const currentInstance = matchServer?.instance;
+
   return (
     <section className="section">
-      <h2>Generated servers</h2>
+      <div className="flex items-center gap-2">
+        <h2>Generated servers</h2>
+        <RevalidateForm path={`/matches/${matchId}/server`} />
+      </div>
       <table className="table">
         <thead>
           <tr>
@@ -25,6 +30,7 @@ export default async function InstanceSection({ matchId, matchServer }: Props) {
             <th>Name</th>
             <th>Region</th>
             <th>Status</th>
+            <th>Address</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -40,16 +46,21 @@ export default async function InstanceSection({ matchId, matchServer }: Props) {
               <td>{instance.label}</td>
               <td>{instance.region}</td>
               <td>{instance.status}</td>
-              <td>
-                <IconBtn Icon={XCircleIcon} />
-                {instance.id !== currentInstance && (
-                  <IconBtn Icon={ArrowRightCircleIcon} />
-                )}
-              </td>
+              <AddressCell instance={instance} />
+              <InstanceTableActionsCell
+                matchId={matchId}
+                instance={instance}
+                isCurrentInstance={instance.id === currentInstance}
+              />
             </tr>
           ))}
         </tbody>
       </table>
     </section>
   );
+}
+
+async function AddressCell({ instance }: { instance: Instance }) {
+  const { data: dns } = await api.platform().getServerDns(instance.main_ip);
+  return <td>{dns?.name || instance.main_ip}</td>;
 }

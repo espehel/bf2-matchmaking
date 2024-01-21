@@ -1,34 +1,35 @@
-'use client';
-
-import { MapsRow, RconBf2Server } from '@bf2-matchmaking/types';
-import SelectForm from '@/components/SelectForm';
-import { useCallback } from 'react';
+import { RconBf2Server } from '@bf2-matchmaking/types';
+import SelectActionForm from '@/components/SelectActionForm';
 import { changeServerMap } from '@/app/matches/[match]/actions';
-import { toast } from 'react-toastify';
+import { assertNumber } from '@bf2-matchmaking/utils';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   server: RconBf2Server;
-  maps: Array<MapsRow>;
 }
 
-export default function ChangeMapForm({ server, maps }: Props) {
-  const handleSetServer = useCallback(
-    async (value: string) => {
-      const { error, data } = await changeServerMap(server.ip, Number(value));
-      if (error) {
-        toast.error('Failed to change map');
-      } else {
-        toast.success(`Changing map to ${value}`);
-      }
-    },
-    [server]
-  );
+export default async function ChangeMapForm({ server }: Props) {
+  const { data: maps } = await supabase(cookies).getMaps();
+
+  if (!maps) {
+    return null;
+  }
+
+  async function changeServerMapSA(data: FormData) {
+    'use server';
+    const value = Number(data.get('select'));
+    assertNumber(value, 'No map selected');
+    return changeServerMap(server.ip, value);
+  }
 
   return (
-    <SelectForm
+    <SelectActionForm
       label="Change map"
       options={maps.map(({ id, name }) => [id, name])}
-      action={handleSetServer}
+      action={changeServerMapSA}
+      successMessage="Changing map"
+      errorMessage="Failed to change map"
     />
   );
 }

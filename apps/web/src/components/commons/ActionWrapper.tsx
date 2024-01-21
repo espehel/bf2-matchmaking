@@ -61,7 +61,7 @@ export default function ActionWrapper({
   }
 
   return (
-    <span role="button" onClick={handleAction} className="w-fit">
+    <span role="button" onClick={handleAction} className="w-fit h-fit">
       {children}
     </span>
   );
