@@ -31,7 +31,7 @@ rootRouter.get('/servers', async (ctx: Context) => {
 interface ServersRequestBody extends Omit<Request, 'body'> {
   name?: string;
   region?: string;
-  match?: string;
+  match?: string | number;
   map?: string;
   vehicles?: string;
   subDomain?: string;
@@ -56,7 +56,7 @@ rootRouter.post('/servers', async (ctx: Context) => {
   const instance = await createServerInstance(
     name,
     region,
-    match,
+    match.toString(),
     map || DEFAULTS.map,
     vehicles === 'true' ? vehicles : ''
   );
