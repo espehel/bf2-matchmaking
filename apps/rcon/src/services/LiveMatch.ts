@@ -199,7 +199,7 @@ export class LiveMatch {
       await setLiveAt(this);
     }
 
-    if (nextState === 'finished') {
+    if (nextState === 'finished' && this.state !== 'finished') {
       await this.finish();
     }
 
