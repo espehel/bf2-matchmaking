@@ -226,3 +226,5 @@ export interface AsyncErrorResponse {
 }
 
 export type AsyncResult<T> = AsyncSuccessResponse<T> | AsyncErrorResponse;
+
+export type LocationPollResult = [string, Array<string>];

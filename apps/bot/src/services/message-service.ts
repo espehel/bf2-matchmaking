@@ -15,7 +15,7 @@ import {
   TEST_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
 import { isTextBasedChannel } from '../discord/utils';
-import { LocationEmoji, MatchesJoined } from '@bf2-matchmaking/types';
+import { LocationEmoji, LocationPollResult, MatchesJoined } from '@bf2-matchmaking/types';
 import { api, isBetaTester } from '@bf2-matchmaking/utils';
 import { draftTeams, getAverageRating } from './draft-utils';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
@@ -73,11 +73,11 @@ export async function replyMessage(message: Message, content: MessageCreateOptio
 export async function editLocationPollMessageWithResults(
   message: Message,
   match: MatchesJoined,
-  topEmoji: MessageReaction
+  results: Array<LocationPollResult>
 ) {
-  const locationName = getKey(LocationEmoji, topEmoji.emoji.name);
+  const locationName = getKey(LocationEmoji, results[0][0]);
 
-  if (topEmoji.emoji.name === LocationEmoji.Existing) {
+  if (results[0][0] === LocationEmoji.Existing) {
     const { data: servers } = await api.rcon().getServers();
     if (servers?.length) {
       await message.edit({
@@ -101,7 +101,7 @@ export async function editLocationPollMessageWithResults(
     {
       match,
       locationName,
-      reactions: message.reactions.cache,
+      results,
     }
   );
 }

@@ -5,7 +5,7 @@ import {
   getServerVehicles,
 } from '@bf2-matchmaking/utils';
 import { MatchesJoined } from '@bf2-matchmaking/types';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { client } from '@bf2-matchmaking/supabase';
 
 export async function generateServer(location: string, match: MatchesJoined) {
@@ -18,9 +18,21 @@ export async function generateServer(location: string, match: MatchesJoined) {
     .postServers(name, location, match.id, map, vehicles);
 
   if (result.error) {
-    error('generateServer', result.error);
+    logErrorMessage('Failed to generate server', result.error, {
+      name,
+      map,
+      vehicles,
+      match,
+      location,
+    });
   } else {
-    info('generateServer', `Generated server ${result.data.id} for match ${match.id}`);
+    logMessage(`Match ${match.id}: Generated server ${result.data.id} in ${location}`, {
+      name,
+      map,
+      vehicles,
+      match,
+      location,
+    });
     await client().createMatchServer({
       id: match.id,
       region: location,

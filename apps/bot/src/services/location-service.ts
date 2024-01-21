@@ -42,6 +42,9 @@ export function getServerLocation(reaction: string | null | undefined) {
   return serverLocations.get(reaction as LocationEmoji);
 }
 
+export function getValidEmojis() {
+  return [...serverLocations.keys(), LocationEmoji.Existing];
+}
 export function isValidReaction(reaction: MessageReaction) {
   return (
     Array.from(serverLocations.keys()).some((k) => k === reaction.emoji.name) ||

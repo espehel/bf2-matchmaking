@@ -5,11 +5,17 @@ import {
   createServerLocationPollResultField,
   getMatchField,
 } from '@bf2-matchmaking/discord';
-import { LocationEmoji, MatchesJoined } from '@bf2-matchmaking/types';
+import {
+  isNotNull,
+  LocationEmoji,
+  LocationPollResult,
+  MatchesJoined,
+} from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import {
   getServerLocation,
   getServerLocationEmojis,
+  getValidEmojis,
   isValidReaction,
 } from '../services/location-service';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
@@ -46,34 +52,40 @@ export async function startTopLocationPoll(
     await pollMessage.react(LocationEmoji.Existing);
 
     setTimeout(async () => {
-      const topEmoji = pollMessage.reactions.cache
-        .filter(isValidReaction)
-        .sort(compareMessageReactionCount(match))
-        .at(0);
+      const results = pollMessage.reactions.cache
+        .map(toResults(getValidEmojis()))
+        .filter(isNotNull)
+        .sort(compareMessageReactionResults(match));
 
-      if (!topEmoji) {
-        return reject('Unable to get top emoji');
+      if (!results.length) {
+        return reject('Unable to get results');
       }
 
-      const location = getServerLocation(topEmoji.emoji.name);
+      const location = getServerLocation(results[0][0]);
       if (!location) {
         return reject('Unable to get location');
       }
 
-      await editLocationPollMessageWithResults(pollMessage, match, topEmoji);
+      await editLocationPollMessageWithResults(pollMessage, match, results);
       resolve(location);
     }, pollEndTime.diffNow('milliseconds').milliseconds);
   });
 }
-function compareMessageReactionCount(match: MatchesJoined) {
+function toResults(validEmojis: Array<LocationEmoji>) {
+  return (reaction: MessageReaction): LocationPollResult | null => {
+    if (reaction.emoji.name && validEmojis.some((k) => k === reaction.emoji.name)) {
+      return [reaction.emoji.name, Array.from(reaction.users.cache.keys())];
+    } else {
+      return null;
+    }
+  };
+}
+function compareMessageReactionResults(match: MatchesJoined) {
   const matchPlayers = match.players.map((player) => player.id);
-  return (firstValue: MessageReaction, secondValue: MessageReaction) =>
-    getValidUsersCount(secondValue, matchPlayers) -
-    getValidUsersCount(firstValue, matchPlayers);
+  return ([, votesA]: LocationPollResult, [, votesB]: LocationPollResult) =>
+    getValidUsersCount(votesB, matchPlayers) - getValidUsersCount(votesA, matchPlayers);
 }
 
-function getValidUsersCount(reaction: MessageReaction, matchPlayers: Array<string>) {
-  return Array.from(reaction.users.cache.keys()).filter((user) =>
-    matchPlayers.includes(user)
-  ).length;
+function getValidUsersCount(users: Array<string>, matchPlayers: Array<string>) {
+  return users.filter((user) => matchPlayers.includes(user)).length;
 }
