@@ -45,7 +45,7 @@ export const getServerPollEmbed = (
 export const getServerEmbed = (server: RconBf2Server) => ({
   description: `Join [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
   fields: [
-    { name: 'ip', value: server.ip, inline: true },
+    { name: 'address', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
   ],
 });
@@ -57,7 +57,7 @@ export const getLiveMatchEmbed = (
 ) => ({
   description: `Join [${replaceDiscordGG(server.name)}](${joinmeHref})`,
   fields: [
-    { name: 'ip', value: server.ip, inline: true },
+    { name: 'address', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
     getLiveMatchField(match),
   ],
@@ -70,7 +70,7 @@ export const getWarmUpStartedEmbed = (
 ) => ({
   description: `Warm up started on [${replaceDiscordGG(serverName)}](${joinmeHref})`,
   fields: [
-    { name: 'ip', value: server.ip, inline: true },
+    { name: 'address', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
     getLiveMatchField(match),
   ],
@@ -288,12 +288,12 @@ export function createServerLocationPollResultField(location: string) {
 
 const getServerInfoFields = (server: RconBf2Server) => [
   {
-    name: 'IP:',
+    name: 'address:',
     value: `\`\`\`${server.ip}\`\`\``,
     inline: true,
   },
   {
-    name: 'PORT',
+    name: 'port',
     value: `\`\`\`${server.port}\`\`\``,
     inline: true,
   },
