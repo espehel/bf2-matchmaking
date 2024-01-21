@@ -2,8 +2,7 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import InstanceSection from '@/components/matches-server/InstanceSection';
-import SetServerSection from '@/components/matches-server/SetServerSection';
-import MatchServerSection from '@/components/matches/server/MatchServerSection';
+import ServerActionsSection from '@/components/matches-server/ServerActionsSection';
 import ServerSection from '@/components/matches-server/ServerSection';
 import { Suspense } from 'react';
 
@@ -25,7 +24,7 @@ export default async function ResultsMatch({ params }: Props) {
         <InstanceSection matchId={match.id} matchServer={matchServer} />
       </Suspense>
       <Suspense fallback={null}>
-        <SetServerSection match={match} matchServer={matchServer} />
+        <ServerActionsSection match={match} matchServer={matchServer} />
       </Suspense>
     </main>
   );

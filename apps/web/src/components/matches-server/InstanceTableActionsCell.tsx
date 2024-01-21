@@ -8,6 +8,8 @@ import { deleteServer } from '@/app/servers/[server]/actions';
 import { updateMatchServer } from '@/app/matches/[match]/server/actions';
 import { api } from '@bf2-matchmaking/utils';
 import ActionWrapper from '@/components/commons/ActionWrapper';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   matchId: number;
@@ -19,6 +21,11 @@ export default async function InstanceTableActionsCell({
   instance,
   isCurrentInstance,
 }: Props) {
+  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+
+  if (!adminRoles?.server_admin) {
+    return null;
+  }
   async function deleteInstanceSA() {
     'use server';
     const { data: dns } = await api.platform().getServerDns(instance.main_ip);

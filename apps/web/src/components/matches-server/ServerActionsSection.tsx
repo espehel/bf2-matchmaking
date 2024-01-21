@@ -9,7 +9,7 @@ interface Props {
   matchServer: MatchServer | null;
 }
 
-export default async function SetServerSection({ match, matchServer }: Props) {
+export default async function ServerActionsSection({ match, matchServer }: Props) {
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
 
   if (!adminRoles?.server_admin) {
