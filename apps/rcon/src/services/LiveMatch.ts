@@ -101,6 +101,10 @@ export class LiveMatch {
         continue;
       }
 
+      if (this.match.teams.some((mp) => mp.player_id === player.id && mp.connected_at)) {
+        continue;
+      }
+
       const { data: mp } = await client().updateMatchPlayer(this.match.id, player.id, {
         connected_at: DateTime.now().toISO(),
       });
