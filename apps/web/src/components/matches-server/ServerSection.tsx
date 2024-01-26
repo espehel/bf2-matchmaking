@@ -1,21 +1,18 @@
-import { MatchServer } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
 import Link from 'next/link';
+import SelectServerForm from '@/components/matches/SelectServerForm';
 
 interface Props {
-  matchId: number;
+  match: MatchesJoined;
   matchServer: MatchServer | null;
 }
 
-export default function ServerSection({ matchServer, matchId }: Props) {
-  const header = matchServer?.server?.name || 'No match server set';
-  const region = `Default region: ${matchServer?.region || 'No region set'}`;
-  const instance = `Current instance: ${matchServer?.instance || 'No instance assigned'}`;
+export default function ServerSection({ matchServer, match }: Props) {
   return (
     <section className="section gap-2">
-      <h2>{header}</h2>
-      <p>{region}</p>
-      <p>{instance}</p>
-      <Link className="btn btn-secondary w-fit" href={`/matches/${matchId}`}>
+      <h2>{`Active server: ${matchServer?.active?.name || 'No match server set'}`}</h2>
+      <SelectServerForm match={match} matchServer={matchServer} />
+      <Link className="btn btn-secondary w-fit" href={`/matches/${match.id}`}>
         Back to match
       </Link>
     </section>

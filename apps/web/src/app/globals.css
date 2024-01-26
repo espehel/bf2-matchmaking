@@ -18,6 +18,9 @@
   .section h2 {
     @apply font-bold text-xl;
   }
+  .section h3 {
+    @apply text-lg;
+  }
 
   .sheet {
     @apply bg-base-100 shadow-xl p-4 rounded;

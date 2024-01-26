@@ -174,8 +174,9 @@ export interface MatchConfigResults extends MatchConfigsRow {
   }>;
 }
 
-export interface MatchServer extends Omit<MatchServersRow, 'ip'> {
-  server: ServersRow | null;
+export interface MatchServer
+  extends Omit<MatchServersRow, 'active_server' | 'ip' | 'region' | 'instance'> {
+  active: ServersRow | null;
 }
 
 export interface EventsMatch {

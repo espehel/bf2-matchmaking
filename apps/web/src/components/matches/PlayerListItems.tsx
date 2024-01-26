@@ -36,8 +36,8 @@ export default async function PlayerListItems({ players, team, captains, match }
   );
   async function fetchPlayerInfo(): Promise<Array<PlayerListItem>> {
     const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
-    if (matchServer && matchServer.server && match.status === MatchStatus.Ongoing) {
-      const { data } = await api.rcon().getServerPlayerList(matchServer.server.ip);
+    if (matchServer && matchServer.active && match.status === MatchStatus.Ongoing) {
+      const { data } = await api.rcon().getServerPlayerList(matchServer.active.ip);
       if (data) {
         return data;
       }

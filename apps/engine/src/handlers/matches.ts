@@ -47,7 +47,7 @@ async function handleMatchOngoing(match: MatchesJoined) {
 }
 async function handleMatchFinished(match: MatchesJoined) {
   const { data: matchServer } = await client().getMatchServer(match.id);
-  const ip = matchServer?.server?.ip;
+  const ip = matchServer?.active?.ip;
   if (ip) {
     await retry(() => deleteServer(match, ip), 5);
   }

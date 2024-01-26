@@ -1,27 +1,26 @@
-import { Instance, MatchServer } from '@bf2-matchmaking/types';
+import { Instance, MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
 import { api } from '@bf2-matchmaking/utils';
 import RevalidateForm from '@/components/RevalidateForm';
 import InstanceTableActionsCell from '@/components/matches-server/InstanceTableActionsCell';
+import GenerateServerForm from '@/components/servers/GenerateServerForm';
 
 interface Props {
-  matchId: number;
+  match: MatchesJoined;
   matchServer: MatchServer | null;
 }
 
-export default async function InstanceSection({ matchId, matchServer }: Props) {
-  const { data: instances } = await api.platform().getServers(matchId);
+export default async function InstanceSection({ match, matchServer }: Props) {
+  const { data: instances } = await api.platform().getServers(match.id);
 
-  if (!instances || instances.length === 0) {
-    return null;
-  }
-
-  const currentInstance = matchServer?.instance;
+  const currentInstance = instances?.find(
+    (instance) => instance.label === matchServer?.active?.name
+  )?.id;
 
   return (
     <section className="section">
       <div className="flex items-center gap-2">
         <h2>Generated servers</h2>
-        <RevalidateForm path={`/matches/${matchId}/server`} />
+        <RevalidateForm path={`/matches/${match.id}/server`} />
       </div>
       <table className="table">
         <thead>
@@ -35,7 +34,7 @@ export default async function InstanceSection({ matchId, matchServer }: Props) {
           </tr>
         </thead>
         <tbody>
-          {instances.map((instance, i) => (
+          {instances?.map((instance, i) => (
             <tr
               key={instance.id}
               className={
@@ -48,7 +47,7 @@ export default async function InstanceSection({ matchId, matchServer }: Props) {
               <td>{instance.status}</td>
               <AddressCell instance={instance} />
               <InstanceTableActionsCell
-                matchId={matchId}
+                matchId={match.id}
                 instance={instance}
                 isCurrentInstance={instance.id === currentInstance}
               />
@@ -56,6 +55,7 @@ export default async function InstanceSection({ matchId, matchServer }: Props) {
           ))}
         </tbody>
       </table>
+      <GenerateServerForm match={match} />
     </section>
   );
 }

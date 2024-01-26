@@ -12,7 +12,7 @@ interface Props {
 
 export default async function MatchServerSection({ match }: Props) {
   const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
-  const server = matchServer?.server;
+  const server = matchServer?.active;
 
   return (
     <section className="section max-w-md text-left">

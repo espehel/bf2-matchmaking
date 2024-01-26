@@ -5,6 +5,8 @@ import InstanceSection from '@/components/matches-server/InstanceSection';
 import ServerActionsSection from '@/components/matches-server/ServerActionsSection';
 import ServerSection from '@/components/matches-server/ServerSection';
 import { Suspense } from 'react';
+import ScheduledActionsSection from '@/components/matches-server/ScheduledActionsSection';
+import { isScheduledMatch, MatchStatus } from '@bf2-matchmaking/types';
 
 interface Props {
   params: { match: string };
@@ -19,12 +21,14 @@ export default async function ResultsMatch({ params }: Props) {
   return (
     <main className="main flex flex-col gap-6">
       <h1>{`Manage match ${match.id} servers`}</h1>
-      <ServerSection matchId={match.id} matchServer={matchServer} />
+      <ServerSection match={match} matchServer={matchServer} />
+      {isScheduledMatch(match) && (
+        <Suspense fallback={null}>
+          <ScheduledActionsSection match={match} matchServer={matchServer} />
+        </Suspense>
+      )}
       <Suspense fallback={null}>
-        <InstanceSection matchId={match.id} matchServer={matchServer} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <ServerActionsSection match={match} matchServer={matchServer} />
+        <InstanceSection match={match} matchServer={matchServer} />
       </Suspense>
     </main>
   );

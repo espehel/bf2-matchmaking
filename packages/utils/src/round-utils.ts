@@ -8,7 +8,7 @@ import {
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
 import { getMatchPlayer } from './player-utils';
-import { isUniqueObject, isUniqueString } from './array-utils';
+import { isUniqueString } from './array-utils';
 
 export function toKeyhashList(round: RoundsRow | RoundsJoined) {
   try {

@@ -209,7 +209,7 @@ export async function setServer(matchId: number, serverIp: string) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.server, 'TBD'),
+          description: getMatchDescription(match, server?.active, 'TBD'),
         })
       )
     );
@@ -256,7 +256,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.server, 'TBD'),
+          description: getMatchDescription(match, server?.active, 'TBD'),
         })
       )
     );
@@ -307,34 +307,6 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
 
 export async function changeServerMap(serverIp: string, mapId: number) {
   return api.rcon().postServerMaps(serverIp, mapId);
-}
-
-export async function generateMatchServerInstance(
-  match: MatchesJoined,
-  matchServer: MatchServer
-) {
-  if (matchServer?.region && !matchServer?.instance) {
-    const name = createServerName(match);
-    const map = getInitialServerMap(match);
-    const vehicles = getServerVehicles(match);
-    const platformResult = await api
-      .platform()
-      .postServers(name, matchServer.region, match.id, map, vehicles);
-
-    if (platformResult.data) {
-      const result = await supabase(cookies).updateMatchServer(match.id, {
-        instance: platformResult.data.id,
-      });
-
-      if (result.data) {
-        revalidatePath(`/matches/${match.id}`);
-      }
-
-      return result;
-    }
-    return platformResult;
-  }
-  return { data: null, error: { message: 'Invalid match for generating server' } };
 }
 
 export async function acceptMatchTime(

@@ -28,8 +28,8 @@ export default async function SelectServerForm({ match, matchServer }: Props) {
     <SelectActionForm
       label="Set match server"
       options={servers.map(({ ip, name }) => [ip, name])}
-      defaultValue={matchServer?.server?.ip}
-      placeholder={!matchServer?.server?.ip ? 'Select Server' : undefined}
+      defaultValue={matchServer?.active?.ip}
+      placeholder={!matchServer?.active?.ip ? 'Select Server' : undefined}
       action={setMatchServerSA}
       successMessage="Changed server"
       errorMessage="Failed to set server"

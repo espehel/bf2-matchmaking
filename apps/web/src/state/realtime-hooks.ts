@@ -15,17 +15,17 @@ export function useMatchRoom(match: MatchesJoined, server: MatchServer | null) {
   const [activePlayers, setActivePlayers] = useState<Array<string>>([]);
 
   const launchBF2 = useCallback(() => {
-    if (server?.server?.ip && player?.beta_tester) {
+    if (server?.active?.ip && player?.beta_tester) {
       api
         .rcon()
-        .getServer(server.server.ip)
+        .getServer(server.active.ip)
         .then(({ data }) => {
           if (data) {
             window.open(data.joinmeDirect, '_blank');
           }
         });
     }
-  }, [server?.server?.ip && player?.beta_tester]);
+  }, [server?.active?.ip && player?.beta_tester]);
 
   useEffect(() => {
     realtime.getRealtimeMatch(match, playerId).then((realtimeMatch) => {

@@ -40,13 +40,12 @@ rootRouter.post('/servers', async (ctx: Context) => {
   const { name, region, match, map, vehicles, subDomain } = <ServersRequestBody>(
     ctx.request.body
   );
-  if (!name || !region || !match) {
+  if (!name || !region || !match || !subDomain) {
     ctx.status = 400;
-    ctx.body = { message: 'Missing name, region, match, map or vehicles' };
+    ctx.body = { message: 'Missing name, region, match, map, subdomain or vehicles' };
     return;
   }
-  const dnsName = subDomain || createServerDnsName(Number(match));
-  const dns = await getDnsByName(dnsName);
+  const dns = await getDnsByName(subDomain);
   if (dns) {
     ctx.status = 409;
     ctx.body = { message: 'Subdomain already exists' };
@@ -68,7 +67,7 @@ rootRouter.post('/servers', async (ctx: Context) => {
 
   pollInstance(instance.id, async (instance: Instance) => {
     if (instance.main_ip !== '0.0.0.0') {
-      await createDnsRecord(dnsName, instance.main_ip);
+      await createDnsRecord(subDomain, instance.main_ip);
       return true;
     }
     return false;
@@ -76,7 +75,7 @@ rootRouter.post('/servers', async (ctx: Context) => {
 
   info(
     'POST /servers',
-    `Instance created. [region: "${instance.region}", label: "${instance.label}", tag: "${instance.tag}", dns: "${dnsName}"]`
+    `Instance created. [region: "${instance.region}", label: "${instance.label}", tag: "${instance.tag}"]`
   );
   ctx.body = instance;
 });

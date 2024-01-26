@@ -1,8 +1,8 @@
 import { MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
-import { generateMatchServerInstance } from '@/app/matches/[match]/actions';
 import RevalidateForm from '@/components/RevalidateForm';
 import ActionButton from '@/components/ActionButton';
 import { api } from '@bf2-matchmaking/utils';
+import { generateMatchServers } from '@/app/matches/[match]/server/actions';
 
 interface Props {
   match: MatchesJoined;
@@ -18,19 +18,20 @@ export default async function NoServer({ match, matchServer }: Props) {
   }
 
   const { data: regions } = await api.platform().getLocations();
-  const city = regions?.find((r) => r.id === matchServer.region)?.city;
+  const cities = (regions || [])
+    .filter((r) => matchServer.locations.includes(r.id))
+    .map((r) => r.city);
   const { data: instances } = await api.platform().getServers(match.id);
-  const instance = instances?.find((i) => i.id === matchServer.instance);
 
   const generateMatchServerInstanceSA = async () => {
     'use server';
-    return generateMatchServerInstance(match, matchServer);
+    return generateMatchServers(match, matchServer);
   };
 
-  if (instance) {
+  if (instances && instances.length > 0) {
     return (
       <div className="flex justify-between items-center gap-2">
-        <h2 className="text-xl">{`Generating server in ${city}...`}</h2>
+        <h2 className="text-xl">{`Generating server in ${cities.join(', ')}...`}</h2>
         <RevalidateForm path={`/matches/${match.id}`} />
       </div>
     );
@@ -39,9 +40,9 @@ export default async function NoServer({ match, matchServer }: Props) {
   return (
     <>
       <div className="flex justify-between items-center gap-2">
-        <h2 className="text-xl">{`Server will be created${
-          ` in ${city}` || ''
-        } 15 min before match start.`}</h2>
+        <h2 className="text-xl">{`Server will be created in ${cities.join(
+          ', '
+        )} 15 min before match start.`}</h2>
         <RevalidateForm path={`/matches/${matchServer.id}`} />
       </div>
       <ActionButton

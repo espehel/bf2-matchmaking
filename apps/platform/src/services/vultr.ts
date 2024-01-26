@@ -1,10 +1,5 @@
 import Vultr from '@vultr/vultr-node';
-import {
-  assertArray,
-  assertObj,
-  assertString,
-  createServerDnsName,
-} from '@bf2-matchmaking/utils';
+import { assertArray, assertObj, assertString } from '@bf2-matchmaking/utils';
 import { Instance, isString, Plan, Region, StartupScript } from '@bf2-matchmaking/types';
 import { info, logMessage } from '@bf2-matchmaking/logging';
 import { VULTR } from '../constants';

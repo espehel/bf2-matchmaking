@@ -315,7 +315,7 @@ export interface Database {
           created_at: string
           deaths: number
           info: Json | null
-          join_time: number
+          join_time: number | null
           kills: number
           match_id: number
           player_id: string
@@ -327,7 +327,7 @@ export interface Database {
           created_at?: string
           deaths: number
           info?: Json | null
-          join_time?: number
+          join_time?: number | null
           kills: number
           match_id?: number
           player_id: string
@@ -339,7 +339,7 @@ export interface Database {
           created_at?: string
           deaths?: number
           info?: Json | null
-          join_time?: number
+          join_time?: number | null
           kills?: number
           match_id?: number
           player_id?: string
@@ -476,27 +476,40 @@ export interface Database {
       }
       match_servers: {
         Row: {
+          active_server: string | null
           created_at: string
           id: number
           instance: string | null
           ip: string | null
+          locations: string[]
           region: string | null
         }
         Insert: {
+          active_server?: string | null
           created_at?: string
           id?: number
           instance?: string | null
           ip?: string | null
+          locations?: string[]
           region?: string | null
         }
         Update: {
+          active_server?: string | null
           created_at?: string
           id?: number
           instance?: string | null
           ip?: string | null
+          locations?: string[]
           region?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "match_servers_active_server_fkey"
+            columns: ["active_server"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          },
           {
             foreignKeyName: "match_servers_id_fkey"
             columns: ["id"]

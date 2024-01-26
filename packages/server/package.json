@@ -1,0 +1,16 @@
+{
+  "name": "@bf2-matchmaking/server",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "version": "1.0.0",
+  "scripts": {
+    "verify": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bf2-matchmaking/logging": "*",
+    "@bf2-matchmaking/utils": "*"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}

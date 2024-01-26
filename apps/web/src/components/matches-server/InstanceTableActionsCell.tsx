@@ -1,8 +1,6 @@
 import { revalidatePath } from 'next/cache';
 import { ArrowRightCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Instance } from '@bf2-matchmaking/types';
-import ActionForm from '@/components/commons/ActionForm';
-import TransitionWrapper from '@/components/commons/TransitionWrapper';
 import IconBtn from '@/components/commons/IconBtn';
 import { deleteServer } from '@/app/servers/[server]/actions';
 import { updateMatchServer } from '@/app/matches/[match]/server/actions';
@@ -22,20 +20,23 @@ export default async function InstanceTableActionsCell({
   isCurrentInstance,
 }: Props) {
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const { data: dns } = await api.platform().getServerDns(instance.main_ip);
 
   if (!adminRoles?.server_admin) {
     return null;
   }
   async function deleteInstanceSA() {
     'use server';
-    const { data: dns } = await api.platform().getServerDns(instance.main_ip);
     const result = await deleteServer(dns?.name || instance.main_ip);
     revalidatePath(`/matches/${matchId}/server`);
     return result;
   }
-  async function setMatchServerInstanceSA() {
+  async function setActiveServerSA() {
     'use server';
-    return updateMatchServer({ id: matchId, instance: instance.id });
+    return updateMatchServer({
+      id: matchId,
+      active_server: dns?.name || instance.main_ip,
+    });
   }
 
   return (
@@ -49,7 +50,7 @@ export default async function InstanceTableActionsCell({
       </ActionWrapper>
       {!isCurrentInstance && (
         <ActionWrapper
-          action={setMatchServerInstanceSA}
+          action={setActiveServerSA}
           successMessage="Successfully set match server instance"
           errorMessage="Failed to set match server instance"
         >

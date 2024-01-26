@@ -140,7 +140,7 @@ const platform = () => {
       match: string | number,
       map: string | null,
       vehicles: string | null,
-      subDomain?: string
+      subDomain: string
     ) =>
       postJSON<Instance>(basePath.concat(paths.servers()), {
         name,

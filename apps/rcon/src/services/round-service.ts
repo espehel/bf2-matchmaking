@@ -1,4 +1,4 @@
-import { MatchesJoined, LiveInfo, RoundsInsert } from '@bf2-matchmaking/types';
+import { MatchesJoined, LiveInfo, RoundsInsert, Json } from '@bf2-matchmaking/types';
 import { logSupabaseError } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
@@ -14,7 +14,7 @@ export async function insertRound(match: MatchesJoined, liveInfo: LiveInfo) {
     match: match.id,
     team1,
     team2,
-    info: JSON.stringify(liveInfo),
+    info: liveInfo,
     map: await getMapId(liveInfo),
   };
   return client().createRound(round).then(verifySingleResult);
