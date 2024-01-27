@@ -32,42 +32,40 @@ export async function updatePlayerRatings(
 
 export async function addTeamPlayerToLiveMatch(liveMatch: LiveMatch, playerHash: string) {
   try {
-    const player = await client().getPlayerByKeyhash(playerHash).then(verifySingleResult);
-
-    const homeTeamPlayer = liveMatch.match.home_team.players.find(
-      (tp) => tp.player_id === player.id
-    );
-    if (homeTeamPlayer) {
-      await client()
-        .createMatchPlayer(liveMatch.match.id, player.id, {
-          team: homeTeamPlayer.team_id,
-          captain: homeTeamPlayer.captain,
-        })
-        .then(verifySingleResult);
+    const teamPlayer = getTeamPlayer(liveMatch.match, playerHash);
+    if (!teamPlayer) {
+      return null;
     }
 
-    const awayTeamPlayer = liveMatch.match.away_team.players.find(
-      (tp) => tp.player_id === player.id
-    );
-    if (awayTeamPlayer) {
-      await client()
-        .createMatchPlayer(liveMatch.match.id, player.id, {
-          team: awayTeamPlayer.team_id,
-          captain: awayTeamPlayer.captain,
-        })
-        .then(verifySingleResult);
-    }
+    await client()
+      .createMatchPlayer(liveMatch.match.id, teamPlayer.player_id, {
+        team: teamPlayer.team_id,
+        captain: teamPlayer.captain,
+      })
+      .then(verifySingleResult);
 
-    if (homeTeamPlayer || awayTeamPlayer) {
-      const updatedMatch = await client()
-        .getMatch(liveMatch.match.id)
-        .then(verifySingleResult);
-      liveMatch.setMatch(updatedMatch);
-      return player;
-    }
-    return null;
+    const updatedMatch = await client()
+      .getMatch(liveMatch.match.id)
+      .then(verifySingleResult);
+    liveMatch.setMatch(updatedMatch);
+
+    return teamPlayer.player;
   } catch (e) {
     logErrorMessage('Failed to add team player to match', e, { liveMatch, playerHash });
     return null;
   }
+}
+
+function getTeamPlayer(match: MatchesJoined, playerHash: string) {
+  const homeTeamPlayer = match.home_team.players.find(
+    (tp) => tp.player.keyhash === playerHash
+  );
+  if (homeTeamPlayer) {
+    return homeTeamPlayer;
+  }
+
+  const awayTeamPlayer = match.away_team.players.find(
+    (tp) => tp.player.keyhash === playerHash
+  );
+  return awayTeamPlayer || null;
 }

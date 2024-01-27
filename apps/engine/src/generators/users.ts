@@ -1,11 +1,16 @@
 import { MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
+import { isUniqueObject } from '@bf2-matchmaking/utils';
 
 export function generateMatchUsersXml(match: MatchesJoined) {
   info(
     'generateMatchUsersXml',
     `Generating users.xml for match ${match.id} with ${match.players.length} players.`
   );
+  const players = match.players
+    .concat(match.home_team.players.map(({ player }) => player))
+    .concat(match.away_team.players.map(({ player }) => player))
+    .filter(isUniqueObject);
   return `<?xml version="1.0" standalone="yes"?>
 <dsdUsers xmlns="http://bf2cc.com/dsdUsers.xsd">
   <Users>
@@ -15,7 +20,7 @@ export function generateMatchUsersXml(match: MatchesJoined) {
     <Notes>Administrator account</Notes>
     <GroupName>Administrators</GroupName>
   </Users>
-${match.players.map(getUserElement).join('\n')}
+${players.map(getUserElement).join('\n')}
 ${getGroupProperties()}
 </dsdUsers>
 `;
