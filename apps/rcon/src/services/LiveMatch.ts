@@ -23,6 +23,7 @@ import { isServerIdentified } from '../net/ServerManager';
 import { DateTime } from 'luxon';
 import { saveDemosSince } from '@bf2-matchmaking/demo';
 import { client } from '@bf2-matchmaking/supabase';
+import { addTeamPlayerToLiveMatch } from './players';
 
 export interface LiveMatchOptions {
   prelive: boolean;
@@ -96,7 +97,9 @@ export class LiveMatch {
         continue;
       }
 
-      const player = this.match.players.find(hasKeyhash(bf2Player.keyhash));
+      const player =
+        this.match.players.find(hasKeyhash(bf2Player.keyhash)) ||
+        (await addTeamPlayerToLiveMatch(this, bf2Player.keyhash));
       if (!player) {
         continue;
       }
@@ -219,13 +222,13 @@ export class LiveMatch {
     removeLiveMatch(this);
     if (
       this.rounds.length > 0 &&
-      this.matchServer?.server?.demos_path &&
+      this.matchServer?.active?.demos_path &&
       this.match.started_at
     ) {
       await saveDemosSince(
-        this.matchServer.server.ip,
+        this.matchServer.active.ip,
         this.match.started_at,
-        this.matchServer.server.demos_path
+        this.matchServer.active.demos_path
       );
     }
   }

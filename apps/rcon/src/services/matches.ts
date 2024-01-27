@@ -210,11 +210,11 @@ export async function setLiveAt(liveMatch: LiveMatch) {
 }
 
 export async function sendLiveMatchServerMessage(liveMatch: LiveMatch) {
-  if (liveMatch.matchServer?.server) {
-    const joinmeHref = await getJoinmeHref(liveMatch.matchServer.server);
+  if (liveMatch.matchServer?.active) {
+    const joinmeHref = await getJoinmeHref(liveMatch.matchServer.active);
     await sendChannelMessage(TEST_CHANNEL_ID, {
       embeds: [
-        getLiveMatchEmbed(liveMatch.match, liveMatch.matchServer.server, joinmeHref),
+        getLiveMatchEmbed(liveMatch.match, liveMatch.matchServer.active, joinmeHref),
       ],
     });
     logMessage(
@@ -224,20 +224,20 @@ export async function sendLiveMatchServerMessage(liveMatch: LiveMatch) {
   }
 }
 export async function updateLiveMatchServer(liveMatch: LiveMatch, liveInfo: LiveInfo) {
-  if (liveInfo.ip === liveMatch.matchServer?.server?.ip) {
+  if (liveInfo.ip === liveMatch.matchServer?.active?.ip) {
     return;
   }
 
   const matchServer = await updateServer(liveMatch, liveInfo.ip);
-  if (isDiscordMatch(liveMatch.match) && matchServer?.server) {
+  if (isDiscordMatch(liveMatch.match) && matchServer?.active) {
     liveMatch.setServer(matchServer);
 
-    const joinmeHref = await getJoinmeHref(matchServer.server);
+    const joinmeHref = await getJoinmeHref(matchServer.active);
     await sendChannelMessage(liveMatch.match.config.channel, {
       embeds: [
         getWarmUpStartedEmbed(
           liveMatch.match,
-          matchServer.server,
+          matchServer.active,
           liveInfo.serverName,
           joinmeHref
         ),
@@ -254,9 +254,12 @@ export async function updateServer(
   liveMatch: LiveMatch,
   server: string
 ): Promise<MatchServer | null> {
-  const result = await client().upsertMatchServer({ id: liveMatch.match.id, ip: server });
+  const result = await client().upsertMatchServer({
+    id: liveMatch.match.id,
+    active_server: server,
+  });
 
-  if (result.error || !result.data.server) {
+  if (result.error || !result.data.active) {
     logErrorMessage(
       `Match ${liveMatch.match.id}: Failed to update server ${server} for LiveMatch`,
       result.error,
@@ -286,7 +289,10 @@ export async function updateMatchServer(matchId: number, serverAddress: string) 
     'updateMatchServer',
     `Match ${matchId}: Upserting match server with ip ${serverAddress}`
   );
-  const result = await client().upsertMatchServer({ id: matchId, ip: serverAddress });
+  const result = await client().upsertMatchServer({
+    id: matchId,
+    active_server: serverAddress,
+  });
   if (result.error) {
     error('updateMatchServer', result.error);
   }

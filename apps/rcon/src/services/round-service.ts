@@ -14,7 +14,7 @@ export async function insertRound(match: MatchesJoined, liveInfo: LiveInfo) {
     match: match.id,
     team1,
     team2,
-    info: liveInfo,
+    info: JSON.stringify(liveInfo),
     map: await getMapId(liveInfo),
   };
   return client().createRound(round).then(verifySingleResult);

@@ -35,6 +35,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('server_rcons').select('*').eq('id', ip).single(),
   getPlayerByUserId: (userId?: string) =>
     client.from('players').select('*').eq('user_id', userId).single(),
+  getPlayerByKeyhash: (keyhash: string) =>
+    client.from('players').select('*').eq('keyhash', keyhash).single(),
   getPlayersByKeyhashList: (keyhashes: Array<string>) =>
     client.from('players').select('*').in('keyhash', keyhashes),
   getPlayers: () => client.from('players').select('*'),
