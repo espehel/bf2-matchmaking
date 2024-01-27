@@ -2,7 +2,7 @@ import { Instance, MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
 import { api } from '@bf2-matchmaking/utils';
 import RevalidateForm from '@/components/RevalidateForm';
 import InstanceTableActionsCell from '@/components/matches-server/InstanceTableActionsCell';
-import GenerateServerForm from '@/components/servers/GenerateServerForm';
+import GenerateServerForm from '@/components/matches-server/GenerateServerForm';
 
 interface Props {
   match: MatchesJoined;

@@ -62,7 +62,7 @@ export async function createScheduledMatch(formData: FormData) {
         id: match.id,
         locations: [regionSelect],
       });
-      const { data: regions } = await api.platform().getLocations();
+      const { data: regions } = await api.platform().getRegions();
       const city = regions?.find((r) => r.id === regionSelect)?.city;
       serverName = `${city} server`;
     } else if (isString(serverSelect) && serverSelect.length > 0) {

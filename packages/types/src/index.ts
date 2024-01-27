@@ -228,3 +228,10 @@ export interface AsyncErrorResponse {
 export type AsyncResult<T> = AsyncSuccessResponse<T> | AsyncErrorResponse;
 
 export type LocationPollResult = [string, Array<string>];
+
+export interface CreateServerOptions {
+  name: string;
+  region: string;
+  map: string;
+  subDomain: string;
+}

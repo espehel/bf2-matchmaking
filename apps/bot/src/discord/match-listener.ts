@@ -8,7 +8,6 @@ import {
 } from './utils';
 import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
 import { Message, MessageCollector } from 'discord.js';
-import { generateServer } from '../services/platform-service';
 import {
   addMatch,
   getPubobotId,
@@ -23,6 +22,7 @@ import {
   sendSummoningMessage,
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
+import { generateServers } from '@bf2-matchmaking/server';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = messageFilter;
@@ -109,7 +109,7 @@ function handleCollect(config: DiscordConfig) {
 
       const location = await startTopLocationPoll(pubMatch.match, message);
       if (location !== 'existing') {
-        await generateServer(location, pubMatch.match);
+        await generateServers(pubMatch.match, [location]);
       }
     } catch (e) {
       error('handlePubobotMatchDrafting', e);

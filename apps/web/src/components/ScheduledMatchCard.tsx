@@ -13,7 +13,7 @@ interface Props {
 
 export default async function ScheduledMatchCard({ match }: Props) {
   const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
-  const { data: regions } = await api.platform().getLocations();
+  const { data: regions } = await api.platform().getRegions();
   const city = regions?.find((r) => matchServer?.locations.includes(r.id))?.city;
   const serverText =
     matchServer?.active?.name ?? (city ? `${city} server` : 'No server set');

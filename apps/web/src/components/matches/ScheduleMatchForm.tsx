@@ -25,7 +25,7 @@ export default async function ScheduleMatchForm() {
   const servers = await supabase(cookies).getServers().then(verifyResult);
   const isTeamOfficer = await supabase(cookies).isTeamOfficer();
   const maps = await supabase(cookies).getMaps().then(verifyResult);
-  const { data: regions } = await api.platform().getLocations();
+  const { data: regions } = await api.platform().getRegions();
 
   return (
     <div className="max-w-5xl mx-auto">

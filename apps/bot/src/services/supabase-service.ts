@@ -55,7 +55,7 @@ export async function createScheduledMatch(options: CreateScheduledMatchOptions)
   if (server) {
     await client().createMatchServer({
       id: match.id,
-      ip: server,
+      active_server: server,
     });
   }
 

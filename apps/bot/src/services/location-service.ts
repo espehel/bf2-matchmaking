@@ -15,11 +15,11 @@ const validLocations: Array<[LocationEmoji, string]> = [
 export function loadServerLocations() {
   api
     .platform()
-    .getLocations()
+    .getRegions()
     .then(verify)
-    .then((locations) => {
+    .then((regions) => {
       serverLocations = new Map<LocationEmoji, string>(
-        validLocations.filter(([, id]) => locations.some((l) => l.id === id))
+        validLocations.filter(([, id]) => regions.some((r) => r.id === id))
       );
       info('loadServerLocations', `Loaded ${serverLocations.size} server locations`);
     })

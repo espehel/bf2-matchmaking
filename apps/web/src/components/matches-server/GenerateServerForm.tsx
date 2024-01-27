@@ -1,30 +1,30 @@
 import FormSubmitButton from '@/components/FormSubmitButton';
-import { generateServer } from '@/app/servers/actions';
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import React from 'react';
 import ActionForm from '@/components/commons/ActionForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import {
-  api,
-  createServerDnsName,
-  createServerName,
-  getServerVehicles,
-} from '@bf2-matchmaking/utils';
+import { api, createServerDnsName, createServerName } from '@bf2-matchmaking/utils';
 import RegionSelect from '@/components/commons/RegionSelect';
 import MapsSelect from '@/components/commons/MapsSelect';
 import TextField from '@/components/commons/TextField';
+import { generateMatchServer } from '@/app/matches/[match]/server/actions';
 
 interface Props {
   match: MatchesJoined;
 }
 export default async function GenerateServerForm({ match }: Props) {
   const { data: maps } = await supabase(cookies).getMaps();
-  const { data: regions } = await api.platform().getLocations();
+  const { data: regions } = await api.platform().getRegions();
+
+  async function generateServerSA(data: FormData) {
+    'use server';
+    return generateMatchServer(match, data);
+  }
 
   return (
     <ActionForm
-      action={generateServer}
+      action={generateServerSA}
       successMessage="New server is starting up"
       errorMessage="Failed to generate server"
     >
@@ -42,13 +42,6 @@ export default async function GenerateServerForm({ match }: Props) {
         />
         <RegionSelect regions={regions || []} />
         <MapsSelect maps={maps || []} optionKey="name" />
-        <input className="hidden" readOnly value={match.id} name="matchId" />
-        <input
-          className="hidden"
-          readOnly
-          value={getServerVehicles(match)}
-          name="vehicles"
-        />
       </div>
       <FormSubmitButton>Generate new server</FormSubmitButton>
     </ActionForm>

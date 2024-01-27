@@ -4,7 +4,7 @@ import {
   deleteServerInstance,
   deleteStartupScript,
   getInstanceByIp,
-  getLocations,
+  getRegions,
   getServerInstances,
   pollInstance,
 } from '../services/vultr';
@@ -166,8 +166,8 @@ rootRouter.get('/servers/:ip/dns', async (ctx) => {
   ctx.body = dns;
 });
 
-rootRouter.get('/locations', async (ctx: Context) => {
-  ctx.body = await getLocations();
+rootRouter.get('/regions', async (ctx: Context) => {
+  ctx.body = await getRegions();
 });
 
 rootRouter.get('/health', (ctx) => {

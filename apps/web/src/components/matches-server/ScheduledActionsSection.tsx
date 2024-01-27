@@ -1,14 +1,11 @@
-import {
-  isDefined,
-  MatchesJoined,
-  MatchServer,
-  ScheduledMatch,
-} from '@bf2-matchmaking/types';
+import { isDefined, MatchServer, ScheduledMatch } from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { api } from '@bf2-matchmaking/utils';
+import { api, assertObj } from '@bf2-matchmaking/utils';
 import RegionsSelectForm from '@/components/matches-server/RegionsSelectForm';
 import { DateTime } from 'luxon';
+import ActionButton from '@/components/ActionButton';
+import { generateMatchServers } from '@/app/matches/[match]/server/actions';
 
 interface Props {
   match: ScheduledMatch;
@@ -17,13 +14,17 @@ interface Props {
 
 export default async function ScheduledActionsSection({ match, matchServer }: Props) {
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
-  const { data: regions } = await api.platform().getLocations();
-
+  const { data: regions } = await api.platform().getRegions();
   if (!adminRoles?.server_admin) {
     return null;
   }
   if (!regions) {
     return null;
+  }
+  async function generateMatchServerInstanceSA() {
+    'use server';
+    assertObj(matchServer);
+    return generateMatchServers(match, matchServer);
   }
 
   return (
@@ -44,6 +45,15 @@ export default async function ScheduledActionsSection({ match, matchServer }: Pr
         matchId={match.id}
         locations={matchServer?.locations}
       />
+      <ActionButton
+        action={generateMatchServerInstanceSA}
+        successMessage="Generating servers"
+        errorMessage="Failed to generate servers"
+        kind="btn-secondary"
+        disabled={!matchServer?.locations.length}
+      >
+        Generate servers now
+      </ActionButton>
     </section>
   );
 

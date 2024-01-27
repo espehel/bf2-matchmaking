@@ -15,7 +15,7 @@ export function getServerMap(match: MatchesJoined, index: number) {
   const map = match.maps.length > index ? match.maps[index].name : match.maps.at(0)?.name;
   return map
     ? map.replace(/(^\w|\s\w)(\S*)/g, (_, m1, m2) => m1.toUpperCase() + m2.toLowerCase())
-    : null;
+    : 'strike_at_karkand';
 }
 
 export function getServerVehicles(match: MatchesJoined) {

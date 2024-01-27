@@ -112,8 +112,8 @@ export function pollInstance(id: string, cb: (instance: Instance) => Promise<boo
   }, 100000 * 6);
 }
 
-export async function getLocations() {
-  const cache = getCachedValue<Array<Region>>('locations');
+export async function getRegions() {
+  const cache = getCachedValue<Array<Region>>('regions');
   if (cache) {
     return cache;
   }
@@ -128,11 +128,11 @@ export async function getLocations() {
   const { regions } = await client.regions.listRegions({});
   assertObj(regions, 'Failed to get regions');
 
-  const locations = (regions as Array<Region>).filter((r) =>
+  const validRegions = (regions as Array<Region>).filter((r) =>
     validPlans.some((plan) => plan.locations.includes(r.id))
   );
-  setCachedValue('locations', locations, 43200);
-  return locations;
+  setCachedValue('regions', validRegions, 43200);
+  return validRegions;
 }
 
 function generateStartupScript(

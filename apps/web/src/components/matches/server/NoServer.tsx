@@ -17,7 +17,7 @@ export default async function NoServer({ match, matchServer }: Props) {
     );
   }
 
-  const { data: regions } = await api.platform().getLocations();
+  const { data: regions } = await api.platform().getRegions();
   const cities = (regions || [])
     .filter((r) => matchServer.locations.includes(r.id))
     .map((r) => r.city);

@@ -2,7 +2,7 @@ import { isDefined, MatchesJoined, MatchServer, Region } from '@bf2-matchmaking/
 import SelectServerForm from '@/components/matches/SelectServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import GenerateServerForm from '@/components/servers/GenerateServerForm';
+import GenerateServerForm from '@/components/matches-server/GenerateServerForm';
 import TextField from '@/components/commons/TextField';
 import { api } from '@bf2-matchmaking/utils';
 import RegionsSelectForm from '@/components/matches-server/RegionsSelectForm';
@@ -14,7 +14,7 @@ interface Props {
 
 export default async function ServerActionsSection({ match, matchServer }: Props) {
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
-  const { data: regions } = await api.platform().getLocations();
+  const { data: regions } = await api.platform().getRegions();
 
   if (!adminRoles?.server_admin) {
     return null;
