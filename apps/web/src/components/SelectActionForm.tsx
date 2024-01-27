@@ -31,6 +31,7 @@ export default function SelectActionForm({
       action={action}
       successMessage={successMessage}
       errorMessage={errorMessage}
+      resetOnSuccess={false}
     >
       <div className="flex gap-2 items-end">
         <Select
@@ -41,7 +42,7 @@ export default function SelectActionForm({
           disabled={disabled}
           placeholder={placeholder}
         />
-        <TransitionWrapper>
+        <TransitionWrapper button={true}>
           <IconBtn type="submit" variant="primary" Icon={ArrowRightCircleIcon} />
         </TransitionWrapper>
       </div>

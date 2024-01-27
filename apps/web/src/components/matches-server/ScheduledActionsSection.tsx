@@ -15,12 +15,19 @@ interface Props {
 export default async function ScheduledActionsSection({ match, matchServer }: Props) {
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
   const { data: regions } = await api.platform().getRegions();
+  const { data: instances } = await api.platform().getServers(match.id);
+
   if (!isMatchOfficer) {
     return null;
   }
   if (!regions) {
     return null;
   }
+
+  if (instances?.length) {
+    return null;
+  }
+
   async function generateMatchServerInstanceSA() {
     'use server';
     assertObj(matchServer);

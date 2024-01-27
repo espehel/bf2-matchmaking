@@ -1,11 +1,17 @@
 'use client';
-import { useTransition } from 'react';
+import { useActionForm } from '@/state/ActionFormContext';
+import { PropsWithChildren } from 'react';
 
-export default function TransitionWrapper({ children }: { children: React.ReactNode }) {
-  const [pending] = useTransition();
-  if (pending) {
-    return <span className="loading loading-spinner" />;
+interface Props extends PropsWithChildren {
+  button?: boolean;
+}
+export default function TransitionWrapper({ children, button = false }: Props) {
+  const { pending } = useActionForm();
+  if (!pending) {
+    return children;
   }
-
-  return children;
+  if (button) {
+    return <div className="loading loading-spinner h-12 w-12" />;
+  }
+  return <span className="loading loading-spinner" />;
 }

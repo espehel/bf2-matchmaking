@@ -38,7 +38,7 @@ export default function RegionsSelectForm({ regions, matchId, locations }: Props
           options={options}
           defaultValues={locations}
         />
-        <TransitionWrapper>
+        <TransitionWrapper button={true}>
           <IconBtn type="submit" variant="primary" Icon={ArrowRightCircleIcon} />
         </TransitionWrapper>
       </div>

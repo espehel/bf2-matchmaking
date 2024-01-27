@@ -20,6 +20,7 @@ export default function Select({
         <span className="label-text">{label}</span>
       </label>
       <select
+        key={defaultValue}
         name={name}
         className="select select-bordered w-full"
         defaultValue={defaultValue}

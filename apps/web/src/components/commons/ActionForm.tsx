@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { ActionFormProvider } from '@/state/ActionFormContext';
 
 export interface Props
   extends DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> {
@@ -19,6 +20,7 @@ export interface Props
   redirect?: string;
   className?: string;
   onSuccess?: () => void;
+  resetOnSuccess?: boolean;
 }
 
 export default function ActionForm({
@@ -28,10 +30,11 @@ export default function ActionForm({
   errorMessage,
   redirect,
   children,
+  resetOnSuccess = true,
   ...props
 }: Props) {
   const ref = useRef<HTMLFormElement>(null);
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
   const router = useRouter();
 
   const handleAction = useCallback(
@@ -42,7 +45,9 @@ export default function ActionForm({
         if (result.error) {
           toast.error(`${errorMessage}: ${result.error.message}`);
         } else {
-          ref.current?.reset();
+          if (resetOnSuccess) {
+            ref.current?.reset();
+          }
           toast.success(successMessage);
           if (redirect) {
             router.push(redirect);
@@ -56,7 +61,7 @@ export default function ActionForm({
   );
   return (
     <form action={handleAction} ref={ref} {...props}>
-      {children}
+      <ActionFormProvider pending={pending}>{children}</ActionFormProvider>
     </form>
   );
 }
