@@ -9,6 +9,7 @@ import {
   getServerVehicles,
 } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
+import { generateServers } from '@bf2-matchmaking/server';
 
 export async function startScheduledMatches() {
   const matchesToStart = matches.getScheduled().filter(isScheduledToStart);
@@ -30,16 +31,16 @@ async function startMatch(scheduledMatch: ScheduledMatch) {
   });
 
   const { data: matchServer } = await client().getMatchServer(scheduledMatch.id);
-  if (matchServer?.region && !matchServer?.instance) {
-    const name = createServerName(scheduledMatch);
-    const map = getInitialServerMap(scheduledMatch);
-    const vehicles = getServerVehicles(scheduledMatch);
-    const { data: instance } = await api
-      .platform()
-      .postServers(name, matchServer.region, scheduledMatch.id, map, vehicles);
+  const { data: instances } = await api.platform().getServers(scheduledMatch.id);
+  if (matchServer?.locations.length && !instances?.length) {
+    const results = await generateServers(scheduledMatch, matchServer.locations);
 
-    if (instance) {
-      await client().updateMatchServer(scheduledMatch.id, { instance: instance.id });
+    const firstInstance = results.instances.at(0);
+    if (firstInstance && !matchServer.active) {
+      const { data: dns } = await api.platform().getServerDns(firstInstance.main_ip);
+      await client().updateMatchServer(scheduledMatch.id, {
+        active_server: dns?.name || firstInstance.main_ip,
+      });
     }
   }
 

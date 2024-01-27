@@ -14,7 +14,7 @@
   "dependencies": {
     "@bf2-matchmaking/discord": "*",
     "@bf2-matchmaking/logging": "*",
-    "@bf2-matchmaking/server": "^1.0.0",
+    "@bf2-matchmaking/server": "*",
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
