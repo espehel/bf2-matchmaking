@@ -97,6 +97,7 @@ function handleCollect(config: DiscordConfig) {
     try {
       let pubMatch = getPubobotMatch(embed);
       if (pubMatch) {
+        await pubMatch.setMap(embed);
         await pubMatch.updateMatch({ status: MatchStatus.Drafting });
       } else {
         pubMatch = await PubobotMatch.fromDraftingEmbed(
