@@ -6,7 +6,7 @@ const realtime = realtimeClient();
 
 export async function joinMatchRoom(match: MatchesJoined) {
   const realtimeMatch = await realtime.getRealtimeMatch(match, 'engine');
-  realtimeMatch.listenActivePlayers(async (players) => {
+  /*realtimeMatch.listenActivePlayers(async (players) => {
     if (match.players.every((player) => players.includes(player.id))) {
       info(
         'joinRoom',
@@ -14,7 +14,7 @@ export async function joinMatchRoom(match: MatchesJoined) {
       );
       // await client().updateMatch(match.id, { status: MatchStatus.Drafting });
     }
-  });
+  });*/
 }
 
 export async function broadcastMatchStart(match: MatchesJoined) {
