@@ -12,6 +12,7 @@ interface Props {
 
 export default async function SelectServerForm({ match, matchServer }: Props) {
   const { data: servers } = await supabase(cookies).getServers();
+  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 
   if (!servers) {
     return null;
@@ -33,6 +34,7 @@ export default async function SelectServerForm({ match, matchServer }: Props) {
       action={setMatchServerSA}
       successMessage="Changed server"
       errorMessage="Failed to set server"
+      disabled={!isMatchOfficer}
     />
   );
 }

@@ -3,6 +3,8 @@ import { api } from '@bf2-matchmaking/utils';
 import RevalidateForm from '@/components/RevalidateForm';
 import InstanceTableActionsCell from '@/components/matches-server/InstanceTableActionsCell';
 import GenerateServerForm from '@/components/matches-server/GenerateServerForm';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
@@ -11,6 +13,7 @@ interface Props {
 
 export default async function ServerInstancesSection({ match, matchServer }: Props) {
   const { data: instances } = await api.platform().getServers(match.id);
+  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 
   const currentInstance = instances?.find(
     (instance) => instance.label === matchServer?.active?.name
@@ -55,7 +58,7 @@ export default async function ServerInstancesSection({ match, matchServer }: Pro
           ))}
         </tbody>
       </table>
-      <GenerateServerForm match={match} />
+      {isMatchOfficer && <GenerateServerForm match={match} />}
     </section>
   );
 }

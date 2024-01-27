@@ -13,9 +13,9 @@ interface Props {
 }
 
 export default async function ScheduledActionsSection({ match, matchServer }: Props) {
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
   const { data: regions } = await api.platform().getRegions();
-  if (!adminRoles?.server_admin) {
+  if (!isMatchOfficer) {
     return null;
   }
   if (!regions) {
