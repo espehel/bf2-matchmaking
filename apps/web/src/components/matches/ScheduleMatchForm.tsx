@@ -6,12 +6,12 @@ import Select from '@/components/commons/Select';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { createScheduledMatch } from '@/app/matches/actions';
 import CollapseControl from '@/components/commons/CollapseControl';
-import MapMultiSelect from '@/components/commons/MapMultiSelect';
 import { DateTime } from 'luxon';
 import ActionForm from '@/components/commons/ActionForm';
 import React from 'react';
 import MatchServerSelect from '@/components/matches/MatchServerSelect';
 import { api } from '@bf2-matchmaking/utils';
+import MultiSelect from '@/components/commons/MultiSelect';
 
 export default async function ScheduleMatchForm() {
   const configs = await supabase(cookies)
@@ -65,7 +65,12 @@ export default async function ScheduleMatchForm() {
             />
           </div>
           <MatchServerSelect servers={servers} regions={regions} />
-          <MapMultiSelect maps={maps} />
+          <MultiSelect
+            name="mapsSelect"
+            placeholder="Select maps"
+            label="Maps"
+            options={maps.map((map) => [map.id, map.name])}
+          />
           <div className="flex items-center justify-end">
             <FormSubmitButton>Schedule match</FormSubmitButton>
           </div>
