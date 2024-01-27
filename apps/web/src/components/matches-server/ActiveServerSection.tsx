@@ -7,7 +7,7 @@ interface Props {
   matchServer: MatchServer | null;
 }
 
-export default function ServerSection({ matchServer, match }: Props) {
+export default function ActiveServerSection({ matchServer, match }: Props) {
   return (
     <section className="section gap-2">
       <h2>{`Active server: ${matchServer?.active?.name || 'No match server set'}`}</h2>

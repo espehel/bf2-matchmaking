@@ -17,6 +17,6 @@ export default async function MapsSelect({ maps, optionKey = 'id' }: Props) {
   const defaultValue = optionKey === 'id' ? 1 : 'Strike at Karkand';
 
   return (
-    <Select label="Maps" name="mapInput" defaultValue={defaultValue} options={options} />
+    <Select label="Map" name="mapInput" defaultValue={defaultValue} options={options} />
   );
 }

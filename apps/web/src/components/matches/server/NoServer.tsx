@@ -9,7 +9,7 @@ interface Props {
   matchServer: MatchServer | null;
 }
 export default async function NoServer({ match, matchServer }: Props) {
-  if (!matchServer) {
+  if (!matchServer?.active || !matchServer.locations.length) {
     return (
       <div className="flex justify-between items-center gap-2">
         <h2 className="text-xl">No server selected</h2>

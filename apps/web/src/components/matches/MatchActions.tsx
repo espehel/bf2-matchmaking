@@ -7,7 +7,6 @@ import {
   createResults,
 } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
-import SelectServerForm from '@/components/matches/SelectServerForm';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import MatchMapsSelect from '@/components/matches/MatchMapsSelect';
@@ -19,7 +18,6 @@ interface Props {
 
 export default async function MatchActions({ match }: Props) {
   const { data: maps } = await supabase(cookies).getMaps();
-  const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
 
   const isScheduled = match.status === MatchStatus.Scheduled;
   const isOngoing = match.status === MatchStatus.Ongoing;
@@ -103,7 +101,6 @@ export default async function MatchActions({ match }: Props) {
             Reopen match
           </ActionButton>
         )}
-        <SelectServerForm match={match} matchServer={matchServer} />
         {maps && !isClosed && <MatchMapsSelect match={match} maps={maps} />}
       </div>
     </div>

@@ -9,7 +9,7 @@ interface Props {
   matchServer: MatchServer | null;
 }
 
-export default async function InstanceSection({ match, matchServer }: Props) {
+export default async function ServerInstancesSection({ match, matchServer }: Props) {
   const { data: instances } = await api.platform().getServers(match.id);
 
   const currentInstance = instances?.find(
