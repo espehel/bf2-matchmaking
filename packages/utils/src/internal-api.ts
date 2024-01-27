@@ -43,6 +43,8 @@ const rcon = () => {
     matches: () => '/matches',
     matchesLive: () => '/matches/live',
     matchLive: (matchId: number) => `/matches/${matchId}/live`,
+    matchLiveServer: (matchId: number, address: string) =>
+      `/matches/${matchId}/live/${address}`,
     matchResults: (matchId: number) => `/matches/${matchId}/results`,
     rconServerPlayer: (serverIp: string, playerId: string) =>
       `/rcon/${serverIp}/${playerId}`,
@@ -84,6 +86,11 @@ const rcon = () => {
       deleteJSON<RconBf2Server>(basePath.concat(paths.serverLive(ip))),
     postMatchLive: (matchId: number, prelive: boolean) =>
       postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
+    postMatchLiveServer: (matchId: number, address: string, force: boolean) =>
+      postJSON(
+        `${basePath}${paths.matchLiveServer(matchId, address)}?force=${force}`,
+        {}
+      ),
     getMatchesLive: () =>
       getJSON<Array<GetMatchLiveResponseBody>>(basePath.concat(paths.matchesLive())),
     getMatchLive: (matchId: number) =>

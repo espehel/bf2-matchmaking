@@ -1,4 +1,4 @@
-import { CreateServerOptions, MatchesJoined } from '@bf2-matchmaking/types';
+import { CreateServerOptions, isNotNull, MatchesJoined } from '@bf2-matchmaking/types';
 import { api } from '@bf2-matchmaking/utils';
 import {
   createServerName,
@@ -14,8 +14,14 @@ export async function generateServers(match: MatchesJoined, regions: Array<strin
   const results = await Promise.all(regions.map(generateServer(match)));
 
   return {
-    instances: results.filter((r) => r.data).map((r) => r.data),
-    errors: results.filter((r) => r.error).map((r) => r.error),
+    instances: results
+      .filter((r) => r.data)
+      .map((r) => r.data)
+      .filter(isNotNull),
+    errors: results
+      .filter((r) => r.error)
+      .map((r) => r.error)
+      .filter(isNotNull),
   };
 }
 

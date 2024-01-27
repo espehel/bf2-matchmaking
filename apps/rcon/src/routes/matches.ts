@@ -1,9 +1,10 @@
 import express from 'express';
 import { GetMatchLiveResponseBody, MatchStatus } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { error } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 import { findLiveMatch, getLiveMatches, startLiveMatch } from '../services/MatchManager';
 import { closeMatch } from '../services/matches';
+import { findServer, getLiveServer, resetLiveMatchServers } from '../net/ServerManager';
 
 const router = express.Router();
 
@@ -47,6 +48,46 @@ router.post('/:matchid/live', async (req, res) => {
 
     const liveMatch = startLiveMatch(match, { prelive });
     return res.status(201).send(liveMatch);
+  } catch (e) {
+    if (e instanceof Error) {
+      return res.status(500).send(e.message);
+    }
+    return res.status(500).send(JSON.stringify(e));
+  }
+});
+
+router.post('/:matchid/live/:address', async (req, res) => {
+  const force = `${req.query.force}`.toLowerCase() === 'true';
+
+  try {
+    const liveMatch = findLiveMatch(Number(req.params.matchid));
+    if (!liveMatch) {
+      return res.status(404).send({ message: `Live match not found.` });
+    }
+    const liveServer = getLiveServer(req.params.address);
+    if (!liveServer) {
+      return res.status(404).send({ message: `Live server not found.` });
+    }
+
+    if (liveMatch.state !== 'pending' && !force) {
+      return res.status(400).send({ message: `Live match has started.` });
+    }
+
+    if (!liveServer.isIdle() && !force) {
+      return res.status(400).send({ message: `Live server is already in use.` });
+    }
+
+    if ((!liveServer.isIdle() || liveMatch.state !== 'pending') && force) {
+      info(
+        'postMatchLiveServer',
+        `Forcefully set live server ${req.params.address} to match ${liveMatch.match.id}`
+      );
+    }
+
+    resetLiveMatchServers(liveMatch);
+    liveServer.reset();
+    liveServer.setLiveMatch(liveMatch);
+    return res.status(200);
   } catch (e) {
     if (e instanceof Error) {
       return res.status(500).send(e.message);

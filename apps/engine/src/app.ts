@@ -11,6 +11,7 @@ import { startScheduledMatches } from './tasks/startScheduledMatches';
 import { matchesRouter } from './routers/matches';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 import { MatchStatus } from '@bf2-matchmaking/types';
+import { generateMatchServers } from './tasks/generateMatchServers';
 
 matches.loadMatches().then(() => {
   matches.get(MatchStatus.Summoning).forEach((match) => {
@@ -20,7 +21,8 @@ matches.loadMatches().then(() => {
 
 if (!isDevelopment()) {
   cron.schedule('0 16 * * *', closeOldMatches);
-  cron.schedule('0,15,30,45 * * * *', startScheduledMatches);
+  cron.schedule('15,45 * * * *', generateMatchServers);
+  cron.schedule('0,30 * * * *', startScheduledMatches);
 }
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;

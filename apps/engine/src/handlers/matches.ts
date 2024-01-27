@@ -1,4 +1,4 @@
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchStatus, ServersRow } from '@bf2-matchmaking/types';
 import { api, isClosedMatch, isOpenMatch } from '@bf2-matchmaking/utils';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
@@ -38,11 +38,13 @@ export async function handleMatchStatusUpdate(match: MatchesJoined) {
 }
 
 async function handleMatchOngoing(match: MatchesJoined) {
-  const { data, error } = await api.rcon().postMatchLive(match.id, false);
-  if (error) {
-    logErrorMessage(`Match ${match.id} failed to start`, error, { match });
-  } else {
-    logMessage(`Match ${match.id} started`, { match, live: data });
+  const { data: matchServer } = await client().getMatchServer(match.id);
+  const [liveMatch, liveServer] = await startLiveMatch(
+    match,
+    matchServer?.active || null
+  );
+  if (liveMatch) {
+    logMessage(`Match ${match.id} started`, { match, liveMatch, liveServer });
   }
 }
 async function handleMatchFinished(match: MatchesJoined) {
@@ -78,4 +80,36 @@ async function deleteServer(match: MatchesJoined, ip: string) {
     });
   }
   return result;
+}
+
+async function startLiveMatch(
+  match: MatchesJoined,
+  server: ServersRow | null
+): Promise<[unknown, unknown]> {
+  const { data: liveMatch, error } = await api.rcon().postMatchLive(match.id, false);
+  if (error) {
+    logErrorMessage(`Match ${match.id} failed to start live match`, error, {
+      match,
+    });
+    return [null, null];
+  }
+
+  if (!server) {
+    return [liveMatch, null];
+  }
+  const { data: liveServer, error: liveServerError } = await api
+    .rcon()
+    .postMatchLiveServer(match.id, server.ip, false);
+  if (liveServerError) {
+    logErrorMessage(
+      `Match ${match.id} failed to set live match server`,
+      liveServerError,
+      {
+        match,
+        server,
+        liveMatch,
+      }
+    );
+  }
+  return [liveMatch, liveServer];
 }
