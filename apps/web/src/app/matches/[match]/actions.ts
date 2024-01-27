@@ -194,7 +194,10 @@ export async function setTeams(match: MatchesJoined, serverIp: string) {
 
 export async function setServer(matchId: number, serverIp: string) {
   const { data: player } = await supabase(cookies).getSessionPlayer();
-  const result = await supabase(cookies).upsertMatchServer({ id: matchId, ip: serverIp });
+  const result = await supabase(cookies).upsertMatchServer({
+    id: matchId,
+    active_server: serverIp,
+  });
 
   if (result.error) {
     logErrorMessage('Failed to set server', result.error, { matchId, serverIp, player });

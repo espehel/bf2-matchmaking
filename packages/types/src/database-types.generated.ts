@@ -479,28 +479,19 @@ export interface Database {
           active_server: string | null
           created_at: string
           id: number
-          instance: string | null
-          ip: string | null
           locations: string[]
-          region: string | null
         }
         Insert: {
           active_server?: string | null
           created_at?: string
           id?: number
-          instance?: string | null
-          ip?: string | null
           locations?: string[]
-          region?: string | null
         }
         Update: {
           active_server?: string | null
           created_at?: string
           id?: number
-          instance?: string | null
-          ip?: string | null
           locations?: string[]
-          region?: string | null
         }
         Relationships: [
           {
@@ -516,13 +507,6 @@ export interface Database {
             isOneToOne: true
             referencedRelation: "matches"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "match_servers_ip_fkey"
-            columns: ["ip"]
-            isOneToOne: false
-            referencedRelation: "servers"
-            referencedColumns: ["ip"]
           }
         ]
       }

@@ -1,6 +1,4 @@
 import { Database } from './database-types.generated';
-import { TeamPlayer } from './index';
-import { exec } from 'node:child_process';
 
 export type PlayersRow = Database['public']['Tables']['players']['Row'];
 export type MapsRow = Database['public']['Tables']['maps']['Row'];
@@ -174,8 +172,7 @@ export interface MatchConfigResults extends MatchConfigsRow {
   }>;
 }
 
-export interface MatchServer
-  extends Omit<MatchServersRow, 'active_server' | 'ip' | 'region' | 'instance'> {
+export interface MatchServer extends Omit<MatchServersRow, 'active_server'> {
   active: ServersRow | null;
 }
 
