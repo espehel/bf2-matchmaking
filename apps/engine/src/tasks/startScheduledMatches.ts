@@ -18,10 +18,10 @@ function isScheduledToStart(match: ScheduledMatch) {
   return startsInMinutes <= 29;
 }
 
-async function startMatch(scheduledMatch: ScheduledMatch) {
+async function startMatch(match: ScheduledMatch) {
   try {
     const updatedMatch = await client()
-      .updateMatch(scheduledMatch.id, {
+      .updateMatch(match.id, {
         status: MatchStatus.Ongoing,
         started_at: DateTime.now().toISO(),
       })
@@ -29,13 +29,14 @@ async function startMatch(scheduledMatch: ScheduledMatch) {
 
     const server = await setActiveServer(updatedMatch);
 
-    logMessage(`Match ${updatedMatch.id} started`, {
-      match: updatedMatch,
+    logMessage(`Match ${updatedMatch.id} is now ${updatedMatch.status}`, {
+      match,
+      updatedMatch,
       server,
     });
   } catch (e) {
-    logErrorMessage(`Match ${scheduledMatch.id} failed start`, e, {
-      match: scheduledMatch,
+    logErrorMessage(`Match ${match.id} failed start`, e, {
+      match: match,
     });
   }
 }

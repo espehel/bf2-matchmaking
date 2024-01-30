@@ -1,14 +1,7 @@
-import {
-  isScheduledMatch,
-  MatchesJoined,
-  MatchStatus,
-  ScheduledMatch,
-} from '@bf2-matchmaking/types';
+import { isScheduledMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { client } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage } from '@bf2-matchmaking/logging';
 
-let active: Array<MatchesJoined> = [];
-let scheduled: Array<ScheduledMatch> = [];
 let matches: Array<MatchesJoined> = [];
 
 export default {

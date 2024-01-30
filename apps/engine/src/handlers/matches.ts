@@ -44,7 +44,11 @@ async function handleMatchOngoing(match: MatchesJoined) {
     matchServer?.active || null
   );
   if (liveMatch) {
-    logMessage(`Match ${match.id} started`, { match, liveMatch, liveServer });
+    logMessage(`Match ${match.id} live tracking started`, {
+      match,
+      liveMatch,
+      liveServer,
+    });
   }
 }
 async function handleMatchFinished(match: MatchesJoined) {
