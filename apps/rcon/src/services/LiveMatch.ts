@@ -16,7 +16,12 @@ import {
   updateLiveMatchServer,
   setLiveAt,
 } from './matches';
-import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
+import {
+  info,
+  logAddMatchRound,
+  logChangeLiveState,
+  logErrorMessage,
+} from '@bf2-matchmaking/logging';
 import { formatSecToMin, getPlayersToSwitch, hasKeyhash } from '@bf2-matchmaking/utils';
 import { removeLiveMatch } from './MatchManager';
 import { isServerIdentified } from '../net/ServerManager';
@@ -55,6 +60,17 @@ export class LiveMatch {
 
   setMatch(match: MatchesJoined) {
     this.match = match;
+  }
+  async syncMatch(): Promise<MatchesJoined | null> {
+    const { data: updatedMatch, error } = await client().getMatch(this.match.id);
+    if (error) {
+      logErrorMessage(`Live match ${this.match.id} failed to sync`, error, {
+        liveMatch: this,
+      });
+      return null;
+    }
+    this.setMatch(updatedMatch);
+    return updatedMatch;
   }
   setServer(server: MatchServer | null) {
     this.matchServer = server;
@@ -104,15 +120,21 @@ export class LiveMatch {
         continue;
       }
 
-      if (this.match.teams.some((mp) => mp.player_id === player.id && mp.connected_at)) {
+      const connectedMp = this.match.teams.find(
+        (mp) => mp.player_id === player.id && mp.connected_at
+      );
+      if (connectedMp) {
+        this.connectedPlayers.set(bf2Player.keyhash, connectedMp);
         continue;
       }
 
       const { data: mp } = await client().updateMatchPlayer(this.match.id, player.id, {
         connected_at: DateTime.now().toISO(),
       });
+
       if (mp) {
         this.connectedPlayers.set(bf2Player.keyhash, mp);
+        await this.syncMatch();
       }
     }
   }
@@ -176,6 +198,7 @@ export class LiveMatch {
     logAddMatchRound(round, this.match, liveInfo);
     info('onLiveServerUpdate', `Created round ${round.id}`);
     this.rounds.push(round);
+    this.liveInfo = null;
     return next('endlive');
   }
 
