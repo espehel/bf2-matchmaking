@@ -20,7 +20,7 @@ matches.loadMatches().then(() => {
 });
 
 if (!isDevelopment()) {
-  cron.schedule('0 16 * * *', closeOldMatches);
+  cron.schedule('0 0,8,16 * * *', closeOldMatches);
   cron.schedule('15,45 * * * *', generateMatchServers);
   cron.schedule('0,30 * * * *', startScheduledMatches);
 }
