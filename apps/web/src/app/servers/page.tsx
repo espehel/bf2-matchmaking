@@ -1,4 +1,4 @@
-import { RconBf2Server } from '@bf2-matchmaking/types';
+import { LiveServer } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ServerCreateForm from '@/components/servers/ServerCreateForm';
@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 import CreateServerSection from '@/components/servers/CreateServerSection';
 
 export default async function Page() {
-  const servers = await api.rcon().getServers().then(verify);
+  const servers = await api.live().getServers().then(verify);
 
   return (
     <main className="main">
@@ -52,7 +52,7 @@ export default async function Page() {
   );
 }
 
-function ServerStatus({ server }: { server: RconBf2Server }) {
+function ServerStatus({ server }: { server: LiveServer }) {
   if (server.match) {
     return (
       <Link className="link" href={`/matches/${server.match.id}`}>

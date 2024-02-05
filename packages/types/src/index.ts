@@ -7,6 +7,7 @@ export * from './database-types';
 export * from './type-guards';
 export * from './cloudflare';
 export * from './vultr';
+export * from './fetch';
 
 type WebhookPostgresChangesPayloadBase = {
   schema: string;
@@ -204,7 +205,7 @@ export interface LiveRound extends Omit<RoundsInsert, 'si' | 'pl' | 'map'> {
 }
 
 export interface PendingServer {
-  dns: DnsRecordWithoutPriority;
+  address: string;
   port: string;
   rcon_port: number;
   rcon_pw: string;

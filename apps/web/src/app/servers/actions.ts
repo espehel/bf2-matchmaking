@@ -16,7 +16,7 @@ export async function createServer(data: FormData) {
   assertString(rconPortInput);
   assertString(rconPwInput);
 
-  const { data: serverInfo, error } = await api.rcon().postRconServerInfo({
+  const { data: serverInfo, error } = await api.live().postRconServerInfo({
     host: addressInput,
     password: rconPwInput,
     port: rconPortInput,

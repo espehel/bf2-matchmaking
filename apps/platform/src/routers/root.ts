@@ -110,7 +110,7 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
 
   const host = dns?.name || ctx.params.ip;
 
-  const { data: si } = await api.rcon().getServerInfo(host);
+  const { data: si } = await api.live().getServerInfo(host);
   if (si && Number(si.connectedPlayers) > 3) {
     ctx.status = 409;
     ctx.body = { message: 'Server is not empty' };
@@ -122,7 +122,7 @@ rootRouter.delete('/servers/:ip', async (ctx: Context) => {
   await Promise.all([
     await deleteServerInstance(instance.id),
     await deleteStartupScript(instance.label),
-    await api.rcon().deleteServerLive(host),
+    await api.live().deleteServer(host),
   ]);
 
   if (dns) {

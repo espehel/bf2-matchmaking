@@ -78,7 +78,7 @@ export async function editLocationPollMessageWithResults(
   const locationName = getKey(LocationEmoji, results[0][0]);
 
   if (results[0][0] === LocationEmoji.Existing) {
-    const { data: servers } = await api.rcon().getServers();
+    const { data: servers } = await api.live().getServers();
     if (servers?.length) {
       await message.edit({
         embeds: [{ fields: [...getServerFields(servers), getMatchField(match)] }],

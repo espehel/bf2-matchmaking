@@ -10,7 +10,7 @@ interface Props {
   params: { server: string };
 }
 export default async function ServerPage({ params }: Props) {
-  const server = await api.rcon().getServer(params.server).then(verify);
+  const server = await api.live().getServer(params.server).then(verify);
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
 
   return (

@@ -10,7 +10,7 @@ export default async function PendingMatchesList() {
   const matches = await supabase(cookies)
     .getMatchesWithStatus(MatchStatus.Ongoing, MatchStatus.Finished)
     .then(verifyResult);
-  const liveMatches = await api.rcon().getMatchesLive().then(verify);
+  const liveMatches = await api.live().getMatches().then(verify);
 
   const pendingMatches = matches
     .filter((m) => !liveMatches.some(({ matchId }) => matchId === m.id))

@@ -1,13 +1,13 @@
 'use-client';
 import { FetchResult } from '@bf2-matchmaking/utils';
-import { RconBf2Server } from '@bf2-matchmaking/types';
+import { LiveServer } from '@bf2-matchmaking/types';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { restartServer } from '@/app/matches/[match]/actions';
 
 export function useServerRestart(
   matchId: number,
-  server: RconBf2Server | null
+  server: LiveServer | null
 ): [boolean, () => Promise<FetchResult<unknown>>] {
   const router = useRouter();
   const [isRestarting, setRestarting] = useState(false);

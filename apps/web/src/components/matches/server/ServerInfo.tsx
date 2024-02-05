@@ -9,7 +9,7 @@ interface Props {
   server: ServersRow;
 }
 export default async function ServerInfo({ server, match }: Props) {
-  const { data } = await api.rcon().getServer(server.ip);
+  const { data } = await api.live().getServer(server.ip);
   const serverInfo = data?.info;
 
   return (

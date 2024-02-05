@@ -15,6 +15,7 @@ import {
   ServerInfo,
   User,
 } from './index';
+import { DateTime } from 'luxon';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -64,13 +65,17 @@ export interface PostCommandsReinstallRequestBody {
   commands: Array<string>;
 }
 
-export interface RconBf2Server extends ServersRow {
-  info: LiveInfo | null;
-  match: MatchesJoined | null;
+export interface LiveServer {
+  address: string;
+  port: number;
+  info: LiveInfo;
+  matchId: number | null;
   joinmeHref: string;
   joinmeDirect: string;
   country: string | null;
   city: string | null;
+  updatedAt: string | null;
+  errorAt: string | null;
 }
 
 export interface LiveInfo extends ServerInfo {
@@ -106,7 +111,7 @@ export interface PostServerPlayersSwitchRequestBody {
 
 export type PostMatchResult = MatchesJoined;
 
-export type GetMatchLiveResponseBody = {
+export type LiveMatch = {
   liveInfo: LiveInfo | null;
   liveState: LiveServerState;
   matchId: number;

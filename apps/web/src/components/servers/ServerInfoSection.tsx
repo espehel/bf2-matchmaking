@@ -1,9 +1,9 @@
-import { GameStatus, RconBf2Server } from '@bf2-matchmaking/types';
+import { GameStatus, LiveServer } from '@bf2-matchmaking/types';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import JoinMeButton from '@/components/servers/JoinMeButton';
 
 interface Props {
-  server: RconBf2Server;
+  server: LiveServer;
 }
 
 export default function ServerInfoSection({ server }: Props) {

@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default async function ServerActions({ server, match }: Props) {
-  const { data } = await api.rcon().getServer(server.ip);
+  const { data } = await api.live().getServer(server.ip);
   const serverInfo = data?.info;
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 

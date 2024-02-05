@@ -10,7 +10,7 @@ export default async function LiveMatchesList() {
   const matches = await supabase(cookies)
     .getMatchesWithStatus(MatchStatus.Ongoing)
     .then(verifyResult);
-  const liveMatches = await api.rcon().getMatchesLive().then(verify);
+  const liveMatches = await api.live().getMatches().then(verify);
 
   const mergedMatches = liveMatches
     .map(({ liveInfo, liveState, matchId }) => ({

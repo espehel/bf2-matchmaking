@@ -17,7 +17,7 @@ export function useMatchRoom(match: MatchesJoined, server: MatchServer | null) {
   const launchBF2 = useCallback(() => {
     if (server?.active?.ip && player?.beta_tester) {
       api
-        .rcon()
+        .live()
         .getServer(server.active.ip)
         .then(({ data }) => {
           if (data) {

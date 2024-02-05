@@ -90,7 +90,7 @@ async function startLiveMatch(
   match: MatchesJoined,
   server: ServersRow | null
 ): Promise<[unknown, unknown]> {
-  const { data: liveMatch, error } = await api.rcon().postMatchLive(match.id, false);
+  const { data: liveMatch, error } = await api.live().postMatch(match.id, false);
   if (error) {
     logErrorMessage(`Match ${match.id} failed to start live match`, error, {
       match,
@@ -102,8 +102,8 @@ async function startLiveMatch(
     return [liveMatch, null];
   }
   const { data: liveServer, error: liveServerError } = await api
-    .rcon()
-    .postMatchLiveServer(match.id, server.ip, false);
+    .live()
+    .postMatchServer(match.id, server.ip, false);
   if (liveServerError) {
     logErrorMessage(
       `Match ${match.id} failed to set live match server`,

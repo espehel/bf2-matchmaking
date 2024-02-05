@@ -1,4 +1,4 @@
-import { RconBf2Server } from '@bf2-matchmaking/types';
+import { LiveServer } from '@bf2-matchmaking/types';
 import SelectActionForm from '@/components/SelectActionForm';
 import { changeServerMap } from '@/app/matches/[match]/actions';
 import { assertNumber } from '@bf2-matchmaking/utils';
@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 
 interface Props {
-  server: RconBf2Server;
+  server: LiveServer;
 }
 
 export default async function ChangeMapForm({ server }: Props) {

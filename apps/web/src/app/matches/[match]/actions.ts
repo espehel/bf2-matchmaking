@@ -70,7 +70,7 @@ export async function reopenMatch(matchId: number) {
 }
 
 export async function createResults(matchId: number) {
-  const result = await api.rcon().postMatchResults(matchId);
+  const result = await api.live().postMatchResults(matchId);
 
   if (!result.error) {
     revalidatePath(`/results/${matchId}`);
@@ -86,7 +86,7 @@ export async function finishMatch(matchId: number) {
     return result;
   }
 
-  const apiResult = await api.rcon().postMatchResults(matchId);
+  const apiResult = await api.live().postMatchResults(matchId);
   revalidatePath(`/matches/${matchId}`);
 
   return apiResult;
@@ -138,7 +138,7 @@ export async function deleteMatch(matchId: number) {
 }
 
 export async function pauseRound(matchId: number, serverIp: string) {
-  const result = await api.rcon().postServerPause(serverIp);
+  const result = await api.live().postServerPause(serverIp);
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -148,7 +148,7 @@ export async function pauseRound(matchId: number, serverIp: string) {
 }
 
 export async function unpauseRound(matchId: number, serverIp: string) {
-  const result = await api.rcon().postServerUnpause(serverIp);
+  const result = await api.live().postServerUnpause(serverIp);
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -157,7 +157,7 @@ export async function unpauseRound(matchId: number, serverIp: string) {
 }
 
 export async function restartRound(matchId: number, serverIp: string) {
-  const result = await api.rcon().postServerExec(serverIp, { cmd: 'admin.restartMap' });
+  const result = await api.live().postServerExec(serverIp, { cmd: 'admin.restartMap' });
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -167,7 +167,7 @@ export async function restartRound(matchId: number, serverIp: string) {
 }
 
 export async function restartServer(matchId: number, serverIp: string) {
-  const result = await api.rcon().postServerExec(serverIp, { cmd: 'quit' });
+  const result = await api.live().postServerExec(serverIp, { cmd: 'quit' });
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -177,14 +177,14 @@ export async function restartServer(matchId: number, serverIp: string) {
 }
 
 export async function setTeams(match: MatchesJoined, serverIp: string) {
-  const playersResult = await api.rcon().getServerPlayerList(serverIp);
+  const playersResult = await api.live().getServerPlayerList(serverIp);
   if (playersResult.error) {
     return playersResult;
   }
 
   const players = getPlayersToSwitch(match, playersResult.data);
 
-  const result = await api.rcon().postServerPlayersSwitch(serverIp, { players });
+  const result = await api.live().postServerPlayersSwitch(serverIp, { players });
   if (!result.error) {
     revalidatePath(`/matches/${match.id}`);
   }
@@ -309,7 +309,7 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
 }
 
 export async function changeServerMap(serverIp: string, mapId: number) {
-  return api.rcon().postServerMaps(serverIp, mapId);
+  return api.live().postServerMaps(serverIp, mapId);
 }
 
 export async function acceptMatchTime(

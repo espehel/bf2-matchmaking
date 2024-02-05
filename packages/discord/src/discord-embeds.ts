@@ -4,7 +4,7 @@ import {
   MatchesJoined,
   MatchResultsJoined,
   MatchStatus,
-  RconBf2Server,
+  LiveServer,
   ServersRow,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
@@ -34,7 +34,7 @@ export const getMatchEmbed = (
 
 export const getServerPollEmbed = (
   match: MatchesJoined,
-  servers: Array<[RconBf2Server, string, string]>,
+  servers: Array<[LiveServer, string, string]>,
   endTime: DateTime
 ): APIEmbed => ({
   description: `Vote for match ${
@@ -42,7 +42,7 @@ export const getServerPollEmbed = (
   } server, poll ends <t:${endTime.toUnixInteger()}:R>`,
   fields: createServerPollFields(servers),
 });
-export const getServerEmbed = (server: RconBf2Server) => ({
+export const getServerEmbed = (server: LiveServer) => ({
   description: `Join [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
   fields: [
     { name: 'address', value: server.ip, inline: true },
@@ -91,7 +91,7 @@ export function getTeamDraftEmbed(
 }
 export const getMatchStartedEmbed = (
   match: MatchesJoined,
-  server?: RconBf2Server
+  server?: LiveServer
 ): APIEmbed =>
   server
     ? {
@@ -263,7 +263,7 @@ const createServerFields = (
         },
       ]
     : [];
-const createServerPollFields = (servers: Array<[RconBf2Server, string, string]>) => [
+const createServerPollFields = (servers: Array<[LiveServer, string, string]>) => [
   {
     name: 'Servers',
     value: servers.map(([, description, emoji]) => `${emoji}  ${description}`).join('\n'),
@@ -286,7 +286,7 @@ export function createServerLocationPollResultField(location: string) {
   };
 }
 
-const getServerInfoFields = (server: RconBf2Server) => [
+const getServerInfoFields = (server: LiveServer) => [
   {
     name: 'address:',
     value: `\`\`\`${server.ip}\`\`\``,
@@ -309,7 +309,7 @@ export const getMatchField = (match: MatchesJoined) => ({
   value: `[**Match ${match.id}**](${api.web().basePath}/matches/${match.id})`,
 });
 
-export function getServerFields(servers: Array<RconBf2Server>) {
+export function getServerFields(servers: Array<LiveServer>) {
   return servers
     .filter((server) => !getMatchIdFromDnsName(server.ip))
     .map((server) => ({

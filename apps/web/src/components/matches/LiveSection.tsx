@@ -10,7 +10,7 @@ interface Props {
   match: MatchesJoined;
 }
 export default async function LiveSection({ match }: Props) {
-  const { data: liveMatch } = await api.rcon().getMatchLive(match.id);
+  const { data: liveMatch } = await api.live().getMatch(match.id);
   const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 
@@ -20,7 +20,7 @@ export default async function LiveSection({ match }: Props) {
 
   async function startLiveMatch() {
     'use server';
-    const result = await api.rcon().postMatchLive(match.id, false);
+    const result = await api.live().postMatch(match.id, false);
     if (result.data) {
       revalidatePath(`/matches/${match.id}`);
     }
@@ -31,8 +31,8 @@ export default async function LiveSection({ match }: Props) {
     'use server';
     assertObj(matchServer?.active);
     const result = await api
-      .rcon()
-      .postMatchLiveServer(match.id, matchServer.active?.ip, true);
+      .live()
+      .postMatchServer(match.id, matchServer.active?.ip, true);
     if (result.data) {
       revalidatePath(`/matches/${match.id}`);
     }

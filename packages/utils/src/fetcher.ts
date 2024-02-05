@@ -1,23 +1,10 @@
-import { isDefined } from '@bf2-matchmaking/types';
-
-interface FetchResponse {
-  status: number;
-  statusText: string;
-}
-interface FetchSuccessResponse<T> extends FetchResponse {
-  data: T;
-  error: null;
-}
-
-export interface FetchError {
-  message: string;
-}
-export interface FetchErrorResponse extends FetchResponse {
-  error: FetchError;
-  data: null;
-}
-
-export type FetchResult<T> = FetchSuccessResponse<T> | FetchErrorResponse;
+import {
+  FetchError,
+  FetchErrorResponse,
+  FetchResult,
+  FetchSuccessResponse,
+  isDefined,
+} from '@bf2-matchmaking/types';
 
 const parseError = (error: any): FetchError => {
   if (!error) {

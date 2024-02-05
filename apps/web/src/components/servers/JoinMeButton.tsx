@@ -1,9 +1,9 @@
 'use client';
-import { RconBf2Server } from '@bf2-matchmaking/types';
+import { LiveServer } from '@bf2-matchmaking/types';
 import { useCallback } from 'react';
 
 interface Props {
-  server: RconBf2Server;
+  server: LiveServer;
 }
 
 export default function JoinMeButton({ server }: Props) {

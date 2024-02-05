@@ -7,6 +7,7 @@ export * from './date-utils';
 export * from './fetcher';
 export * from './assert';
 export * from './server-utils';
+export * from './error';
 
 import { ip } from './ip-api';
 export const externalApi = {

@@ -33,7 +33,7 @@ async function closeMatch(match: MatchesJoined) {
     status: MatchStatus.Finished,
   });
 
-  const { error } = await api.rcon().postMatchResults(match.id);
+  const { error } = await api.live().postMatchResults(match.id);
 
   if (error) {
     logErrorMessage(`Match ${match.id} failed to create results, force closing.`, error, {

@@ -1,13 +1,10 @@
 import {
-  PostRconRequestBody,
   PlayerListItem,
-  RconBf2Server,
+  LiveServer,
   ServerInfo,
   PostServerExecRequestBody,
   PostServerExecResponseBody,
-  PostServerPlayersSwitchRequestBody,
-  GetMatchLiveResponseBody,
-  LiveInfo,
+  LiveMatch,
   DnsRecordWithoutPriority,
   Region,
   PostDemosRequestBody,
@@ -24,83 +21,53 @@ const web = () => {
       `${basePath}/matches/${matchId}${playerId ? `?player=${playerId}` : ''}`,
   };
 };
-const rcon = () => {
-  const basePath = 'https://rcon.bf2.gg';
+const live = () => {
+  const basePath = 'https://live.bf2.gg';
   const paths = {
-    rconServers: () => '/rcon/servers',
-    rconServerInfo: () => '/rcon/si',
-    rconPlayerList: () => '/rcon/pl',
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
-    serverLive: (ip: string) => `/servers/${ip}/live`,
     serverInfo: (ip: string) => `/servers/${ip}/si`,
     serverPlayerList: (ip: string) => `/servers/${ip}/pl`,
     serverExec: (ip: string) => `/servers/${ip}/exec`,
     serverPause: (ip: string) => `/servers/${ip}/pause`,
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
-    serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
-    serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
-    matchesLive: () => '/matches/live',
-    matchLive: (matchId: number) => `/matches/${matchId}/live`,
-    matchLiveServer: (matchId: number, address: string) =>
-      `/matches/${matchId}/live/${address}`,
+    match: (matchId: number) => `/matches/${matchId}/live`,
+    matchServer: (matchId: number, address: string) =>
+      `/matches/${matchId}/server/${address}`,
     matchResults: (matchId: number) => `/matches/${matchId}/results`,
-    rconServerPlayer: (serverIp: string, playerId: string) =>
-      `/rcon/${serverIp}/${playerId}`,
   };
   return {
     paths,
-    getRconServers: () =>
-      getJSON<Array<LiveInfo>>(basePath.concat(paths.rconServers()), {
-        cache: 'no-store',
-      }),
-    postRconServerInfo: (body: PostRconRequestBody) =>
-      postJSON<ServerInfo>(basePath.concat(paths.rconServerInfo()), body),
-    postRconPlayerList: (body: PostRconRequestBody) =>
-      postJSON<ServerInfo>(basePath.concat(paths.rconPlayerList()), body),
     getServerInfo: (ip: string) =>
       getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip)), { cache: 'no-store' }),
     postServerExec: (ip: string, body: PostServerExecRequestBody) =>
       postJSON<PostServerExecResponseBody>(basePath.concat(paths.serverExec(ip)), body),
     postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
-    postServerMaps: (ip: string, map: number) =>
-      postJSON(basePath.concat(paths.serverMaps(ip)), { map }),
     postServerUnpause: (ip: string) =>
       postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
-    postServerPlayersSwitch: (ip: string, body: PostServerPlayersSwitchRequestBody) =>
-      postJSON(basePath.concat(paths.serverPlayersSwitch(ip)), body),
     getServerPlayerList: (ip: string) =>
       getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip)), {
         next: { tags: ['getServerPlayerList'] },
       }),
     getServers: () =>
-      getJSON<Array<RconBf2Server>>(basePath.concat(paths.servers()), {
+      getJSON<Array<LiveServer>>(basePath.concat(paths.servers()), {
         cache: 'no-store',
       }),
     getServer: (ip: string) =>
-      getJSON<RconBf2Server>(basePath.concat(paths.server(ip)), {
+      getJSON<LiveServer>(basePath.concat(paths.server(ip)), {
         cache: 'no-store',
       }),
-    deleteServerLive: (ip: string) =>
-      deleteJSON<RconBf2Server>(basePath.concat(paths.serverLive(ip))),
-    postMatchLive: (matchId: number, prelive: boolean) =>
-      postJSON(`${basePath}${paths.matchLive(matchId)}?prelive=${prelive}`, {}),
-    postMatchLiveServer: (matchId: number, address: string, force: boolean) =>
-      postJSON(
-        `${basePath}${paths.matchLiveServer(matchId, address)}?force=${force}`,
-        {}
-      ),
-    getMatchesLive: () =>
-      getJSON<Array<GetMatchLiveResponseBody>>(basePath.concat(paths.matchesLive())),
-    getMatchLive: (matchId: number) =>
-      getJSON<GetMatchLiveResponseBody>(basePath.concat(paths.matchLive(matchId))),
+    deleteServer: (ip: string) =>
+      deleteJSON<LiveServer>(basePath.concat(paths.server(ip))),
+    postMatch: (matchId: number) => postJSON(`${basePath}${paths.match(matchId)}`, {}),
+    postMatchServer: (matchId: number, address: string, force: boolean) =>
+      postJSON(`${basePath}${paths.matchServer(matchId, address)}?force=${force}`, {}),
+    getMatches: () => getJSON<Array<LiveMatch>>(basePath.concat(paths.matches())),
+    getMatch: (matchId: number) =>
+      getJSON<LiveMatch>(basePath.concat(paths.match(matchId))),
     postMatchResults: (matchId: number) =>
       postJSON(basePath.concat(paths.matchResults(matchId)), {}),
-    getRconServerPlayer: (serverIp: string, playerId: string) =>
-      getJSON<PlayerListItem>(
-        basePath.concat(paths.rconServerPlayer(serverIp, playerId))
-      ),
   };
 };
 const bot = () => {
@@ -174,7 +141,7 @@ const platform = () => {
 };
 
 export const api = {
-  rcon,
+  live,
   bot,
   web,
   platform,
