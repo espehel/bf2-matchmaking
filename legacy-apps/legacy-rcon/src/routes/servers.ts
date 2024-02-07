@@ -7,7 +7,6 @@ import {
   exec,
   switchPlayers,
 } from '../net/RconManager';
-import { RconBf2Server } from '@bf2-matchmaking/types';
 import { createRconBF2Server } from '../services/servers';
 import {
   addPendingServer,
@@ -170,7 +169,7 @@ router.post('/', async (req, res) => {
       .catch(() => null);
 
     if (!serverInfo && dns) {
-      addPendingServer({ dns, port, rcon_port, rcon_pw });
+      addPendingServer({ address: ip, port, rcon_port, rcon_pw });
       return res.status(202).send();
     }
 
@@ -210,7 +209,7 @@ router.get('/', async (req, res) => {
     return res.status(502).send(err.message);
   }
 
-  const servers: Array<RconBf2Server> = await Promise.all(data.map(createRconBF2Server));
+  const servers = await Promise.all(data.map(createRconBF2Server));
 
   res.send(servers);
 });

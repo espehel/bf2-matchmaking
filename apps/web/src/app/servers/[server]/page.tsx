@@ -10,7 +10,7 @@ interface Props {
   params: { server: string };
 }
 export default async function ServerPage({ params }: Props) {
-  const server = await api.live().getServer(params.server).then(verify);
+  const liveServer = await api.live().getServer(params.server).then(verify);
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
 
   return (
@@ -18,19 +18,23 @@ export default async function ServerPage({ params }: Props) {
       <h1>Server details</h1>
       <section className="section">
         <div className="flex items-center">
-          <h2 className="text-xl">{server.name}</h2>
+          <h2 className="text-xl">{liveServer.info.serverName}</h2>
         </div>
         <div className="flex gap-4 font-bold mb-2">
-          <p>{`Address: ${server.ip}`}</p>
-          <p>{`Created: ${DateTime.fromISO(server.created_at).toFormat('DDD, T')}`}</p>
-          <p>{`Server location: ${server.city}, ${server.country}`}</p>
+          <p>{`Address: ${liveServer.address}`}</p>
+          <p>{`Updated: ${
+            liveServer.updatedAt
+              ? DateTime.fromISO(liveServer.updatedAt).toFormat('DDD, T')
+              : '-'
+          }`}</p>
+          <p>{`Server location: ${liveServer.city}, ${liveServer.country}`}</p>
         </div>
       </section>
-      <ServerInfoSection server={server} />
-      {adminRoles?.server_admin && <ServerActions server={server} />}
-      {server.info && server.info.players.length > 0 && (
+      <ServerInfoSection server={liveServer} />
+      {adminRoles?.server_admin && <ServerActions address={params.server} />}
+      {liveServer.info && liveServer.info.players.length > 0 && (
         <section>
-          <RoundTable liveInfo={server.info} />
+          <RoundTable liveInfo={liveServer.info} />
         </section>
       )}
     </main>

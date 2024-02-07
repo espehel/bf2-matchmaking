@@ -1,13 +1,16 @@
-import { ServersRow } from '@bf2-matchmaking/types';
 import ServerUpdateForm from '@/components/servers/ServerUpdateForm';
 import ActionButton from '@/components/ActionButton';
 import { deleteServer } from '@/app/servers/[server]/actions';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
+import { verifySingleResult } from '@bf2-matchmaking/supabase';
 
 interface Props {
-  server: ServersRow;
+  address: string;
 }
 
-export default function ServerActions({ server }: Props) {
+export default async function ServerActions({ address }: Props) {
+  const server = await supabase(cookies).getServer(address).then(verifySingleResult);
   async function deleteServerSA() {
     'use server';
     return deleteServer(server.ip);

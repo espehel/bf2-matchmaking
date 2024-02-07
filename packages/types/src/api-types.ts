@@ -3,6 +3,7 @@ import {
   MatchServer,
   PlayersRow,
   RoundsInsert,
+  ServerRconsRow,
   ServersJoined,
   ServersRow,
 } from './database-types';
@@ -90,11 +91,15 @@ export interface PostMatchesRequestBody {
   serverIp: string;
 }
 
-export interface PostRconRequestBody {
+export interface PostServersRequestBody {
   host: string;
   port: string;
   password: string;
-  persist?: boolean;
+}
+export interface PostServersResponseBody {
+  info: ServerInfo;
+  server: ServersRow;
+  rcon: ServerRconsRow;
 }
 
 export interface PostServerExecRequestBody {

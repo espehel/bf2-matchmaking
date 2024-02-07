@@ -1,22 +1,21 @@
 'use client';
 import { createServer } from '@/app/servers/actions';
-import { toast } from 'react-toastify';
 import FormSubmitButton from '@/components/FormSubmitButton';
+import ActionForm from '@/components/commons/ActionForm';
 
 export default function ServerCreateForm() {
-  const handleFormAction = async (data: FormData) => {
-    const { data: server, error } = await createServer(data);
-
-    if (error) {
-      toast.error(error);
-    }
-
-    if (server) {
-      toast.success(`Added new server ${server.ip}`);
-    }
+  const createServerSA = async (data: FormData) => {
+    'use server';
+    return createServer(data);
   };
+
   return (
-    <form action={handleFormAction} className="form-control grid grid-cols-2 gap-4">
+    <ActionForm
+      action={createServerSA}
+      successMessage="Added new Server"
+      errorMessage="Failed to add server"
+      className="form-control grid grid-cols-2 gap-4"
+    >
       <div>
         <label className="label" htmlFor="addressInput">
           <span className="label-text">Address</span>
@@ -42,6 +41,6 @@ export default function ServerCreateForm() {
         <input className="input input-bordered" name="rconPwInput" />
       </div>
       <FormSubmitButton>Add</FormSubmitButton>
-    </form>
+    </ActionForm>
   );
 }

@@ -43,9 +43,9 @@ export const getServerPollEmbed = (
   fields: createServerPollFields(servers),
 });
 export const getServerEmbed = (server: LiveServer) => ({
-  description: `Join [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
+  description: `Join [${replaceDiscordGG(server.info.serverName)}](${server.joinmeHref})`,
   fields: [
-    { name: 'address', value: server.ip, inline: true },
+    { name: 'address', value: server.address, inline: true },
     { name: 'port', value: server.port, inline: true },
   ],
 });
@@ -95,7 +95,9 @@ export const getMatchStartedEmbed = (
 ): APIEmbed =>
   server
     ? {
-        description: `**JOIN** [${replaceDiscordGG(server.name)}](${server.joinmeHref})`,
+        description: `**JOIN** [${replaceDiscordGG(server.info.serverName)}](${
+          server.joinmeHref
+        })`,
         fields: [...getServerInfoFields(server), getLiveMatchField(match)],
       }
     : {
@@ -289,7 +291,7 @@ export function createServerLocationPollResultField(location: string) {
 const getServerInfoFields = (server: LiveServer) => [
   {
     name: 'address:',
-    value: `\`\`\`${server.ip}\`\`\``,
+    value: `\`\`\`${server.address}\`\`\``,
     inline: true,
   },
   {
@@ -311,13 +313,13 @@ export const getMatchField = (match: MatchesJoined) => ({
 
 export function getServerFields(servers: Array<LiveServer>) {
   return servers
-    .filter((server) => !getMatchIdFromDnsName(server.ip))
+    .filter((server) => !getMatchIdFromDnsName(server.address))
     .map((server) => ({
-      name: server.name.concat(
+      name: server.info.serverName.concat(
         server.info
           ? ` (${server.info.connectedPlayers}/${server.info.maxPlayers})`
           : ' (offline)'
       ),
-      value: `[${server.ip}:${server.port}](${server.joinmeHref})`,
+      value: `[${server.address}:${server.port}](${server.joinmeHref})`,
     }));
 }

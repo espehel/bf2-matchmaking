@@ -6,7 +6,6 @@ import {
   logMessage,
 } from '@bf2-matchmaking/logging';
 import {
-  DnsRecordWithoutPriority,
   isDiscordMatch,
   LiveInfo,
   LiveMatch,
@@ -17,7 +16,6 @@ import {
   MatchStatus,
   RoundsInsert,
   ServerInfo,
-  ServersRow,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { Match } from './Match';
@@ -36,11 +34,7 @@ import {
   TEST_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
-import {
-  getJoinmeHref,
-  getMatchIdFromDnsName,
-  hasNotKeyhash,
-} from '@bf2-matchmaking/utils';
+import { getJoinmeHref, hasNotKeyhash } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 
 export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | null) => {
@@ -275,19 +269,6 @@ export async function updateServer(
   }
 
   return result.data;
-}
-
-export async function updateMatchServerWithDns(
-  dns: DnsRecordWithoutPriority,
-  server: ServersRow
-) {
-  const matchId = getMatchIdFromDnsName(dns.name);
-  if (!matchId) {
-    info('updateMatchServerWithDns', `Failed to get match id for ${dns.name}`);
-    return;
-  }
-
-  return updateMatchServer(matchId, server.ip);
 }
 
 export async function updateMatchServer(matchId: number, serverAddress: string) {

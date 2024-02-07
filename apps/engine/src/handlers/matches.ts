@@ -90,7 +90,7 @@ async function startLiveMatch(
   match: MatchesJoined,
   server: ServersRow | null
 ): Promise<[unknown, unknown]> {
-  const { data: liveMatch, error } = await api.live().postMatch(match.id, false);
+  const { data: liveMatch, error } = await api.live().postMatch(match.id);
   if (error) {
     logErrorMessage(`Match ${match.id} failed to start live match`, error, {
       match,

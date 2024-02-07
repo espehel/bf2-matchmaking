@@ -20,7 +20,7 @@ export default async function ChangeMapForm({ server }: Props) {
     'use server';
     const value = Number(data.get('select'));
     assertNumber(value, 'No map selected');
-    return changeServerMap(server.ip, value);
+    return changeServerMap(server.address, value);
   }
 
   return (

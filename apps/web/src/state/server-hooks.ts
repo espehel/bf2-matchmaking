@@ -1,6 +1,5 @@
 'use-client';
-import { FetchResult } from '@bf2-matchmaking/utils';
-import { LiveServer } from '@bf2-matchmaking/types';
+import { FetchResult, LiveServer } from '@bf2-matchmaking/types';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { restartServer } from '@/app/matches/[match]/actions';
@@ -20,7 +19,7 @@ export function useServerRestart(
       router.refresh();
       setRestarted(true);
     }, 15000);
-    return restartServer(matchId, server?.ip || '');
+    return restartServer(matchId, server?.address || '');
   }, [matchId, server, router]);
 
   useEffect(() => {

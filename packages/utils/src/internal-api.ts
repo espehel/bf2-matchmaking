@@ -9,6 +9,8 @@ import {
   Region,
   PostDemosRequestBody,
   PostDemosResponseBody,
+  PostServerPlayersSwitchRequestBody,
+  PostServersRequestBody,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
@@ -31,6 +33,8 @@ const live = () => {
     serverExec: (ip: string) => `/servers/${ip}/exec`,
     serverPause: (ip: string) => `/servers/${ip}/pause`,
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
+    serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
+    serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
     match: (matchId: number) => `/matches/${matchId}/live`,
     matchServer: (matchId: number, address: string) =>
@@ -39,6 +43,8 @@ const live = () => {
   };
   return {
     paths,
+    postServers: (body: PostServersRequestBody) =>
+      postJSON<LiveServer>(basePath.concat(paths.servers()), body),
     getServerInfo: (ip: string) =>
       getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip)), { cache: 'no-store' }),
     postServerExec: (ip: string, body: PostServerExecRequestBody) =>
@@ -46,6 +52,10 @@ const live = () => {
     postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
     postServerUnpause: (ip: string) =>
       postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
+    postServerPlayersSwitch: (ip: string, body: PostServerPlayersSwitchRequestBody) =>
+      postJSON(basePath.concat(paths.serverPlayersSwitch(ip)), {}),
+    postServerMaps: (ip: string, map: number) =>
+      postJSON(basePath.concat(paths.serverMaps(ip)), { map }),
     getServerPlayerList: (ip: string) =>
       getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip)), {
         next: { tags: ['getServerPlayerList'] },

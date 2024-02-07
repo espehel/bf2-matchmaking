@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import { error } from '@bf2-matchmaking/logging';
-import { toFetchError } from '@bf2-matchmaking/utils';
+import { assertArray, assertObj, toFetchError } from '@bf2-matchmaking/utils';
 import { isString } from '@bf2-matchmaking/types';
 import {
   addPendingServer,
@@ -11,10 +11,41 @@ import {
 } from '../services/server/ServerManager';
 import { toLiveServer, getAddress, upsertServer } from '../services/server/servers';
 import { exec, getPlayerList, getServerInfo, rcon } from '../services/rcon/RconManager';
+import { findMap } from '../services/maps';
 export const serversRouter = new Router({
   prefix: '/servers',
 });
 
+serversRouter.post('/:ip/players/switch', async (ctx) => {
+  ctx.body = { message: 'Not implemented' };
+  ctx.status = 501;
+});
+serversRouter.post('/:ip/maps', async (ctx) => {
+  const liveServer = getLiveServer(ctx.params.ip);
+  if (!liveServer) {
+    ctx.status = 404;
+    ctx.body = { message: 'Live server not found' };
+    return;
+  }
+
+  const map = findMap(ctx.request.body.map);
+  const mapList = await liveServer.rcon().then(exec('exec maplist.list'));
+  assertObj(map, 'Could not find map');
+
+  assertArray(mapList, 'Could get map list from server');
+  const id = mapList.indexOf(map.name.toLowerCase().replace(/ /g, '_'));
+
+  await liveServer.rcon().then(exec(`exec admin.setNextLevel ${id}`));
+  await liveServer.rcon().then(exec('exec admin.runNextLevel'));
+
+  try {
+    const { currentMapName, nextMapName } = await liveServer.rcon().then(getServerInfo);
+    ctx.body = { currentMapName, nextMapName };
+  } catch (e) {
+    ctx.status = 500;
+    ctx.body = toFetchError(e);
+  }
+});
 serversRouter.post('/:ip/exec', async (ctx) => {
   const { cmd } = ctx.request.body;
 
@@ -161,7 +192,7 @@ serversRouter.post('/', async (ctx) => {
       ctx.body = { message: 'Failed to create live server.' };
       return;
     }
-    ctx.body = toLiveServer(liveServer);
+    ctx.body = await toLiveServer(liveServer);
   } catch (e) {
     error('POST /servers', e);
     ctx.status = 500;

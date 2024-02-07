@@ -119,7 +119,7 @@ export function isServerIdentified(serverPlayers: number, matchSize: number) {
 
 export function addPendingServer(server: PendingServer) {
   pendingServers = pendingServers
-    .filter(({ dns }) => server.dns.name === dns.name)
+    .filter(({ address }) => server.address === address)
     .concat(server);
 }
 
@@ -128,28 +128,28 @@ export async function updatePendingServers() {
     return;
   }
   const connectedServers: Array<string> = [];
-  for (const { dns, port, rcon_port, rcon_pw } of pendingServers) {
-    const serverInfo = await rcon(dns.name, rcon_port, rcon_pw).then(getServerInfo);
+  for (const { address, port, rcon_port, rcon_pw } of pendingServers) {
+    const serverInfo = await rcon(address, rcon_port, rcon_pw).then(getServerInfo);
     if (!serverInfo) {
-      info('updatePendingServers', `Server ${dns.name}: Failed to get info`);
+      info('updatePendingServers', `Server ${address}: Failed to get info`);
       continue;
     }
     try {
       const server = await client()
-        .upsertServer({ ip: dns.name, port, name: serverInfo.serverName })
+        .upsertServer({ ip: address, port, name: serverInfo.serverName })
         .then(verifySingleResult);
 
       const serverRcon = await client()
-        .upsertServerRcon({ id: dns.name, rcon_port, rcon_pw })
+        .upsertServerRcon({ id: address, rcon_port, rcon_pw })
         .then(verifySingleResult);
 
       const liveServer = await initLiveServer(serverRcon);
-      await updateMatchServerWithDns(dns, server);
+      //await updateMatchServerWithDns(address, server);
       if (liveServer) {
-        connectedServers.push(dns.name);
+        connectedServers.push(address);
       }
     } catch (e) {
-      logErrorMessage(`Server ${dns.name}: Failed to update pending server`, e);
+      logErrorMessage(`Server ${address}: Failed to update pending server`, e);
     }
   }
 
@@ -158,7 +158,7 @@ export async function updatePendingServers() {
     `Connected ${connectedServers.length}/${pendingServers.length} servers`
   );
   pendingServers = pendingServers.filter(
-    ({ dns }) => !connectedServers.includes(dns.name)
+    ({ address }) => !connectedServers.includes(address)
   );
 }
 

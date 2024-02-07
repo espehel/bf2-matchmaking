@@ -25,7 +25,7 @@ export async function getPlayerList(client: RconClient): Promise<Array<PlayerLis
 export async function getServerInfo(client: RconClient): Promise<ServerInfo> {
   const si = await exec('bf2cc si')(client).then(mapServerInfo);
   if (!si) {
-    throw new Error('Empty response');
+    throw new Error('Empty ServerInfo response');
   }
   return si;
 }
@@ -43,6 +43,10 @@ export function switchPlayers(players: Array<string>) {
 
 export function restartRound(client: RconClient) {
   return client.send('admin.restartMap');
+}
+
+export function restartServer(client: RconClient) {
+  return client.send('quit');
 }
 
 export function exec(command: string) {

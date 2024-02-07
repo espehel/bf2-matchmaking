@@ -10,6 +10,9 @@ import { getPlayerList, getServerInfo, rcon } from '../rcon/RconManager';
 import { Match } from '../match/Match';
 import { createLiveInfo } from './servers';
 
+const STALE_LIMIT_ERROR = 1000 * 30;
+const STALE_LIMIT_IDLE = 1000 * 60;
+
 export class Server {
   address: string;
   port: number;
@@ -17,6 +20,7 @@ export class Server {
   #password: string;
   #liveMatch: Match | null = null;
   info: LiveInfo;
+  #tickedAt: number = Date.now();
   updatedAt: DateTime = DateTime.now();
   errorAt: DateTime | null = null;
   #waitingSince: DateTime | null = null;
@@ -51,13 +55,25 @@ export class Server {
     return !Boolean(this.#liveMatch);
   }
 
+  getTickDuration() {
+    return Date.now() - this.#tickedAt;
+  }
+
+  isStale() {
+    if (this.errorAt) {
+      return this.getTickDuration() > STALE_LIMIT_ERROR;
+    }
+    return !this.isIdle() || this.getTickDuration() > STALE_LIMIT_IDLE;
+  }
+
   hasLiveMatch(liveMatch: Match) {
     return this.#liveMatch
       ? Boolean(this.#liveMatch.match.id === liveMatch.match.id)
       : false;
   }
 
-  async update() {
+  async update(): Promise<Server> {
+    this.#tickedAt = Date.now();
     try {
       if (this.errorAt && this.errorAt.diffNow('minutes').minutes < -30) {
         this.reset();

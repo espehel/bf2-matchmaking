@@ -25,9 +25,9 @@ export default async function Page() {
         </thead>
         <tbody>
           {servers.map((server) => (
-            <tr key={server.ip} className="hover">
-              <td className="truncate">{server.name}</td>
-              <td>{server.ip}</td>
+            <tr key={server.address} className="hover">
+              <td className="truncate">{server.info.serverName}</td>
+              <td>{server.address}</td>
               <td>{server.port}</td>
               <td className="truncate">{`${server.city}, ${server.country}`}</td>
               <td>
@@ -37,7 +37,7 @@ export default async function Page() {
                 server.info?.maxPlayers || 0
               }`}</td>
               <td>
-                <Link className="link link-secondary" href={`/servers/${server.ip}`}>
+                <Link className="link link-secondary" href={`/servers/${server.address}`}>
                   <DocumentMagnifyingGlassIcon className="h-6" />
                 </Link>
               </td>
@@ -53,10 +53,10 @@ export default async function Page() {
 }
 
 function ServerStatus({ server }: { server: LiveServer }) {
-  if (server.match) {
+  if (server.matchId) {
     return (
-      <Link className="link" href={`/matches/${server.match.id}`}>
-        {server.match.id}
+      <Link className="link" href={`/matches/${server.matchId}`}>
+        {server.matchId}
       </Link>
     );
   } else if (server.info) {

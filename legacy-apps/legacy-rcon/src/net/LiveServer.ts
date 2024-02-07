@@ -1,4 +1,4 @@
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info } from 'packages/logging';
 import {
   getPlayerList,
   getServerInfo,

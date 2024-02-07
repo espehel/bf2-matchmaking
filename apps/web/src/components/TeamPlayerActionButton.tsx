@@ -1,9 +1,9 @@
 'use client';
 import { useCallback, useTransition } from 'react';
 import * as React from 'react';
-import { FetchResult } from '@bf2-matchmaking/utils';
 import { toast } from 'react-toastify';
 import { useMatch } from '@/state/MatchContext';
+import { FetchResult } from '@bf2-matchmaking/types';
 
 interface Props {
   children: React.ReactNode;
