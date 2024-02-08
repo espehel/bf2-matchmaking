@@ -209,9 +209,9 @@ serversRouter.get('/:ip', async (ctx) => {
     return;
   }
 
-  ctx.body = toLiveServer(server);
+  ctx.body = await toLiveServer(server);
 });
 
 serversRouter.get('/', async (ctx) => {
-  ctx.body = getLiveServers().map(toLiveServer);
+  ctx.body = await Promise.all(getLiveServers().map(toLiveServer));
 });

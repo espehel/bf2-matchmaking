@@ -1,4 +1,3 @@
-'use client';
 import { createServer } from '@/app/servers/actions';
 import FormSubmitButton from '@/components/FormSubmitButton';
 import ActionForm from '@/components/commons/ActionForm';
