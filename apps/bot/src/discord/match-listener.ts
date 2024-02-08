@@ -108,8 +108,6 @@ function handleCollect(config: DiscordConfig) {
         );
         addMatch(pubMatch);
       }
-
-      await sendServersMessage(pubMatch.match, message.channel);
     } catch (e) {
       error('handlePubobotMatchDrafting', e);
     }
@@ -129,6 +127,7 @@ function handleCollect(config: DiscordConfig) {
         match: pubMatch.match,
       });
 
+      await sendServersMessage(pubMatch.match, message.channel);
       await sendDraftMessage(pubMatch.match);
     } catch (e) {
       error('handlePubobotMatchStarted', e);
