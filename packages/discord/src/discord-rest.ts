@@ -21,11 +21,8 @@ import {
   RESTDeleteAPIChannelMessageResult,
 } from 'discord-api-types/v10';
 import invariant from 'tiny-invariant';
-import {
-  error,
-  logCreateChannelMessage,
-  logEditChannelMessage,
-} from '@bf2-matchmaking/logging';
+import { error, logEditChannelMessage } from '@bf2-matchmaking/logging';
+import { logChannelMessage } from './message-utils';
 
 invariant(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
@@ -125,7 +122,9 @@ export const sendChannelMessage = async (
       body,
     }
   );
-  logCreateChannelMessage(channelId, res.data?.id, body.content, body.embeds);
+  if (res.data) {
+    logChannelMessage(res.data, { body });
+  }
   return res;
 };
 

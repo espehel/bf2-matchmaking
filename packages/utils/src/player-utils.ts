@@ -1,6 +1,7 @@
 import {
   isTeamPlayer,
   MatchesJoined,
+  MatchPlayersRow,
   PlayerListItem,
   PlayersRow,
   TeamPlayer,
@@ -14,14 +15,15 @@ export const assignMatchPlayerTeams = (players: Array<PlayersRow>) =>
   }));
 
 export const getTeamPlayers = (
-  match: MatchesJoined,
-  team?: 'a' | 'b' | null
+  teams: Array<MatchPlayersRow>,
+  players: Array<PlayersRow>,
+  team: number
 ): Array<TeamPlayer> =>
-  match.teams
-    .filter((player) => (typeof team === 'undefined' ? true : player.team === team))
+  teams
+    .filter((player) => player.team === team)
     .map((matchPlayer) => ({
       ...matchPlayer,
-      player: match.players.find((player) => player.id === matchPlayer.player_id),
+      player: players.find((player) => player.id === matchPlayer.player_id),
     }))
     .filter(isTeamPlayer);
 

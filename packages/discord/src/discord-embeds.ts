@@ -3,34 +3,34 @@ import {
   MatchConfigsRow,
   MatchesJoined,
   MatchResultsJoined,
-  MatchStatus,
   LiveServer,
   ServersRow,
+  MatchPlayersRow,
+  PlayersRow,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
   api,
   compareFullName,
   compareIsCaptain,
-  compareUpdatedAt,
-  getDraftStep,
   getMatchIdFromDnsName,
   getPlayerName,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
-import { getEmbedTitle, replaceDiscordGG } from './embed-utils';
+import { replaceDiscordGG } from './embed-utils';
 import { DateTime } from 'luxon';
 
-export const getMatchEmbed = (
+export function buildDraftPollEmbed(
   match: MatchesJoined,
-  server: ServersRow | null | undefined,
-  description?: string
-): APIEmbed => ({
-  title: getEmbedTitle(match),
-  description: description || getMatchDescription(match),
-  fields: getMatchFields(match, server),
-  url: `https://bf2-matchmaking.netlify.app/matches/${match.id}`,
-});
+  teams: Array<MatchPlayersRow>
+): APIEmbed {
+  return {
+    title: 'Suggested Draft',
+    description:
+      'If more than half of players accepts the suggested draft, teams will be auto drafted.',
+    fields: [...createTeamFields(teams, match.players), getMatchField(match)],
+  };
+}
 
 export const getServerPollEmbed = (
   match: MatchesJoined,
@@ -170,101 +170,29 @@ const getRulesDescriptionByConfig = (config: MatchConfigsRow): string => {
   return '';
 };
 
-const getMatchDescription = (match: MatchesJoined): string | undefined => {
-  if (match.status === MatchStatus.Summoning && match.ready_at) {
-    return `Ready check ends <t:${DateTime.fromISO(match.ready_at).toUnixInteger()}:R>`;
-  }
-  if (match.status === MatchStatus.Drafting) {
-    const { captain } = getDraftStep(match);
-    return captain ? `${captain.nick} is picking` : undefined;
-  }
-};
+function createTeamFields(teams: Array<MatchPlayersRow>, players: Array<PlayersRow>) {
+  return [
+    {
+      name: 'Team A',
+      value: [...getTeamPlayers(teams, players, 1)]
+        .sort(compareFullName)
+        .sort(compareIsCaptain)
+        .map(getPlayerName)
+        .join('\n'),
+      inline: true,
+    },
+    {
+      name: 'Team B',
+      value: [...getTeamPlayers(teams, players, 2)]
+        .sort(compareFullName)
+        .sort(compareIsCaptain)
+        .map(getPlayerName)
+        .join('\n'),
+      inline: true,
+    },
+  ];
+}
 
-const getMatchFields = (match: MatchesJoined, server: ServersRow | null | undefined) =>
-  createCurrentPlayersFields(match)
-    .concat(createSummoningFields(match))
-    .concat(createPoolFields(match))
-    .concat(createTeamFields(match))
-    .concat(createServerFields(match, server));
-
-const createCurrentPlayersFields = (match: MatchesJoined) =>
-  match.status === MatchStatus.Open
-    ? [
-        {
-          name: 'Players',
-          value: `${match.players.length}/${match.config.size} | ${[
-            ...getTeamPlayers(match),
-          ]
-            .sort(compareUpdatedAt)
-            .map(getPlayerName)
-            .join(', ')}`,
-        },
-      ]
-    : [];
-
-const createSummoningFields = (match: MatchesJoined) =>
-  match.status === MatchStatus.Summoning
-    ? [
-        {
-          name: 'Ready players',
-          value: [...getTeamPlayers(match)]
-            .sort(compareFullName)
-            .map(({ player, ready }) => `${ready ? '✅' : '❌'}  ${player.nick}`)
-            .join('\n'),
-        },
-      ]
-    : [];
-
-const createPoolFields = (match: MatchesJoined) =>
-  match.status === MatchStatus.Drafting && getTeamPlayers(match, null).length > 0
-    ? [
-        {
-          name: 'Pool',
-          value: [...getTeamPlayers(match, null)]
-            .sort(compareFullName)
-            .map(getPlayerName)
-            .join(', '),
-        },
-      ]
-    : [];
-
-const createTeamFields = (match: MatchesJoined) =>
-  match.status === MatchStatus.Drafting ||
-  match.status === MatchStatus.Ongoing ||
-  match.status === MatchStatus.Closed
-    ? [
-        {
-          name: 'Team A',
-          value: [...getTeamPlayers(match, 'a')]
-            .sort(compareFullName)
-            .sort(compareIsCaptain)
-            .map(getPlayerName)
-            .join(', '),
-        },
-        {
-          name: 'Team B',
-          value: [...getTeamPlayers(match, 'b')]
-            .sort(compareFullName)
-            .sort(compareIsCaptain)
-            .map(getPlayerName)
-            .join(', '),
-        },
-      ]
-    : [];
-
-const createServerFields = (
-  match: MatchesJoined,
-  server: ServersRow | null | undefined
-) =>
-  (match.status === MatchStatus.Drafting || match.status === MatchStatus.Ongoing) &&
-  server
-    ? [
-        {
-          name: server.name,
-          value: `https://joinme.click/g/bf2/${server.ip}:${server.port}`,
-        },
-      ]
-    : [];
 const createServerPollFields = (servers: Array<[LiveServer, string, string]>) => [
   {
     name: 'Servers',

@@ -1,15 +1,11 @@
 import {
   Message,
   MessageCreateOptions,
-  MessageReaction,
+  MessagePayload,
   TextBasedChannel,
+  TextChannel,
 } from 'discord.js';
-import {
-  info,
-  logCreateChannelMessage,
-  logErrorMessage,
-  logMessage,
-} from '@bf2-matchmaking/logging';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { getDiscordClient } from '../discord/client';
 import {
   createServerLocationPollResultField,
@@ -18,14 +14,54 @@ import {
   getMatchServerField,
   getServerFields,
   getTeamDraftEmbed,
+  logChannelMessage,
   TEST_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
-import { isTextBasedChannel } from '../discord/utils';
-import { LocationEmoji, LocationPollResult, MatchesJoined } from '@bf2-matchmaking/types';
+import { isTextBasedChannel } from '../discord/discord-utils';
+import {
+  LocationEmoji,
+  PollResult,
+  MatchesJoined,
+  LogContext,
+} from '@bf2-matchmaking/types';
 import { api, isBetaTester } from '@bf2-matchmaking/utils';
 import { draftTeams, getAverageRating } from './draft-utils';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 
+export async function sendMessage(
+  channel: TextChannel,
+  content: string | MessagePayload | MessageCreateOptions,
+  context?: LogContext
+) {
+  try {
+    const result = await channel.send(content);
+    logChannelMessage(result, {
+      content,
+      name: channel.name,
+      id: channel.id,
+      ...context,
+    });
+    return result;
+  } catch (e) {
+    logErrorMessage('Failed to send message', e, { channel, content, ...context });
+    return null;
+  }
+}
+
+export async function replyMessage(
+  message: Message,
+  content: string | MessagePayload | MessageCreateOptions
+) {
+  if (!isTextBasedChannel(message.channel)) {
+    logErrorMessage(
+      'Failed to reply to message',
+      'Message did not come from text based channel',
+      { message, content }
+    );
+    return null;
+  }
+  return sendMessage(message.channel, content);
+}
 export async function sendSummoningMessage(match: MatchesJoined) {
   const client = await getDiscordClient();
   const messages = await Promise.all(
@@ -56,30 +92,11 @@ export async function sendDraftMessage(match: MatchesJoined) {
     ],
   });
 }
-export async function replyMessage(message: Message, content: MessageCreateOptions) {
-  if (!isTextBasedChannel(message.channel)) {
-    info('replyMessage', 'Message did not come from text based channel');
-    return null;
-  }
-  try {
-    const replyMessage = await message.channel.send(content);
-    logCreateChannelMessage(
-      message.channel.id,
-      replyMessage.id,
-      replyMessage.embeds[0].description,
-      replyMessage.embeds
-    );
-    return replyMessage;
-  } catch (e) {
-    logErrorMessage('Failed to reply to message', e, { message, content });
-    return null;
-  }
-}
 
 export async function editLocationPollMessageWithResults(
   message: Message,
   match: MatchesJoined,
-  results: Array<LocationPollResult>
+  results: Array<PollResult>
 ) {
   const locationName = getKey(LocationEmoji, results[0][0]);
 

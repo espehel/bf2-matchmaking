@@ -1,5 +1,4 @@
 import { MatchPlayersRow, PlayersRow, RoundsInsert } from './database-types';
-import { DnsRecordWithoutPriority } from './cloudflare';
 
 export * from './database-types.generated';
 export * from './api-types';
@@ -162,8 +161,9 @@ export enum MatchReaction {
   CANCEL = '⛔',
 }
 
-export enum ServerReaction {
+export enum PollEmoji {
   ACCEPT = '✅',
+  REJECT = '❌',
 }
 
 export enum LocationEmoji {
@@ -228,7 +228,7 @@ export interface AsyncErrorResponse {
 
 export type AsyncResult<T> = AsyncSuccessResponse<T> | AsyncErrorResponse;
 
-export type LocationPollResult = [string, Array<string>];
+export type PollResult = [string, Array<string>];
 
 export interface CreateServerOptions {
   name: string;
@@ -236,3 +236,5 @@ export interface CreateServerOptions {
   map?: string | null;
   subDomain: string;
 }
+
+export type LogContext = Record<any, any>;

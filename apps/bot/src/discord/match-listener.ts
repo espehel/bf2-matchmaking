@@ -4,8 +4,7 @@ import {
   isPubobotMatchCheckIn,
   isPubobotMatchDrafting,
   isPubobotMatchStarted,
-  startTopLocationPoll,
-} from './utils';
+} from './discord-utils';
 import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
 import { Message, MessageCollector } from 'discord.js';
 import {
@@ -17,13 +16,14 @@ import {
 } from '../services/PubobotMatchManager';
 import { PubobotMatch } from '../services/PubobotMatch';
 import {
+  getTestChannel,
   replyMessage,
   sendDraftMessage,
   sendServersMessage,
   sendSummoningMessage,
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
-import { generateServers } from '@bf2-matchmaking/server';
+import { handleDraftPollResult, startDraftPoll } from './message-polls';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = messageFilter;
@@ -108,6 +108,11 @@ function handleCollect(config: DiscordConfig) {
         );
         addMatch(pubMatch);
       }
+
+      const testChannel = await getTestChannel();
+      startDraftPoll(pubMatch, testChannel).then(
+        handleDraftPollResult(pubMatch, testChannel)
+      );
     } catch (e) {
       error('handlePubobotMatchDrafting', e);
     }

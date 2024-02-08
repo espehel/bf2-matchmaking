@@ -1,5 +1,12 @@
 import { isDefined, MatchesJoined, MatchPlayersRow } from '@bf2-matchmaking/types';
+import { getCurrentTeam, shuffleArray } from '@bf2-matchmaking/utils';
 
+export function buildMixTeams(match: MatchesJoined) {
+  const [teamA, teamB] = getTeamsBySnakeDraft(match.teams);
+  const team1 = teamA.sort(compareRating).map(withTeamAndCaptain(1));
+  const team2 = teamB.sort(compareRating).map(withTeamAndCaptain(2));
+  return team1.concat(team2);
+}
 export function draftTeams(match: MatchesJoined) {
   const snakeDraftTeams = withAverageRatingAndNick(
     getTeamsBySnakeDraft(match.teams),
@@ -114,4 +121,35 @@ function toPlayerText(match: MatchesJoined) {
     const player = match.players.find(({ id }) => id === mp.player_id);
     return player && `${player.nick} (${mp.rating})`;
   };
+}
+
+function compareRating(mpA: MatchPlayersRow, mpB: MatchPlayersRow) {
+  return mpB.rating - mpA.rating;
+}
+
+function withTeamAndCaptain(team: number) {
+  return (mp: MatchPlayersRow, index: number) => {
+    if (index === 0) {
+      return { ...mp, captain: true, team };
+    }
+    return { ...mp, captain: false, team };
+  };
+}
+
+export function createDraftList(match: MatchesJoined) {
+  let draftPool = shuffleArray(match.teams);
+  const draftList = [];
+  for (let i = 0; i < match.teams.length; i++) {
+    const team = getCurrentTeam(draftPool.length);
+    if (!team) {
+      continue;
+    }
+    const mp = draftPool.find((mp) => mp.team === team);
+    if (!mp) {
+      continue;
+    }
+    draftList.push(mp);
+    draftPool = draftPool.filter((mp) => mp.team !== team);
+  }
+  return draftList;
 }
