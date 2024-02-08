@@ -36,7 +36,7 @@ const live = () => {
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
-    match: (matchId: number) => `/matches/${matchId}/live`,
+    match: (matchId: number) => `/matches/${matchId}`,
     matchServer: (matchId: number, address: string) =>
       `/matches/${matchId}/server/${address}`,
     matchResults: (matchId: number) => `/matches/${matchId}/results`,
