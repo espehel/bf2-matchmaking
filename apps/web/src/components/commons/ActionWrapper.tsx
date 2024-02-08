@@ -11,6 +11,7 @@ interface Props extends PropsWithChildren {
   redirect?: string;
   errorRedirect?: string;
   visible?: boolean;
+  disabled?: boolean;
 }
 
 export default function ActionWrapper({
@@ -21,6 +22,7 @@ export default function ActionWrapper({
   redirect,
   errorRedirect,
   visible = true,
+  disabled,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -28,6 +30,9 @@ export default function ActionWrapper({
   const handleAction = useCallback(
     () =>
       startTransition(async () => {
+        if (disabled) {
+          return;
+        }
         const result = await action();
         if (result.error) {
           toast.error(`${errorMessage}: ${result.error.message}`);

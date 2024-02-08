@@ -1,21 +1,9 @@
 'use server';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import {
-  EventMatchesUpdate,
-  MatchesJoined,
-  MatchServer,
-  MatchStatus,
-} from '@bf2-matchmaking/types';
+import { EventMatchesUpdate, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import {
-  api,
-  assertString,
-  createServerName,
-  getInitialServerMap,
-  getPlayersToSwitch,
-  getServerVehicles,
-} from '@bf2-matchmaking/utils';
+import { api, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   deleteGuildScheduledEvent,
@@ -91,6 +79,20 @@ export async function finishMatch(matchId: number) {
 
   return apiResult;
 }
+
+export async function startMatch(matchId: number) {
+  const result = await supabase(cookies).updateMatch(matchId, {
+    status: MatchStatus.Ongoing,
+    started_at: DateTime.now().toISO(),
+  });
+
+  if (!result.error) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+
+  return result;
+}
+
 export async function closeMatch(matchId: number) {
   const result = await supabase(cookies).updateMatch(matchId, {
     status: MatchStatus.Closed,

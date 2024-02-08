@@ -5,6 +5,7 @@ import {
   finishMatch,
   reopenMatch,
   createResults,
+  startMatch,
 } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
 import { supabase } from '@/lib/supabase/supabase';
@@ -37,6 +38,10 @@ export default async function MatchActions({ match }: Props) {
     'use server';
     return closeMatch(match.id);
   }
+  async function startMatchSA() {
+    'use server';
+    return startMatch(match.id);
+  }
   async function createResultsSA() {
     'use server';
     return createResults(match.id);
@@ -54,6 +59,14 @@ export default async function MatchActions({ match }: Props) {
         {isScheduled && (
           <div className=" flex gap-2 text-left">
             <ActionButton
+              action={startMatchSA}
+              successMessage="Match started."
+              errorMessage="Failed to start match"
+            >
+              Start match
+            </ActionButton>
+            <OrganizerCommandCopyButton match={match} />
+            <ActionButton
               action={deleteMatchSA}
               successMessage="Match deleted."
               errorMessage="Failed to delete match"
@@ -61,7 +74,6 @@ export default async function MatchActions({ match }: Props) {
             >
               Delete match
             </ActionButton>
-            <OrganizerCommandCopyButton match={match} />
           </div>
         )}
         {isOngoing && (

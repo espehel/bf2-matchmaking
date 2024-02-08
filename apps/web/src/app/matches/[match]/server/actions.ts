@@ -1,4 +1,9 @@
-import { MatchesJoined, MatchServer, MatchServersInsert } from '@bf2-matchmaking/types';
+import {
+  CreateServerOptions,
+  MatchesJoined,
+  MatchServer,
+  MatchServersInsert,
+} from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { revalidatePath, revalidateTag } from 'next/cache';
@@ -34,39 +39,30 @@ export async function generateMatchServers(
   return { data: null, error: { message: 'Invalid match for generating server' } };
 }
 
-export async function generateMatchServer(match: MatchesJoined, data: FormData) {
-  const { nameInput, domainInput, mapInput, regionInput } = Object.fromEntries(data);
-  assertString(nameInput);
-  assertString(domainInput);
-  assertString(regionInput);
-  assertString(mapInput);
-
-  const map = getInitialServerMap(mapInput);
-
-  const { data: server } = await supabase(cookies).getServerByName(nameInput);
+export async function generateMatchServer(
+  match: MatchesJoined,
+  options: CreateServerOptions
+) {
+  const name = options.name;
+  const { data: server } = await supabase(cookies).getServerByName(name);
 
   if (server) {
     return { data: null, error: { message: 'Server already exists', code: 409 } };
   }
 
-  const result = await createServerInstance(match, {
-    name: nameInput,
-    region: regionInput,
-    map: mapInput,
-    subDomain: domainInput,
-  });
+  const result = await createServerInstance(match, options);
 
   if (result.error) {
-    logErrorMessage(`Server ${nameInput}: Generation failed`, result.error);
+    logErrorMessage(`Server ${name}: Generation failed`, result.error, {
+      match,
+      options,
+    });
     return result;
   }
 
-  logMessage(`Server ${nameInput}: Generation started`, {
+  logMessage(`Server ${name}: Generation started`, {
     match,
-    nameInput,
-    regionInput,
-    map,
-    domainInput,
+    options,
   });
 
   await wait(2);

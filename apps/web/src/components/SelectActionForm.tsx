@@ -43,7 +43,12 @@ export default function SelectActionForm({
           placeholder={placeholder}
         />
         <TransitionWrapper button={true}>
-          <IconBtn type="submit" variant="primary" Icon={ArrowRightCircleIcon} />
+          <IconBtn
+            type="submit"
+            variant="primary"
+            Icon={ArrowRightCircleIcon}
+            disabled={disabled}
+          />
         </TransitionWrapper>
       </div>
     </ActionForm>

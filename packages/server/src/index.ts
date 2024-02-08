@@ -36,7 +36,8 @@ function generateServer(match: MatchesJoined) {
 }
 
 export function createServerInstance(match: MatchesJoined, options: CreateServerOptions) {
-  const { name, region, map, subDomain } = options;
+  const { name, region, subDomain } = options;
   const vehicles = getServerVehicles(match);
+  const map = options.map || getServerMap(match, 0);
   return api.platform().postServers(name, region, match.id, map, vehicles, subDomain);
 }

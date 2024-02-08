@@ -233,6 +233,6 @@ export type LocationPollResult = [string, Array<string>];
 export interface CreateServerOptions {
   name: string;
   region: string;
-  map: string;
+  map?: string | null;
   subDomain: string;
 }

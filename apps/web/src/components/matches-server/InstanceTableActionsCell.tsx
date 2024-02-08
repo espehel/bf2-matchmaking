@@ -22,9 +22,6 @@ export default async function InstanceTableActionsCell({
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   const { data: dns } = await api.platform().getServerDns(instance.main_ip);
 
-  if (!adminRoles?.server_admin) {
-    return null;
-  }
   async function deleteInstanceSA() {
     'use server';
     const result = await deleteServer(dns?.name || instance.main_ip);
@@ -45,16 +42,28 @@ export default async function InstanceTableActionsCell({
         action={deleteInstanceSA}
         successMessage="Successfully deleted instance"
         errorMessage="Failed to delete instance"
+        disabled={!adminRoles?.match_admin}
       >
-        <IconBtn size="sm" variant="error" Icon={XCircleIcon} />
+        <IconBtn
+          size="sm"
+          variant="error"
+          Icon={XCircleIcon}
+          disabled={!adminRoles?.match_admin}
+        />
       </ActionWrapper>
       {!isCurrentInstance && (
         <ActionWrapper
           action={setActiveServerSA}
           successMessage="Successfully set match server instance"
           errorMessage="Failed to set match server instance"
+          disabled={!adminRoles?.match_admin}
         >
-          <IconBtn size="sm" variant="info" Icon={ArrowRightCircleIcon} />
+          <IconBtn
+            size="sm"
+            variant="info"
+            Icon={ArrowRightCircleIcon}
+            disabled={!adminRoles?.match_admin}
+          />
         </ActionWrapper>
       )}
     </td>
