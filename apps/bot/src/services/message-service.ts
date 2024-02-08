@@ -1,4 +1,9 @@
-import { Message, MessageCreateOptions, MessageReaction } from 'discord.js';
+import {
+  Message,
+  MessageCreateOptions,
+  MessageReaction,
+  TextBasedChannel,
+} from 'discord.js';
 import {
   info,
   logCreateChannelMessage,
@@ -107,21 +112,33 @@ export async function editLocationPollMessageWithResults(
   );
 }
 
-export async function sendServersMessage(message: Message<true>, match: MatchesJoined) {
+export async function sendServersMessage(
+  match: MatchesJoined,
+  channel: TextBasedChannel
+) {
   const { data: servers } = await api.live().getServers();
-  if (servers?.length) {
-    await message.edit({
-      embeds: [
-        {
-          fields: [
-            ...getServerFields(servers),
-            getMatchServerField(match),
-            getMatchField(match),
-          ],
-        },
-      ],
-    });
+  if (!servers?.length) {
+    return;
   }
+  const serversMessage = await channel.send({
+    embeds: [
+      {
+        fields: [
+          ...getServerFields(servers),
+          getMatchServerField(match),
+          getMatchField(match),
+        ],
+      },
+    ],
+  });
+  logMessage(
+    `Channel ${serversMessage.channelId}: Sent server list for Match ${match.id}`,
+    {
+      match,
+      servers,
+    }
+  );
+  return serversMessage;
 }
 
 export async function getTestChannel() {

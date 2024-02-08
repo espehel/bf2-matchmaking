@@ -109,7 +109,7 @@ function handleCollect(config: DiscordConfig) {
         addMatch(pubMatch);
       }
 
-      await sendServersMessage(message, pubMatch.match);
+      await sendServersMessage(pubMatch.match, message.channel);
     } catch (e) {
       error('handlePubobotMatchDrafting', e);
     }
