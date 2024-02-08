@@ -9,6 +9,7 @@ export async function updateMatches() {
     info('updateMatches', 'No live matches found');
     return;
   }
+
   for (const liveMatch of matches.values()) {
     if (!liveMatch.isPending()) {
       continue;
