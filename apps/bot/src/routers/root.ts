@@ -6,12 +6,10 @@ import {
   updateChannelListener,
 } from '../discord/channel-manager';
 import { getDiscordClient } from '../discord/client';
-import { isTextBasedChannel, startTopLocationPoll } from '../discord/utils';
+import { isTextBasedChannel } from '../discord/utils';
 import { PostDemosRequestBody } from '@bf2-matchmaking/types';
 import { error } from '@bf2-matchmaking/logging';
 import { getDemoChannel } from '../services/message-service';
-import { messageFilter } from '../discord/match-listener';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 export const rootRouter = new Router();
 
 rootRouter.post('/demos', async (ctx) => {
@@ -77,9 +75,7 @@ rootRouter.post('/messages', async (ctx) => {
       return;
     }
     const message = await channel.messages.fetch(messageId);
-    const match = await client().getMatch(1064).then(verifySingleResult);
-    const location = await startTopLocationPoll(match, message);
-    ctx.body = location;
+    ctx.body = message;
   } catch (e) {
     ctx.status = 502;
     ctx.body = e;

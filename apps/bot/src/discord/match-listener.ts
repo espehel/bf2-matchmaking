@@ -19,6 +19,7 @@ import { PubobotMatch } from '../services/PubobotMatch';
 import {
   replyMessage,
   sendDraftMessage,
+  sendServersMessage,
   sendSummoningMessage,
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
@@ -108,10 +109,7 @@ function handleCollect(config: DiscordConfig) {
         addMatch(pubMatch);
       }
 
-      const location = await startTopLocationPoll(pubMatch.match, message);
-      if (location !== 'existing') {
-        await generateServers(pubMatch.match, [location]);
-      }
+      await sendServersMessage(message, pubMatch.match);
     } catch (e) {
       error('handlePubobotMatchDrafting', e);
     }

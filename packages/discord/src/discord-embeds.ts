@@ -311,6 +311,11 @@ export const getMatchField = (match: MatchesJoined) => ({
   value: `[**Match ${match.id}**](${api.web().basePath}/matches/${match.id})`,
 });
 
+export const getMatchServerField = (match: MatchesJoined) => ({
+  name: 'Create new server',
+  value: `${api.web().basePath}/matches/${match.id}/server`,
+});
+
 export function getServerFields(servers: Array<LiveServer>) {
   return servers
     .filter((server) => !getMatchIdFromDnsName(server.address))

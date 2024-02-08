@@ -10,6 +10,7 @@ import {
   createServerLocationPollResultField,
   DEMO_CHANNEL_ID,
   getMatchField,
+  getMatchServerField,
   getServerFields,
   getTeamDraftEmbed,
   TEST_CHANNEL_ID,
@@ -104,6 +105,23 @@ export async function editLocationPollMessageWithResults(
       results,
     }
   );
+}
+
+export async function sendServersMessage(message: Message<true>, match: MatchesJoined) {
+  const { data: servers } = await api.live().getServers();
+  if (servers?.length) {
+    await message.edit({
+      embeds: [
+        {
+          fields: [
+            ...getServerFields(servers),
+            getMatchServerField(match),
+            getMatchField(match),
+          ],
+        },
+      ],
+    });
+  }
 }
 
 export async function getTestChannel() {
