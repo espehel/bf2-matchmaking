@@ -117,7 +117,7 @@ serversRouter.get('/:ip/pl', async (ctx) => {
   }
 
   try {
-    ctx.body = liveServer.rcon().then(getPlayerList);
+    ctx.body = await liveServer.rcon().then(getPlayerList);
   } catch (e) {
     ctx.status = 502;
     ctx.body = toFetchError(e);
@@ -134,7 +134,7 @@ serversRouter.get('/:ip/si', async (ctx) => {
   }
 
   try {
-    ctx.body = liveServer.rcon().then(getServerInfo);
+    ctx.body = await liveServer.rcon().then(getServerInfo);
   } catch (e) {
     ctx.status = 502;
     ctx.body = toFetchError(e);
