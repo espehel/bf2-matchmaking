@@ -6,10 +6,10 @@ import {
   updateChannelListener,
 } from '../discord/channel-manager';
 import { getDiscordClient } from '../discord/client';
-import { isTextBasedChannel } from '../discord/utils';
 import { PostDemosRequestBody } from '@bf2-matchmaking/types';
 import { error } from '@bf2-matchmaking/logging';
 import { getDemoChannel } from '../services/message-service';
+import { isTextBasedChannel } from '../discord/discord-utils';
 export const rootRouter = new Router();
 
 rootRouter.post('/demos', async (ctx) => {

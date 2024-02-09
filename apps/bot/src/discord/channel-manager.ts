@@ -1,7 +1,7 @@
 import { getDiscordClient } from './client';
 import { DiscordConfig, isDiscordConfig } from '@bf2-matchmaking/types';
 import { error, info } from '@bf2-matchmaking/logging';
-import { isTextBasedChannel } from './utils';
+import { isTextBasedChannel } from './discord-utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { MessageCollector } from 'discord.js';
 import { addMatchListener } from './match-listener';
