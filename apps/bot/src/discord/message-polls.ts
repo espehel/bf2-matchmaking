@@ -81,7 +81,7 @@ export async function startDraftPoll(puboMatch: PubobotMatch, channel: TextChann
 
 export function handleDraftPollResult(puboMatch: PubobotMatch, channel: TextChannel) {
   return async (result: PollEmoji) => {
-    if (result === PollEmoji.ACCEPT) {
+    if (result === PollEmoji.ACCEPT || result === PollEmoji.REJECT) {
       const draftList = createDraftList(puboMatch.match);
 
       logMessage(`Match ${puboMatch.match.id}: Executing suggested draft`, {
