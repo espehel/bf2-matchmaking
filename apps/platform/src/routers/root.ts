@@ -18,7 +18,7 @@ import {
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
 import { Context } from 'koa';
 import { DEFAULTS } from '../constants';
-import { api, createServerDnsName } from '@bf2-matchmaking/utils';
+import { api } from '@bf2-matchmaking/utils';
 import { saveDemosAll } from '@bf2-matchmaking/demo';
 
 export const rootRouter = new Router();

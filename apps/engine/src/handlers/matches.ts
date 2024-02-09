@@ -55,7 +55,10 @@ async function handleMatchFinished(match: MatchesJoined) {
   const { data: matchServer } = await client().getMatchServer(match.id);
   const ip = matchServer?.active?.ip;
   if (ip) {
-    await retry(() => deleteServer(match, ip), 5);
+    const { data: instance } = await api.platform().getServer(ip);
+    if (instance) {
+      await retry(() => deleteServer(match, ip), 5);
+    }
   }
 
   leaveMatchRoom(match);
