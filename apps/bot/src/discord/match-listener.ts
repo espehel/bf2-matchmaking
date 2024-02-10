@@ -24,6 +24,7 @@ import {
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { handleDraftPollResult, startDraftPoll } from './message-polls';
+import { buildMixTeams } from '../services/draft-utils';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = messageFilter;
@@ -109,9 +110,11 @@ function handleCollect(config: DiscordConfig) {
         addMatch(pubMatch);
       }
 
+      // TODO handle not all players being included
+      const teams = buildMixTeams(pubMatch.match);
       const testChannel = await getTestChannel();
-      startDraftPoll(pubMatch, testChannel).then(
-        handleDraftPollResult(pubMatch, testChannel)
+      startDraftPoll(pubMatch, teams, testChannel).then(
+        handleDraftPollResult(pubMatch, teams, testChannel)
       );
     } catch (e) {
       error('handlePubobotMatchDrafting', e);

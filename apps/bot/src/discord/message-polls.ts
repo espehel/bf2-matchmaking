@@ -4,6 +4,7 @@ import {
   PollResult,
   MatchesJoined,
   PollEmoji,
+  MatchPlayersRow,
 } from '@bf2-matchmaking/types';
 import { Message, MessageReaction, TextBasedChannel, TextChannel } from 'discord.js';
 import { DateTime } from 'luxon';
@@ -26,10 +27,13 @@ import { buildMixTeams, createDraftList } from '../services/draft-utils';
 import { PubobotMatch } from '../services/PubobotMatch';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
-export async function startDraftPoll(puboMatch: PubobotMatch, channel: TextChannel) {
+export async function startDraftPoll(
+  puboMatch: PubobotMatch,
+  teams: Array<MatchPlayersRow>,
+  channel: TextChannel
+) {
   const match = puboMatch.match;
   return new Promise<PollEmoji>(async (resolve, reject) => {
-    const teams = buildMixTeams(match);
     const pollEndTime = DateTime.now().plus({ seconds: 30 });
 
     const pollMessage = await sendMessage(
@@ -51,6 +55,7 @@ export async function startDraftPoll(puboMatch: PubobotMatch, channel: TextChann
 
     logMessage(`Channel ${channel.id}: Poll created for Match ${match.id}`, {
       match,
+      teams,
     });
 
     setTimeout(async () => {
@@ -79,15 +84,20 @@ export async function startDraftPoll(puboMatch: PubobotMatch, channel: TextChann
   });
 }
 
-export function handleDraftPollResult(puboMatch: PubobotMatch, channel: TextChannel) {
+export function handleDraftPollResult(
+  puboMatch: PubobotMatch,
+  teams: Array<MatchPlayersRow>,
+  channel: TextChannel
+) {
   return async (result: PollEmoji) => {
     if (result === PollEmoji.ACCEPT || result === PollEmoji.REJECT) {
-      const draftList = createDraftList(puboMatch.match);
+      const draftList = createDraftList(teams);
 
       logMessage(`Match ${puboMatch.match.id}: Executing suggested draft`, {
         PubobotMatch: puboMatch.id,
         match: puboMatch.match,
         draftList,
+        teams,
       });
 
       for (const mp of draftList) {

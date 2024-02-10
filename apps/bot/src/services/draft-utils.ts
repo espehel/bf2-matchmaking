@@ -136,10 +136,10 @@ function withTeamAndCaptain(team: number) {
   };
 }
 
-export function createDraftList(match: MatchesJoined) {
-  let draftPool = shuffleArray(match.teams);
+export function createDraftList(teams: Array<MatchPlayersRow>) {
+  let draftPool = shuffleArray(teams);
   const draftList = [];
-  for (let i = 0; i < match.teams.length; i++) {
+  for (let i = 0; i < teams.length; i++) {
     const team = getCurrentTeam(draftPool.length);
     if (!team) {
       continue;
