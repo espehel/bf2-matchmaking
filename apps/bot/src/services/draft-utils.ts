@@ -149,7 +149,7 @@ export function createDraftList(teams: Array<MatchPlayersRow>) {
       continue;
     }
     draftList.push(currentPlayer);
-    draftPool = draftPool.filter((mp) => mp.team !== currentPlayer.team);
+    draftPool = draftPool.filter((mp) => mp.player_id !== currentPlayer.player_id);
   }
   return draftList;
 }

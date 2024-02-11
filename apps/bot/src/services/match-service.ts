@@ -3,7 +3,7 @@ import { DiscordConfig, MatchesUpdate, MatchStatus } from '@bf2-matchmaking/type
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { getPlayersByIdList } from './player-service';
-import { toMatchPlayer } from './utils';
+import { toMatchPlayerWithRating, toMatchPlayerWithTeam } from './utils';
 
 export async function createMatch(config: DiscordConfig, status: MatchStatus) {
   const match = await client()
@@ -25,8 +25,14 @@ export async function createMatchPlayers(
   playerIds: Array<string>
 ) {
   const players = await getPlayersByIdList(playerIds);
+
+  const { data: ratings } = await client().getPlayerRatingsByIdList(
+    players.map((p) => p.id),
+    pubMatch.match.config.id
+  );
+
   const { data, error: playersError } = await client().createMatchPlayers(
-    players.map(({ id }) => ({ player_id: id, match_id: pubMatch.match.id }))
+    players.map(toMatchPlayerWithRating(pubMatch.match.id, ratings || []))
   );
   if (playersError) {
     error('createMatch', playersError);
@@ -91,18 +97,9 @@ export async function createMatchTeams(
   const team1 = await getPlayersByIdList(team1Ids);
   const team2 = await getPlayersByIdList(team2Ids);
 
-  const { data: ratings } = await client().getPlayerRatingsByIdList(
-    team1.concat(team2).map((p) => p.id),
-    pubMatch.match.config.id
-  );
-
   await Promise.all([
-    client().upsertMatchPlayers(
-      team1.map(toMatchPlayer(pubMatch.match.id, 1, ratings || []))
-    ),
-    client().upsertMatchPlayers(
-      team2.map(toMatchPlayer(pubMatch.match.id, 2, ratings || []))
-    ),
+    client().upsertMatchPlayers(team1.map(toMatchPlayerWithTeam(pubMatch.match.id, 1))),
+    client().upsertMatchPlayers(team2.map(toMatchPlayerWithTeam(pubMatch.match.id, 2))),
   ]);
 
   const deletedPlayers = await Promise.all(

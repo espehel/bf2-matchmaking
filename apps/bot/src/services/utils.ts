@@ -1,11 +1,17 @@
 import { MatchPlayersInsert, PlayerRatingsRow, PlayersRow } from '@bf2-matchmaking/types';
 import { Embed } from 'discord.js';
-export const toMatchPlayer =
-  (matchId: number, team: number, ratings: Array<PlayerRatingsRow>) =>
+export const toMatchPlayerWithTeam =
+  (matchId: number, team: number) =>
   (player: PlayersRow): MatchPlayersInsert => ({
     match_id: matchId,
     player_id: player.id,
     team,
+  });
+export const toMatchPlayerWithRating =
+  (matchId: number, ratings: Array<PlayerRatingsRow>) =>
+  (player: PlayersRow): MatchPlayersInsert => ({
+    match_id: matchId,
+    player_id: player.id,
     rating: ratings.find((r) => r.player_id === player.id)?.rating || 1500,
   });
 
