@@ -103,9 +103,7 @@ export function handleDraftPollResult(
       for (const mp of draftList) {
         await sendMessage(
           channel,
-          `\`!put    @${mp.player_id}    ${mp.team === 1 ? 'USMC' : 'MEC'}   [${
-            puboMatch.id
-          }]\``
+          `\`!put @${mp.player_id} ${mp.team === 1 ? 'USMC' : 'MEC'} ${puboMatch.id}\``
         );
         await wait(1);
       }

@@ -144,12 +144,12 @@ export function createDraftList(teams: Array<MatchPlayersRow>) {
     if (!team) {
       continue;
     }
-    const mp = draftPool.find((mp) => mp.team === team);
-    if (!mp) {
+    const currentPlayer = draftPool.find((mp) => mp.team === team);
+    if (!currentPlayer) {
       continue;
     }
-    draftList.push(mp);
-    draftPool = draftPool.filter((mp) => mp.team !== team);
+    draftList.push(currentPlayer);
+    draftPool = draftPool.filter((mp) => mp.team !== currentPlayer.team);
   }
   return draftList;
 }
