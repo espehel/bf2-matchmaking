@@ -42,7 +42,7 @@ export class PubobotMatch {
     };
     const members = await Promise.all(
       [
-        getUserNames(embed, 'MEC'),
+        getUserNames(embed, 'MEC/PLA'),
         getUserNames(embed, 'USMC'),
         getUserNames(embed, 'Unpicked'),
       ]
@@ -65,7 +65,7 @@ export class PubobotMatch {
   }
   async startMatch(embed: Embed) {
     const team1 = getUserIds(embed, 'USMC');
-    const team2 = getUserIds(embed, 'MEC');
+    const team2 = getUserIds(embed, 'MEC/PLA');
 
     await createMatchTeams(this, team1, team2);
     await this.updateMatch({
