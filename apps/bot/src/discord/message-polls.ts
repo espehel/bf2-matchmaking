@@ -39,7 +39,7 @@ export async function startDraftPoll(
     const pollMessage = await sendMessage(
       channel,
       {
-        embeds: [buildDraftPollEmbed(match, teams)],
+        embeds: [buildDraftPollEmbed(match, teams, pollEndTime)],
       },
       { teams, match }
     );
@@ -53,15 +53,10 @@ export async function startDraftPoll(
       pollMessage.react(PollEmoji.REJECT),
     ]);
 
-    logMessage(
-      `Channel ${channel.id}: Poll created for Match ${
-        match.id
-      }. Poll ends <t:${pollEndTime.toUnixInteger()}:R>`,
-      {
-        match,
-        teams,
-      }
-    );
+    logMessage(`Channel ${channel.id}: Poll created for Match ${match.id}`, {
+      match,
+      teams,
+    });
 
     setTimeout(async () => {
       const acceptResult = pollMessage.reactions.cache
