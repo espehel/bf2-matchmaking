@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import { error } from '@bf2-matchmaking/logging';
-import { assertArray, assertObj, toFetchError } from '@bf2-matchmaking/utils';
+import { assertArray, assertObj, toFetchError, verify } from '@bf2-matchmaking/utils';
 import { isString } from '@bf2-matchmaking/types';
 import {
   addPendingServer,
@@ -10,12 +10,42 @@ import {
   removeLiveServer,
 } from '../services/server/ServerManager';
 import { toLiveServer, getAddress, upsertServer } from '../services/server/servers';
-import { exec, getPlayerList, getServerInfo, rcon } from '../services/rcon/RconManager';
+import {
+  exec,
+  getPlayerList,
+  getServerInfo,
+  rcon,
+  restartServer,
+} from '../services/rcon/RconManager';
 import { findMap } from '../services/maps';
+import { restartWithInfantryMode, restartWithVehicleMode } from '../services/http-api';
 export const serversRouter = new Router({
   prefix: '/servers',
 });
 
+serversRouter.post('/:ip/restart', async (ctx) => {
+  const liveServer = getLiveServer(ctx.params.ip);
+  if (!liveServer) {
+    ctx.status = 404;
+    ctx.body = { message: 'Live server not found' };
+    return;
+  }
+  const { mode, map } = ctx.request.body;
+  try {
+    if (mode === 'infantry') {
+      ctx.body = await restartWithInfantryMode(liveServer, map).then(verify);
+    }
+    if (mode === 'vehicles') {
+      ctx.body = await restartWithVehicleMode(liveServer, map).then(verify);
+    }
+    if (!mode) {
+      ctx.body = await liveServer.rcon().then(restartServer);
+    }
+  } catch (e) {
+    ctx.status = 502;
+    ctx.body = toFetchError(e);
+  }
+});
 serversRouter.post('/:ip/players/switch', async (ctx) => {
   ctx.body = { message: 'Not implemented' };
   ctx.status = 501;
