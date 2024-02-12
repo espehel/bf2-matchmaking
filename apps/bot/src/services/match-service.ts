@@ -30,10 +30,13 @@ export async function createMatchPlayers(
     players.map((p) => p.id),
     pubMatch.match.config.id
   );
+  info('createMatchPlayers', `Got ratings ${JSON.stringify(ratings)}`);
 
   const { data, error: playersError } = await client().createMatchPlayers(
     players.map(toMatchPlayerWithRating(pubMatch.match.id, ratings || []))
   );
+  info('createMatchPlayers', `Create match players ${JSON.stringify(data)}`);
+
   if (playersError) {
     error('createMatch', playersError);
   }
