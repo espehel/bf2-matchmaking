@@ -20,10 +20,7 @@ export function getPubobotMatch(embed: Embed) {
   );
   return match;
 }
-export function hasPubotId(
-  id: number,
-  status: MatchStatus.Summoning | MatchStatus.Drafting
-) {
+export function hasPubotId(id: number, status: MatchStatus.Open | MatchStatus.Drafting) {
   const hasSome = pubobotMatches.some(
     (match) => match.id === id && match.getStatus() === status
   );

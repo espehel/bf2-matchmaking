@@ -7,6 +7,7 @@ import {
   ServersRow,
   MatchPlayersRow,
   PlayersRow,
+  MatchPlayersInsert,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -22,12 +23,12 @@ import { DateTime } from 'luxon';
 
 export function buildDraftPollEmbed(
   match: MatchesJoined,
-  teams: Array<MatchPlayersRow>
+  teams: Array<MatchPlayersInsert>,
+  endTime: DateTime
 ): APIEmbed {
   return {
     title: 'Suggested Draft',
-    description:
-      'If more than half of players accepts the suggested draft, teams will be auto drafted.',
+    description: `If more than half of players accepts the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
     fields: [...createTeamFields(teams, match.players), getMatchField(match)],
   };
 }
@@ -170,7 +171,7 @@ const getRulesDescriptionByConfig = (config: MatchConfigsRow): string => {
   return '';
 };
 
-function createTeamFields(teams: Array<MatchPlayersRow>, players: Array<PlayersRow>) {
+function createTeamFields(teams: Array<MatchPlayersInsert>, players: Array<PlayersRow>) {
   return [
     {
       name: 'Team A',

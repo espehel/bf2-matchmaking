@@ -1,4 +1,9 @@
-import { MatchPlayersRow, PlayersRow, RoundsInsert } from './database-types';
+import {
+  MatchPlayersInsert,
+  MatchPlayersRow,
+  PlayersRow,
+  RoundsInsert,
+} from './database-types';
 
 export * from './database-types.generated';
 export * from './api-types';
@@ -152,7 +157,7 @@ export interface DraftStep {
   captain: PlayersRow | null;
 }
 
-export interface TeamPlayer extends MatchPlayersRow {
+export interface TeamPlayer extends MatchPlayersInsert {
   player: PlayersRow;
 }
 
@@ -238,3 +243,8 @@ export interface CreateServerOptions {
 }
 
 export type LogContext = Record<any, any>;
+
+export interface PostRestartServerRequestBody {
+  mode: 'infantry' | 'vehicles' | null;
+  map: string;
+}

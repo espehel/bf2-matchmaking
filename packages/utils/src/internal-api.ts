@@ -11,6 +11,7 @@ import {
   PostDemosResponseBody,
   PostServerPlayersSwitchRequestBody,
   PostServersRequestBody,
+  PostRestartServerRequestBody,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
@@ -33,6 +34,7 @@ const live = () => {
     serverExec: (ip: string) => `/servers/${ip}/exec`,
     serverPause: (ip: string) => `/servers/${ip}/pause`,
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
+    serverRestart: (ip: string) => `/servers/${ip}/restart`,
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
@@ -49,6 +51,11 @@ const live = () => {
       getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip)), { cache: 'no-store' }),
     postServerExec: (ip: string, body: PostServerExecRequestBody) =>
       postJSON<PostServerExecResponseBody>(basePath.concat(paths.serverExec(ip)), body),
+    postServerRestart: (ip: string, body: PostRestartServerRequestBody) =>
+      postJSON<PostServerExecResponseBody>(
+        basePath.concat(paths.serverRestart(ip)),
+        body
+      ),
     postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
     postServerUnpause: (ip: string) =>
       postJSON(basePath.concat(paths.serverUnpause(ip)), {}),

@@ -186,3 +186,10 @@ export interface EventsJoined extends EventsRow {
   rounds: Array<EventRoundsRow & { matches: Array<EventMatchesRow> }>;
   matches: Array<EventsMatch>;
 }
+
+export interface RatedMatchPlayer extends Omit<MatchPlayersInsert, 'rating'> {
+  rating: number;
+}
+export interface PickedMatchPlayer extends Omit<MatchPlayersInsert, 'team'> {
+  team: number;
+}

@@ -1,15 +1,24 @@
-import { isDefined, MatchesJoined, MatchPlayersRow } from '@bf2-matchmaking/types';
-import { getCurrentTeam, shuffleArray } from '@bf2-matchmaking/utils';
+import {
+  isDefined,
+  isRatedMatchPlayer,
+  MatchesJoined,
+  MatchPlayersInsert,
+  MatchPlayersRow,
+  RatedMatchPlayer,
+} from '@bf2-matchmaking/types';
+import { shuffleArray } from '@bf2-matchmaking/utils';
+import { Embed } from 'discord.js';
+import { getUserIds } from './utils';
 
-export function buildMixTeams(match: MatchesJoined) {
-  const [teamA, teamB] = getTeamsBySnakeDraft(match.teams);
-  const team1 = teamA.sort(compareRating).map(withTeamAndCaptain(1));
-  const team2 = teamB.sort(compareRating).map(withTeamAndCaptain(2));
+export function buildMixTeams(teams: Array<RatedMatchPlayer>): Array<RatedMatchPlayer> {
+  const [teamA, teamB] = getTeamsBySnakeDraft(teams);
+  const team1 = teamA.sort(compareRating).map(withTeam(1));
+  const team2 = teamB.sort(compareRating).map(withTeam(2));
   return team1.concat(team2);
 }
 export function draftTeams(match: MatchesJoined) {
   const snakeDraftTeams = withAverageRatingAndNick(
-    getTeamsBySnakeDraft(match.teams),
+    getTeamsBySnakeDraft(match.teams.filter(isRatedMatchPlayer)),
     match
   );
   const teams = withAverageRatingAndNick(getTeams(match.teams), match);
@@ -31,8 +40,8 @@ function getActualTeams(
 }
 
 function getTeamsBySnakeDraft(
-  players: Array<MatchPlayersRow>
-): [Array<MatchPlayersRow>, Array<MatchPlayersRow>] {
+  players: Array<RatedMatchPlayer>
+): [Array<RatedMatchPlayer>, Array<RatedMatchPlayer>] {
   const sorted = [...players].sort((a, b) => a.rating - b.rating);
   const team1 = [];
   const team2 = [];
@@ -96,12 +105,12 @@ function getCandidate(
   return candidate;
 }
 
-export function getAverageRating(players: Array<MatchPlayersRow>) {
+export function getAverageRating(players: Array<RatedMatchPlayer>) {
   return players.reduce((acc, cur) => acc + cur.rating, 0) / players.length;
 }
 
 function withAverageRatingAndNick(
-  [team1, team2]: [Array<MatchPlayersRow>, Array<MatchPlayersRow>],
+  [team1, team2]: [Array<RatedMatchPlayer>, Array<RatedMatchPlayer>],
   match: MatchesJoined
 ) {
   return [
@@ -117,39 +126,39 @@ function withAverageRatingAndNick(
 }
 
 function toPlayerText(match: MatchesJoined) {
-  return (mp: MatchPlayersRow) => {
+  return (mp: MatchPlayersInsert) => {
     const player = match.players.find(({ id }) => id === mp.player_id);
     return player && `${player.nick} (${mp.rating})`;
   };
 }
 
-function compareRating(mpA: MatchPlayersRow, mpB: MatchPlayersRow) {
+function compareRating(mpA: RatedMatchPlayer, mpB: RatedMatchPlayer) {
   return mpB.rating - mpA.rating;
 }
 
-function withTeamAndCaptain(team: number) {
-  return (mp: MatchPlayersRow, index: number) => {
-    if (index === 0) {
-      return { ...mp, captain: true, team };
-    }
-    return { ...mp, captain: false, team };
+function withTeam(team: number) {
+  return (mp: RatedMatchPlayer) => {
+    return { ...mp, team };
   };
 }
 
-export function createDraftList(teams: Array<MatchPlayersRow>) {
-  let draftPool = shuffleArray(teams);
-  const draftList = [];
-  for (let i = 0; i < teams.length; i++) {
-    const team = getCurrentTeam(draftPool.length);
-    if (!team) {
-      continue;
-    }
-    const currentPlayer = draftPool.find((mp) => mp.team === team);
-    if (!currentPlayer) {
-      continue;
-    }
-    draftList.push(currentPlayer);
-    draftPool = draftPool.filter((mp) => mp.player_id !== currentPlayer.player_id);
-  }
-  return draftList;
+export function createDraftList(teams: Array<MatchPlayersInsert>, embed: Embed) {
+  const usCaptain = findCaptain(teams, embed, 'USMC');
+  const mecCaptain = findCaptain(teams, embed, 'MEC/PLA');
+
+  return shuffleArray(teams)
+    .filter(
+      (mp) =>
+        mp.player_id !== usCaptain?.player_id || mp.player_id !== mecCaptain?.player_id
+    )
+    .slice(0, -1);
+}
+
+function findCaptain(
+  teams: Array<MatchPlayersInsert>,
+  embed: Embed,
+  team: 'USMC' | 'MEC/PLA'
+) {
+  const captain = getUserIds(embed, team).at(0);
+  return teams.find((mp) => mp.player_id === captain);
 }

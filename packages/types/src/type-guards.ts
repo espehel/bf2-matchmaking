@@ -4,8 +4,10 @@ import {
   MatchConfigsRow,
   MatchesJoined,
   MatchesRow,
-  MatchPlayersRow,
+  MatchPlayersInsert,
   MatchStatus,
+  PickedMatchPlayer,
+  RatedMatchPlayer,
   ScheduledMatch,
   TeamsJoined,
 } from './database-types';
@@ -24,7 +26,7 @@ export const isDiscordMatch = (match: MatchesJoined): match is DiscordMatch =>
 export const isScheduledMatch = (match: MatchesJoined): match is ScheduledMatch =>
   Boolean(match.status === MatchStatus.Scheduled && match.scheduled_at);
 
-export const isTeamPlayer = (mp: MatchPlayersRow): mp is TeamPlayer =>
+export const isTeamPlayer = (mp: MatchPlayersInsert): mp is TeamPlayer =>
   Boolean((mp as TeamPlayer).player);
 
 export const isTeamsJoined = (team: unknown): team is TeamsJoined => {
@@ -45,3 +47,10 @@ export const isNotNull = <T>(object: null | T): object is T => object !== null;
 export const isString = (text: unknown): text is string => typeof text === 'string';
 
 export const isTruthy = <T>(object: undefined | null | T): object is T => Boolean(object);
+
+export const isRatedMatchPlayer = (
+  player: MatchPlayersInsert
+): player is RatedMatchPlayer => typeof player.rating === 'number';
+export const isPickedMatchPlayer = (
+  player: MatchPlayersInsert
+): player is PickedMatchPlayer => typeof player.team === 'number';

@@ -4,9 +4,10 @@ import {
   PollResult,
   MatchesJoined,
   PollEmoji,
-  MatchPlayersRow,
+  MatchPlayersInsert,
+  PickedMatchPlayer,
 } from '@bf2-matchmaking/types';
-import { Message, MessageReaction, TextChannel } from 'discord.js';
+import { Message, MessageReaction } from 'discord.js';
 import { DateTime } from 'luxon';
 import {
   buildDraftPollEmbed,
@@ -23,21 +24,19 @@ import {
   editLocationPollMessageWithResults,
   sendMessage,
 } from '../services/message-service';
-import { createDraftList } from '../services/draft-utils';
 import { PubobotMatch } from '../services/PubobotMatch';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
 export async function startDraftPoll(
   puboMatch: PubobotMatch,
-  teams: Array<MatchPlayersRow>,
-  channel: TextChannel
+  teams: Array<MatchPlayersInsert>
 ) {
   const match = puboMatch.match;
   return new Promise<PollEmoji>(async (resolve, reject) => {
     const pollEndTime = DateTime.now().plus({ seconds: 30 });
 
     const pollMessage = await sendMessage(
-      channel,
+      puboMatch.channel,
       {
         embeds: [buildDraftPollEmbed(match, teams, pollEndTime)],
       },
@@ -53,7 +52,7 @@ export async function startDraftPoll(
       pollMessage.react(PollEmoji.REJECT),
     ]);
 
-    logMessage(`Channel ${channel.id}: Poll created for Match ${match.id}`, {
+    logMessage(`Channel ${puboMatch.channel.id}: Poll created for Match ${match.id}`, {
       match,
       teams,
     });
@@ -85,25 +84,21 @@ export async function startDraftPoll(
 }
 
 export function handleDraftPollResult(
-  puboMatch: PubobotMatch,
-  teams: Array<MatchPlayersRow>,
-  channel: TextChannel
+  pubMatch: PubobotMatch,
+  draftList: Array<PickedMatchPlayer>
 ) {
   return async (result: PollEmoji) => {
-    if (result === PollEmoji.ACCEPT || result === PollEmoji.REJECT) {
-      const draftList = createDraftList(teams);
-
-      logMessage(`Match ${puboMatch.match.id}: Executing suggested draft`, {
-        PubobotMatch: puboMatch.id,
-        match: puboMatch.match,
+    if (result === PollEmoji.ACCEPT) {
+      logMessage(`Match ${pubMatch.match.id}: Executing suggested draft`, {
+        PubobotMatch: pubMatch.id,
+        match: pubMatch.match,
         draftList,
-        teams,
       });
 
       for (const mp of draftList) {
         await sendMessage(
-          channel,
-          `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${puboMatch.id}`
+          pubMatch.channel,
+          `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubMatch.id}`
         );
         await wait(1);
       }

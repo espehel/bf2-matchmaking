@@ -147,6 +147,8 @@ export default (client: SupabaseClient<Database>) => ({
         'player_id',
         players.map((mp) => mp.player_id)
       ),
+  deleteAllMatchPlayersForMatchId: (matchId: number) =>
+    client.from('match_players').delete().eq('match_id', matchId),
   deleteMatchPlayersForPlayerId: (playerId: string, matches: Array<MatchesRow>) =>
     client
       .from('match_players')

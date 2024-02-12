@@ -4,7 +4,8 @@ import { error, info } from '@bf2-matchmaking/logging';
 import { isTextBasedChannel } from './discord-utils';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { MessageCollector } from 'discord.js';
-import { addMatchListener } from './match-listener';
+import { addDraftListener, addMatchListener } from './match-listener';
+import { getDebugChannel } from '../services/message-service';
 
 const channelListenerMap = new Map<string, MessageCollector>();
 
@@ -17,6 +18,7 @@ async function loadChannels() {
       channelListenerMap.set(listener.channel.id, listener);
     }
   }
+  await listenToDebugChannel();
 }
 export function hasChannelListener(channel: string) {
   return channelListenerMap.has(channel);
@@ -91,5 +93,17 @@ async function listenToChannel(config: DiscordConfig) {
     return collector;
   } catch (e) {
     error('listenToChannel', e);
+  }
+}
+
+async function listenToDebugChannel() {
+  try {
+    const channel = await getDebugChannel();
+
+    const collector = channel.createMessageCollector();
+    addDraftListener(collector);
+    return collector;
+  } catch (e) {
+    error('listenToDebugChannel', e);
   }
 }

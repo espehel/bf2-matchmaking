@@ -6,3 +6,4 @@ export * from './message-utils';
 
 export const TEST_CHANNEL_ID = '1046889100369739786'; // ATS 8v8
 export const DEMO_CHANNEL_ID = '1035999895968030800';
+export const DEBUG_CHANNEL_ID = '1040703302565904394';

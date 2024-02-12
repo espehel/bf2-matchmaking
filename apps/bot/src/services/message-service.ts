@@ -9,6 +9,7 @@ import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { getDiscordClient } from '../discord/client';
 import {
   createServerLocationPollResultField,
+  DEBUG_CHANNEL_ID,
   DEMO_CHANNEL_ID,
   getMatchField,
   getMatchServerField,
@@ -172,6 +173,15 @@ export async function getDemoChannel() {
   const channel = await client.channels.fetch(DEMO_CHANNEL_ID);
   if (!isTextBasedChannel(channel)) {
     throw new Error('Failed to fetch demo channel');
+  }
+  return channel;
+}
+
+export async function getDebugChannel() {
+  const client = await getDiscordClient();
+  const channel = await client.channels.fetch(DEBUG_CHANNEL_ID);
+  if (!isTextBasedChannel(channel)) {
+    throw new Error('Failed to fetch debug channel');
   }
   return channel;
 }

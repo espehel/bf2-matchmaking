@@ -1,6 +1,7 @@
 import {
   isTeamPlayer,
   MatchesJoined,
+  MatchPlayersInsert,
   MatchPlayersRow,
   PlayerListItem,
   PlayersRow,
@@ -15,7 +16,7 @@ export const assignMatchPlayerTeams = (players: Array<PlayersRow>) =>
   }));
 
 export const getTeamPlayers = (
-  teams: Array<MatchPlayersRow>,
+  teams: Array<MatchPlayersInsert>,
   players: Array<PlayersRow>,
   team: number
 ): Array<TeamPlayer> =>

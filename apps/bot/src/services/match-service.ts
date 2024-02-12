@@ -1,10 +1,23 @@
 import { PubobotMatch } from './PubobotMatch';
-import { DiscordConfig, MatchesUpdate, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  DiscordConfig,
+  MatchesUpdate,
+  MatchPlayersInsert,
+  MatchStatus,
+  PlayersRow,
+} from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { error, info, logMessage } from '@bf2-matchmaking/logging';
+import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { getPlayersByIdList } from './player-service';
 import { toMatchPlayerWithRating, toMatchPlayerWithTeam } from './utils';
 
+export async function getMatch(matchId: number) {
+  const { data, error } = await client().getMatch(matchId);
+  if (error) {
+    logErrorMessage('Failed to get match', error, { matchId });
+  }
+  return data;
+}
 export async function createMatch(config: DiscordConfig, status: MatchStatus) {
   const match = await client()
     .createMatchFromConfig(config.id, {
@@ -20,65 +33,44 @@ export async function createMatch(config: DiscordConfig, status: MatchStatus) {
   return match;
 }
 
-export async function createMatchPlayers(
+export async function buildMatchPlayers(
   pubMatch: PubobotMatch,
-  playerIds: Array<string>
-) {
-  const players = await getPlayersByIdList(playerIds);
-
+  players: Array<PlayersRow>
+): Promise<Array<MatchPlayersInsert>> {
   const { data: ratings } = await client().getPlayerRatingsByIdList(
     players.map((p) => p.id),
     pubMatch.match.config.id
   );
-  info('createMatchPlayers', `Got ratings ${JSON.stringify(ratings)}`);
+  return players.map(toMatchPlayerWithRating(pubMatch.match.id, ratings || []));
+}
 
-  const { data, error: playersError } = await client().createMatchPlayers(
-    players.map(toMatchPlayerWithRating(pubMatch.match.id, ratings || []))
-  );
+export async function createMatchPlayers(
+  pubMatch: PubobotMatch,
+  matchPlayers: Array<MatchPlayersInsert>
+) {
+  await client().deleteAllMatchPlayersForMatchId(pubMatch.match.id);
+  const { data, error: playersError } = await client().createMatchPlayers(matchPlayers);
   info('createMatchPlayers', `Create match players ${JSON.stringify(data)}`);
 
   if (playersError) {
-    error('createMatch', playersError);
+    logErrorMessage('Failed to create match players', playersError, {
+      pubMatch,
+      matchPlayers,
+    });
   }
-
-  const updatedMatch = await client()
-    .getMatch(pubMatch.match.id)
-    .then(verifySingleResult);
-
-  logMessage(`Match ${updatedMatch.id}: Added ${data?.length} players`, {
-    match: updatedMatch,
-    players,
-    matchPlayers: data,
-  });
-
-  return updatedMatch;
+  return data;
 }
 
-export async function createMatchMap(pubMatch: PubobotMatch, map: number) {
-  if (!map) {
-    info('createMatchMap', 'No map found, returning original match.');
-    return pubMatch.match;
-  }
-
+export async function createMatchMaps(pubMatch: PubobotMatch, maps: Array<number>) {
   const { data, error: mapsError } = await client().createMatchMaps(
     pubMatch.match.id,
-    map
+    ...maps
   );
   if (mapsError) {
-    error('createMatch', mapsError);
+    logErrorMessage('Failed to create match maps', mapsError, { pubMatch, maps });
   }
 
-  const updatedMatch = await client()
-    .getMatch(pubMatch.match.id)
-    .then(verifySingleResult);
-
-  logMessage(`Match ${updatedMatch.id}: Added map ${map}`, {
-    match: updatedMatch,
-    map,
-    matchMaps: data,
-  });
-
-  return updatedMatch;
+  return data;
 }
 
 export async function updateMatch(pubMatch: PubobotMatch, values: MatchesUpdate) {
@@ -100,7 +92,7 @@ export async function createMatchTeams(
   const team1 = await getPlayersByIdList(team1Ids);
   const team2 = await getPlayersByIdList(team2Ids);
 
-  await Promise.all([
+  const results = await Promise.all([
     client().upsertMatchPlayers(team1.map(toMatchPlayerWithTeam(pubMatch.match.id, 1))),
     client().upsertMatchPlayers(team2.map(toMatchPlayerWithTeam(pubMatch.match.id, 2))),
   ]);
@@ -111,16 +103,5 @@ export async function createMatchTeams(
       .map((p) => client().deleteMatchPlayer(pubMatch.match.id, p.id))
   );
 
-  const updatedMatch = await client()
-    .getMatch(pubMatch.match.id)
-    .then(verifySingleResult);
-
-  logMessage(`Match ${updatedMatch.id}: Created teams`, {
-    match: updatedMatch,
-    team1,
-    team2,
-    deletedPlayers,
-  });
-
-  return updatedMatch;
+  return [results[0].data, results[1].data, deletedPlayers.map((p) => p.data)];
 }
