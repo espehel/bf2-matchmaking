@@ -4,6 +4,7 @@ import {
   isPubobotMatchCheckIn,
   isPubobotMatchDrafting,
   isPubobotMatchStarted,
+  isTextBasedChannel,
 } from './discord-utils';
 import { getMatchStartedEmbed, getRulesEmbedByConfig } from '@bf2-matchmaking/discord';
 import { Message, MessageCollector } from 'discord.js';
@@ -111,11 +112,16 @@ function handleCollect(config: DiscordConfig) {
       }
 
       // TODO handle not all players being included
-      const teams = buildMixTeams(pubMatch.match);
-      const testChannel = await getTestChannel();
-      startDraftPoll(pubMatch, teams, testChannel).then(
-        handleDraftPollResult(pubMatch, teams, testChannel)
-      );
+      if (
+        pubMatch.match.teams.length === pubMatch.match.config.size &&
+        message.channel.id === '1035999895968030800' &&
+        isTextBasedChannel(message.channel)
+      ) {
+        const teams = buildMixTeams(pubMatch.match);
+        startDraftPoll(pubMatch, teams, message.channel).then(
+          handleDraftPollResult(pubMatch, teams, message.channel)
+        );
+      }
     } catch (e) {
       error('handlePubobotMatchDrafting', e);
     }

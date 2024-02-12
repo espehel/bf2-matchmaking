@@ -6,7 +6,7 @@ import {
   PollEmoji,
   MatchPlayersRow,
 } from '@bf2-matchmaking/types';
-import { Message, MessageReaction, TextBasedChannel, TextChannel } from 'discord.js';
+import { Message, MessageReaction, TextChannel } from 'discord.js';
 import { DateTime } from 'luxon';
 import {
   buildDraftPollEmbed,
@@ -23,7 +23,7 @@ import {
   editLocationPollMessageWithResults,
   sendMessage,
 } from '../services/message-service';
-import { buildMixTeams, createDraftList } from '../services/draft-utils';
+import { createDraftList } from '../services/draft-utils';
 import { PubobotMatch } from '../services/PubobotMatch';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
@@ -53,10 +53,15 @@ export async function startDraftPoll(
       pollMessage.react(PollEmoji.REJECT),
     ]);
 
-    logMessage(`Channel ${channel.id}: Poll created for Match ${match.id}`, {
-      match,
-      teams,
-    });
+    logMessage(
+      `Channel ${channel.id}: Poll created for Match ${
+        match.id
+      }. Poll ends <t:${pollEndTime.toUnixInteger()}:R>`,
+      {
+        match,
+        teams,
+      }
+    );
 
     setTimeout(async () => {
       const acceptResult = pollMessage.reactions.cache
@@ -103,7 +108,7 @@ export function handleDraftPollResult(
       for (const mp of draftList) {
         await sendMessage(
           channel,
-          `\`!put @${mp.player_id} ${mp.team === 1 ? 'USMC' : 'MEC'} ${puboMatch.id}\``
+          `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC'} ${puboMatch.id}`
         );
         await wait(1);
       }
