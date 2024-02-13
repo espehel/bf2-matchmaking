@@ -190,6 +190,7 @@ export interface EventsJoined extends EventsRow {
 export interface RatedMatchPlayer extends Omit<MatchPlayersInsert, 'rating'> {
   rating: number;
 }
-export interface PickedMatchPlayer extends Omit<MatchPlayersInsert, 'team'> {
+export interface PickedMatchPlayer extends Omit<MatchPlayersInsert, 'team' | 'captain'> {
   team: number;
+  captain: boolean;
 }

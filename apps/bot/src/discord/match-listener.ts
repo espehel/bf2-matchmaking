@@ -28,7 +28,7 @@ import {
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { handleDraftPollResult, startDraftPoll } from './message-polls';
-import { buildMixTeams, createDraftList } from '../services/draft-utils';
+import { buildMixTeams, buildDraftOrder } from '../services/draft-utils';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = matchFilter;
@@ -165,18 +165,21 @@ async function handlePubobotMatchDrafting(message: Message<true>) {
 
     const ratedPlayers = pubMatch.teams.filter(isRatedMatchPlayer);
     const teams = buildMixTeams(ratedPlayers);
-    const draftList = createDraftList(teams, embed).filter(isPickedMatchPlayer);
+    const [unpickList, pickList] = buildDraftOrder(teams, embed);
     if (
       ratedPlayers.length === pubMatch.match.config.size &&
-      draftList.length + 3 === pubMatch.match.config.size &&
-      message.channel.id === '1035999895968030800'
+      pickList.length === pubMatch.match.config.size &&
+      pubMatch.channel.id === '1035999895968030800'
     ) {
-      startDraftPoll(pubMatch, teams).then(handleDraftPollResult(pubMatch, draftList));
+      startDraftPoll(pubMatch, teams.flat()).then(
+        handleDraftPollResult(pubMatch, unpickList, pickList)
+      );
     } else {
-      logMessage(`Match ${pubMatch.match.id}: Conditions for draft poll where not met`, {
+      logMessage(`Match ${pubMatch.match.id}: Draft poll conditions where not met`, {
         ratedPlayers,
         teams,
-        draftList,
+        unpickList,
+        pickList,
         pubMatch,
       });
     }

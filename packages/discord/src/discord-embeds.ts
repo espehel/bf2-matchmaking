@@ -24,12 +24,13 @@ import { DateTime } from 'luxon';
 export function buildDraftPollEmbed(
   match: MatchesJoined,
   teams: Array<MatchPlayersInsert>,
+  players: Array<PlayersRow>,
   endTime: DateTime
 ): APIEmbed {
   return {
     title: 'Suggested Draft',
     description: `If more than half of players accepts the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
-    fields: [...createTeamFields(teams, match.players), getMatchField(match)],
+    fields: [...createTeamFields(teams, players), getMatchField(match)],
   };
 }
 

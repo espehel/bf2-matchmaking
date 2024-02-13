@@ -31,14 +31,14 @@ export async function startDraftPoll(
   puboMatch: PubobotMatch,
   teams: Array<MatchPlayersInsert>
 ) {
-  const match = puboMatch.match;
+  const { match, players } = puboMatch;
   return new Promise<PollEmoji>(async (resolve, reject) => {
     const pollEndTime = DateTime.now().plus({ seconds: 30 });
 
     const pollMessage = await sendMessage(
       puboMatch.channel,
       {
-        embeds: [buildDraftPollEmbed(match, teams, pollEndTime)],
+        embeds: [buildDraftPollEmbed(match, teams, players, pollEndTime)],
       },
       { teams, match }
     );
@@ -52,9 +52,10 @@ export async function startDraftPoll(
       pollMessage.react(PollEmoji.REJECT),
     ]);
 
-    logMessage(`Channel ${puboMatch.channel.id}: Poll created for Match ${match.id}`, {
+    logMessage(`Match ${match.id}: Draft poll created`, {
       match,
       teams,
+      players,
     });
 
     setTimeout(async () => {
@@ -71,12 +72,15 @@ export async function startDraftPoll(
       const pollResult =
         voters.length > match.config.size / 2 ? PollEmoji.ACCEPT : PollEmoji.REJECT;
 
-      logMessage(`Match ${puboMatch.match.id}: Draft poll ended`, {
-        PubobotMatch: puboMatch.id,
-        match: puboMatch.match,
-        acceptResult,
-        pollResult,
-      });
+      logMessage(
+        `Match ${puboMatch.match.id}: Draft poll ended with result ${pollResult}`,
+        {
+          PubobotMatch: puboMatch.id,
+          match: puboMatch.match,
+          acceptResult,
+          pollResult,
+        }
+      );
 
       resolve(pollResult);
     }, pollEndTime.diffNow('milliseconds').milliseconds);
@@ -85,17 +89,27 @@ export async function startDraftPoll(
 
 export function handleDraftPollResult(
   pubMatch: PubobotMatch,
-  draftList: Array<PickedMatchPlayer>
+  unpickList: Array<string>,
+  pickList: Array<PickedMatchPlayer>
 ) {
   return async (result: PollEmoji) => {
     if (result === PollEmoji.ACCEPT) {
       logMessage(`Match ${pubMatch.match.id}: Executing suggested draft`, {
         PubobotMatch: pubMatch.id,
         match: pubMatch.match,
-        draftList,
+        unpickList,
+        pickList,
       });
 
-      for (const mp of draftList) {
+      for (const playerId of unpickList) {
+        await sendMessage(
+          pubMatch.channel,
+          `!put <@${playerId}> Unpicked ${pubMatch.id}`
+        );
+        await wait(1);
+      }
+
+      for (const mp of pickList) {
         await sendMessage(
           pubMatch.channel,
           `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubMatch.id}`
