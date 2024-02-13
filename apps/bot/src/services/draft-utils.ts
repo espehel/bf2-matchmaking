@@ -1,8 +1,4 @@
-import {
-  MatchPlayersInsert,
-  PickedMatchPlayer,
-  RatedMatchPlayer,
-} from '@bf2-matchmaking/types';
+import { PickedMatchPlayer, RatedMatchPlayer } from '@bf2-matchmaking/types';
 import { shuffleArray } from '@bf2-matchmaking/utils';
 import { Embed } from 'discord.js';
 import { getUserIds } from './utils';
@@ -42,10 +38,6 @@ function getTeamsBySnakeDraft(
   return [team1, team2];
 }
 
-export function getAverageRating(players: Array<RatedMatchPlayer>) {
-  return players.reduce((acc, cur) => acc + cur.rating, 0) / players.length;
-}
-
 function compareRating(mpA: RatedMatchPlayer, mpB: RatedMatchPlayer) {
   return mpB.rating - mpA.rating;
 }
@@ -71,13 +63,4 @@ export function buildDraftOrder(
   ];
 
   return [unpick, pick];
-}
-
-function findCaptain(
-  teams: Array<MatchPlayersInsert>,
-  embed: Embed,
-  team: 'USMC' | 'MEC/PLA'
-) {
-  const captain = getUserIds(embed, team).at(0);
-  return teams.find((mp) => mp.player_id === captain);
 }

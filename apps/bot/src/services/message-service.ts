@@ -14,7 +14,6 @@ import {
   getMatchField,
   getMatchServerField,
   getServerFields,
-  getTeamDraftEmbed,
   logChannelMessage,
   TEST_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
@@ -26,7 +25,6 @@ import {
   LogContext,
 } from '@bf2-matchmaking/types';
 import { api, isBetaTester } from '@bf2-matchmaking/utils';
-import { draftTeams, getAverageRating } from './draft-utils';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
 
 export async function sendMessage(
@@ -79,18 +77,6 @@ export async function sendSummoningMessage(match: MatchesJoined) {
   logMessage(`Match ${match.id} sent summoning message to ${messages.length} players`, {
     players: match.players,
     messages: messages,
-  });
-}
-export async function sendDraftMessage(match: MatchesJoined) {
-  const { snakeDraftTeams, teams, actualTeams } = draftTeams(match);
-  const testChannel = await getTestChannel();
-  await testChannel.send({
-    content: `Match: ${match.id}, rating: ${getAverageRating(match.teams)}`,
-    embeds: [
-      getTeamDraftEmbed('Snake Draft', snakeDraftTeams),
-      getTeamDraftEmbed('BF2.gg Draft', teams),
-      getTeamDraftEmbed('Actual Draft', actualTeams),
-    ],
   });
 }
 

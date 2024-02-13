@@ -22,7 +22,6 @@ import {
 import { PubobotMatch } from '../services/PubobotMatch';
 import {
   replyMessage,
-  sendDraftMessage,
   sendServersMessage,
   sendSummoningMessage,
 } from '../services/message-service';
@@ -130,7 +129,6 @@ function handleMatchCollect(config: DiscordConfig) {
       });
 
       await sendServersMessage(pubMatch.match, message.channel);
-      await sendDraftMessage(pubMatch.match);
     } catch (e) {
       error('handlePubobotMatchStarted', e);
     } finally {
