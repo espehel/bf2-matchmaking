@@ -1,4 +1,5 @@
 import {
+  isRatedMatchPlayer,
   isTeamPlayer,
   MatchesJoined,
   MatchPlayersInsert,
@@ -73,4 +74,19 @@ export function getMatchPlayer(match: MatchesJoined) {
 
 export function isBetaTester(player: PlayersRow) {
   return player.beta_tester;
+}
+
+export function getAverageRating(players: Array<MatchPlayersInsert>) {
+  return (
+    players.filter(isRatedMatchPlayer).reduce((acc, cur) => acc + cur.rating, 0) /
+    players.length
+  );
+}
+
+export function getMatchPlayerNameWithRating(players: Array<PlayersRow>) {
+  return (mp: MatchPlayersInsert) => {
+    const nick = players.find((p) => p.id === mp.player_id)?.nick || 'Unknown';
+    const rating = mp.rating || -1;
+    return `${nick} (${rating})`;
+  };
 }

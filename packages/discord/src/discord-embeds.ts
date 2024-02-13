@@ -5,16 +5,18 @@ import {
   MatchResultsJoined,
   LiveServer,
   ServersRow,
-  MatchPlayersRow,
   PlayersRow,
   MatchPlayersInsert,
+  PickedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
   api,
   compareFullName,
   compareIsCaptain,
+  getAverageRating,
   getMatchIdFromDnsName,
+  getMatchPlayerNameWithRating,
   getPlayerName,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
@@ -29,7 +31,7 @@ export function buildDraftPollEmbed(
 ): APIEmbed {
   return {
     title: 'Suggested Draft',
-    description: `If more than half of players accepts the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
+    description: `If two players from each team accepts the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
     fields: [...createTeamFields(teams, players), getMatchField(match)],
   };
 }
@@ -78,17 +80,26 @@ export const getWarmUpStartedEmbed = (
   ],
 });
 
-export function getTeamDraftEmbed(
-  draftType: string,
-  teams: { rating: number; players: string[] }[]
+export function buildTeamDraftEmbed(
+  matchId: number,
+  players: Array<PlayersRow>,
+  teams: [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>]
 ) {
+  const [team1, team2] = teams;
   return {
-    title: draftType,
-    fields: teams.map(({ rating, players }) => ({
-      name: rating.toString(),
-      value: players.join('\n'),
-      inline: true,
-    })),
+    title: `Match ${matchId} Suggested Draft (Debug)`,
+    fields: [
+      {
+        name: getAverageRating(team1).toString(),
+        value: team1.map(getMatchPlayerNameWithRating(players)).join('\n'),
+        inline: true,
+      },
+      {
+        name: getAverageRating(team2).toString(),
+        value: team2.map(getMatchPlayerNameWithRating(players)).join('\n'),
+        inline: true,
+      },
+    ],
   };
 }
 export const getMatchStartedEmbed = (

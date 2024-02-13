@@ -171,3 +171,15 @@ export async function getDebugChannel() {
   }
   return channel;
 }
+
+export async function sendDebugMessage(
+  content: string | MessagePayload | MessageCreateOptions
+) {
+  try {
+    const channel = await getDebugChannel();
+    return channel.send(content);
+  } catch (e) {
+    logErrorMessage('Failed to send debug message', e, { content });
+    return null;
+  }
+}

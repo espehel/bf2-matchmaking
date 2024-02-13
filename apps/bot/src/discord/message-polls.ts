@@ -4,7 +4,6 @@ import {
   PollResult,
   MatchesJoined,
   PollEmoji,
-  MatchPlayersInsert,
   PickedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { Message, MessageReaction } from 'discord.js';
@@ -13,6 +12,7 @@ import {
   buildDraftPollEmbed,
   createServerLocationPollField,
   getMatchField,
+  buildTeamDraftEmbed,
 } from '@bf2-matchmaking/discord';
 import { logMessage } from '@bf2-matchmaking/logging';
 import {
@@ -22,6 +22,7 @@ import {
 } from '../services/location-service';
 import {
   editLocationPollMessageWithResults,
+  sendDebugMessage,
   sendMessage,
 } from '../services/message-service';
 import { PubobotMatch } from '../services/PubobotMatch';
@@ -29,19 +30,21 @@ import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
 export async function startDraftPoll(
   puboMatch: PubobotMatch,
-  teams: Array<MatchPlayersInsert>
+  teams: [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>]
 ) {
   const { match, players } = puboMatch;
+  const [team1, team2] = teams;
   return new Promise<PollEmoji>(async (resolve, reject) => {
     const pollEndTime = DateTime.now().plus({ seconds: 30 });
 
     const pollMessage = await sendMessage(
       puboMatch.channel,
       {
-        embeds: [buildDraftPollEmbed(match, teams, players, pollEndTime)],
+        embeds: [buildDraftPollEmbed(match, teams.flat(), players, pollEndTime)],
       },
       { teams, match }
     );
+    await sendDebugMessage({ embeds: [buildTeamDraftEmbed(match.id, players, teams)] });
 
     if (!pollMessage) {
       return reject('Failed to send poll message');
@@ -72,9 +75,12 @@ export async function startDraftPoll(
       const pollResult =
         getValidUsersCount(
           voters,
-          teams.map((t) => t.player_id)
-        ) >
-        match.config.size / 2
+          team1.map((t) => t.player_id)
+        ) > 1 &&
+        getValidUsersCount(
+          voters,
+          team2.map((t) => t.player_id)
+        ) > 1
           ? PollEmoji.ACCEPT
           : PollEmoji.REJECT;
 
@@ -83,6 +89,7 @@ export async function startDraftPoll(
         {
           PubobotMatch: puboMatch.id,
           match: puboMatch.match,
+          teams,
           acceptResult,
           pollResult,
         }

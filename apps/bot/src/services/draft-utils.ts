@@ -1,4 +1,9 @@
-import { PickedMatchPlayer, RatedMatchPlayer } from '@bf2-matchmaking/types';
+import {
+  isRatedMatchPlayer,
+  MatchPlayersInsert,
+  PickedMatchPlayer,
+  RatedMatchPlayer,
+} from '@bf2-matchmaking/types';
 import { shuffleArray } from '@bf2-matchmaking/utils';
 import { Embed } from 'discord.js';
 import { getUserIds } from './utils';
