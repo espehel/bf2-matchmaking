@@ -34,12 +34,13 @@ export default async function LeaderboardsPage({ searchParams }: Props) {
           </span>
         </div>
       )}
-      //TODO: link text is wrapping on firefox
       <section className="section w-fit">
         <div role="tablist" className="tabs tabs-bordered">
           <Link
             role="tab"
-            className={`tab ${!tab || tab === 'rating4v4' ? 'tab-active' : ''}`}
+            className={`tab ${
+              !tab || tab === 'rating4v4' ? 'tab-active' : ''
+            } whitespace-nowrap`}
             href={getHref({ tab: 'rating4v4' })}
           >
             4v4 Rating
@@ -54,7 +55,7 @@ export default async function LeaderboardsPage({ searchParams }: Props) {
           </div>
           <Link
             role="tab"
-            className={`tab ${tab === 'rating5v5' ? 'tab-active' : ''}`}
+            className={`tab ${tab === 'rating5v5' ? 'tab-active' : ''} whitespace-nowrap`}
             href={getHref({ tab: 'rating5v5' })}
           >
             5v5 Rating
@@ -69,7 +70,7 @@ export default async function LeaderboardsPage({ searchParams }: Props) {
           </div>
           <Link
             role="tab"
-            className={`tab ${tab === 'join' ? 'tab-active' : ''}`}
+            className={`tab ${tab === 'join' ? 'tab-active' : ''} whitespace-nowrap`}
             href={getHref({ tab: 'join' })}
           >
             Join time

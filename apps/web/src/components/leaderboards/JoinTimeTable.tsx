@@ -83,7 +83,9 @@ export default async function JoinTimeTable({
           ))}
         </tbody>
       </table>
-      <Link href={concatHref({ length: 'full' })}>See all</Link>
+      {adminRoles?.player_admin && (
+        <Link href={concatHref({ length: 'full' })}>See all</Link>
+      )}
     </div>
   );
 }

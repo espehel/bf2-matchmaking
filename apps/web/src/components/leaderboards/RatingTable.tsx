@@ -57,7 +57,9 @@ export default async function RatingTable({
           ))}
         </tbody>
       </table>
-      <Link href={concatHref({ length: 'full' })}>See all</Link>
+      {adminRoles?.player_admin && (
+        <Link href={concatHref({ length: 'full' })}>See all</Link>
+      )}
     </div>
   );
 }

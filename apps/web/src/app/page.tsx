@@ -18,8 +18,8 @@ export default function Home() {
               <Link className="btn btn-primary" href="/matches">
                 Live matches
               </Link>
-              <Link className="btn btn-primary" href="/results/leagues/16">
-                PB 8v8 League
+              <Link className="btn btn-primary" href="/leaderboards">
+                Leaderboards
               </Link>
             </div>
           </div>
