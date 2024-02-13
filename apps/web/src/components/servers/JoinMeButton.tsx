@@ -12,7 +12,7 @@ export default function JoinMeButton({ server }: Props) {
   }, [server]);
 
   return (
-    <button className="btn btn-primary mt-4" onClick={handleClick}>
+    <button className="btn btn-primary" onClick={handleClick}>
       Join server
     </button>
   );

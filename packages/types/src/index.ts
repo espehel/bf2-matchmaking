@@ -246,5 +246,5 @@ export type LogContext = Record<any, any>;
 
 export interface PostRestartServerRequestBody {
   mode: 'infantry' | 'vehicles' | null;
-  map: string;
+  map?: string;
 }

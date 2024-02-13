@@ -11,9 +11,14 @@ interface Props {
 
 export default async function ServerActions({ address }: Props) {
   const server = await supabase(cookies).getServer(address).then(verifySingleResult);
+  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   async function deleteServerSA() {
     'use server';
     return deleteServer(server.ip);
+  }
+
+  if (!adminRoles?.server_admin) {
+    return null;
   }
 
   return (

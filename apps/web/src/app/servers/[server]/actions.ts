@@ -12,6 +12,22 @@ import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
 import { api } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 
+export async function restartServerInfantry(ip: string) {
+  const result = await api.live().postServerRestart(ip, { mode: 'infantry' });
+  if (!result.error) {
+    revalidatePath(`/servers/${ip}`);
+  }
+  return result;
+}
+
+export async function restartServerVehicles(ip: string) {
+  const result = await api.live().postServerRestart(ip, { mode: 'vehicles' });
+  if (!result.error) {
+    revalidatePath(`/servers/${ip}`);
+  }
+  return result;
+}
+
 export async function updateServer(ip: string, data: FormData) {
   const { portInput, demosInput } = Object.fromEntries(data);
   let serverValues: ServersUpdate = {};
