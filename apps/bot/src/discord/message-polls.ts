@@ -70,7 +70,13 @@ export async function startDraftPoll(
       const [, voters] = acceptResult;
 
       const pollResult =
-        voters.length > match.config.size / 2 ? PollEmoji.ACCEPT : PollEmoji.REJECT;
+        getValidUsersCount(
+          voters,
+          teams.map((t) => t.player_id)
+        ) >
+        match.config.size / 2
+          ? PollEmoji.ACCEPT
+          : PollEmoji.REJECT;
 
       logMessage(
         `Match ${puboMatch.match.id}: Draft poll ended with result ${pollResult}`,

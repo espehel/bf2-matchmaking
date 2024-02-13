@@ -27,7 +27,11 @@ import {
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { handleDraftPollResult, startDraftPoll } from './message-polls';
-import { buildMixTeams, buildDraftOrder } from '../services/draft-utils';
+import {
+  buildMixTeams,
+  buildDraftOrder,
+  AUTO_DRAFT_CONFIGS,
+} from '../services/draft-utils';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = matchFilter;
@@ -164,10 +168,11 @@ async function handlePubobotMatchDrafting(message: Message<true>) {
     const ratedPlayers = pubMatch.teams.filter(isRatedMatchPlayer);
     const teams = buildMixTeams(ratedPlayers);
     const [unpickList, pickList] = buildDraftOrder(teams, embed);
+
     if (
       ratedPlayers.length === pubMatch.match.config.size &&
       pickList.length === pubMatch.match.config.size &&
-      pubMatch.channel.id === '1035999895968030800'
+      AUTO_DRAFT_CONFIGS.includes(pubMatch.match.config.id)
     ) {
       startDraftPoll(pubMatch, teams.flat()).then(
         handleDraftPollResult(pubMatch, unpickList, pickList)

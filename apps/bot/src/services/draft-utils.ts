@@ -3,6 +3,8 @@ import { shuffleArray } from '@bf2-matchmaking/utils';
 import { Embed } from 'discord.js';
 import { getUserIds } from './utils';
 
+export const AUTO_DRAFT_CONFIGS = [2, 9];
+
 export function buildMixTeams(
   teams: Array<RatedMatchPlayer>
 ): [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>] {
