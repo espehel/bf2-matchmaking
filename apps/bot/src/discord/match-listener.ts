@@ -174,7 +174,7 @@ async function handlePubobotMatchDrafting(message: Message<true>) {
       pickList.length === pubMatch.match.config.size &&
       AUTO_DRAFT_CONFIGS.includes(pubMatch.match.config.id)
     ) {
-      startDraftPoll(pubMatch, teams.flat()).then(
+      startDraftPoll(pubMatch, teams).then(
         handleDraftPollResult(pubMatch, unpickList, pickList)
       );
     } else {
