@@ -77,12 +77,16 @@ const toRconUpdateValues = (data: FormData) => {
 };
 
 export async function deleteServer(ip: string) {
-  const platformResult = await api.platform().deleteServer(ip);
+  const [platformResult, rconResult, serverResult, liveResult] = await Promise.all([
+    api.platform().deleteServer(ip),
+    supabase(cookies).deleteServerRcon(ip),
+    supabase(cookies).deleteServer(ip),
+    api.live().deleteServer(ip),
+  ]);
+
   if (platformResult.error) {
     logErrorMessage(`Server ${ip}: Failed to delete from platform`, platformResult.error);
   }
-
-  const rconResult = await supabase(cookies).deleteServerRcon(ip);
   if (rconResult.error) {
     logErrorMessage(
       `Server ${ip}: Failed to delete rcon from database`,
@@ -90,8 +94,6 @@ export async function deleteServer(ip: string) {
     );
     return rconResult;
   }
-
-  const serverResult = await supabase(cookies).deleteServer(ip);
   if (serverResult.error) {
     logErrorMessage(
       `Server ${ip}: Failed to delete server from database`,
@@ -99,10 +101,16 @@ export async function deleteServer(ip: string) {
     );
     return serverResult;
   }
+  if (liveResult.error) {
+    logErrorMessage(`Server ${ip}: Failed to delete server from live`, liveResult.error);
+    return liveResult;
+  }
+
   logMessage(`Server ${ip}: Deleted successfully`, {
     platformResult,
     rconResult,
     serverResult,
+    liveResult,
   });
   revalidatePath(`/servers`);
   return serverResult;
