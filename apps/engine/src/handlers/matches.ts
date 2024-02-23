@@ -26,11 +26,11 @@ export async function handleMatchStatusUpdate(match: MatchesJoined) {
   }
 
   if (match.status === MatchStatus.Summoning) {
-    await joinMatchRoom(match);
+    //await joinMatchRoom(match);
   }
   if (match.status === MatchStatus.Ongoing) {
     await handleMatchOngoing(match);
-    await broadcastMatchStart(match);
+    //await broadcastMatchStart(match);
   }
   if (match.status === MatchStatus.Finished) {
     await handleMatchFinished(match);
@@ -61,7 +61,7 @@ async function handleMatchFinished(match: MatchesJoined) {
     }
   }
 
-  leaveMatchRoom(match);
+  //leaveMatchRoom(match);
 }
 
 function handleMatchSummoning(match: MatchesJoined) {

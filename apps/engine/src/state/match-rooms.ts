@@ -2,10 +2,10 @@ import { client, realtimeClient } from '@bf2-matchmaking/supabase';
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
 
-const realtime = realtimeClient();
+//const realtime = realtimeClient();
 
 export async function joinMatchRoom(match: MatchesJoined) {
-  const realtimeMatch = await realtime.getRealtimeMatch(match, 'engine');
+  //const realtimeMatch = await realtime.getRealtimeMatch(match, 'engine');
   /*realtimeMatch.listenActivePlayers(async (players) => {
     if (match.players.every((player) => players.includes(player.id))) {
       info(
@@ -18,9 +18,9 @@ export async function joinMatchRoom(match: MatchesJoined) {
 }
 
 export async function broadcastMatchStart(match: MatchesJoined) {
-  const realtimeMatch = await realtime.getRealtimeMatch(match, 'engine');
-  await realtimeMatch.broadcastStatusUpdate(MatchStatus.Ongoing);
+  //const realtimeMatch = await realtime.getRealtimeMatch(match, 'engine');
+  //await realtimeMatch.broadcastStatusUpdate(MatchStatus.Ongoing);
 }
 export function leaveMatchRoom(match: MatchesJoined) {
-  realtime.leaveRealtimeMatch(match);
+  //realtime.leaveRealtimeMatch(match);
 }
