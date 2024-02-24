@@ -24,7 +24,7 @@ import {
 } from '../services/location-service';
 import {
   editLocationPollMessageWithResults,
-  sendDebugMessage,
+  sendLogMessage,
   sendMessage,
 } from '../services/message-service';
 import { PubobotMatch } from '../services/PubobotMatch';
@@ -122,7 +122,7 @@ function handlePollEnd(
   return async (results: Array<PollResult>) => {
     const isAccepted = isDraftPollResolvedWithAccept(results, pickList);
 
-    await sendDebugMessage({
+    await sendLogMessage({
       embeds: [buildDebugDraftEndedEmbed(pubMatch.id, config.name, results, isAccepted)],
     });
 
