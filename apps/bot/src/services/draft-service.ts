@@ -16,7 +16,7 @@ import {
   buildDebugSuggestedDraftEmbed,
 } from '@bf2-matchmaking/discord';
 
-export const VALID_DRAFT_CONFIGS = [2, 9];
+export const VALID_DRAFT_CONFIGS = [2, 9, 19];
 
 export async function buildDraftWithConfig(
   pubMatch: PubobotMatch,
