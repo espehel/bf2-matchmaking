@@ -23,6 +23,7 @@ import {
 import { assertObj } from '@bf2-matchmaking/utils';
 import { createDraftPoll } from './message-polls';
 import { buildDraftWithConfig, logActualDraft } from '../services/draft-service';
+import { client } from '@bf2-matchmaking/supabase';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = matchFilter;
@@ -162,15 +163,14 @@ async function handlePubobotMatchDrafting(pubMatch: PubobotMatch) {
     await pubMatch.updateMap();
     await pubMatch.updateDraftingPlayers();
     info('handlePubobotMatchDrafting', `Pubmatch ${pubMatch.id} updated`);
-    const pickList = await buildDraftWithConfig(pubMatch);
 
-    if (pickList) {
-      info(
-        'handlePubobotMatchDrafting',
-        `Pubmatch ${pubMatch.id} pick list created, creating poll...`
-      );
-      await createDraftPoll(pickList, pubMatch);
+    await createDraftPoll(pubMatch);
+
+    const { data: config4v4Cup } = await client().getMatchConfig(19);
+    if (config4v4Cup) {
+      await createDraftPoll(pubMatch, config4v4Cup);
     }
+
     info(
       'handlePubobotMatchDrafting',
       `Pubmatch ${pubMatch.id} Poll created, syncing match...`

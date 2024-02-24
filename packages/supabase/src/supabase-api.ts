@@ -129,7 +129,7 @@ export default (client: SupabaseClient<Database>) => ({
       .single(),
   getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
   getMatchConfig: (id: number) =>
-    client.from('match_configs').select('*').eq('id', id).single(),
+    client.from('match_configs').select('*').eq('id', id).single<MatchConfigsRow>(),
   getMatchConfigResults: (id: number) =>
     client
       .from('match_configs')

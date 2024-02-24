@@ -20,10 +20,8 @@ export const VALID_DRAFT_CONFIGS = [2, 9];
 
 export async function buildDraftWithConfig(
   pubMatch: PubobotMatch,
-  configOption?: MatchConfigsRow
+  config: MatchConfigsRow
 ): Promise<Array<PickedMatchPlayer> | null> {
-  const config = configOption || pubMatch.match.config;
-
   if (!VALID_DRAFT_CONFIGS.includes(config.id)) {
     info('createDraftWithConfig', `Invalid draft config ${config.name}`);
     return null;

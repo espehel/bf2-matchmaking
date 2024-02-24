@@ -31,14 +31,37 @@ import { PubobotMatch } from '../services/PubobotMatch';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { MessagePoll } from './MessagePoll';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
-import { getUnpickList } from '../services/draft-service';
+import { buildDraftWithConfig, getUnpickList } from '../services/draft-service';
+
+let polls: Array<[number, MessagePoll]> = [];
+function addPoll(matchId: number, poll: MessagePoll) {
+  info('addPoll', `Adding poll for match ${matchId}`);
+  polls.push([matchId, poll]);
+}
+function stopPolls(matchId: number) {
+  info('stopPolls', `Stopping polls for match ${matchId}`);
+  polls
+    .filter(([id]) => id === matchId)
+    .forEach(([, poll]) => poll.stopPoll(`Polls for match ${matchId} is resolved`));
+}
+
+function removePolls(matchId: number) {
+  info('removePolls', `Removing polls for match ${matchId}`);
+  polls = polls.filter(([id]) => id !== matchId);
+}
 
 export async function createDraftPoll(
-  pickList: Array<PickedMatchPlayer>,
   pubMatch: PubobotMatch,
   configOption?: MatchConfigsRow
 ) {
   const config = configOption || pubMatch.match.config;
+
+  const pickList = await buildDraftWithConfig(pubMatch, config);
+  if (!pickList) {
+    return;
+  }
+
+  info('createDraftPoll', `Pubmatch ${pubMatch.id} pick list created, creating poll...`);
 
   const pollEndTime = DateTime.now().plus({ minutes: 2 });
   const poll = await MessagePoll.createPoll(pubMatch.getChannel(), {
@@ -52,12 +75,14 @@ export async function createDraftPoll(
       ),
     ],
   });
+  addPoll(pubMatch.match.id, poll);
   info('createDraftPoll', `Pubmatch ${pubMatch.id} Poll created`);
+
   await poll
     .setEndtime(pollEndTime)
     .setValidUsers(new Set(pickList.map((p) => p.player_id)))
-    .onReaction(handlePollReaction)
-    .onPollEnd(handlePollEnd)
+    .onReaction(handleDraftPollReaction(pickList, pubMatch, pollEndTime))
+    .onPollEnd(handlePollEnd(pickList, pubMatch, config))
     .startPoll();
   info('createDraftPoll', `Pubmatch ${pubMatch.id} Poll started`);
 
@@ -65,10 +90,16 @@ export async function createDraftPoll(
     pubMatch,
     pickList,
   });
+}
 
-  function handlePollReaction(results: Array<PollResult>) {
+function handleDraftPollReaction(
+  pickList: Array<PickedMatchPlayer>,
+  pubMatch: PubobotMatch,
+  pollEndTime: DateTime
+) {
+  return (results: Array<PollResult>) => {
     if (isDraftPollResolvedWithAccept(results, pickList)) {
-      poll.stopPoll('Draft poll is resolved');
+      stopPolls(pubMatch.match.id);
     }
     return {
       embeds: [
@@ -81,8 +112,14 @@ export async function createDraftPoll(
         ),
       ],
     };
-  }
-  async function handlePollEnd(results: Array<PollResult>) {
+  };
+}
+function handlePollEnd(
+  pickList: Array<PickedMatchPlayer>,
+  pubMatch: PubobotMatch,
+  config: MatchConfigsRow
+) {
+  return async (results: Array<PollResult>) => {
     const isAccepted = isDraftPollResolvedWithAccept(results, pickList);
 
     await sendDebugMessage({
@@ -101,6 +138,8 @@ export async function createDraftPoll(
       isAccepted,
     });
 
+    removePolls(pubMatch.match.id);
+
     return {
       embeds: [
         buildDraftPollEndedEmbed(
@@ -112,7 +151,7 @@ export async function createDraftPoll(
         ),
       ],
     };
-  }
+  };
 }
 
 function isDraftPollResolvedWithAccept(
