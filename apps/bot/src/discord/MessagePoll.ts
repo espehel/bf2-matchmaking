@@ -79,7 +79,9 @@ export class MessagePoll {
   }
 
   onPollEnd(
-    cb: (results: Array<PollResult>) => string | MessagePayload | MessageEditOptions
+    cb: (
+      results: Array<PollResult>
+    ) => Promise<string | MessagePayload | MessageEditOptions>
   ) {
     this.endListener = async (
       collected: Collection<string, MessageReaction>,
@@ -93,7 +95,7 @@ export class MessagePoll {
         .map(this.#toResults.bind(this))
         .filter(isNotNull)
         .sort(compareMessageReactionResults);
-      const content = cb(results);
+      const content = await cb(results);
       info(
         'MessagePoll',
         `Editing message with new content "${JSON.stringify(content)}"`

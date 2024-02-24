@@ -82,22 +82,25 @@ export async function createDraftPoll(
       ],
     };
   }
-  function handlePollEnd(results: Array<PollResult>) {
+  async function handlePollEnd(results: Array<PollResult>) {
     const isAccepted = isDraftPollResolvedWithAccept(results, pickList);
+
+    await sendDebugMessage({
+      embeds: [buildDebugDraftEndedEmbed(pubMatch.id, config.name, results, isAccepted)],
+    });
+
+    if (isAccepted) {
+      await handleDraftAccepted(pubMatch, pickList);
+      info('createDraftPoll', `Pubmatch ${pubMatch.id} Draft executed`);
+    }
+
     logMessage(`Match ${pubMatch.match.id}: Poll ended`, {
       pubMatch,
       pickList,
       results,
       isAccepted,
     });
-    sendDebugMessage({
-      embeds: [buildDebugDraftEndedEmbed(pubMatch.id, config.name, results, isAccepted)],
-    });
-    if (isAccepted) {
-      handleDraftAccepted(pubMatch, pickList).then(() => {
-        info('createDraftPoll', `Pubmatch ${pubMatch.id} Draft executed`);
-      });
-    }
+
     return {
       embeds: [
         buildDraftPollEndedEmbed(
