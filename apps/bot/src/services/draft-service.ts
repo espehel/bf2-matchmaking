@@ -24,7 +24,7 @@ export async function buildDraftWithConfig(
 ): Promise<Array<PickedMatchPlayer> | null> {
   const config = configOption || pubMatch.match.config;
 
-  if (!VALID_DRAFT_CONFIGS.includes(config.size)) {
+  if (!VALID_DRAFT_CONFIGS.includes(config.id)) {
     info('createDraftWithConfig', `Invalid draft config ${config.name}`);
     return null;
   }
