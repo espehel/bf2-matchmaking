@@ -5,6 +5,7 @@ import {
   MatchesJoined,
   PollEmoji,
   PickedMatchPlayer,
+  MatchConfigsRow,
 } from '@bf2-matchmaking/types';
 import { Message, MessageReaction } from 'discord.js';
 import { DateTime } from 'luxon';
@@ -13,6 +14,7 @@ import {
   createServerLocationPollField,
   getMatchField,
   buildDraftPollEndedEmbed,
+  buildDebugDraftEndedEmbed,
 } from '@bf2-matchmaking/discord';
 import { info, logMessage } from '@bf2-matchmaking/logging';
 import {
@@ -22,6 +24,7 @@ import {
 } from '../services/location-service';
 import {
   editLocationPollMessageWithResults,
+  sendDebugMessage,
   sendMessage,
 } from '../services/message-service';
 import { PubobotMatch } from '../services/PubobotMatch';
@@ -32,8 +35,11 @@ import { getUnpickList } from '../services/draft-service';
 
 export async function createDraftPoll(
   pickList: Array<PickedMatchPlayer>,
-  pubMatch: PubobotMatch
+  pubMatch: PubobotMatch,
+  configOption?: MatchConfigsRow
 ) {
+  const config = configOption || pubMatch.match.config;
+
   const pollEndTime = DateTime.now().plus({ minutes: 2 });
   const poll = await MessagePoll.createPoll(pubMatch.getChannel(), {
     embeds: [
@@ -83,6 +89,9 @@ export async function createDraftPoll(
       pickList,
       results,
       isAccepted,
+    });
+    sendDebugMessage({
+      embeds: [buildDebugDraftEndedEmbed(pubMatch.id, config.name, results, isAccepted)],
     });
     if (isAccepted) {
       handleDraftAccepted(pubMatch, pickList).then(() => {

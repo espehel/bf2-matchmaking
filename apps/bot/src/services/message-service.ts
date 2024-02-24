@@ -154,6 +154,18 @@ export async function getLogChannel() {
   return channel;
 }
 
+export async function sendLogMessage(
+  content: string | MessagePayload | MessageCreateOptions
+) {
+  try {
+    const channel = await getLogChannel();
+    return channel.send(content);
+  } catch (e) {
+    logErrorMessage('Failed to send debug message', e, { content });
+    return null;
+  }
+}
+
 export async function getDemoChannel() {
   const client = await getDiscordClient();
   const channel = await client.channels.fetch(DEMO_CHANNEL_ID);

@@ -129,6 +129,22 @@ export function buildDebugSuggestedDraftEmbed(
     ],
   };
 }
+export function buildDebugDraftEndedEmbed(
+  matchId: number,
+  draftLabel: string,
+  pollResults: Array<PollResult> | null,
+  accepted: boolean
+): APIEmbed {
+  const summary = pollResults
+    ?.map(([reaction, votes]) => `(${reaction}: ${votes.length} votes)`)
+    .join(', ');
+  return {
+    title: `Match ${matchId} Draft result (${draftLabel})`,
+    description: `Suggested draft was ${
+      accepted ? 'accepted' : 'rejected'
+    } with following vote count: ${summary}`,
+  };
+}
 export function buildDebugActualDraftEmbed(
   matchId: number,
   draftLabel: string,
