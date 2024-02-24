@@ -40,7 +40,7 @@ export async function createLiveInfo({
 }
 
 export async function toLiveServer(server: Server): Promise<LiveServer> {
-  const { address, port, info, updatedAt, errorAt } = server;
+  const { address, gamePort, info, updatedAt, errorAt } = server;
   const joinmeHref = await getJoinmeHref(server.address, server.gamePort);
   const joinmeDirect = await getJoinmeDirect(server.address, server.gamePort);
   const { data: location } = await externalApi.ip().getIpLocation(server.address);
@@ -49,7 +49,7 @@ export async function toLiveServer(server: Server): Promise<LiveServer> {
 
   return {
     address,
-    port,
+    port: Number(gamePort),
     info,
     updatedAt: updatedAt.toISO(),
     errorAt: errorAt?.toISO() || null,
