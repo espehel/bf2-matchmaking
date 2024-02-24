@@ -63,16 +63,20 @@ async function logSuggestedDraft(
   config: MatchConfigsRow
 ) {
   const channel = await getLogChannel();
-  return sendMessage(channel, {
-    embeds: [
-      buildDebugSuggestedDraftEmbed(
-        pubMatch.match.id,
-        config.name,
-        pubMatch.players,
-        draft
-      ),
-    ],
-  });
+  return sendMessage(
+    channel,
+    {
+      embeds: [
+        buildDebugSuggestedDraftEmbed(
+          pubMatch.match.id,
+          config.name,
+          pubMatch.players,
+          draft
+        ),
+      ],
+    },
+    { draft, config }
+  );
 }
 
 export async function logActualDraft(pubMatch: PubobotMatch) {
@@ -142,7 +146,7 @@ export function buildDraftOrder(
 
 export function getUnpickList(pubMatch: PubobotMatch): Array<string> {
   return [
-    ...getUserIds(pubMatch.embed, 'USMC'),
-    ...getUserIds(pubMatch.embed, 'MEC/PLA'),
+    ...getUserIds(pubMatch.getEmbed(), 'USMC'),
+    ...getUserIds(pubMatch.getEmbed(), 'MEC/PLA'),
   ];
 }

@@ -14,7 +14,7 @@ import {
   getMatchField,
   buildDraftPollEndedEmbed,
 } from '@bf2-matchmaking/discord';
-import { logMessage } from '@bf2-matchmaking/logging';
+import { info, logMessage } from '@bf2-matchmaking/logging';
 import {
   getServerLocation,
   getServerLocationEmojis,
@@ -35,7 +35,7 @@ export async function createDraftPoll(
   pubMatch: PubobotMatch
 ) {
   const pollEndTime = DateTime.now().plus({ minutes: 2 });
-  const poll = await MessagePoll.createPoll(pubMatch.channel, {
+  const poll = await MessagePoll.createPoll(pubMatch.getChannel(), {
     embeds: [
       buildDraftPollEmbed(
         pubMatch.match,
@@ -46,16 +46,18 @@ export async function createDraftPoll(
       ),
     ],
   });
+  info('createDraftPoll', `Pubmatch ${pubMatch.id} Poll created`);
   await poll
     .setEndtime(pollEndTime)
+    .setValidUsers(new Set(pickList.map((p) => p.player_id)))
     .onReaction(handlePollReaction)
     .onPollEnd(handlePollEnd)
     .startPoll();
+  info('createDraftPoll', `Pubmatch ${pubMatch.id} Poll started`);
 
   logMessage(`Match ${pubMatch.match.id}: Draft poll started`, {
     pubMatch,
     pickList,
-    poll,
   });
 
   function handlePollReaction(results: Array<PollResult>) {
@@ -83,7 +85,9 @@ export async function createDraftPoll(
       isAccepted,
     });
     if (isAccepted) {
-      handleDraftAccepted(pubMatch, pickList);
+      handleDraftAccepted(pubMatch, pickList).then(() => {
+        info('createDraftPoll', `Pubmatch ${pubMatch.id} Draft executed`);
+      });
     }
     return {
       embeds: [
@@ -107,8 +111,12 @@ function isDraftPollResolvedWithAccept(
   if (!acceptResult) {
     return false;
   }
+  const voteThreshold = Math.floor(pickList.length / 4) || 1;
   const [, votes] = acceptResult;
-  return getTeamCount(votes, pickList, 1) > 1 && getTeamCount(votes, pickList, 2) > 1;
+  return (
+    getTeamCount(votes, pickList, 1) >= voteThreshold &&
+    getTeamCount(votes, pickList, 2) >= voteThreshold
+  );
 }
 
 export async function handleDraftAccepted(
@@ -125,13 +133,16 @@ export async function handleDraftAccepted(
   });
 
   for (const playerId of unpickList) {
-    await sendMessage(pubMatch.channel, `!put <@${playerId}> Unpicked ${pubMatch.id}`);
+    await sendMessage(
+      pubMatch.getChannel(),
+      `!put <@${playerId}> Unpicked ${pubMatch.id}`
+    );
     await wait(1);
   }
 
   for (const mp of pickList) {
     await sendMessage(
-      pubMatch.channel,
+      pubMatch.getChannel(),
       `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubMatch.id}`
     );
     await wait(1);

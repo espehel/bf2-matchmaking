@@ -57,7 +57,7 @@ export class MessagePoll {
     return this.#isValidReaction(reaction) && this.#isValidUser(user);
   }
   #isValidReaction(reaction: MessageReaction) {
-    return !this.reactions.has(reaction.emoji.name as PollEmoji);
+    return this.reactions.has(reaction.emoji.name as PollEmoji);
   }
   #isValidUser(user: User) {
     return this.validUsers ? this.validUsers.has(user.id) : true;
@@ -69,7 +69,7 @@ export class MessagePoll {
     this.collectListener = async (reaction, user) => {
       info('MessagePoll', `User ${user.id} reacted with ${reaction.emoji.name}`);
       const results = this.message.reactions.cache
-        .map(this.#toResults)
+        .map(this.#toResults.bind(this))
         .filter(isNotNull)
         .sort(compareMessageReactionResults);
       const content = cb(results);
@@ -90,10 +90,14 @@ export class MessagePoll {
         `Poll ended after collecting ${collected.size} reactions with reason "${reason}"`
       );
       const results = collected
-        .map(this.#toResults)
+        .map(this.#toResults.bind(this))
         .filter(isNotNull)
         .sort(compareMessageReactionResults);
       const content = cb(results);
+      info(
+        'MessagePoll',
+        `Editing message with new content "${JSON.stringify(content)}"`
+      );
       await this.message.edit(content);
     };
     return this;
@@ -101,14 +105,15 @@ export class MessagePoll {
 
   async startPoll() {
     this.collector = this.message.createReactionCollector({
-      filter: this.#getReactionFilter,
+      filter: (reaction, user) => this.#getReactionFilter(reaction, user),
       dispose: true,
       time: this.endTime.diffNow().toMillis(),
     });
+    await Promise.all(this.getReactions().map((r) => this.message.react(r)));
+
     this.collector.on('collect', this.collectListener);
     this.collector.on('end', this.endListener);
 
-    await Promise.all(this.getReactions().map((r) => this.message.react(r)));
     return this;
   }
   stopPoll(reason: string) {
@@ -118,7 +123,7 @@ export class MessagePoll {
     if (reaction.emoji.name && this.#isValidReaction(reaction)) {
       return [
         reaction.emoji.name,
-        Array.from(reaction.users.cache.filter(this.#isValidUser).keys()),
+        Array.from(reaction.users.cache.filter(this.#isValidUser.bind(this)).keys()),
       ];
     } else {
       return null;

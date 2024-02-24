@@ -33,8 +33,8 @@ import { logMessage } from '@bf2-matchmaking/logging';
 export class PubobotMatch {
   id: number;
   match: MatchesJoined;
-  channel: TextChannel;
-  embed: Embed;
+  #channel: TextChannel;
+  #embed: Embed;
   players: Array<PlayersRow>;
   teams: Array<MatchPlayersInsert>;
   maps: Array<number>;
@@ -43,8 +43,8 @@ export class PubobotMatch {
   constructor(id: number, match: MatchesJoined, channel: TextChannel, embed: Embed) {
     this.id = id;
     this.match = match;
-    this.channel = channel;
-    this.embed = embed;
+    this.#channel = channel;
+    this.#embed = embed;
     this.players = match.players;
     this.teams = match.teams;
     this.maps = match.maps.map((m) => m.id);
@@ -54,7 +54,13 @@ export class PubobotMatch {
     return this.match.status;
   }
   setEmbed(embed: Embed) {
-    this.embed = embed;
+    this.#embed = embed;
+  }
+  getEmbed() {
+    return this.#embed;
+  }
+  getChannel() {
+    return this.#channel;
   }
   async syncMaps() {
     if (!hasEqualMaps(this.match, this.maps)) {
@@ -105,9 +111,9 @@ export class PubobotMatch {
 
   async updateDraftingPlayers() {
     const playerIds = [
-      ...getUserIds(this.embed, 'MEC/PLA'),
-      ...getUserIds(this.embed, 'USMC'),
-      ...getUserIds(this.embed, 'Unpicked'),
+      ...getUserIds(this.#embed, 'MEC/PLA'),
+      ...getUserIds(this.#embed, 'USMC'),
+      ...getUserIds(this.#embed, 'Unpicked'),
     ];
     this.players = await getPlayersByIdList(playerIds);
     this.teams = this.players.map(toMatchPlayer(this.match.id));
@@ -115,7 +121,7 @@ export class PubobotMatch {
   }
 
   async updateMap() {
-    const mapName = this.embed.fields?.find((f) => f.name === 'Map')?.value || null;
+    const mapName = this.#embed.fields?.find((f) => f.name === 'Map')?.value || null;
     const map = mapName ? await findMapId(mapName) : null;
     if (map) {
       this.maps = [map];

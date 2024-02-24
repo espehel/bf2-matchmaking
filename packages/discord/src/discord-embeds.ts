@@ -55,7 +55,7 @@ export function buildDraftPollEmbed(
 ): APIEmbed {
   return {
     title: 'Suggested Draft',
-    description: `If two players from each team accepts the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
+    description: `If at least half of the players from each team accept the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
     fields: [...createTeamFields(teams, players, pollResults), getMatchField(match)],
   };
 }

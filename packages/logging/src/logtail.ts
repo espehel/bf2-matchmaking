@@ -13,7 +13,9 @@ import {
 import { error, info } from './winston';
 
 invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
-const logger = new Logtail(process.env.LOGTAIL_SOURCE);
+const logger = new Logtail(process.env.LOGTAIL_SOURCE, {
+  contextObjectCircularRefWarn: false,
+});
 export const flush = () => logger.flush();
 
 export const logEditChannelMessage = (

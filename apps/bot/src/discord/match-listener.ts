@@ -161,14 +161,22 @@ async function handlePubobotMatchDrafting(pubMatch: PubobotMatch) {
   try {
     await pubMatch.updateMap();
     await pubMatch.updateDraftingPlayers();
-
+    info('handlePubobotMatchDrafting', `Pubmatch ${pubMatch.id} updated`);
     const pickList = await buildDraftWithConfig(pubMatch);
 
     if (pickList) {
+      info(
+        'handlePubobotMatchDrafting',
+        `Pubmatch ${pubMatch.id} pick list created, creating poll...`
+      );
       await createDraftPoll(pickList, pubMatch);
     }
-
+    info(
+      'handlePubobotMatchDrafting',
+      `Pubmatch ${pubMatch.id} Poll created, syncing match...`
+    );
     await pubMatch.syncMatch({ status: MatchStatus.Drafting });
+    info('handlePubobotMatchDrafting', `Pubmatch ${pubMatch.id} Match synced`);
   } catch (e) {
     error('handlePubobotMatchDrafting', e);
   }
