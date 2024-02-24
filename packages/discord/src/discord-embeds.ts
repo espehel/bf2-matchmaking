@@ -10,6 +10,7 @@ import {
   PickedMatchPlayer,
   PollResult,
   isRatedMatchPlayer,
+  MatchPlayerResultsInsert,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -21,6 +22,7 @@ import {
   getAverageRating,
   getMatchIdFromDnsName,
   getMatchPlayerNameWithRating,
+  getMatchPlayerResultNameWithRating,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
 import { buildPollPlayerlabel, replaceDiscordGG } from './embed-utils';
@@ -184,6 +186,34 @@ export const getMatchStartedEmbed = (
     : {
         fields: [getLiveMatchField(match.id)],
       };
+
+export const getDebugMatchResultsEmbed = (
+  match: MatchesJoined,
+  results: [MatchResultsJoined, MatchResultsJoined],
+  playerResults: Array<MatchPlayerResultsInsert>
+): APIEmbed => ({
+  title: `Match ${match.id} results`,
+  fields:
+    results[0] && results[1]
+      ? [
+          {
+            name: `Team ${results[0].team.name}: ${results[0].maps}`,
+            value: playerResults
+              .map(getMatchPlayerResultNameWithRating(match.players))
+              .join('\n'),
+            inline: true,
+          },
+          {
+            name: `Team ${results[1].team.name}: ${results[1].maps}`,
+            value: playerResults
+              .map(getMatchPlayerResultNameWithRating(match.players))
+              .join('\n'),
+            inline: true,
+          },
+        ]
+      : [],
+});
+
 export const getMatchResultsEmbed = (
   match: MatchesJoined,
   results: [MatchResultsJoined, MatchResultsJoined]

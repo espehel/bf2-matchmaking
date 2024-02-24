@@ -2,6 +2,7 @@ import {
   isRatedMatchPlayer,
   isTeamPlayer,
   MatchesJoined,
+  MatchPlayerResultsInsert,
   MatchPlayersInsert,
   MatchPlayersRow,
   PlayerListItem,
@@ -85,6 +86,14 @@ export function getMatchPlayerNameWithRating(players: Array<PlayersRow>) {
   return (mp: MatchPlayersInsert) => {
     const nick = players.find((p) => p.id === mp.player_id)?.nick || 'Unknown';
     const rating = mp.rating || -1;
+    return `${nick} (${rating})`;
+  };
+}
+
+export function getMatchPlayerResultNameWithRating(players: Array<PlayersRow>) {
+  return (mp: MatchPlayerResultsInsert) => {
+    const nick = players.find((p) => p.id === mp.player_id)?.nick || 'Unknown';
+    const rating = mp.rating_inc || -1;
     return `${nick} (${rating})`;
   };
 }
