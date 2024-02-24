@@ -31,7 +31,11 @@ import { PubobotMatch } from '../services/PubobotMatch';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { MessagePoll } from './MessagePoll';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
-import { buildDraftWithConfig, getUnpickList } from '../services/draft-service';
+import {
+  buildDraftWithConfig,
+  getUnpickList,
+  VALID_DRAFT_CONFIGS,
+} from '../services/draft-service';
 
 let polls: Array<[number, MessagePoll]> = [];
 function addPoll(matchId: number, poll: MessagePoll) {
@@ -54,6 +58,11 @@ export async function createDraftPoll(
   pubMatch: PubobotMatch,
   configOption?: MatchConfigsRow
 ) {
+  if (!VALID_DRAFT_CONFIGS.includes(pubMatch.match.config.id)) {
+    info('createDraftPoll', `Invalid draft config ${pubMatch.match.config.name}`);
+    return null;
+  }
+
   const config = configOption || pubMatch.match.config;
 
   const pickList = await buildDraftWithConfig(pubMatch, config);

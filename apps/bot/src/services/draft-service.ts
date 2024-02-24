@@ -16,16 +16,12 @@ import {
   buildDebugSuggestedDraftEmbed,
 } from '@bf2-matchmaking/discord';
 
-export const VALID_DRAFT_CONFIGS = [2, 9, 19];
+export const VALID_DRAFT_CONFIGS = [2, 9];
 
 export async function buildDraftWithConfig(
   pubMatch: PubobotMatch,
   config: MatchConfigsRow
 ): Promise<Array<PickedMatchPlayer> | null> {
-  if (!VALID_DRAFT_CONFIGS.includes(config.id)) {
-    info('createDraftWithConfig', `Invalid draft config ${config.name}`);
-    return null;
-  }
   try {
     const ratings = await client()
       .getPlayerRatingsByIdList(
