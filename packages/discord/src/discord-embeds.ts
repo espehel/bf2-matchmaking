@@ -8,31 +8,55 @@ import {
   PlayersRow,
   MatchPlayersInsert,
   PickedMatchPlayer,
+  PollResult,
+  isRatedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
   api,
   compareFullName,
   compareIsCaptain,
+  compareMPRating,
+  compareRating,
   getAverageRating,
   getMatchIdFromDnsName,
   getMatchPlayerNameWithRating,
-  getPlayerName,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
-import { replaceDiscordGG } from './embed-utils';
+import { buildPollPlayerlabel, replaceDiscordGG } from './embed-utils';
 import { DateTime } from 'luxon';
+import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
+
+export function buildDraftPollEndedEmbed(
+  match: MatchesJoined,
+  teams: Array<MatchPlayersInsert>,
+  players: Array<PlayersRow>,
+  pollResults: Array<PollResult> | null,
+  accepted: boolean
+): APIEmbed {
+  const summary = pollResults
+    ?.map(([reaction, votes]) => `(${reaction}: ${votes.length} votes)`)
+    .join(', ');
+  return {
+    title: 'Suggested Draft',
+    description: `Suggested draft was ${
+      accepted ? 'accepted' : 'rejected'
+    } with following vote count: ${summary}`,
+    fields: [...createTeamFields(teams, players, pollResults), getMatchField(match)],
+  };
+}
 
 export function buildDraftPollEmbed(
   match: MatchesJoined,
   teams: Array<MatchPlayersInsert>,
   players: Array<PlayersRow>,
+  pollResults: Array<PollResult> | null,
   endTime: DateTime
 ): APIEmbed {
   return {
     title: 'Suggested Draft',
     description: `If two players from each team accepts the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
-    fields: [...createTeamFields(teams, players), getMatchField(match)],
+    fields: [...createTeamFields(teams, players, pollResults), getMatchField(match)],
   };
 }
 
@@ -63,7 +87,7 @@ export const getLiveMatchEmbed = (
   fields: [
     { name: 'address', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
-    getLiveMatchField(match),
+    getLiveMatchField(match.id),
   ],
 });
 export const getWarmUpStartedEmbed = (
@@ -76,18 +100,20 @@ export const getWarmUpStartedEmbed = (
   fields: [
     { name: 'address', value: server.ip, inline: true },
     { name: 'port', value: server.port, inline: true },
-    getLiveMatchField(match),
+    getLiveMatchField(match.id),
   ],
 });
 
-export function buildTeamDraftEmbed(
+export function buildDebugSuggestedDraftEmbed(
   matchId: number,
+  draftLabel: string,
   players: Array<PlayersRow>,
   teams: [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>]
 ) {
-  const [team1, team2] = teams;
+  const team1 = teams[0].filter(isTeam(1)).sort(compareMPRating);
+  const team2 = teams[1].filter(isTeam(2)).sort(compareMPRating);
   return {
-    title: `Match ${matchId} Suggested Draft (Debug)`,
+    title: `Match ${matchId} Suggested Draft (${draftLabel})`,
     fields: [
       {
         name: getAverageRating(team1).toString(),
@@ -99,6 +125,32 @@ export function buildTeamDraftEmbed(
         value: team2.map(getMatchPlayerNameWithRating(players)).join('\n'),
         inline: true,
       },
+      getLiveMatchField(matchId),
+    ],
+  };
+}
+export function buildDebugActualDraftEmbed(
+  matchId: number,
+  draftLabel: string,
+  players: Array<PlayersRow>,
+  teams: Array<MatchPlayersInsert>
+) {
+  const team1 = teams.filter(isTeam(1)).sort(compareMPRating);
+  const team2 = teams.filter(isTeam(2)).sort(compareMPRating);
+  return {
+    title: `Match ${matchId} Actual Draft (${draftLabel})`,
+    fields: [
+      {
+        name: getAverageRating(team1).toString(),
+        value: team1.map(getMatchPlayerNameWithRating(players)).join('\n'),
+        inline: true,
+      },
+      {
+        name: getAverageRating(team2).toString(),
+        value: team2.map(getMatchPlayerNameWithRating(players)).join('\n'),
+        inline: true,
+      },
+      getLiveMatchField(matchId),
     ],
   };
 }
@@ -111,10 +163,10 @@ export const getMatchStartedEmbed = (
         description: `**JOIN** [${replaceDiscordGG(server.info.serverName)}](${
           server.joinmeHref
         })`,
-        fields: [...getServerInfoFields(server), getLiveMatchField(match)],
+        fields: [...getServerInfoFields(server), getLiveMatchField(match.id)],
       }
     : {
-        fields: [getLiveMatchField(match)],
+        fields: [getLiveMatchField(match.id)],
       };
 export const getMatchResultsEmbed = (
   match: MatchesJoined,
@@ -183,14 +235,18 @@ const getRulesDescriptionByConfig = (config: MatchConfigsRow): string => {
   return '';
 };
 
-function createTeamFields(teams: Array<MatchPlayersInsert>, players: Array<PlayersRow>) {
+function createTeamFields(
+  teams: Array<MatchPlayersInsert>,
+  players: Array<PlayersRow>,
+  pollResults: Array<PollResult> | null
+) {
   return [
     {
       name: 'Team A',
       value: [...getTeamPlayers(teams, players, 1)]
         .sort(compareFullName)
         .sort(compareIsCaptain)
-        .map(getPlayerName)
+        .map(buildPollPlayerlabel(pollResults))
         .join('\n'),
       inline: true,
     },
@@ -199,7 +255,7 @@ function createTeamFields(teams: Array<MatchPlayersInsert>, players: Array<Playe
       value: [...getTeamPlayers(teams, players, 2)]
         .sort(compareFullName)
         .sort(compareIsCaptain)
-        .map(getPlayerName)
+        .map(buildPollPlayerlabel(pollResults))
         .join('\n'),
       inline: true,
     },
@@ -242,9 +298,9 @@ const getServerInfoFields = (server: LiveServer) => [
   },
 ];
 
-export const getLiveMatchField = (match: MatchesJoined) => ({
+export const getLiveMatchField = (matchId: number) => ({
   name: ``,
-  value: `[**Match ${match.id}** live score](${api.web().basePath}/matches/${match.id})`,
+  value: `[**Match ${matchId}** live score](${api.web().basePath}/matches/${matchId})`,
 });
 
 export const getMatchField = (match: MatchesJoined) => ({

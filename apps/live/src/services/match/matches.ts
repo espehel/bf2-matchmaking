@@ -31,7 +31,7 @@ import {
   getMatchResultsEmbed,
   getWarmUpStartedEmbed,
   sendChannelMessage,
-  TEST_CHANNEL_ID,
+  LOG_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
 import { getJoinmeHref, hasNotKeyhash } from '@bf2-matchmaking/utils';
@@ -154,7 +154,7 @@ export async function processResults(match: MatchesJoined) {
     });
   }
   if (match.config.type === 'Mix') {
-    await sendChannelMessage(TEST_CHANNEL_ID, {
+    await sendChannelMessage(LOG_CHANNEL_ID, {
       embeds: [getMatchResultsEmbed(match, [data[0], data[1]])],
     });
   }
@@ -209,13 +209,13 @@ export async function sendLiveMatchServerMessage(liveMatch: Match) {
       liveMatch.matchServer.active.ip,
       liveMatch.matchServer.active.port
     );
-    await sendChannelMessage(TEST_CHANNEL_ID, {
+    await sendChannelMessage(LOG_CHANNEL_ID, {
       embeds: [
         getLiveMatchEmbed(liveMatch.match, liveMatch.matchServer.active, joinmeHref),
       ],
     });
     logMessage(
-      `Channel ${TEST_CHANNEL_ID}: LiveMatch created for Match ${liveMatch.match.id}`,
+      `Channel ${LOG_CHANNEL_ID}: LiveMatch created for Match ${liveMatch.match.id}`,
       { liveMatch }
     );
   }

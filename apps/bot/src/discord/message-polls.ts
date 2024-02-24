@@ -12,7 +12,7 @@ import {
   buildDraftPollEmbed,
   createServerLocationPollField,
   getMatchField,
-  buildTeamDraftEmbed,
+  buildDraftPollEndedEmbed,
 } from '@bf2-matchmaking/discord';
 import { logMessage } from '@bf2-matchmaking/logging';
 import {
@@ -22,116 +22,122 @@ import {
 } from '../services/location-service';
 import {
   editLocationPollMessageWithResults,
-  sendDebugMessage,
   sendMessage,
 } from '../services/message-service';
 import { PubobotMatch } from '../services/PubobotMatch';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
+import { MessagePoll } from './MessagePoll';
+import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
+import { getUnpickList } from '../services/draft-service';
 
-export async function startDraftPoll(
-  puboMatch: PubobotMatch,
-  teams: [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>]
+export async function createDraftPoll(
+  pickList: Array<PickedMatchPlayer>,
+  pubMatch: PubobotMatch
 ) {
-  const { match, players } = puboMatch;
-  const [team1, team2] = teams;
-  return new Promise<PollEmoji>(async (resolve, reject) => {
-    const pollEndTime = DateTime.now().plus({ seconds: 30 });
-
-    const pollMessage = await sendMessage(
-      puboMatch.channel,
-      {
-        embeds: [buildDraftPollEmbed(match, teams.flat(), players, pollEndTime)],
-      },
-      { teams, match }
-    );
-    await sendDebugMessage({ embeds: [buildTeamDraftEmbed(match.id, players, teams)] });
-
-    if (!pollMessage) {
-      return reject('Failed to send poll message');
-    }
-
-    await Promise.all([
-      pollMessage.react(PollEmoji.ACCEPT),
-      pollMessage.react(PollEmoji.REJECT),
-    ]);
-
-    logMessage(`Match ${match.id}: Draft poll created`, {
-      match,
-      teams,
-      players,
-    });
-
-    setTimeout(async () => {
-      const acceptResult = pollMessage.reactions.cache
-        .map(toResults(Object.values(PollEmoji)))
-        .filter(isNotNull)
-        .find(([reaction]) => reaction === PollEmoji.ACCEPT);
-
-      if (!acceptResult) {
-        return reject('Unable to get acceptResult');
-      }
-      const [, voters] = acceptResult;
-
-      const pollResult =
-        getValidUsersCount(
-          voters,
-          team1.map((t) => t.player_id)
-        ) > 1 &&
-        getValidUsersCount(
-          voters,
-          team2.map((t) => t.player_id)
-        ) > 1
-          ? PollEmoji.ACCEPT
-          : PollEmoji.REJECT;
-
-      logMessage(
-        `Match ${puboMatch.match.id}: Draft poll ended with result ${pollResult}`,
-        {
-          PubobotMatch: puboMatch.id,
-          match: puboMatch.match,
-          teams,
-          acceptResult,
-          pollResult,
-        }
-      );
-
-      resolve(pollResult);
-    }, pollEndTime.diffNow('milliseconds').milliseconds);
+  const pollEndTime = DateTime.now().plus({ minutes: 2 });
+  const poll = await MessagePoll.createPoll(pubMatch.channel, {
+    embeds: [
+      buildDraftPollEmbed(
+        pubMatch.match,
+        pickList.flat(),
+        pubMatch.players,
+        null,
+        pollEndTime
+      ),
+    ],
   });
+  await poll
+    .setEndtime(pollEndTime)
+    .onReaction(handlePollReaction)
+    .onPollEnd(handlePollEnd)
+    .startPoll();
+
+  logMessage(`Match ${pubMatch.match.id}: Draft poll started`, {
+    pubMatch,
+    pickList,
+    poll,
+  });
+
+  function handlePollReaction(results: Array<PollResult>) {
+    if (isDraftPollResolvedWithAccept(results, pickList)) {
+      poll.stopPoll('Draft poll is resolved');
+    }
+    return {
+      embeds: [
+        buildDraftPollEmbed(
+          pubMatch.match,
+          pickList.flat(),
+          pubMatch.players,
+          results,
+          pollEndTime
+        ),
+      ],
+    };
+  }
+  function handlePollEnd(results: Array<PollResult>) {
+    const isAccepted = isDraftPollResolvedWithAccept(results, pickList);
+    logMessage(`Match ${pubMatch.match.id}: Poll ended`, {
+      pubMatch,
+      pickList,
+      results,
+      isAccepted,
+    });
+    if (isAccepted) {
+      handleDraftAccepted(pubMatch, pickList);
+    }
+    return {
+      embeds: [
+        buildDraftPollEndedEmbed(
+          pubMatch.match,
+          pickList.flat(),
+          pubMatch.players,
+          results,
+          isAccepted
+        ),
+      ],
+    };
+  }
 }
 
-export function handleDraftPollResult(
-  pubMatch: PubobotMatch,
-  unpickList: Array<string>,
+function isDraftPollResolvedWithAccept(
+  results: Array<PollResult>,
   pickList: Array<PickedMatchPlayer>
 ) {
-  return async (result: PollEmoji) => {
-    if (result === PollEmoji.ACCEPT) {
-      logMessage(`Match ${pubMatch.match.id}: Executing suggested draft`, {
-        PubobotMatch: pubMatch.id,
-        match: pubMatch.match,
-        unpickList,
-        pickList,
-      });
-
-      for (const playerId of unpickList) {
-        await sendMessage(
-          pubMatch.channel,
-          `!put <@${playerId}> Unpicked ${pubMatch.id}`
-        );
-        await wait(1);
-      }
-
-      for (const mp of pickList) {
-        await sendMessage(
-          pubMatch.channel,
-          `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubMatch.id}`
-        );
-        await wait(1);
-      }
-    }
-  };
+  const acceptResult = results.find(([reaction]) => reaction === PollEmoji.ACCEPT);
+  if (!acceptResult) {
+    return false;
+  }
+  const [, votes] = acceptResult;
+  return getTeamCount(votes, pickList, 1) > 1 && getTeamCount(votes, pickList, 2) > 1;
 }
+
+export async function handleDraftAccepted(
+  pubMatch: PubobotMatch,
+  pickList: Array<PickedMatchPlayer>
+) {
+  const unpickList = getUnpickList(pubMatch);
+
+  logMessage(`Match ${pubMatch.match.id}: Executing suggested draft`, {
+    PubobotMatch: pubMatch.id,
+    match: pubMatch.match,
+    unpickList,
+    pickList,
+  });
+
+  for (const playerId of unpickList) {
+    await sendMessage(pubMatch.channel, `!put <@${playerId}> Unpicked ${pubMatch.id}`);
+    await wait(1);
+  }
+
+  for (const mp of pickList) {
+    await sendMessage(
+      pubMatch.channel,
+      `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubMatch.id}`
+    );
+    await wait(1);
+  }
+}
+
 export async function startTopLocationPoll(
   match: MatchesJoined,
   message: Message
@@ -157,7 +163,7 @@ export async function startTopLocationPoll(
       const results = pollMessage.reactions.cache
         .map(toResults(getValidEmojis()))
         .filter(isNotNull)
-        .sort(compareMessageReactionResults(match));
+        .sort(compareMessageReactionResultsOld(match.players.map((p) => p.id)));
 
       if (!results.length) {
         return reject('Unable to get results');
@@ -173,7 +179,7 @@ export async function startTopLocationPoll(
     }, pollEndTime.diffNow('milliseconds').milliseconds);
   });
 }
-function toResults(validEmojis: Array<LocationEmoji | PollEmoji>) {
+export function toResults(validEmojis: Array<LocationEmoji | PollEmoji>) {
   return (reaction: MessageReaction): PollResult | null => {
     if (reaction.emoji.name && validEmojis.some((k) => k === reaction.emoji.name)) {
       return [reaction.emoji.name, Array.from(reaction.users.cache.keys())];
@@ -182,12 +188,24 @@ function toResults(validEmojis: Array<LocationEmoji | PollEmoji>) {
     }
   };
 }
-function compareMessageReactionResults(match: MatchesJoined) {
-  const matchPlayers = match.players.map((player) => player.id);
+
+export function compareMessageReactionResults(resA: PollResult, resB: PollResult) {
+  return resB[1].length - resA[1].length;
+}
+export function compareMessageReactionResultsOld(players: Array<string>) {
   return ([, votesA]: PollResult, [, votesB]: PollResult) =>
-    getValidUsersCount(votesB, matchPlayers) - getValidUsersCount(votesA, matchPlayers);
+    getValidUsersCount(votesB, players) - getValidUsersCount(votesA, players);
 }
 
 function getValidUsersCount(users: Array<string>, matchPlayers: Array<string>) {
   return users.filter((user) => matchPlayers.includes(user)).length;
+}
+
+function getTeamCount(
+  voters: Array<string>,
+  players: Array<PickedMatchPlayer>,
+  team: 1 | 2
+) {
+  const teamPlayers = players.filter(isTeam(team)).map((mp) => mp.player_id);
+  return voters.filter((voter) => teamPlayers.includes(voter)).length;
 }

@@ -1,4 +1,9 @@
-import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  MatchesJoined,
+  MatchStatus,
+  PollResult,
+  TeamPlayer,
+} from '@bf2-matchmaking/types';
 
 const getMatchIdText = (match: MatchesJoined) => `Match ${match.id}`;
 export const getEmbedTitle = (match: MatchesJoined) =>
@@ -20,3 +25,18 @@ export const createPlayerMentions = (match: MatchesJoined) =>
 
 export const replaceDiscordGG = (text: string) =>
   text.replace('discord.gg', '*discord.gg*');
+
+export function buildPollPlayerlabel(results: Array<PollResult> | null) {
+  return (tp: TeamPlayer) => {
+    const playerVotes =
+      results
+        ?.filter(([, votes]) => votes.includes(tp.player_id))
+        .map(([reaction]) => reaction)
+        .join()
+        .concat(' ') || '';
+
+    const nick = tp.captain ? `**${tp.player.nick}**` : tp.player.nick;
+
+    return `${playerVotes}${nick}`;
+  };
+}

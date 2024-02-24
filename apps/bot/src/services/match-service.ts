@@ -3,13 +3,14 @@ import {
   DiscordConfig,
   MatchesUpdate,
   MatchPlayersInsert,
+  MatchPlayersRow,
   MatchStatus,
   PlayersRow,
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { getPlayersByIdList } from './player-service';
-import { toMatchPlayerWithRating, toMatchPlayerWithTeam } from './utils';
+import { toMatchPlayer, toMatchPlayerWithTeamAndRating } from './utils';
 
 export async function getMatch(matchId: number) {
   const { data, error } = await client().getMatch(matchId);
@@ -37,11 +38,7 @@ export async function buildMatchPlayers(
   pubMatch: PubobotMatch,
   players: Array<PlayersRow>
 ): Promise<Array<MatchPlayersInsert>> {
-  const { data: ratings } = await client().getPlayerRatingsByIdList(
-    players.map((p) => p.id),
-    pubMatch.match.config.id
-  );
-  return players.map(toMatchPlayerWithRating(pubMatch.match.id, ratings || []));
+  return players.map(toMatchPlayer(pubMatch.match.id));
 }
 
 export async function createMatchPlayers(
@@ -84,24 +81,24 @@ export async function updateMatch(pubMatch: PubobotMatch, values: MatchesUpdate)
   return match;
 }
 
-export async function createMatchTeams(
-  pubMatch: PubobotMatch,
+export async function buildMatchTeams(
+  matchId: number,
+  configId: number,
   team1Ids: Array<string>,
   team2Ids: Array<string>
-) {
+): Promise<[Array<PlayersRow>, Array<MatchPlayersInsert>]> {
   const team1 = await getPlayersByIdList(team1Ids);
   const team2 = await getPlayersByIdList(team2Ids);
+  const players = [...team1, ...team2];
 
-  const results = await Promise.all([
-    client().upsertMatchPlayers(team1.map(toMatchPlayerWithTeam(pubMatch.match.id, 1))),
-    client().upsertMatchPlayers(team2.map(toMatchPlayerWithTeam(pubMatch.match.id, 2))),
-  ]);
-
-  const deletedPlayers = await Promise.all(
-    pubMatch.match.players
-      .filter((p) => !(team1Ids.includes(p.id) || team2Ids.includes(p.id)))
-      .map((p) => client().deleteMatchPlayer(pubMatch.match.id, p.id))
+  const { data: ratings } = await client().getPlayerRatingsByIdList(
+    team1Ids.concat(team2Ids),
+    configId
   );
+  const teams = [
+    ...team1.map(toMatchPlayerWithTeamAndRating(matchId, 1, ratings || [])),
+    ...team2.map(toMatchPlayerWithTeamAndRating(matchId, 2, ratings || [])),
+  ];
 
-  return [results[0].data, results[1].data, deletedPlayers.map((p) => p.data)];
+  return [players, teams];
 }

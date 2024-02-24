@@ -15,7 +15,7 @@ import {
   getMatchServerField,
   getServerFields,
   logChannelMessage,
-  TEST_CHANNEL_ID,
+  LOG_CHANNEL_ID,
 } from '@bf2-matchmaking/discord';
 import { isTextBasedChannel } from '../discord/discord-utils';
 import {
@@ -145,9 +145,9 @@ export async function sendServersMessage(
   return serversMessage;
 }
 
-export async function getTestChannel() {
+export async function getLogChannel() {
   const client = await getDiscordClient();
-  const channel = await client.channels.fetch(TEST_CHANNEL_ID);
+  const channel = await client.channels.fetch(LOG_CHANNEL_ID);
   if (!isTextBasedChannel(channel)) {
     throw new Error('Test channel not found');
   }

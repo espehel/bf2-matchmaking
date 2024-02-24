@@ -1,9 +1,4 @@
-import {
-  DiscordConfig,
-  isPickedMatchPlayer,
-  isRatedMatchPlayer,
-  MatchStatus,
-} from '@bf2-matchmaking/types';
+import { DiscordConfig, MatchStatus } from '@bf2-matchmaking/types';
 import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import {
   isPubobotMatchCheckIn,
@@ -26,12 +21,8 @@ import {
   sendSummoningMessage,
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
-import { handleDraftPollResult, startDraftPoll } from './message-polls';
-import {
-  buildMixTeams,
-  buildDraftOrder,
-  AUTO_DRAFT_CONFIGS,
-} from '../services/draft-utils';
+import { createDraftPoll } from './message-polls';
+import { buildDraftWithConfig, logActualDraft } from '../services/draft-service';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = matchFilter;
@@ -77,12 +68,7 @@ export function draftFilter(message: Message) {
   if (!pubobotId) {
     return false;
   }
-
-  return (
-    isPubobotMatchDrafting(embed) &&
-    hasPubotId(pubobotId, MatchStatus.Open) &&
-    !hasPubotId(pubobotId, MatchStatus.Drafting)
-  );
+  return isPubobotMatchDrafting(embed);
 }
 function handleMatchCollect(config: DiscordConfig) {
   return async (message: Message) => {
@@ -133,6 +119,7 @@ function handleMatchCollect(config: DiscordConfig) {
       });
 
       await sendServersMessage(pubMatch.match, message.channel);
+      await logActualDraft(pubMatch);
     } catch (e) {
       error('handlePubobotMatchStarted', e);
     } finally {
@@ -146,45 +133,39 @@ function handleDraftCollect(message: Message) {
   if (!message.inGuild()) {
     return;
   }
+  const embed = message.embeds[0];
+  const pubMatch = getPubobotMatch(embed);
+
+  if (!pubMatch) {
+    info('handleDraftCollect', 'Pubobot match not found');
+    return;
+  }
+  if (!pubMatch.synced) {
+    info('handleDraftCollect', `Pubobot match ${pubMatch.id} not in sync`);
+    return;
+  }
 
   info(
     'handleDraftCollect',
     `<${message.channel.name}>: Received embed with title "${message.embeds[0]?.title}"`
   );
 
-  if (isPubobotMatchDrafting(message.embeds[0])) {
-    return handlePubobotMatchDrafting(message);
+  pubMatch.setEmbed(embed);
+
+  if (pubMatch.getStatus() === MatchStatus.Open) {
+    return handlePubobotMatchDrafting(pubMatch);
   }
 }
 
-async function handlePubobotMatchDrafting(message: Message<true>) {
-  const embed = message.embeds[0];
+async function handlePubobotMatchDrafting(pubMatch: PubobotMatch) {
   try {
-    const pubMatch = getPubobotMatch(embed);
-    assertObj(pubMatch, 'No pubobot match found');
-    await pubMatch.setMap(embed);
-    await pubMatch.addDraftingPlayers(embed);
+    await pubMatch.updateMap();
+    await pubMatch.updateDraftingPlayers();
 
-    const ratedPlayers = pubMatch.teams.filter(isRatedMatchPlayer);
-    const teams = buildMixTeams(ratedPlayers);
-    const [unpickList, pickList] = buildDraftOrder(teams, embed);
+    const pickList = await buildDraftWithConfig(pubMatch);
 
-    if (
-      ratedPlayers.length === pubMatch.match.config.size &&
-      pickList.length === pubMatch.match.config.size &&
-      AUTO_DRAFT_CONFIGS.includes(pubMatch.match.config.id)
-    ) {
-      startDraftPoll(pubMatch, teams).then(
-        handleDraftPollResult(pubMatch, unpickList, pickList)
-      );
-    } else {
-      logMessage(`Match ${pubMatch.match.id}: Draft poll conditions where not met`, {
-        ratedPlayers,
-        teams,
-        unpickList,
-        pickList,
-        pubMatch,
-      });
+    if (pickList) {
+      await createDraftPoll(pickList, pubMatch);
     }
 
     await pubMatch.syncMatch({ status: MatchStatus.Drafting });

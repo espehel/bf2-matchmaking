@@ -6,6 +6,7 @@ import {
   MatchPlayersRow,
   PlayerListItem,
   PlayersRow,
+  RatedMatchPlayer,
   TeamPlayer,
 } from '@bf2-matchmaking/types';
 import { shuffleArray } from './array-utils';
@@ -28,9 +29,6 @@ export const getTeamPlayers = (
       player: players.find((player) => player.id === matchPlayer.player_id),
     }))
     .filter(isTeamPlayer);
-
-export const getPlayerName = (tp: TeamPlayer) =>
-  tp.captain ? `**${tp.player.nick}**` : tp.player.nick;
 
 export const findPlayerName = (
   match: MatchesJoined,
@@ -89,4 +87,12 @@ export function getMatchPlayerNameWithRating(players: Array<PlayersRow>) {
     const rating = mp.rating || -1;
     return `${nick} (${rating})`;
   };
+}
+
+export function compareRating(mpA: RatedMatchPlayer, mpB: RatedMatchPlayer) {
+  return mpB.rating - mpA.rating;
+}
+
+export function compareMPRating(mpA: MatchPlayersInsert, mpB: MatchPlayersInsert) {
+  return (mpB.rating || -1) - (mpA.rating || -1);
 }
