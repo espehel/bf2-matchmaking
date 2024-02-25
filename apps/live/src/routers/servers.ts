@@ -184,7 +184,7 @@ serversRouter.delete('/:ip', async (ctx) => {
 });
 
 serversRouter.post('/', async (ctx) => {
-  const { ip, port, rcon_pw } = ctx.request.body;
+  const { ip, port, rcon_pw, demo_path } = ctx.request.body;
   const rcon_port = Number(ctx.request.body.rcon_port);
 
   if (!isString(ip) || !isString(port) || !rcon_port || !isString(rcon_pw)) {
@@ -201,7 +201,7 @@ serversRouter.post('/', async (ctx) => {
     .catch(() => null);
 
   if (!serverInfo && isResolvingDns) {
-    addPendingServer({ address, port, rcon_port, rcon_pw });
+    addPendingServer({ address, port, rcon_port, rcon_pw, demo_path });
     ctx.status = 202;
     ctx.body = null;
     return;
@@ -214,7 +214,14 @@ serversRouter.post('/', async (ctx) => {
   }
 
   try {
-    const serverRcon = await upsertServer(address, port, rcon_port, rcon_pw, serverInfo);
+    const serverRcon = await upsertServer(
+      address,
+      port,
+      rcon_port,
+      rcon_pw,
+      serverInfo,
+      demo_path
+    );
 
     const liveServer = await initLiveServer(serverRcon);
     if (!liveServer) {

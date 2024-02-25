@@ -84,10 +84,16 @@ export async function upsertServer(
   port: string,
   rcon_port: number,
   rcon_pw: string,
-  serverInfo: ServerInfo
+  serverInfo: ServerInfo,
+  demo_path?: string
 ) {
   await client()
-    .upsertServer({ ip: address, port, name: serverInfo.serverName })
+    .upsertServer({
+      ip: address,
+      port,
+      name: serverInfo.serverName,
+      demos_path: demo_path,
+    })
     .then(verifySingleResult);
 
   const serverRcon = await client()

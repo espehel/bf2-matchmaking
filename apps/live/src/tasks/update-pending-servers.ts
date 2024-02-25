@@ -13,12 +13,17 @@ export async function updatePendingServers() {
     return;
   }
   const connectedServers: Array<string> = [];
-  for (const { port, rcon_port, rcon_pw, address } of pendingServers) {
+  for (const { port, rcon_port, rcon_pw, address, demo_path } of pendingServers) {
     try {
       const serverInfo = await rcon(address, rcon_port, rcon_pw).then(getServerInfo);
 
       await client()
-        .upsertServer({ ip: address, port, name: serverInfo.serverName })
+        .upsertServer({
+          ip: address,
+          port,
+          name: serverInfo.serverName,
+          demos_path: demo_path,
+        })
         .then(verifySingleResult);
 
       const serverRcon = await client()
