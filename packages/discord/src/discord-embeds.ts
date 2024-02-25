@@ -199,7 +199,7 @@ export const getDebugMatchResultsEmbed = (
           {
             name: `Team ${results[0].team.name}: ${results[0].maps}`,
             value: playerResults
-              .filter((result) => result.team === results[1].team.id)
+              .filter((result) => result.team === results[0].team.id)
               .map(getMatchPlayerResultNameWithRating(match.players))
               .join('\n'),
             inline: true,
