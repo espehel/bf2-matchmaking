@@ -30,7 +30,7 @@ module.exports = {
     },
   },
   daisyui: {
-    themes: ['bumblebee'],
+    themes: ['coffee', 'bumblebee'],
   },
   plugins: [
     require('@tailwindcss/typography'),

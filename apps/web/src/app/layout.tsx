@@ -7,6 +7,7 @@ import { ToastContainer } from 'react-toastify';
 import { PlayerProvider } from '@/state/PlayerContext';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import ThemeButton from '@/components/ThemeButton';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,6 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="mt-8">{children}</div>
           <ToastContainer />
         </PlayerProvider>
+        <ThemeButton />
       </body>
     </html>
   );
