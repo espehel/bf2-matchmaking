@@ -29,10 +29,10 @@ export default async function LiveSection({ match }: Props) {
 
   async function setLiveMatchServer() {
     'use server';
-    assertObj(matchServer?.active);
+    assertObj(matchServer?.server);
     const result = await api
       .live()
-      .postMatchServer(match.id, matchServer.active?.ip, true);
+      .postMatchServer(match.id, matchServer.server?.ip, true);
     if (result.data) {
       revalidatePath(`/matches/${match.id}`);
     }
@@ -62,16 +62,16 @@ export default async function LiveSection({ match }: Props) {
             Start live match
           </ActionButton>
         )}
-        {matchServer?.active &&
-          matchServer.active.name != liveMatch?.liveInfo?.serverName &&
+        {matchServer?.server &&
+          matchServer.server.name != liveMatch?.liveInfo?.serverName &&
           isMatchOfficer && (
             <ActionButton
               action={setLiveMatchServer}
-              successMessage={`Server ${matchServer.active.name} is now tracking live match`}
+              successMessage={`Server ${matchServer.server.name} is now tracking live match`}
               errorMessage="Failed to set live match server"
               kind="btn-primary"
             >
-              {`Track ${matchServer.active.name}`}
+              {`Track ${matchServer.server.name}`}
             </ActionButton>
           )}
       </div>

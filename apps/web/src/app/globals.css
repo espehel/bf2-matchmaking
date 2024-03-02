@@ -12,7 +12,7 @@
   }
 
   .section {
-    @apply flex flex-col gap-6 p-6 border-2 border-primary rounded bg-base-100;
+    @apply flex flex-col gap-6 p-6 border-4 border-primary rounded bg-base-100 text-base-content;
   }
 
   .section h2 {

@@ -1,4 +1,4 @@
-import { MatchesJoined, MatchStatus, ServersRow } from '@bf2-matchmaking/types';
+import { Instance, MatchesJoined, MatchStatus, ServersRow } from '@bf2-matchmaking/types';
 import { api, isClosedMatch, isOpenMatch } from '@bf2-matchmaking/utils';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
@@ -38,11 +38,7 @@ export async function handleMatchStatusUpdate(match: MatchesJoined) {
 }
 
 async function handleMatchOngoing(match: MatchesJoined) {
-  const { data: matchServer } = await client().getMatchServer(match.id);
-  const [liveMatch, liveServer] = await startLiveMatch(
-    match,
-    matchServer?.active || null
-  );
+  const [liveMatch, liveServer] = await startLiveMatch(match, null);
   if (liveMatch) {
     logMessage(`Match ${match.id} live tracking started`, {
       match,
@@ -52,13 +48,13 @@ async function handleMatchOngoing(match: MatchesJoined) {
   }
 }
 async function handleMatchFinished(match: MatchesJoined) {
-  const { data: matchServer } = await client().getMatchServer(match.id);
-  const ip = matchServer?.active?.ip;
-  if (ip) {
-    const { data: instance } = await api.platform().getServer(ip);
-    if (instance) {
-      await retry(() => deleteServer(match, ip), 5);
-    }
+  const { data: instances } = await api.platform().getServers(match.id);
+  if (instances && instances.length > 0) {
+    await Promise.all(
+      instances.map(async (instance) => {
+        await retry(() => deleteInstance(match, instance), 5);
+      })
+    );
   }
 
   //leaveMatchRoom(match);
@@ -68,22 +64,24 @@ function handleMatchSummoning(match: MatchesJoined) {
   joinMatchRoom(match);
 }
 
-async function deleteServer(match: MatchesJoined, ip: string) {
+async function deleteInstance(match: MatchesJoined, instance: Instance) {
   await wait(30);
-  const result = await api.platform().deleteServer(ip);
+  const address = await getAddress(instance.main_ip);
+  const result = await api.platform().deleteServer(address);
   if (result.data) {
-    const { data: server } = await client().deleteServer(ip);
-    const { data: rcon } = await client().deleteServerRcon(ip);
-    logMessage(`Match ${match.id} deleted server ${ip}`, {
-      ip,
-      instance: result.data,
+    const { data: server } = await client().deleteServer(address);
+    const { data: rcon } = await client().deleteServerRcon(address);
+    logMessage(`Match ${match.id} deleted server instance ${address}`, {
+      address,
+      instance,
       server,
       rcon,
     });
   }
   if (result.error) {
     logErrorMessage(`Match ${match.id} failed to delete server`, result.error, {
-      ip,
+      address,
+      instance,
     });
   }
   return result;
@@ -119,4 +117,9 @@ async function startLiveMatch(
     );
   }
   return [liveMatch, liveServer];
+}
+
+async function getAddress(ip: string) {
+  const { data: dns } = await api.platform().getServerDns(ip);
+  return dns?.name || ip;
 }

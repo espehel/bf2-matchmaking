@@ -10,7 +10,7 @@ interface Props {
 export default function ActiveServerSection({ matchServer, match }: Props) {
   return (
     <section className="section gap-2">
-      <h2>{`Active server: ${matchServer?.active?.name || 'No match server set'}`}</h2>
+      <h2>{`Active server: ${matchServer?.server?.name || 'No match server set'}`}</h2>
       <SelectServerForm match={match} matchServer={matchServer} />
       <Link className="btn btn-secondary w-fit" href={`/matches/${match.id}`}>
         Back to match

@@ -58,9 +58,9 @@ export async function createScheduledMatch(formData: FormData) {
 
     let serverName = 'TBD';
     if (isString(regionSelect)) {
-      await supabase(cookies).createMatchServer({
-        id: match.id,
-        locations: [regionSelect],
+      await supabase(cookies).createGeneratedServer({
+        match_id: match.id,
+        region: regionSelect,
       });
       const { data: regions } = await api.platform().getRegions();
       const city = regions?.find((r) => r.id === regionSelect)?.city;
@@ -68,7 +68,7 @@ export async function createScheduledMatch(formData: FormData) {
     } else if (isString(serverSelect) && serverSelect.length > 0) {
       await supabase(cookies).createMatchServer({
         id: match.id,
-        active_server: serverSelect,
+        server: serverSelect,
       });
       serverName = serverSelect;
     }

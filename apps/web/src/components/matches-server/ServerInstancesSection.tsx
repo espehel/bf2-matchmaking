@@ -13,7 +13,7 @@ export default async function ServerInstancesSection({ match, matchServer }: Pro
   const { data: instances } = await api.platform().getServers(match.id);
 
   const currentInstance = instances?.find(
-    (instance) => instance.label === matchServer?.active?.name
+    (instance) => instance.label === matchServer?.server?.name
   )?.id;
 
   return (

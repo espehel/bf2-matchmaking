@@ -1,10 +1,22 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseApi } from '@bf2-matchmaking/supabase';
+import { getSupabaseApi, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { MatchesJoined, TeamsRow } from '@bf2-matchmaking/types';
 import { hasPlayer, isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
 
 export function getActions(client: SupabaseClient) {
   const api = getSupabaseApi(client);
+
+  async function getSessionPlayerOrThrow() {
+    const { data, error } = await client.auth.getSession();
+    if (error) {
+      throw error;
+    }
+    if (!data.session) {
+      throw new Error('Not logged in');
+    }
+    return api.getPlayerByUserId(data.session.user.id).then(verifySingleResult);
+  }
+
   async function getSessionPlayer() {
     const { data, error } = await client.auth.getSession();
     if (error) {
@@ -92,6 +104,7 @@ export function getActions(client: SupabaseClient) {
   return {
     ...api,
     getSessionPlayer,
+    getSessionPlayerOrThrow,
     getAdminRoles,
     isMatchOfficer,
     isTeamOfficer,

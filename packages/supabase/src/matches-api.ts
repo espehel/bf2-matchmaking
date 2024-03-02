@@ -244,20 +244,20 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('match_servers')
       .insert(values)
-      .select('*, active:active_server(*)')
+      .select('*, server(*)')
       .single<MatchServer>(),
   upsertMatchServer: (values: MatchServersInsert) =>
     client
       .from('match_servers')
       .upsert(values)
-      .select('*, active:active_server(*)')
+      .select('*, server(*)')
       .single<MatchServer>(),
   deleteMatchServer: (id: number) =>
     client.from('match_servers').delete().eq('id', id).select('*'),
   getMatchServer: (id: number) =>
     client
       .from('match_servers')
-      .select('*, active:active_server(*)')
+      .select('*, server(*)')
       .eq('id', id)
       .single<MatchServer>(),
   updateMatchServer: (matchId: number | undefined, values: MatchServersUpdate) =>
@@ -265,6 +265,6 @@ export default (client: SupabaseClient<Database>) => ({
       .from('match_servers')
       .update(values)
       .eq('id', matchId)
-      .select('*, active:active_server(*)')
+      .select('*, server(*)')
       .single<MatchServer>(),
 });

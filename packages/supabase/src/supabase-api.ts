@@ -5,6 +5,7 @@ import {
   DiscordConfig,
   EventMatchesUpdate,
   EventsJoined,
+  GeneratedServersInsert,
   MatchConfigResults,
   MatchConfigsRow,
   PlayerRatingsInsert,
@@ -213,4 +214,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('event', event)
       .select('*')
       .single(),
+  getGeneratedServersByMatchId: (matchId: number) =>
+    client.from('generated_servers').select('*').eq('match_id', matchId),
+  createGeneratedServer: (values: GeneratedServersInsert) =>
+    client.from('generated_servers').insert(values).select('*').single(),
 });

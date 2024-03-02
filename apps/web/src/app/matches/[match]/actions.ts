@@ -198,7 +198,7 @@ export async function setServer(matchId: number, serverIp: string) {
   const { data: player } = await supabase(cookies).getSessionPlayer();
   const result = await supabase(cookies).upsertMatchServer({
     id: matchId,
-    active_server: serverIp,
+    server: serverIp,
   });
 
   if (result.error) {
@@ -214,7 +214,7 @@ export async function setServer(matchId: number, serverIp: string) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.active, 'TBD'),
+          description: getMatchDescription(match, server?.server, 'TBD'),
         })
       )
     );
@@ -261,7 +261,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.active, 'TBD'),
+          description: getMatchDescription(match, server?.server, 'TBD'),
         })
       )
     );

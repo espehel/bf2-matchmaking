@@ -3,7 +3,10 @@ import { ArrowRightCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Instance } from '@bf2-matchmaking/types';
 import IconBtn from '@/components/commons/IconBtn';
 import { deleteServer } from '@/app/servers/[server]/actions';
-import { updateMatchServer } from '@/app/matches/[match]/server/actions';
+import {
+  addGeneratedServer,
+  upsertMatchServer,
+} from '@/app/matches/[match]/server/actions';
 import { api } from '@bf2-matchmaking/utils';
 import ActionWrapper from '@/components/commons/ActionWrapper';
 import { supabase } from '@/lib/supabase/supabase';
@@ -30,9 +33,9 @@ export default async function InstanceTableActionsCell({
   }
   async function setActiveServerSA() {
     'use server';
-    return updateMatchServer({
+    return upsertMatchServer({
       id: matchId,
-      active_server: dns?.name || instance.main_ip,
+      server: dns?.name || instance.main_ip,
     });
   }
 

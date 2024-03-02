@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       admin_roles: {
@@ -193,6 +193,48 @@ export interface Database {
             columns: ["owner"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      generated_servers: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: number
+          instance: string | null
+          match_id: number | null
+          region: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: number
+          instance?: string | null
+          match_id?: number | null
+          region: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: number
+          instance?: string | null
+          match_id?: number | null
+          region?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_generated_servers_address_fkey"
+            columns: ["address"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          },
+          {
+            foreignKeyName: "public_generated_servers_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
             referencedColumns: ["id"]
           }
         ]
@@ -476,27 +518,24 @@ export interface Database {
       }
       match_servers: {
         Row: {
-          active_server: string | null
           created_at: string
           id: number
-          locations: string[]
+          server: string | null
         }
         Insert: {
-          active_server?: string | null
           created_at?: string
           id?: number
-          locations?: string[]
+          server?: string | null
         }
         Update: {
-          active_server?: string | null
           created_at?: string
           id?: number
-          locations?: string[]
+          server?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "match_servers_active_server_fkey"
-            columns: ["active_server"]
+            columns: ["server"]
             isOneToOne: false
             referencedRelation: "servers"
             referencedColumns: ["ip"]

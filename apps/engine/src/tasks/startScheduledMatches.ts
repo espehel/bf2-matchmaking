@@ -27,12 +27,12 @@ async function startMatch(match: ScheduledMatch) {
       })
       .then(verifySingleResult);
 
-    const server = await setActiveServer(updatedMatch);
+    //const server = await setActiveServer(updatedMatch);
 
     logMessage(`Match ${updatedMatch.id} is now ${updatedMatch.status}`, {
       match,
       updatedMatch,
-      server,
+      //server,
     });
   } catch (e) {
     logErrorMessage(`Match ${match.id} failed start`, e, {
@@ -41,7 +41,7 @@ async function startMatch(match: ScheduledMatch) {
   }
 }
 
-async function setActiveServer(match: MatchesJoined) {
+/*async function setActiveServer(match: MatchesJoined) {
   const { data: matchServer } = await client().getMatchServer(match.id);
 
   if (matchServer?.active) {
@@ -83,4 +83,4 @@ async function setActiveServer(match: MatchesJoined) {
   }
 
   return server;
-}
+}*/

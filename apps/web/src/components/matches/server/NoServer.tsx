@@ -1,15 +1,25 @@
-import { MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
+import { isDefined, MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
 import RevalidateForm from '@/components/RevalidateForm';
 import ActionButton from '@/components/ActionButton';
 import { api } from '@bf2-matchmaking/utils';
 import { generateMatchServers } from '@/app/matches/[match]/server/actions';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
   matchServer: MatchServer | null;
 }
 export default async function NoServer({ match, matchServer }: Props) {
-  if (!matchServer?.active || !matchServer.locations.length) {
+  const { data: generatedServers } = await supabase(cookies).getGeneratedServersByMatchId(
+    match.id
+  );
+  const { data: regions } = await api.platform().getRegions();
+  const cities = generatedServers
+    ?.map((gs) => regions?.find((r) => r.id === gs.region)?.city)
+    .filter(isDefined);
+
+  if (!matchServer?.server || !cities?.length) {
     return (
       <div className="flex justify-between items-center gap-2">
         <h2 className="text-xl">No server selected</h2>
@@ -17,15 +27,11 @@ export default async function NoServer({ match, matchServer }: Props) {
     );
   }
 
-  const { data: regions } = await api.platform().getRegions();
-  const cities = (regions || [])
-    .filter((r) => matchServer.locations.includes(r.id))
-    .map((r) => r.city);
   const { data: instances } = await api.platform().getServers(match.id);
 
   const generateMatchServerInstanceSA = async () => {
     'use server';
-    return generateMatchServers(match, matchServer);
+    return generateMatchServers(match, generatedServers);
   };
 
   if (instances && instances.length > 0) {

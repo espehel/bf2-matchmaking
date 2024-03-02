@@ -18,6 +18,8 @@ export type MatchServersRow = Database['public']['Tables']['match_servers']['Row
 export type EventsRow = Database['public']['Tables']['events']['Row'];
 export type EventRoundsRow = Database['public']['Tables']['event_rounds']['Row'];
 export type EventMatchesRow = Database['public']['Tables']['event_matches']['Row'];
+export type GeneratedServersRow =
+  Database['public']['Tables']['generated_servers']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -33,6 +35,8 @@ export type TeamPlayersInsert = Database['public']['Tables']['team_players']['In
 export type PlayerRatingsInsert =
   Database['public']['Tables']['player_ratings']['Insert'];
 export type MatchServersInsert = Database['public']['Tables']['match_servers']['Insert'];
+export type GeneratedServersInsert =
+  Database['public']['Tables']['generated_servers']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
@@ -172,8 +176,8 @@ export interface MatchConfigResults extends MatchConfigsRow {
   }>;
 }
 
-export interface MatchServer extends Omit<MatchServersRow, 'active_server'> {
-  active: ServersRow | null;
+export interface MatchServer extends Omit<MatchServersRow, 'server'> {
+  server: ServersRow;
 }
 
 export interface EventsMatch {

@@ -1,4 +1,4 @@
-import { ScheduledMatch } from '@bf2-matchmaking/types';
+/*import { ScheduledMatch } from '@bf2-matchmaking/types';
 import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
@@ -51,4 +51,4 @@ async function generateServerInstances(scheduledMatch: ScheduledMatch) {
   });
 
   return results.instances;
-}
+}*/

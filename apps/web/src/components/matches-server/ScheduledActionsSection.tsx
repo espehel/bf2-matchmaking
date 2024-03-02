@@ -14,8 +14,15 @@ interface Props {
 
 export default async function ScheduledActionsSection({ match, matchServer }: Props) {
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
+  const { data: generatedServers } = await supabase(cookies).getGeneratedServersByMatchId(
+    match.id
+  );
   const { data: regions } = await api.platform().getRegions();
   const { data: instances } = await api.platform().getServers(match.id);
+
+  if (!generatedServers?.length) {
+    return null;
+  }
 
   if (!isMatchOfficer) {
     return null;
@@ -31,7 +38,7 @@ export default async function ScheduledActionsSection({ match, matchServer }: Pr
   async function generateMatchServerInstanceSA() {
     'use server';
     assertObj(matchServer);
-    return generateMatchServers(match, matchServer);
+    return generateMatchServers(match, generatedServers);
   }
 
   return (
@@ -47,17 +54,13 @@ export default async function ScheduledActionsSection({ match, matchServer }: Pr
         <span> in the following locations: </span>
         <span className="font-bold">{getRegionCities()}</span>
       </p>
-      <RegionsSelectForm
-        regions={regions}
-        matchId={match.id}
-        locations={matchServer?.locations}
-      />
+      <RegionsSelectForm regions={regions} matchId={match.id} />
       <ActionButton
         action={generateMatchServerInstanceSA}
         successMessage="Generating servers"
         errorMessage="Failed to generate servers"
         kind="btn-secondary"
-        disabled={!matchServer?.locations.length}
+        disabled={!generatedServers.length}
       >
         Generate servers now
       </ActionButton>
@@ -65,8 +68,8 @@ export default async function ScheduledActionsSection({ match, matchServer }: Pr
   );
 
   function getRegionCities() {
-    const cities = matchServer?.locations
-      .map((location) => regions?.find((region) => region.id === location)?.city)
+    const cities = generatedServers
+      ?.map((gs) => regions?.find((region) => region.id === gs.region)?.city)
       .filter(isDefined);
     return cities && cities.length > 0 ? cities.join(', ') : 'No locations set';
   }

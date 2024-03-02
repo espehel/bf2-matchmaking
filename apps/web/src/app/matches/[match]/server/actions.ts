@@ -1,5 +1,7 @@
 import {
   CreateServerOptions,
+  GeneratedServersInsert,
+  GeneratedServersRow,
   MatchesJoined,
   MatchServer,
   MatchServersInsert,
@@ -12,7 +14,17 @@ import { assertString, getInitialServerMap } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
-export async function updateMatchServer(values: MatchServersInsert) {
+export async function addGeneratedServer(values: GeneratedServersInsert) {
+  const result = await supabase(cookies).createGeneratedServer(values);
+
+  if (result.data) {
+    revalidatePath(`/matches/${result.data.match_id}/server`);
+  }
+
+  return result;
+}
+
+export async function upsertMatchServer(values: MatchServersInsert) {
   const result = await supabase(cookies).upsertMatchServer(values);
 
   if (result.data) {
@@ -24,10 +36,11 @@ export async function updateMatchServer(values: MatchServersInsert) {
 
 export async function generateMatchServers(
   match: MatchesJoined,
-  matchServer: MatchServer
+  generatedServers: Array<GeneratedServersRow> | null
 ) {
-  if (matchServer.locations.length > 0) {
-    const result = await generateServers(match, matchServer.locations);
+  if (generatedServers && generatedServers.length > 0) {
+    const regions = generatedServers.map(({ region }) => region);
+    const result = await generateServers(match, regions);
 
     if (result.instances.length) {
       revalidatePath(`/matches/${match.id}`);

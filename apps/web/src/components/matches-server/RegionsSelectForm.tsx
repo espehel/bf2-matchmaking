@@ -4,7 +4,7 @@ import TransitionWrapper from '@/components/commons/TransitionWrapper';
 import IconBtn from '@/components/commons/IconBtn';
 import MultiSelect from '@/components/commons/MultiSelect';
 import { Region } from '@bf2-matchmaking/types';
-import { updateMatchServer } from '@/app/matches/[match]/server/actions';
+import { addGeneratedServer } from '@/app/matches/[match]/server/actions';
 import { getArray } from '@bf2-matchmaking/utils/src/form-data';
 
 interface Props {
@@ -21,7 +21,8 @@ export default function RegionsSelectForm({ regions, matchId, locations }: Props
   async function setRegionsSA(data: FormData) {
     'use server';
     const locations = getArray(data, 'locationSelect');
-    return updateMatchServer({ locations, id: matchId });
+    // TODO: Need to fix this, proly new kind of form
+    return addGeneratedServer({ region: locations[0], id: matchId });
   }
 
   return (

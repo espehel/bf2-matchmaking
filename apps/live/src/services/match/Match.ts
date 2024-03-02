@@ -211,13 +211,13 @@ export class Match {
     removeLiveMatch(this);
     if (
       this.rounds.length > 0 &&
-      this.matchServer?.active?.demos_path &&
+      this.matchServer?.server?.demos_path &&
       this.match.started_at
     ) {
       await saveDemosSince(
-        this.matchServer.active.ip,
+        this.matchServer.server.ip,
         this.match.started_at,
-        this.matchServer.active.demos_path
+        this.matchServer.server.demos_path
       );
     }
   }
