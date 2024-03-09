@@ -45,7 +45,7 @@ export default async function ServerActions({ server, hasAdmin }: Props) {
         />
         <GuardedActionButton
           label="Restart to vehicles"
-          guard={server.info.players.length == 0}
+          guard={server.info.players.length > 0}
           guardLabel="Server is populated, are you sure you want to restart?"
           action={restartServerVehiclesSA}
           successMessage="Server restarting with vehicles mode"
