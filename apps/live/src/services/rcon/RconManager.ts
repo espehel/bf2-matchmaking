@@ -52,3 +52,8 @@ export function restartServer(client: RconClient) {
 export function exec(command: string) {
   return (client: RconClient) => client.send(command);
 }
+
+export async function hasNoVehicles(client: RconClient) {
+  const res = await client.send('exec sv.noVehicles');
+  return res.trim() === '1';
+}

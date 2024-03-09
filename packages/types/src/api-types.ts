@@ -70,6 +70,7 @@ export interface LiveServer {
   address: string;
   port: number;
   info: LiveInfo;
+  noVehicles: boolean;
   matchId: number | null;
   joinmeHref: string;
   joinmeDirect: string;

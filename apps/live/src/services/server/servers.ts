@@ -6,7 +6,7 @@ import {
   LiveServer,
   ServerInfo,
 } from '@bf2-matchmaking/types';
-import { getPlayerList, getServerInfo, rcon } from '../rcon/RconManager';
+import { getPlayerList, getServerInfo, hasNoVehicles, rcon } from '../rcon/RconManager';
 import { api, externalApi, getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
@@ -44,6 +44,7 @@ export async function toLiveServer(server: Server): Promise<LiveServer> {
   const joinmeHref = await getJoinmeHref(server.address, server.gamePort);
   const joinmeDirect = await getJoinmeDirect(server.address, server.gamePort);
   const { data: location } = await externalApi.ip().getIpLocation(server.address);
+  const noVehicles = await server.rcon().then(hasNoVehicles);
   const country = location?.country || null;
   const city = location?.city || null;
 
@@ -51,6 +52,7 @@ export async function toLiveServer(server: Server): Promise<LiveServer> {
     address,
     port: Number(gamePort),
     info,
+    noVehicles,
     updatedAt: updatedAt.toISO(),
     errorAt: errorAt?.toISO() || null,
     joinmeHref,
