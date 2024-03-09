@@ -5,6 +5,8 @@ import ServerCreateForm from '@/components/servers/ServerCreateForm';
 import { api, verify } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
 import CreateServerSection from '@/components/servers/CreateServerSection';
+import { CheckIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon } from '@heroicons/react/16/solid';
 
 export default async function Page() {
   const servers = await api.live().getServers().then(verify);
@@ -18,6 +20,7 @@ export default async function Page() {
             <th>Address</th>
             <th>Port</th>
             <th>Server location</th>
+            <th>Inf</th>
             <th>Status</th>
             <th>Players</th>
             <th>Details</th>
@@ -30,6 +33,7 @@ export default async function Page() {
               <td>{server.address}</td>
               <td>{server.port}</td>
               <td className="truncate">{`${server.city}, ${server.country}`}</td>
+              <td>{server.noVehicles ? <CheckCircleIcon className="size-5" /> : null}</td>
               <td>
                 <ServerStatus server={server} />
               </td>

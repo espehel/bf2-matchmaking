@@ -5,12 +5,16 @@ import ActionForm, { Props as ActionFormProps } from '@/components/commons/Actio
 interface Props extends PropsWithChildren {
   title: string;
   openBtnLabel: string;
+  openBtnSize?: 'btn-sm' | 'btn-md' | 'btn-lg';
+  disabled?: boolean;
 }
 
 export default function ActionFormModal({
   title,
   openBtnLabel,
+  openBtnSize = 'btn-sm',
   children,
+  disabled,
   ...actionFormProps
 }: Props & ActionFormProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -24,8 +28,9 @@ export default function ActionFormModal({
   return (
     <>
       <button
-        className="btn btn-sm btn-secondary"
+        className={`btn btn-secondary ${openBtnSize}`}
         onClick={() => ref.current?.showModal()}
+        disabled={disabled}
       >
         {openBtnLabel}
       </button>

@@ -3,13 +3,15 @@ import { MapPinIcon, ServerStackIcon } from '@heroicons/react/24/solid';
 
 interface Props {
   server: LiveServer;
+  isConnected: boolean;
+  hasAdmin: boolean;
 }
 
-export default function ServerHeader({ server }: Props) {
+export default async function ServerHeader({ server, isConnected, hasAdmin }: Props) {
   return (
     <div>
       <h1>{server.info.serverName}</h1>
-      <div className="flex gap-4 font-bold mt-2">
+      <div className="flex gap-4 items-center font-bold mt-2">
         <p className="flex items-center gap-1">
           <ServerStackIcon className="size-4" />
           <span>{server.address}</span>
@@ -18,6 +20,10 @@ export default function ServerHeader({ server }: Props) {
           <MapPinIcon className="size-4" />
           <span>{`${server.city}, ${server.country}`}</span>
         </p>
+        <div className="flex gap-1">
+          {isConnected && <div className="badge badge-success">Connected</div>}
+          {hasAdmin && <div className="badge badge-info">Admin</div>}
+        </div>
       </div>
     </div>
   );

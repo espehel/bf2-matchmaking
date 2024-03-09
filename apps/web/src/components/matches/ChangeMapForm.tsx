@@ -16,6 +16,11 @@ export default async function ChangeMapForm({ server }: Props) {
     return null;
   }
 
+  const currentMap = maps.find(
+    (map) =>
+      map.name.toLocaleLowerCase() === server.info.currentMapName.replace(/_/g, ' ')
+  )?.id;
+
   async function changeServerMapSA(data: FormData) {
     'use server';
     const value = Number(data.get('select'));
@@ -28,6 +33,7 @@ export default async function ChangeMapForm({ server }: Props) {
       label="Change map"
       options={maps.map(({ id, name }) => [id, name])}
       action={changeServerMapSA}
+      defaultValue={currentMap}
       successMessage="Changing map"
       errorMessage="Failed to change map"
     />

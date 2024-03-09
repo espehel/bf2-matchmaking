@@ -9,6 +9,7 @@ interface Props extends PropsWithChildren {
   errorMessage: string;
   kind?: 'btn-primary' | 'btn-secondary' | 'btn-error';
   size?: 'btn-lg' | 'btn-md' | 'btn-sm';
+  fit?: 'w-fit' | 'w-full';
   redirect?: string;
   errorRedirect?: string;
   disabled?: boolean;
@@ -21,6 +22,7 @@ export default function ActionButton({
   errorMessage,
   kind = 'btn-secondary',
   size = 'btn-md',
+  fit = 'w-fit',
   redirect,
   errorRedirect,
   disabled,
@@ -57,7 +59,7 @@ export default function ActionButton({
 
   return (
     <button
-      className={`btn ${kind} ${size} w-fit`}
+      className={`btn ${kind} ${size} ${fit}`}
       onClick={handleAction}
       disabled={disabled || pending}
     >

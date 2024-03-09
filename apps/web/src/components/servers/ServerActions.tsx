@@ -1,40 +1,81 @@
-import ServerUpdateForm from '@/components/servers/ServerUpdateForm';
+import { GameStatus, LiveInfo, LiveServer } from '@bf2-matchmaking/types';
+import { formatSecToMin, fromSnakeToCapitalized } from '@bf2-matchmaking/utils';
+import JoinMeButton from '@/components/servers/JoinMeButton';
+import { DateTime } from 'luxon';
 import ActionButton from '@/components/ActionButton';
-import { deleteServer } from '@/app/servers/[server]/actions';
+import {
+  restartServerInfantry,
+  restartServerVehicles,
+} from '@/app/servers/[server]/actions';
+import GuardedActionButton from '@/components/commons/GuardedActionButton';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import RevalidateForm from '@/components/RevalidateForm';
 
 interface Props {
-  address: string;
+  server: LiveServer;
+  hasAdmin: boolean;
 }
 
-export default async function ServerActions({ address }: Props) {
-  const server = await supabase(cookies).getServer(address).then(verifySingleResult);
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
-  async function deleteServerSA() {
+export default async function ServerActions({ server, hasAdmin }: Props) {
+  async function restartServerInfantrySA() {
     'use server';
-    return deleteServer(server.ip);
+    return restartServerInfantry(server.address);
   }
-
-  if (!adminRoles?.server_admin) {
-    return null;
+  async function restartServerVehiclesSA() {
+    'use server';
+    return restartServerVehicles(server.address);
   }
 
   return (
     <section className="section">
-      <div>
-        <ActionButton
-          action={deleteServerSA}
-          successMessage={`Deleted server ${server.name}`}
-          errorMessage={'Failed to delete server'}
-          kind="btn-error"
-          redirect="/servers"
-        >
-          Delete server
-        </ActionButton>
+      <div className="grid grid-cols-2 gap-4">
+        <Heading server={server} />
       </div>
-      <ServerUpdateForm server={server} />
+      <div className="divider" />
+      <div className="flex gap-2">
+        <GuardedActionButton
+          label="Restart to infantry"
+          guard={server.info.players.length > 0}
+          guardLabel="Server is populated, are you sure you want to restart?"
+          action={restartServerInfantrySA}
+          successMessage="Server restarting with infantry mode"
+          errorMessage="Failed to restart server with infantry mode"
+          disabled={!hasAdmin}
+        />
+        <GuardedActionButton
+          label="Restart to vehicles"
+          guard={server.info.players.length == 0}
+          guardLabel="Server is populated, are you sure you want to restart?"
+          action={restartServerVehiclesSA}
+          successMessage="Server restarting with vehicles mode"
+          errorMessage="Failed to restart server with vehicles mode"
+          disabled={!hasAdmin}
+        />
+      </div>
     </section>
   );
 }
+
+function Heading({ server }: { server: LiveServer }) {
+  const { info } = server;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-1 items-center">
+        <h2 className="text-2xl">Server Actions</h2>
+        <RevalidateForm path={`/servers/${server.address}`} />
+      </div>
+      <p>{`Updated: ${
+        server.updatedAt ? DateTime.fromISO(server.updatedAt).toFormat('TTT') : '-'
+      }`}</p>
+      <p>{`Game status: ${getKeyName(info.currentGameStatus)}`}</p>
+      <p>{`Map: ${fromSnakeToCapitalized(info.currentMapName)}`}</p>
+      <p>{`Next Map: ${fromSnakeToCapitalized(info.nextMapName)}`}</p>
+      <p>{`Time left: ${formatSecToMin(info.timeLeft)}`}</p>
+      <p>{`No Vehicles: ${server.noVehicles ? 'Yes' : 'No'}`}</p>
+    </div>
+  );
+}
+
+const getKeyName = (status: GameStatus) =>
+  Object.keys(GameStatus).at(Object.values(GameStatus).indexOf(status));

@@ -8,6 +8,7 @@ interface Props {
   action: () => Promise<{ data: unknown; error: { message: string } | null }>;
   successMessage: string;
   errorMessage: string;
+  disabled?: boolean;
 }
 
 export default function GuardedActionButton({
@@ -18,7 +19,12 @@ export default function GuardedActionButton({
 }: Props) {
   if (guard) {
     return (
-      <ActionFormModal title={label} openBtnLabel={label} {...actionProps}>
+      <ActionFormModal
+        title={label}
+        openBtnLabel={label}
+        openBtnSize="btn-md"
+        {...actionProps}
+      >
         {guardLabel}
       </ActionFormModal>
     );

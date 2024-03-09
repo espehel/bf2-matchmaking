@@ -8,7 +8,7 @@ export default function ThemeButton() {
   }, [theme]);
 
   return (
-    <div className="absolute bottom-0 right-0 p-2 z-50">
+    <div className="fixed bottom-0 right-0 p-2 z-50">
       <label className="cursor-pointer grid place-items-center">
         <input
           type="checkbox"

@@ -21,6 +21,7 @@ export interface Props
   className?: string;
   onSuccess?: () => void;
   resetOnSuccess?: boolean;
+  disabled?: boolean;
 }
 
 export default function ActionForm({

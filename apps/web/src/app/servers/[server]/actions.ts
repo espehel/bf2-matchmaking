@@ -12,6 +12,35 @@ import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
 import { api } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 
+export async function pauseRound(address: string) {
+  const result = await api.live().postServerPause(address);
+
+  if (!result.error) {
+    revalidatePath(`/servers/${address}`);
+  }
+
+  return result;
+}
+
+export async function unpauseRound(address: string) {
+  const result = await api.live().postServerUnpause(address);
+
+  if (!result.error) {
+    revalidatePath(`/servers/${address}`);
+  }
+  return result;
+}
+
+export async function restartRound(address: string) {
+  const result = await api.live().postServerExec(address, { cmd: 'admin.restartMap' });
+
+  if (!result.error) {
+    revalidatePath(`/servers/${address}`);
+  }
+
+  return result;
+}
+
 export async function restartServerInfantry(ip: string) {
   const result = await api.live().postServerRestart(ip, { mode: 'infantry' });
   if (!result.error) {
