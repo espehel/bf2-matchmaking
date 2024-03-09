@@ -31,7 +31,7 @@ const eventHandler = net.createServer((socket) => {
   });
   socket.on('end', () => {
     console.log('wa disconnected');
-    handleClientError()
+    handleClientError();
     //handleDisconnect(5000);
   });
   socket.on('error', (err) => {
@@ -99,7 +99,7 @@ const handleDisconnect = (timeout) => {
     eventHandler.getConnections((err, count) => {
       if (count === 0) {
         console.log(`retrying connection in ${timeout / 1000} seconds...`);
-        handleDisconnect(timeout*1.5);
+        handleDisconnect(timeout * 1.5);
       }
     });
   }, timeout);
@@ -214,7 +214,10 @@ const HASHED_KEY =
   'CDaLUXjI8DHQi2Dk9hn5Aqe1HcSRU8npql+c6DvRrGGPzHgC9HO4jwGhlAC2MLuN3+Tx1FofxOCfZzibpo3ucA==';
 const isAuthorized = (apiKey) => {
   return typeof apiKey === 'string'
-    ? crypto.timingSafeEqual(hash.copy().update(apiKey).digest(), Buffer.from(HASHED_KEY, 'base64'))
+    ? crypto.timingSafeEqual(
+        hash.copy().update(apiKey).digest(),
+        Buffer.from(HASHED_KEY, 'base64')
+      )
     : false;
 };
 
@@ -223,11 +226,11 @@ const httpHandler = (req, res, body) => {
   if (!isAuthorized(body.apiKey)) {
     console.log('401');
     res.statusCode = 401;
-  } else if (method === 'POST' && url === '/restart' && body.mapName ) {
+  } else if (method === 'POST' && url === '/restart' && body.mapName) {
     console.log('/restart mapName restarting...');
-    body.mapName === typeof body.mapName === 'string';
-    body.serverName === typeof body.serverName === 'string';
-    execFile(restartBf2Path, [body.mapName, "inf", body.serverName] , printExec );
+    (body.mapName === typeof body.mapName) === 'string';
+    (body.serverName === typeof body.serverName) === 'string';
+    execFile(restartBf2Path, [body.mapName, 'inf', body.serverName], printExec);
     exec(getUnblockExec(), printExec);
   } else if (method === 'POST' && url === '/restart') {
     console.log('/restart restarting...');
@@ -235,9 +238,9 @@ const httpHandler = (req, res, body) => {
     exec(getUnblockExec(), printExec);
   } else if (method === 'POST' && url === '/restart_vehicles') {
     console.log('/restart_vehicles restarting...');
-    body.mapName === typeof body.mapName === 'string';
-    body.serverName === typeof body.serverName === 'string';
-    execFile(restartBf2Path, [body.mapName, "vehicles", body.serverName], printExec );
+    (body.mapName === typeof body.mapName) === 'string';
+    (body.serverName === typeof body.serverName) === 'string';
+    execFile(restartBf2Path, [body.mapName, 'vehicles', body.serverName], printExec);
     exec(getUnblockExec(), printExec);
   } else if (method === 'POST' && url === '/lock') {
     console.log('locking...');
@@ -256,6 +259,7 @@ const httpHandler = (req, res, body) => {
     console.log('404');
     res.statusCode = 404;
   }
+  res.statusCode = 204;
   res.end();
 };
 
@@ -291,8 +295,6 @@ server.listen(PORT, process.env.BF2_SERVER_IP, () => {
   console.log(`Listening on port http://${process.env.BF2_SERVER_IP}:${PORT}`);
 });
 
-
-
 const serverLockfile = path.resolve('server/bf2_firewall.lockfile');
 const ipStreamLockfile = path.resolve('server/bf2_stream.lockfile');
 let lastLine = '';
@@ -317,7 +319,7 @@ try {
 
 // Start watching the file for changes
 fs.watch(serverLockfile, { persistent: true }, (eventType, filename) => {
- // console.error(eventType, serverLockfile, eventType === 'change' , filename, serverLockfile, filename === path.basename(serverLockfile) )
+  // console.error(eventType, serverLockfile, eventType === 'change' , filename, serverLockfile, filename === path.basename(serverLockfile) )
   if (eventType === 'change' && filename === path.basename(serverLockfile)) {
     // Read the current last line of the file
     let currentLine = '';
@@ -360,19 +362,19 @@ fs.watch(ipStreamLockfile, { persistent: true }, (eventType, filename) => {
       return;
     }
 
-  // Check if the last line and current line of the IP file are different
-  if (ipLastLine !== ipCurrentLine) {
-    // Update the last line with the current line
-    ipLastLine = ipCurrentLine;
+    // Check if the last line and current line of the IP file are different
+    if (ipLastLine !== ipCurrentLine) {
+      // Update the last line with the current line
+      ipLastLine = ipCurrentLine;
 
-    // Extract IP addresses from the current line
-    const ips = ipCurrentLine.match(/\d+\.\d+\.\d+\.\d+/g) || [];
+      // Extract IP addresses from the current line
+      const ips = ipCurrentLine.match(/\d+\.\d+\.\d+\.\d+/g) || [];
 
-    // Run the firewall command for each IP address
-    ips.forEach(ip => {
-    exec(getWhitelistExec(ip), printExec);
-    console.log('whitelisting some streamer...');
-    });
-  }
+      // Run the firewall command for each IP address
+      ips.forEach((ip) => {
+        exec(getWhitelistExec(ip), printExec);
+        console.log('whitelisting some streamer...');
+      });
+    }
   }
 });
