@@ -33,18 +33,19 @@ serversRouter.post('/:ip/restart', async (ctx) => {
   const { mode, map } = ctx.request.body;
   try {
     if (mode === 'infantry') {
-      ctx.body = await restartWithInfantryMode(liveServer, map).then(verify);
+      await restartWithInfantryMode(liveServer, map).then(verify);
     }
     if (mode === 'vehicles') {
-      ctx.body = await restartWithVehicleMode(liveServer, map).then(verify);
+      await restartWithVehicleMode(liveServer, map).then(verify);
     }
     if (!mode) {
-      ctx.body = await liveServer.rcon().then(restartServer);
+      await liveServer.rcon().then(restartServer);
     }
   } catch (e) {
     ctx.status = 502;
     ctx.body = toFetchError(e);
   }
+  ctx.status = 204;
 });
 serversRouter.post('/:ip/players/switch', async (ctx) => {
   ctx.body = { message: 'Not implemented' };

@@ -3,7 +3,7 @@ import { Server } from './server/Server';
 
 export function restartWithInfantryMode(server: Server, map?: string) {
   assertString(process.env.HTTP_API_KEY);
-  const mapName = map || server.info.currentMapName;
+  const mapName = getMapName(server, map);
   const serverName = server.info.serverName;
   const apiKey = process.env.HTTP_API_KEY;
   return postJSON(`http://${server.address}:1025/restart`, {
@@ -15,7 +15,7 @@ export function restartWithInfantryMode(server: Server, map?: string) {
 
 export function restartWithVehicleMode(server: Server, map?: string) {
   assertString(process.env.HTTP_API_KEY);
-  const mapName = map || server.info.currentMapName;
+  const mapName = getMapName(server, map);
   const serverName = server.info.serverName;
   const apiKey = process.env.HTTP_API_KEY;
   return postJSON(`http://${server.address}:1025/restart_vehicles`, {
@@ -23,4 +23,11 @@ export function restartWithVehicleMode(server: Server, map?: string) {
     serverName,
     apiKey,
   });
+}
+
+function getMapName(server: Server, map?: string) {
+  return (map || server.info.currentMapName.replace(/_/g, ' '))
+    .split(' ')
+    .map((w) => w[0].toUpperCase().concat(w.slice(1)))
+    .join(' ');
 }
