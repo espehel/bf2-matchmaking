@@ -246,7 +246,7 @@ serversRouter.get('/:ip', async (ctx) => {
     ctx.body = { message: 'Live server not found' };
     return;
   }
-
+  await server.update();
   ctx.body = await toLiveServer(server);
 });
 
