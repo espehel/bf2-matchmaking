@@ -13,42 +13,49 @@ export default async function Page() {
 
   return (
     <main className="main">
-      <table className="table mt-2 bg-base-100 shadow-xl">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Port</th>
-            <th>Server location</th>
-            <th>Inf</th>
-            <th>Status</th>
-            <th>Players</th>
-            <th>Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          {servers.map((server) => (
-            <tr key={server.address} className="hover">
-              <td className="truncate">{server.info.serverName}</td>
-              <td>{server.address}</td>
-              <td>{server.port}</td>
-              <td className="truncate">{`${server.city}, ${server.country}`}</td>
-              <td>{server.noVehicles ? <CheckCircleIcon className="size-5" /> : null}</td>
-              <td>
-                <ServerStatus server={server} />
-              </td>
-              <td>{`${server.info?.players.length || 0}/${
-                server.info?.maxPlayers || 0
-              }`}</td>
-              <td>
-                <Link className="link link-secondary" href={`/servers/${server.address}`}>
-                  <DocumentMagnifyingGlassIcon className="h-6" />
-                </Link>
-              </td>
+      <div className="mt-2 border border-primary rounded p-4 bg-base-100">
+        <table className="table table-zebra">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Port</th>
+              <th>Server location</th>
+              <th>Inf</th>
+              <th>Status</th>
+              <th>Players</th>
+              <th>Details</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {servers.map((server) => (
+              <tr key={server.address} className="hover">
+                <td className="truncate">{server.info.serverName}</td>
+                <td>{server.address}</td>
+                <td>{server.port}</td>
+                <td className="truncate">{`${server.city}, ${server.country}`}</td>
+                <td>
+                  {server.noVehicles ? <CheckCircleIcon className="size-5" /> : null}
+                </td>
+                <td>
+                  <ServerStatus server={server} />
+                </td>
+                <td>{`${server.info?.players.length || 0}/${
+                  server.info?.maxPlayers || 0
+                }`}</td>
+                <td>
+                  <Link
+                    className="link link-secondary"
+                    href={`/servers/${server.address}`}
+                  >
+                    <DocumentMagnifyingGlassIcon className="h-6" />
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <Suspense fallback={null}>
         <CreateServerSection />
       </Suspense>

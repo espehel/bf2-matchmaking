@@ -78,7 +78,7 @@ export default async function ServerInGameActions({
 function PlayersSection({ info }: { info: LiveInfo }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="grow border rounded p-4 overflow-x-auto">
+      <div className="grow border border-accent rounded p-4 overflow-x-auto">
         <table className="table table-zebra">
           <thead>
             <tr>
