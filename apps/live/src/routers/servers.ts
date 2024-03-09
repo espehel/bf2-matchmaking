@@ -19,6 +19,7 @@ import {
 } from '../services/rcon/RconManager';
 import { findMap } from '../services/maps';
 import { restartWithInfantryMode, restartWithVehicleMode } from '../services/http-api';
+import { mapMapList } from '../mappers/rcon';
 export const serversRouter = new Router({
   prefix: '/servers',
 });
@@ -59,17 +60,21 @@ serversRouter.post('/:ip/maps', async (ctx) => {
     return;
   }
 
-  const map = findMap(ctx.request.body.map);
-  const mapList = await liveServer.rcon().then(exec('exec maplist.list'));
-  assertObj(map, 'Could not find map');
-
-  assertArray(mapList, 'Could get map list from server');
-  const id = mapList.indexOf(map.name.toLowerCase().replace(/ /g, '_'));
-
-  await liveServer.rcon().then(exec(`exec admin.setNextLevel ${id}`));
-  await liveServer.rcon().then(exec('exec admin.runNextLevel'));
-
   try {
+    const map = findMap(ctx.request.body.map);
+    assertObj(map, 'Could not find map');
+
+    const mapList = await liveServer
+      .rcon()
+      .then(exec('exec maplist.list'))
+      .then(mapMapList);
+    assertArray(mapList, 'Could not get map list from server');
+
+    const id = mapList.indexOf(map.name.toLowerCase().replace(/ /g, '_'));
+
+    await liveServer.rcon().then(exec(`exec admin.setNextLevel ${id}`));
+    await liveServer.rcon().then(exec('exec admin.runNextLevel'));
+
     const { currentMapName, nextMapName } = await liveServer.rcon().then(getServerInfo);
     ctx.body = { currentMapName, nextMapName };
   } catch (e) {
