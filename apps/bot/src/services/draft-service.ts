@@ -6,8 +6,8 @@ import {
   RatedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { compareRating, shuffleArray } from '@bf2-matchmaking/utils';
-import { getUserIds, withRating } from './utils';
-import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { getUserIds, sumRating, withRating } from './utils';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { PubobotMatch } from './PubobotMatch';
 import { getLogChannel, sendMessage } from './message-service';
@@ -91,12 +91,29 @@ export function buildMixTeams(
   teams: Array<MatchPlayersInsert>,
   ratings: Array<PlayerRatingsRow>
 ): [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>] {
-  const [teamA, teamB] = getTeamsBySnakeDraft(teams.map(withRating(ratings)));
+  const [teamA, teamB] = getTeamsByGGDraft(teams.map(withRating(ratings)));
   const team1 = teamA.sort(compareRating).map(withTeamAndCaptain(1));
   const team2 = teamB.sort(compareRating).map(withTeamAndCaptain(2));
   return [team1, team2];
 }
+function getTeamsByGGDraft(players: Array<RatedMatchPlayer>) {
+  const sorted = [...players].sort((a, b) => b.rating - a.rating);
+  const team1 = [];
+  const team2 = [];
 
+  for (let i = 0; i < sorted.length; i += 2) {
+    const team1Sum = team1.reduce(sumRating, 0);
+    const team2Sum = team2.reduce(sumRating, 0);
+    if (team1Sum < team2Sum) {
+      team1.push(sorted[i]);
+      team2.push(sorted[i + 1]);
+    } else {
+      team2.push(sorted[i]);
+      team1.push(sorted[i + 1]);
+    }
+  }
+  return [team1, team2];
+}
 function getTeamsBySnakeDraft(
   players: Array<RatedMatchPlayer>
 ): [Array<RatedMatchPlayer>, Array<RatedMatchPlayer>] {

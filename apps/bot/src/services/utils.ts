@@ -71,3 +71,7 @@ export function isEqualMatchPlayer(mp: MatchPlayersRow, newMp: MatchPlayersInser
     mp.ready === newMp.ready
   );
 }
+
+export function sumRating(acc: number, player: RatedMatchPlayer) {
+  return acc + player.rating;
+}
