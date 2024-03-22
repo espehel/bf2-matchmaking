@@ -11,7 +11,7 @@ export default async function ServerHeader({ server, isConnected, hasAdmin }: Pr
   return (
     <div>
       <h1>{server.info.serverName}</h1>
-      <div className="flex gap-4 items-center font-bold mt-2">
+      <div className="flex gap-4 items-center font-bold">
         <p className="flex items-center gap-1">
           <ServerStackIcon className="size-4" />
           <span>{server.address}</span>

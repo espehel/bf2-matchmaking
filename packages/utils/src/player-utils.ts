@@ -105,3 +105,7 @@ export function compareRating(mpA: RatedMatchPlayer, mpB: RatedMatchPlayer) {
 export function compareMPRating(mpA: MatchPlayersInsert, mpB: MatchPlayersInsert) {
   return (mpB.rating || -1) - (mpA.rating || -1);
 }
+
+export function isNotTestPlayer(player: PlayersRow) {
+  return !player.nick.startsWith('Test');
+}

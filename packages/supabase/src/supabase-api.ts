@@ -8,6 +8,7 @@ import {
   GeneratedServersInsert,
   MatchConfigResults,
   MatchConfigsRow,
+  PlayerRating,
   PlayerRatingsInsert,
   PlayerRatingsJoined,
   PlayersInsert,
@@ -69,8 +70,13 @@ export default (client: SupabaseClient<Database>) => ({
       .select('*')
       .eq('config', config)
       .in('player_id', idList),
+  getRatingsByConfig: (config: number) =>
+    client.from('player_ratings').select('*').eq('config', config),
   getPlayerRatingsByConfig: (config: number) =>
-    client.from('player_ratings').select('*, player:players(nick)').eq('config', config),
+    client
+      .from('player_ratings')
+      .select<'*, player:players(nick)', PlayerRating>('*, player:players(nick)')
+      .eq('config', config),
   getPlayersWithJoinTime: () =>
     client.from('players').select('*, match_players(connected_at, matches(started_at))'),
   upsertPlayerRatings: (playerRatings: Array<PlayerRatingsInsert>) =>

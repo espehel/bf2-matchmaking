@@ -31,7 +31,7 @@
     @apply min-h-full bg-base-300 text-base-content;
   }
   h1 {
-    @apply text-3xl;
+    @apply text-3xl mb-2;
   }
 }
 
