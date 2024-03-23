@@ -46,8 +46,9 @@ export const getCurrentTeam = (poolSize: number): 1 | 2 | null => {
 };
 
 export const teamIncludes =
-  (match: MatchesJoined, team: string | null) => (player: PlayersRow) =>
+  (match: MatchesJoined, team: number | null) => (player: PlayersRow) =>
     match.teams.some(({ player_id, team: t }) => player_id === player.id && t === team);
+
 export const getDraftStep = (match: MatchesJoined): DraftStep => {
   const pool = match.players.filter(teamIncludes(match, null));
   const team = getCurrentTeam(pool.length);

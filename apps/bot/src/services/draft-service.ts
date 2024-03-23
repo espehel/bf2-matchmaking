@@ -1,12 +1,14 @@
 import {
   MatchConfigsRow,
+  MatchesJoined,
   MatchPlayersInsert,
   PickedMatchPlayer,
   PlayerRatingsRow,
+  PlayersRow,
   RatedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { compareRating, shuffleArray } from '@bf2-matchmaking/utils';
-import { getUserIds, sumRating, withRating } from './utils';
+import { getUserIds, sumRating, toMatchPlayer, withRating } from './utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { PubobotMatch } from './PubobotMatch';
@@ -18,7 +20,7 @@ import {
 
 export const VALID_DRAFT_CONFIGS = [2, 9];
 
-export async function buildDraftWithConfig(
+export async function buildPubotDraftWithConfig(
   pubMatch: PubobotMatch,
   config: MatchConfigsRow
 ): Promise<Array<PickedMatchPlayer> | null> {
@@ -48,6 +50,30 @@ export async function buildDraftWithConfig(
       pubMatch,
     });
     return null;
+  }
+}
+
+export async function buildDraftWithConfig(
+  players: Array<MatchPlayersInsert>,
+  config: MatchConfigsRow
+): Promise<Array<PickedMatchPlayer>> {
+  try {
+    const ratings = await client()
+      .getPlayerRatingsByIdList(
+        players.map((p) => p.player_id),
+        config.id
+      )
+      .then(verifyResult);
+
+    const draft = buildMixTeams(players, ratings);
+    logMessage(`${config.name}: Draft created`, { draft, config, ratings, players });
+    return [...draft[0], ...draft[1]];
+  } catch (e) {
+    logErrorMessage(`Failed to create draft for ${config.name}`, e, {
+      config,
+      players,
+    });
+    throw e;
   }
 }
 

@@ -49,3 +49,7 @@ export function groupBy<T>(
 
   return Object.entries(group);
 }
+
+export function hasEqualElements<T>(a: Array<T>, b: Array<T>) {
+  return a.length === b.length && a.every((element) => b.includes(element));
+}

@@ -198,6 +198,9 @@ export interface PickedMatchPlayer extends Omit<MatchPlayersInsert, 'team' | 'ca
   team: number;
   captain: boolean;
 }
+export interface TeamspeakPlayer extends Omit<PlayersRow, 'teamspeak_id'> {
+  teamspeak_id: string;
+}
 
 export interface PlayerRating extends PlayerRatingsRow {
   player: { nick: string };

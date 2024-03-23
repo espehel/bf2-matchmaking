@@ -9,7 +9,6 @@ import {
   MatchPlayersInsert,
   PickedMatchPlayer,
   PollResult,
-  isRatedMatchPlayer,
   MatchPlayerResultsInsert,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
@@ -18,16 +17,26 @@ import {
   compareFullName,
   compareIsCaptain,
   compareMPRating,
-  compareRating,
   getAverageRating,
   getMatchIdFromDnsName,
   getMatchPlayerNameWithRating,
   getMatchPlayerResultNameWithRating,
   getTeamPlayers,
 } from '@bf2-matchmaking/utils';
-import { buildPollPlayerlabel, replaceDiscordGG } from './embed-utils';
+import {
+  buildMatchPlayerlabel,
+  buildPollPlayerlabel,
+  replaceDiscordGG,
+} from './embed-utils';
 import { DateTime } from 'luxon';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
+
+export function buildTeamspeakMatchStartedEmbed(match: MatchesJoined): APIEmbed {
+  return {
+    title: `Match ${match.id} started`,
+    fields: [...buildTeamFields(match.teams, match.players), getLiveMatchField(match.id)],
+  };
+}
 
 export function buildDraftPollEndedEmbed(
   match: MatchesJoined,
@@ -44,7 +53,10 @@ export function buildDraftPollEndedEmbed(
     description: `Suggested draft was ${
       accepted ? 'accepted' : 'rejected'
     } with following vote count: ${summary}`,
-    fields: [...createTeamFields(teams, players, pollResults), getMatchField(match)],
+    fields: [
+      ...buildPollResultsTeamFields(teams, players, pollResults),
+      getMatchField(match),
+    ],
   };
 }
 
@@ -58,7 +70,10 @@ export function buildDraftPollEmbed(
   return {
     title: 'Suggested Draft',
     description: `If at least half of the players from each team accept the suggested draft, teams will be auto drafted. Poll ends <t:${endTime.toUnixInteger()}:R>`,
-    fields: [...createTeamFields(teams, players, pollResults), getMatchField(match)],
+    fields: [
+      ...buildPollResultsTeamFields(teams, players, pollResults),
+      getMatchField(match),
+    ],
   };
 }
 
@@ -283,7 +298,30 @@ const getRulesDescriptionByConfig = (config: MatchConfigsRow): string => {
   return '';
 };
 
-function createTeamFields(
+function buildTeamFields(teams: Array<MatchPlayersInsert>, players: Array<PlayersRow>) {
+  return [
+    {
+      name: 'Team A',
+      value: getTeamPlayers(teams, players, 1)
+        .sort(compareFullName)
+        .sort(compareIsCaptain)
+        .map(buildMatchPlayerlabel)
+        .join('\n'),
+      inline: true,
+    },
+    {
+      name: 'Team B',
+      value: getTeamPlayers(teams, players, 2)
+        .sort(compareFullName)
+        .sort(compareIsCaptain)
+        .map(buildMatchPlayerlabel)
+        .join('\n'),
+      inline: true,
+    },
+  ];
+}
+
+function buildPollResultsTeamFields(
   teams: Array<MatchPlayersInsert>,
   players: Array<PlayersRow>,
   pollResults: Array<PollResult> | null

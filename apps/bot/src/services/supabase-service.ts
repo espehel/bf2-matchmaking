@@ -1,7 +1,7 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { User, APIUser, GuildMember } from 'discord.js';
-import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
+import { isNotNull, MatchStatus, PlayersRow } from '@bf2-matchmaking/types';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 
 export async function upsertMembers(members: Array<GuildMember>) {
@@ -123,4 +123,13 @@ async function findServer(serverName: string | null) {
     return data.ip;
   }
   return null;
+}
+
+export async function getPlayerByTeamspeakId(clid: string): Promise<PlayersRow | null> {
+  const { data } = await client().getPlayerByTeamspeakId(clid);
+  return data;
+}
+
+export function get4v4BetaConfig() {
+  return client().getMatchConfig(20).then(verifySingleResult);
 }

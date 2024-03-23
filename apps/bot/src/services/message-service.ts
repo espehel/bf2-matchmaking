@@ -1,6 +1,7 @@
 import {
   Message,
   MessageCreateOptions,
+  MessageEditOptions,
   MessagePayload,
   TextBasedChannel,
   TextChannel,
@@ -42,7 +43,37 @@ export async function sendMessage(
     });
     return result;
   } catch (e) {
-    logErrorMessage('Failed to send message', e, { channel, content, ...context });
+    logErrorMessage('Failed to send message', e, {
+      channel: channel.name,
+      id: channel.id,
+      content,
+      ...context,
+    });
+    return null;
+  }
+}
+
+export async function editMessage(
+  message: Message<true>,
+  content: string | MessagePayload | MessageEditOptions,
+  context?: LogContext
+) {
+  try {
+    const result = await message.edit(content);
+    logChannelMessage(result, {
+      content,
+      name: message.channel.name,
+      id: message.channel.id,
+      ...context,
+    });
+    return result;
+  } catch (e) {
+    logErrorMessage('Failed to edit message', e, {
+      name: message.channel.name,
+      id: message.channel.id,
+      content,
+      ...context,
+    });
     return null;
   }
 }

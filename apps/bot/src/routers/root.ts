@@ -81,6 +81,7 @@ rootRouter.post('/messages', async (ctx) => {
     ctx.body = e;
   }
 });
+
 rootRouter.get('/health', (ctx) => {
   ctx.body = 'Ok';
 });

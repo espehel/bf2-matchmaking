@@ -40,3 +40,7 @@ export function buildPollPlayerlabel(results: Array<PollResult> | null) {
     return `${playerVotes}${nick}`;
   };
 }
+
+export function buildMatchPlayerlabel(tp: TeamPlayer) {
+  return tp.captain ? `**${tp.player.nick}**` : tp.player.nick;
+}

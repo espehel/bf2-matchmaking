@@ -2,9 +2,7 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import BetaPlayersForm from '@/components/players/BetaPlayersForm';
 
-interface Props {}
-
-export default async function AdminPlayersPage({}: Props) {
+export default async function AdminPlayersPage() {
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   if (!adminRoles?.player_admin) {
     return <div>You do not have permission to view this page</div>;

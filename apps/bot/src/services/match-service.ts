@@ -3,7 +3,6 @@ import {
   DiscordConfig,
   MatchesUpdate,
   MatchPlayersInsert,
-  MatchPlayersRow,
   MatchStatus,
   PlayersRow,
 } from '@bf2-matchmaking/types';
@@ -41,7 +40,7 @@ export async function buildMatchPlayers(
   return players.map(toMatchPlayer(pubMatch.match.id));
 }
 
-export async function createMatchPlayers(
+export async function createMatchPlayersForPubmatch(
   pubMatch: PubobotMatch,
   matchPlayers: Array<MatchPlayersInsert>
 ) {
@@ -52,6 +51,18 @@ export async function createMatchPlayers(
   if (playersError) {
     logErrorMessage('Failed to create match players', playersError, {
       pubMatch,
+      matchPlayers,
+    });
+  }
+  return data;
+}
+
+export async function createMatchPlayers(matchPlayers: Array<MatchPlayersInsert>) {
+  const { data, error: playersError } = await client().createMatchPlayers(matchPlayers);
+  info('createMatchPlayers', `Created match players ${JSON.stringify(data)}`);
+
+  if (playersError) {
+    logErrorMessage('Failed to create match players', playersError, {
       matchPlayers,
     });
   }

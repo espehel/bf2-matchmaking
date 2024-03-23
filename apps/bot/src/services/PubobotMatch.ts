@@ -11,7 +11,7 @@ import { assertNumber, assertObj } from '@bf2-matchmaking/utils';
 import {
   createMatch,
   createMatchMaps,
-  createMatchPlayers,
+  createMatchPlayersForPubmatch,
   buildMatchTeams,
   getMatch,
   updateMatch,
@@ -73,7 +73,7 @@ export class PubobotMatch {
       !hasEqualPlayers(this.match, this.players) ||
       !hasEqualTeams(this.match, this.teams)
     ) {
-      return createMatchPlayers(this, this.teams);
+      return createMatchPlayersForPubmatch(this, this.teams);
     }
     return null;
   }

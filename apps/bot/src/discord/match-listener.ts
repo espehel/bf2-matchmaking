@@ -22,7 +22,7 @@ import {
 } from '../services/message-service';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { createDraftPoll } from './message-polls';
-import { buildDraftWithConfig, logActualDraft } from '../services/draft-service';
+import { buildPubotDraftWithConfig, logActualDraft } from '../services/draft-service';
 import { client } from '@bf2-matchmaking/supabase';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
