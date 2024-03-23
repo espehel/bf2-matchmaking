@@ -8,12 +8,12 @@ import { registerTeamspeakId } from '@/app/players/teamspeak/actions';
 import { PlayersRow } from '@bf2-matchmaking/types';
 
 interface Props {
-  searchParams: { clid?: string };
+  searchParams: { tsid?: string };
 }
 
 export default async function Page({ searchParams }: Props) {
   const { data: sessionPlayer } = await supabase(cookies).getSessionPlayer();
-  const teamspeakPlayer = await getPlayerByTeamspeakId(searchParams.clid);
+  const teamspeakPlayer = await getPlayerByTeamspeakId(searchParams.tsid);
   return (
     <main className="main">
       <h1>Register Teamspeak Id</h1>
@@ -24,7 +24,7 @@ export default async function Page({ searchParams }: Props) {
           errorMessage="Failed to register teamspeak id"
           className="form-control gap-4"
         >
-          <TextField name="clid" label="Teamspeak Id" defaultValue={searchParams.clid} />
+          <TextField name="tsid" label="Teamspeak Id" defaultValue={searchParams.tsid} />
           <TextField
             name="player_id"
             label="Discord Id"
@@ -53,10 +53,10 @@ export default async function Page({ searchParams }: Props) {
   );
 }
 
-async function getPlayerByTeamspeakId(clid?: string): Promise<PlayersRow | null> {
-  if (!clid) {
+async function getPlayerByTeamspeakId(tsid?: string): Promise<PlayersRow | null> {
+  if (!tsid) {
     return null;
   }
-  const { data } = await supabase(cookies).getPlayerByTeamspeakId(clid);
+  const { data } = await supabase(cookies).getPlayerByTeamspeakId(tsid);
   return data;
 }
