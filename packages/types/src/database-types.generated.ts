@@ -666,6 +666,7 @@ export type Database = {
           id: string
           keyhash: string | null
           nick: string
+          teamspeak_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -676,6 +677,7 @@ export type Database = {
           id: string
           keyhash?: string | null
           nick: string
+          teamspeak_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -686,6 +688,7 @@ export type Database = {
           id?: string
           keyhash?: string | null
           nick?: string
+          teamspeak_id?: string | null
           updated_at?: string
           user_id?: string | null
         }

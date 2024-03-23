@@ -9,6 +9,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { ActionFormProvider } from '@/state/ActionFormContext';
+import { parseError, toFetchError } from '@bf2-matchmaking/utils';
 
 export interface Props
   extends DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> {
@@ -41,21 +42,25 @@ export default function ActionForm({
   const handleAction = useCallback(
     (formData: FormData) =>
       startTransition(async () => {
-        const result = await action(formData);
+        try {
+          const result = await action(formData);
 
-        if (result.error) {
-          toast.error(`${errorMessage}: ${result.error.message}`);
-        } else {
-          if (resetOnSuccess) {
-            ref.current?.reset();
+          if (result.error) {
+            toast.error(`${errorMessage}: ${result.error.message}`);
+          } else {
+            if (resetOnSuccess) {
+              ref.current?.reset();
+            }
+            toast.success(successMessage);
+            if (redirect) {
+              router.push(redirect);
+            }
+            if (onSuccess) {
+              onSuccess();
+            }
           }
-          toast.success(successMessage);
-          if (redirect) {
-            router.push(redirect);
-          }
-          if (onSuccess) {
-            onSuccess();
-          }
+        } catch (err) {
+          toast.error(`${errorMessage}: ${parseError(err)}`);
         }
       }),
     [action, errorMessage, successMessage, startTransition, redirect, router]

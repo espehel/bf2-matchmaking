@@ -12,6 +12,16 @@ export function assertString(
     throw new Error(message || `${typeof object} is not a string`);
   }
 }
+
+export function assertTruthyString(
+  object: unknown,
+  message?: string
+): asserts object is string {
+  if (!object || typeof object !== 'string') {
+    throw new Error(message || `${typeof object} is not a truthy string`);
+  }
+}
+
 export function assertNumber(
   object: unknown,
   message?: string

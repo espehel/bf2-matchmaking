@@ -1,11 +1,15 @@
 import { FetchError } from '@bf2-matchmaking/types';
 
-export function toFetchError(e: unknown): FetchError {
+export function parseError(e: unknown): string {
   if (e instanceof Error) {
-    return { message: e.message };
+    return e.message;
   } else if (typeof e === 'string') {
-    return { message: e };
+    return e;
   } else {
-    return { message: JSON.stringify(e) };
+    return JSON.stringify(e);
   }
+}
+
+export function toFetchError(e: unknown): FetchError {
+  return { message: parseError(e) };
 }

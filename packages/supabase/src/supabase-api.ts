@@ -39,6 +39,8 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('players').select('*').eq('user_id', userId).single(),
   getPlayerByKeyhash: (keyhash: string) =>
     client.from('players').select('*').eq('keyhash', keyhash).single(),
+  getPlayerByTeamspeakId: (clid: string) =>
+    client.from('players').select('*').eq('teamspeak_id', clid).single(),
   getPlayersByKeyhashList: (keyhashes: Array<string>) =>
     client.from('players').select('*').in('keyhash', keyhashes),
   getPlayers: () => client.from('players').select('*'),
