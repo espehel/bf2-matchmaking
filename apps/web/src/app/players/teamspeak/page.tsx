@@ -17,7 +17,7 @@ export default async function Page({ searchParams }: Props) {
   return (
     <main className="main">
       <h1>Register Teamspeak Id</h1>
-      <section className="section">
+      <section className="section max-w-2xl">
         <ActionForm
           action={registerTeamspeakId}
           successMessage="Successfully registerd teamspeak id"
