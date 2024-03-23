@@ -15,12 +15,6 @@ export default async function Page({ params }: Props) {
   );
   const { data: players } = await supabase(cookies).getPlayers();
 
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
-
-  if (!adminRoles?.player_admin) {
-    return null;
-  }
-
   return (
     <main className="main">
       <h1>{`${config.name} ratings`}</h1>
