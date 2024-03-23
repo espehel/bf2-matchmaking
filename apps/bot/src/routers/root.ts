@@ -10,6 +10,7 @@ import { PostDemosRequestBody } from '@bf2-matchmaking/types';
 import { error } from '@bf2-matchmaking/logging';
 import { getDemoChannel } from '../services/message-service';
 import { isTextBasedChannel } from '../discord/discord-utils';
+import { getClientList } from '../teamspeak/teamspeak';
 export const rootRouter = new Router();
 
 rootRouter.post('/demos', async (ctx) => {
@@ -81,6 +82,11 @@ rootRouter.post('/messages', async (ctx) => {
     ctx.body = e;
   }
 });
+
+rootRouter.get('/teamspeak', async (ctx) => {
+  ctx.body = await getClientList();
+});
+
 rootRouter.get('/health', (ctx) => {
   ctx.body = 'Ok';
 });

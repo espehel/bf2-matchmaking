@@ -10,11 +10,13 @@ import { getDiscordClient } from './discord/client';
 import { loadServerLocations } from './services/location-service';
 import { interactionsRouter } from './routers/interactions';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
+import { listenToChannelJoin } from './teamspeak/teamspeak';
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5001;
 
 getDiscordClient()
   .then(() => {
     loadServerLocations();
+    listenToChannelJoin();
     if (isDevelopment()) {
       return;
     }
