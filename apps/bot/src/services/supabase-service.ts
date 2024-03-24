@@ -129,3 +129,7 @@ export async function getPlayerByTeamspeakId(clid: string): Promise<PlayersRow |
   const { data } = await client().getPlayerByTeamspeakId(clid);
   return data;
 }
+
+export function get4v4BetaConfig() {
+  return client().getMatchConfig(20).then(verifySingleResult);
+}
