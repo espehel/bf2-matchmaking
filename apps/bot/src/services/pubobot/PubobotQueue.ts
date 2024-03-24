@@ -33,7 +33,7 @@ export class PubobotQueue {
       return false;
     }
 
-    const res = sendMessage(this.channel, `!remove_player 4v4 <@${player.id}>`);
+    const res = sendMessage(this.channel, `!removeplayer 4v4 <@${player.id}>`);
     if (!res) {
       return false;
     }
