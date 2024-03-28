@@ -7,9 +7,11 @@ import {
   MatchPlayersInsert,
   MatchStatus,
   PickedMatchPlayer,
+  PlayersRow,
   RatedMatchPlayer,
   ScheduledMatch,
   TeamsJoined,
+  TeamspeakPlayer,
 } from './database-types';
 import { PostgrestError, TeamPlayer } from './index';
 
@@ -54,3 +56,7 @@ export const isRatedMatchPlayer = (
 export const isPickedMatchPlayer = (
   player: MatchPlayersInsert
 ): player is PickedMatchPlayer => typeof player.team === 'number';
+
+export function isTeamspeakPlayer(player: PlayersRow | null): player is TeamspeakPlayer {
+  return Boolean(player && player.teamspeak_id);
+}

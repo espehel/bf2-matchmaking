@@ -1,0 +1,191 @@
+import {
+  DiscordConfig,
+  isTeamspeakPlayer,
+  LiveServer,
+  MatchesJoined,
+  MatchStatus,
+  PlayersRow,
+  TeamspeakPlayer,
+} from '@bf2-matchmaking/types';
+import { EmbedBuilder, Message, TextChannel } from 'discord.js';
+import { getTextChannelFromConfig } from '../discord/discord-utils';
+import { getPlayerByTeamspeakId } from '../services/supabase-service';
+import { sendMessage } from '../services/message-service';
+import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { getAvailableServer, getServerPlayers } from '../services/live-service';
+import { createMatch, createMatchPlayers, getMatch } from '../services/match-service';
+import { buildDraftWithConfig } from '../services/draft-service';
+import { toMatchPlayer } from '../services/utils';
+import { buildTeamspeakMatchStartedEmbed } from '@bf2-matchmaking/discord';
+import { assertObj } from '@bf2-matchmaking/utils';
+
+export class MatchQueue {
+  config: DiscordConfig;
+  channel: TextChannel;
+  queue: Array<TeamspeakPlayer> = [];
+  #queueMessage: Message | undefined;
+  #readyMessage: Message | undefined;
+  server: LiveServer;
+  readyPlayers: Array<string> = [];
+  #pollInterval: NodeJS.Timeout | null = null;
+  #onMatchStartedCB:
+    | ((match: MatchesJoined, matchPlayers: Array<TeamspeakPlayer>) => void)
+    | null = null;
+
+  constructor(config: DiscordConfig, channel: TextChannel, server: LiveServer) {
+    this.config = config;
+    this.channel = channel;
+    this.server = server;
+  }
+  async add(id: string) {
+    info('MatchQueue', `Adding player ${id} to match queue`);
+    if (this.has(id)) {
+      return false;
+    }
+
+    const player = await getPlayerByTeamspeakId(id);
+    if (!isTeamspeakPlayer(player)) {
+      return false;
+    }
+
+    this.queue.push(player);
+    if (this.queue.length === this.config.size) {
+      this.startReadyCheck();
+      return true;
+    }
+    await this.syncQueueMessage(player, 'joined');
+    return true;
+  }
+  has(id: string) {
+    return this.queue.some((player) => player.teamspeak_id === id);
+  }
+  async delete(id: string) {
+    info('MatchQueue', `Deleting player ${id} from match queue`);
+    const player = this.queue.find((player) => player.teamspeak_id === id);
+    if (!player) {
+      return false;
+    }
+
+    this.queue = this.queue.filter((player) => player.teamspeak_id !== id);
+    await this.syncQueueMessage(player, 'left');
+    return true;
+  }
+  onMatchStarted(
+    cb: (match: MatchesJoined, matchPlayers: Array<TeamspeakPlayer>) => void
+  ) {
+    this.#onMatchStartedCB = cb;
+    return this;
+  }
+  startReadyCheck() {
+    info('MatchQueue', 'Starting ready check');
+    this.#pollInterval = setInterval(() => this.pollServer(), 5000);
+    setTimeout(() => this.resetQueue(), 5000);
+  }
+  async pollServer() {
+    try {
+      const serverPlayers = await getServerPlayers(this.server);
+      this.readyPlayers = this.queue
+        .slice(0, this.config.size)
+        .filter((p) => serverPlayers.some((sp) => p.keyhash === sp.keyhash))
+        .map((p) => p.id);
+
+      if (this.readyPlayers.length === this.config.size) {
+        this.resetQueue();
+        await this.startMatch();
+      } else {
+        await this.syncReadyMessage();
+      }
+    } catch (err) {
+      logErrorMessage('Failed to poll server', err, { matchQueue: this });
+    }
+  }
+  resetQueue() {
+    if (this.#pollInterval) {
+      clearInterval(this.#pollInterval);
+    }
+  }
+  async startMatch() {
+    info('MatchQueue', 'Starting match');
+    const players = this.queue.filter((p) => this.readyPlayers.includes(p.id));
+    this.queue = this.queue.filter((p) => !this.readyPlayers.includes(p.id));
+    this.readyPlayers = [];
+
+    const match = await createMatch(this.config, MatchStatus.Ongoing);
+    const matchPlayers = await buildDraftWithConfig(
+      players.map(toMatchPlayer(match.id)),
+      this.config
+    );
+    await createMatchPlayers(matchPlayers);
+    const updatedMatch = await getMatch(match.id);
+    assertObj(updatedMatch, 'Failed to get updated match');
+
+    await sendMessage(this.channel, {
+      embeds: [buildTeamspeakMatchStartedEmbed(updatedMatch)],
+    });
+
+    if (this.#onMatchStartedCB) {
+      this.#onMatchStartedCB(match, players);
+    }
+  }
+  async syncQueueMessage(player: PlayersRow, action: 'joined' | 'left') {
+    const content = buildQueueMessageContent(this.queue, player, action);
+    const message = await sendMessage(this.channel, content);
+    if (!message) {
+      info('MatchQueue', 'Failed to sync queue message');
+      return false;
+    }
+
+    if (this.#queueMessage) {
+      await this.#queueMessage.delete();
+    }
+    this.#queueMessage = message;
+    info('MatchQueue', 'Queue message synced');
+    return true;
+  }
+  async syncReadyMessage() {
+    const embed = buildReadyMessageEmbed(this);
+    const message = await sendMessage(this.channel, { embeds: [embed] });
+    if (!message) {
+      info('MatchQueue', 'Failed to sync ready message');
+      return false;
+    }
+
+    if (this.#readyMessage) {
+      await this.#readyMessage.delete();
+    }
+    this.#readyMessage = message;
+    info('MatchQueue', 'Ready message synced');
+    return true;
+  }
+  static async fromConfig(config: DiscordConfig) {
+    const channel = await getTextChannelFromConfig(config);
+    const server = await getAvailableServer();
+    const queue = new MatchQueue(config, channel, server);
+    logMessage(`Config ${config.name}: Match queue created`, { config, channel, server });
+    return queue;
+  }
+}
+
+function buildQueueMessageContent(
+  players: Array<PlayersRow>,
+  player: PlayersRow,
+  action: 'joined' | 'left'
+) {
+  return `> **4v4**(${players.length}/8)`
+    .concat(players.length ? ` | ${players.map((p) => `\`${p.nick}\``).join('/')}` : '')
+    .concat(` | <@${player.id}> ${action}`);
+}
+
+function buildReadyMessageEmbed(queue: MatchQueue) {
+  return new EmbedBuilder()
+    .setTitle(`Join ${queue.server.info.serverName}`)
+    .setDescription('Join the server to ready up')
+    .setFields({
+      name: 'Players',
+      value: queue.queue
+        .slice(0, queue.config.size)
+        .map((p) => `${queue.readyPlayers.includes(p.id) ? '✅' : ''} ${p.nick}`)
+        .join('\n'),
+    })
+    .toJSON();
+}

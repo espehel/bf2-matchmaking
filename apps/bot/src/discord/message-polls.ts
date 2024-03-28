@@ -32,7 +32,7 @@ import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { MessagePoll } from './MessagePoll';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
 import {
-  buildDraftWithConfig,
+  buildPubotDraftWithConfig,
   getUnpickList,
   VALID_DRAFT_CONFIGS,
 } from '../services/draft-service';
@@ -65,7 +65,7 @@ export async function createDraftPoll(
 
   const config = configOption || pubMatch.match.config;
 
-  const pickList = await buildDraftWithConfig(pubMatch, config);
+  const pickList = await buildPubotDraftWithConfig(pubMatch, config);
   if (!pickList) {
     return;
   }

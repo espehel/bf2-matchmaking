@@ -1,10 +1,10 @@
-import { ClientType, TeamSpeak } from 'ts3-nodejs-library';
+import { ClientType, TeamSpeak, TeamSpeakChannel } from 'ts3-nodejs-library';
+import { api, teamIncludes } from '@bf2-matchmaking/utils';
+import { get4v4BetaConfig } from '../services/supabase-service';
+import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { MatchQueue } from '../match/MatchQueue';
+import { isDiscordConfig, MatchesJoined, TeamspeakPlayer } from '@bf2-matchmaking/types';
 import QueryProtocol = TeamSpeak.QueryProtocol;
-import { api, assertObj } from '@bf2-matchmaking/utils';
-import { get4v4BetaConfig, getPlayerByTeamspeakId } from '../services/supabase-service';
-import { info, logErrorMessage } from '@bf2-matchmaking/logging';
-import { getTextChannelFromConfig } from '../discord/discord-utils';
-import { PubobotQueue } from '../services/pubobot/PubobotQueue';
 
 let teamspeakClient: TeamSpeak | undefined;
 export async function getTeamspeakClient() {
@@ -33,7 +33,18 @@ export async function getClientList() {
 
 export async function listenToChannelJoin() {
   const config = await get4v4BetaConfig();
-  const queue = await PubobotQueue.fromConfig(config);
+  if (!isDiscordConfig(config)) {
+    throw new Error('Config does not contain discord channel');
+  }
+  const queue = await MatchQueue.fromConfig(config);
+  queue.onMatchStarted(async (match, players) => {
+    const [channel1, channel2] = await createMatchChannels(match);
+    await Promise.all([
+      movePlayers(channel1, players.filter(teamIncludes(match, '1'))),
+      movePlayers(channel2, players.filter(teamIncludes(match, '2'))),
+    ]);
+    logMessage(`Config ${config.name}: Match started`, { match, players, queue });
+  });
 
   const ts = await getTeamspeakClient();
   ts.on('clientmoved', async ({ client, channel, reasonid }) => {
@@ -48,19 +59,31 @@ export async function listenToChannelJoin() {
         `Client ${client.nickname} joined channel ${channel.name}`
       );
 
-      const isAdded = await queue.add(client.uniqueIdentifier);
-      if (!isAdded) {
-        client.message(getRegisterMessage(client.uniqueIdentifier));
-        await client
-          .poke(getRegisterPoke(client.uniqueIdentifier))
-          .catch((err) => logErrorMessage('Teamspeak: Poke failed', err));
-        await ts
-          .clientMove(client, '20342')
-          .catch((err) => logErrorMessage('Teamspeak: Move failed', err));
+      if (queue.has(client.uniqueIdentifier)) {
+        info(
+          'listenToChannelJoin',
+          `Client ${client.nickname} already in queue, no action taken.`
+        );
+        return;
       }
+
+      const isAdded = await queue.add(client.uniqueIdentifier);
+      if (isAdded) {
+        info('listenToChannelJoin', `Client ${client.nickname} added to queue`);
+        return;
+      }
+
+      info('listenToChannelJoin', `Client ${client.nickname} failed to add to queue`);
+      client.message(getRegisterMessage(client.uniqueIdentifier));
+      await client
+        .poke(getRegisterPoke(client.uniqueIdentifier))
+        .catch((err) => logErrorMessage('Teamspeak: Poke failed', err));
+      await ts
+        .clientMove(client, '20342')
+        .catch((err) => logErrorMessage('Teamspeak: Move failed', err));
     } else if (queue.has(client.uniqueIdentifier)) {
       info('listenToChannelJoin', `Client ${client.nickname} left queue by move`);
-      queue.delete(client.uniqueIdentifier);
+      await queue.delete(client.uniqueIdentifier);
     }
   });
 
@@ -80,4 +103,22 @@ function getRegisterMessage(id: string) {
 
 function getRegisterPoke(id: string) {
   return `Register Discord Id at ${api.web().teamspeakPage(id)}`;
+}
+
+async function createMatchChannels(match: MatchesJoined) {
+  const ts = await getTeamspeakClient();
+  const channel1 = await ts.channelCreate(`Match ${match.id} Team 1`, {
+    cpid: '42497',
+    channelFlagTemporary: true,
+  });
+  const channel2 = await ts.channelCreate(`Match ${match.id} Team 2`, {
+    cpid: '42497',
+    channelFlagTemporary: true,
+  });
+  return [channel1, channel2];
+}
+
+async function movePlayers(channel: TeamSpeakChannel, players: Array<TeamspeakPlayer>) {
+  const ts = await getTeamspeakClient();
+  return Promise.all(players.map((p) => ts.clientMove(p.teamspeak_id, channel.cid)));
 }
