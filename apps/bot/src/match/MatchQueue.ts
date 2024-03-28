@@ -128,7 +128,12 @@ export class MatchQueue {
     }
   }
   async syncQueueMessage(player: PlayersRow, action: 'joined' | 'left') {
-    const content = buildQueueMessageContent(this.queue, player, action);
+    const content = buildQueueMessageContent(
+      this.queue,
+      this.config.size,
+      player,
+      action
+    );
     const message = await sendMessage(this.channel, content);
     if (!message) {
       info('MatchQueue', 'Failed to sync queue message');
@@ -168,10 +173,11 @@ export class MatchQueue {
 
 function buildQueueMessageContent(
   players: Array<PlayersRow>,
+  size: number,
   player: PlayersRow,
   action: 'joined' | 'left'
 ) {
-  return `> **4v4**(${players.length}/8)`
+  return `> **4v4** (${players.length}/${size})`
     .concat(players.length ? ` | ${players.map((p) => `\`${p.nick}\``).join('/')}` : '')
     .concat(` | <@${player.id}> ${action}`);
 }

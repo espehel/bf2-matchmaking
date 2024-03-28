@@ -22,7 +22,8 @@ const web = () => {
     basePath,
     matchPage: (matchId: number | string, playerId?: string) =>
       `${basePath}/matches/${matchId}${playerId ? `?player=${playerId}` : ''}`,
-    teamspeakPage: (id: string) => `${basePath}/players/teamspeak/?tsid=${id}`,
+    teamspeakPage: (id: string) =>
+      new URL(`${basePath}/players/teamspeak/?tsid=${id}`).toString(),
   };
 };
 const live = () => {
