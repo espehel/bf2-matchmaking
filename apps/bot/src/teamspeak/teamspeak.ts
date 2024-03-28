@@ -7,6 +7,8 @@ import { isDiscordConfig, MatchesJoined, TeamspeakPlayer } from '@bf2-matchmakin
 import QueryProtocol = TeamSpeak.QueryProtocol;
 
 let teamspeakClient: TeamSpeak | undefined;
+const teamspeakIdMap = new Map<string, string>();
+
 export async function getTeamspeakClient() {
   if (!teamspeakClient) {
     teamspeakClient = await TeamSpeak.connect({
@@ -38,12 +40,35 @@ export async function listenToChannelJoin() {
   }
   const queue = await MatchQueue.fromConfig(config);
   queue.onMatchStarted(async (match, players) => {
-    const [channel1, channel2] = await createMatchChannels(match);
-    await Promise.all([
-      movePlayers(channel1, players.filter(teamIncludes(match, '1'))),
-      movePlayers(channel2, players.filter(teamIncludes(match, '2'))),
-    ]);
-    logMessage(`Config ${config.name}: Match started`, { match, players, queue });
+    try {
+      const [channel1, channel2] = await createMatchChannels(match);
+
+      await Promise.all([
+        movePlayers(channel1, players.filter(teamIncludes(match, 1))),
+        movePlayers(channel2, players.filter(teamIncludes(match, 2))),
+      ]);
+
+      await channel1.edit({
+        channelFlagTemporary: true,
+        channelFlagSemiPermanent: false,
+      });
+      await channel2.edit({
+        channelFlagTemporary: true,
+        channelFlagSemiPermanent: false,
+      });
+
+      logMessage(`Config ${config.name}: Match started`, { match, players, queue });
+    } catch (err) {
+      console.error(err);
+      logErrorMessage(
+        `Config ${config.name}: Error while setting up teamspeak match`,
+        err,
+        {
+          match,
+          players,
+        }
+      );
+    }
   });
 
   const ts = await getTeamspeakClient();
@@ -69,6 +94,8 @@ export async function listenToChannelJoin() {
 
       const isAdded = await queue.add(client.uniqueIdentifier);
       if (isAdded) {
+        // TODO: clear this later
+        teamspeakIdMap.set(client.uniqueIdentifier, client.clid);
         info('listenToChannelJoin', `Client ${client.nickname} added to queue`);
         return;
       }
@@ -109,16 +136,30 @@ async function createMatchChannels(match: MatchesJoined) {
   const ts = await getTeamspeakClient();
   const channel1 = await ts.channelCreate(`Match ${match.id} Team 1`, {
     cpid: '42497',
-    channelFlagTemporary: true,
+    channelFlagTemporary: false,
+    channelFlagSemiPermanent: true,
   });
   const channel2 = await ts.channelCreate(`Match ${match.id} Team 2`, {
     cpid: '42497',
-    channelFlagTemporary: true,
+    channelFlagTemporary: false,
+    channelFlagSemiPermanent: true,
   });
   return [channel1, channel2];
 }
 
 async function movePlayers(channel: TeamSpeakChannel, players: Array<TeamspeakPlayer>) {
+  info(
+    'movePlayers',
+    `Moving players ${players.map((p) => p.nick).join(', ')} to ${channel.cid}`
+  );
   const ts = await getTeamspeakClient();
-  return Promise.all(players.map((p) => ts.clientMove(p.teamspeak_id, channel.cid)));
+  return Promise.all(players.map(movePlayer(channel, ts)));
+}
+
+function movePlayer(channel: TeamSpeakChannel, ts: TeamSpeak) {
+  return (player: TeamspeakPlayer) => {
+    const clid = teamspeakIdMap.get(player.teamspeak_id);
+    info('movePlayer', `Moving player ${player.teamspeak_id}(${clid}) to ${channel.cid}`);
+    return clid ? ts.clientMove(clid, channel.cid) : false;
+  };
 }

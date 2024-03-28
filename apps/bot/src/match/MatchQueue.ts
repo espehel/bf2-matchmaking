@@ -18,11 +18,13 @@ import { buildDraftWithConfig } from '../services/draft-service';
 import { toMatchPlayer } from '../services/utils';
 import { buildTeamspeakMatchStartedEmbed } from '@bf2-matchmaking/discord';
 import { assertObj } from '@bf2-matchmaking/utils';
+import { DateTime } from 'luxon';
 
 export class MatchQueue {
   config: DiscordConfig;
   channel: TextChannel;
   queue: Array<TeamspeakPlayer> = [];
+  queueTimeout: DateTime | null = null;
   #queueMessage: Message | undefined;
   #readyMessage: Message | undefined;
   server: LiveServer;
@@ -50,7 +52,7 @@ export class MatchQueue {
 
     this.queue.push(player);
     if (this.queue.length === this.config.size) {
-      this.startReadyCheck();
+      await this.startReadyCheck();
       return true;
     }
     await this.syncQueueMessage(player, 'joined');
@@ -76,19 +78,32 @@ export class MatchQueue {
     this.#onMatchStartedCB = cb;
     return this;
   }
-  startReadyCheck() {
+  async startReadyCheck() {
     info('MatchQueue', 'Starting ready check');
+    await this.pollServer(true);
     this.#pollInterval = setInterval(() => this.pollServer(), 5000);
-    setTimeout(() => this.resetQueue(), 5000);
+    this.queueTimeout = DateTime.now().plus({ minutes: 5 });
+    info(
+      'MatchQueue',
+      `Pollings ends in ${this.queueTimeout.diffNow('milliseconds').milliseconds} ms`
+    );
+    setTimeout(() => this.resetQueue(), 1000 * 60 * 5);
   }
-  async pollServer() {
+  async pollServer(forceUpdate: boolean = false) {
+    info('MatchQueue', `Polling ${this.server.address}...`);
     try {
       const serverPlayers = await getServerPlayers(this.server);
-      this.readyPlayers = this.queue
+      const readyPlayers = this.queue
         .slice(0, this.config.size)
         .filter((p) => serverPlayers.some((sp) => p.keyhash === sp.keyhash))
         .map((p) => p.id);
+      info('MatchQueue', `Ready players: ${readyPlayers.length}`);
 
+      if (!forceUpdate && readyPlayers.length === this.readyPlayers.length) {
+        return;
+      }
+
+      this.readyPlayers = readyPlayers;
       if (this.readyPlayers.length === this.config.size) {
         this.resetQueue();
         await this.startMatch();
@@ -100,6 +115,7 @@ export class MatchQueue {
     }
   }
   resetQueue() {
+    info('MatchQueue', 'Resetting queue');
     if (this.#pollInterval) {
       clearInterval(this.#pollInterval);
     }
@@ -124,7 +140,7 @@ export class MatchQueue {
     });
 
     if (this.#onMatchStartedCB) {
-      this.#onMatchStartedCB(match, players);
+      this.#onMatchStartedCB(updatedMatch, players);
     }
   }
   async syncQueueMessage(player: PlayersRow, action: 'joined' | 'left') {
@@ -185,7 +201,9 @@ function buildQueueMessageContent(
 function buildReadyMessageEmbed(queue: MatchQueue) {
   return new EmbedBuilder()
     .setTitle(`Join ${queue.server.info.serverName}`)
-    .setDescription('Join the server to ready up')
+    .setDescription(
+      `Check in by joining server in <t:${queue.queueTimeout?.toUnixInteger()}:R>`
+    )
     .setFields({
       name: 'Players',
       value: queue.queue
