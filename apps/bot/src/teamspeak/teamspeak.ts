@@ -3,7 +3,12 @@ import { api, teamIncludes } from '@bf2-matchmaking/utils';
 import { get4v4BetaConfig } from '../services/supabase-service';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { MatchQueue } from '../match/MatchQueue';
-import { isDiscordConfig, MatchesJoined, TeamspeakPlayer } from '@bf2-matchmaking/types';
+import {
+  DiscordConfig,
+  isDiscordConfig,
+  MatchesJoined,
+  TeamspeakPlayer,
+} from '@bf2-matchmaking/types';
 import QueryProtocol = TeamSpeak.QueryProtocol;
 
 let teamspeakClient: TeamSpeak | undefined;
@@ -24,6 +29,12 @@ export async function getTeamspeakClient() {
   return teamspeakClient;
 }
 
+function removePlayerIds(players: Array<TeamspeakPlayer>) {
+  for (const player of players) {
+    teamspeakIdMap.delete(player.teamspeak_id);
+  }
+}
+
 export async function getClientList() {
   const ts = await getTeamspeakClient();
   //return ts.channelList();
@@ -33,13 +44,8 @@ export async function getClientList() {
   return ts.clientList({ clientType: ClientType.Regular });
 }
 
-export async function listenToChannelJoin() {
-  const config = await get4v4BetaConfig();
-  if (!isDiscordConfig(config)) {
-    throw new Error('Config does not contain discord channel');
-  }
-  const queue = await MatchQueue.fromConfig(config);
-  queue.onMatchStarted(async (match, players) => {
+function handleMatchStarted(config: DiscordConfig, queue: MatchQueue) {
+  return async (match: MatchesJoined, players: Array<TeamspeakPlayer>) => {
     try {
       const [channel1, channel2] = await createMatchChannels(match);
 
@@ -56,6 +62,7 @@ export async function listenToChannelJoin() {
         channelFlagTemporary: true,
         channelFlagSemiPermanent: false,
       });
+      removePlayerIds(players);
 
       logMessage(`Config ${config.name}: Match started`, { match, players, queue });
     } catch (err) {
@@ -69,7 +76,16 @@ export async function listenToChannelJoin() {
         }
       );
     }
-  });
+  };
+}
+
+export async function listenToChannelJoin() {
+  const config = await get4v4BetaConfig();
+  if (!isDiscordConfig(config)) {
+    throw new Error('Config does not contain discord channel');
+  }
+  const queue = await MatchQueue.fromConfig(config);
+  queue.onMatchStarted(handleMatchStarted(config, queue));
 
   const ts = await getTeamspeakClient();
   ts.on('clientmoved', async ({ client, channel, reasonid }) => {
@@ -94,7 +110,6 @@ export async function listenToChannelJoin() {
 
       const isAdded = await queue.add(client.uniqueIdentifier);
       if (isAdded) {
-        // TODO: clear this later
         teamspeakIdMap.set(client.uniqueIdentifier, client.clid);
         info('listenToChannelJoin', `Client ${client.nickname} added to queue`);
         return;

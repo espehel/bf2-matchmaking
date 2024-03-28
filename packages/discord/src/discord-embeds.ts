@@ -298,7 +298,7 @@ function buildTeamFields(teams: Array<MatchPlayersInsert>, players: Array<Player
   return [
     {
       name: 'Team A',
-      value: [...getTeamPlayers(teams, players, 1)]
+      value: getTeamPlayers(teams, players, 1)
         .sort(compareFullName)
         .sort(compareIsCaptain)
         .join('\n'),
@@ -306,7 +306,7 @@ function buildTeamFields(teams: Array<MatchPlayersInsert>, players: Array<Player
     },
     {
       name: 'Team B',
-      value: [...getTeamPlayers(teams, players, 2)]
+      value: getTeamPlayers(teams, players, 2)
         .sort(compareFullName)
         .sort(compareIsCaptain)
         .join('\n'),

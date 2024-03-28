@@ -80,16 +80,16 @@ export class MatchQueue {
   }
   async startReadyCheck() {
     info('MatchQueue', 'Starting ready check');
-    await this.pollServer(true);
     this.#pollInterval = setInterval(() => this.pollServer(), 5000);
     this.queueTimeout = DateTime.now().plus({ minutes: 5 });
-    info(
-      'MatchQueue',
-      `Pollings ends in ${this.queueTimeout.diffNow('milliseconds').milliseconds} ms`
+    await this.syncReadyMessage();
+
+    setTimeout(
+      () => this.resetQueue(),
+      this.queueTimeout.diffNow('milliseconds').milliseconds
     );
-    setTimeout(() => this.resetQueue(), 1000 * 60 * 5);
   }
-  async pollServer(forceUpdate: boolean = false) {
+  async pollServer() {
     info('MatchQueue', `Polling ${this.server.address}...`);
     try {
       const serverPlayers = await getServerPlayers(this.server);
@@ -99,7 +99,7 @@ export class MatchQueue {
         .map((p) => p.id);
       info('MatchQueue', `Ready players: ${readyPlayers.length}`);
 
-      if (!forceUpdate && readyPlayers.length === this.readyPlayers.length) {
+      if (readyPlayers.length === this.readyPlayers.length) {
         return;
       }
 
@@ -116,6 +116,7 @@ export class MatchQueue {
   }
   resetQueue() {
     info('MatchQueue', 'Resetting queue');
+    // TODO: based on queue ending successfully or not, send message and remove players from queue
     if (this.#pollInterval) {
       clearInterval(this.#pollInterval);
     }
