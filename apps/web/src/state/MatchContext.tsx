@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useMemo, ReactNode } from 'react';
-import { MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
+import { MatchesJoined, MatchServers, ServersRow } from '@bf2-matchmaking/types';
 import { assertObj, isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
 import { usePlayer } from '@/state/PlayerContext';
 import { useMatchRoom } from '@/state/realtime-hooks';
@@ -17,9 +17,9 @@ const MatchContext = createContext<ContextValue>({} as any);
 interface Props {
   children: ReactNode;
   match: MatchesJoined;
-  server: MatchServer | null;
+  servers: Array<ServersRow>;
 }
-export function MatchProvider({ children, match, server }: Props) {
+export function MatchProvider({ children, match, servers }: Props) {
   const { isMatchAdmin, player } = usePlayer();
 
   const isMatchOfficer = useMemo(() => {
@@ -37,7 +37,7 @@ export function MatchProvider({ children, match, server }: Props) {
     [match, player]
   );
 
-  const room = useMatchRoom(match, server);
+  const room = useMatchRoom(match, servers.at(0));
 
   const context = useMemo<ContextValue>(
     () => ({

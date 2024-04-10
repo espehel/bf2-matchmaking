@@ -4,8 +4,9 @@ import {
   MatchesJoined,
   LiveInfo,
   RoundsRow,
-  MatchServer,
+  MatchServers,
   MatchPlayersRow,
+  ServersRow,
 } from '@bf2-matchmaking/types';
 import {
   info,
@@ -24,7 +25,7 @@ import {
   hasPlayedAllRounds,
   isOngoingRound,
   isServerEmptied,
-  updateLiveMatchServer,
+  updateLiveMatchServerIfMix,
   setLiveAt,
 } from './matches';
 import { addTeamPlayerToLiveMatch } from './players';
@@ -32,7 +33,7 @@ export class Match {
   pendingSince: DateTime | null = DateTime.now();
   match: MatchesJoined;
   connectedPlayers: Map<string, MatchPlayersRow> = new Map();
-  matchServer: MatchServer | null = null;
+  server: ServersRow | null = null;
   state: LiveServerState = 'pending';
   rounds: Array<RoundsRow> = [];
   liveInfo: LiveInfo | null = null;
@@ -54,8 +55,8 @@ export class Match {
     this.setMatch(updatedMatch);
     return updatedMatch;
   }
-  setServer(server: MatchServer | null) {
-    this.matchServer = server;
+  setServer(server: ServersRow | null) {
+    this.server = server;
   }
 
   isPending() {
@@ -188,7 +189,7 @@ export class Match {
     }
 
     if (this.state === 'pending' && nextState === 'warmup') {
-      await updateLiveMatchServer(this, liveInfo);
+      await updateLiveMatchServerIfMix(this, liveInfo);
     }
 
     if (nextState === 'live') {
@@ -209,16 +210,8 @@ export class Match {
   async finish() {
     await finishMatch(this.match, this.liveInfo);
     removeLiveMatch(this);
-    if (
-      this.rounds.length > 0 &&
-      this.matchServer?.server?.demos_path &&
-      this.match.started_at
-    ) {
-      await saveDemosSince(
-        this.matchServer.server.ip,
-        this.match.started_at,
-        this.matchServer.server.demos_path
-      );
+    if (this.rounds.length > 0 && this.server?.demos_path && this.match.started_at) {
+      await saveDemosSince(this.server.ip, this.match.started_at, this.server.demos_path);
     }
   }
   #logChangeLiveState(nextState: LiveServerState, liveInfo: LiveInfo) {

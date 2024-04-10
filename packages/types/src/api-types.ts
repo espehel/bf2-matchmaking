@@ -1,6 +1,6 @@
 import {
   MatchesJoined,
-  MatchServer,
+  MatchServers,
   PlayersRow,
   RoundsInsert,
   ServerRconsRow,
@@ -122,7 +122,7 @@ export type LiveMatch = {
   liveState: LiveServerState;
   matchId: number;
   players: Array<PlayersRow>;
-  server: MatchServer | null;
+  server: ServersRow | null;
 };
 
 export interface PostDemosRequestBody {

@@ -11,8 +11,11 @@ interface Props {
 }
 export default async function LiveSection({ match }: Props) {
   const { data: liveMatch } = await api.live().getMatch(match.id);
-  const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
+  const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
+
+  //TODO: handle multiple match servers
+  const server = matchServer?.servers?.at(0);
 
   if (match.status !== MatchStatus.Ongoing) {
     return null;
@@ -29,10 +32,8 @@ export default async function LiveSection({ match }: Props) {
 
   async function setLiveMatchServer() {
     'use server';
-    assertObj(matchServer?.server);
-    const result = await api
-      .live()
-      .postMatchServer(match.id, matchServer.server?.ip, true);
+    assertObj(server);
+    const result = await api.live().postMatchServer(match.id, server.ip, true);
     if (result.data) {
       revalidatePath(`/matches/${match.id}`);
     }
@@ -51,30 +52,30 @@ export default async function LiveSection({ match }: Props) {
       ) : (
         <p className="text-xl font-bold">No match server found</p>
       )}
-      <div className="flex gap-2">
-        {!liveMatch && isMatchOfficer && (
-          <ActionButton
-            action={startLiveMatch}
-            successMessage="Live match started"
-            errorMessage="Failed to start live match"
-            kind="btn-primary"
-          >
-            Start live match
-          </ActionButton>
-        )}
-        {matchServer?.server &&
-          matchServer.server.name != liveMatch?.liveInfo?.serverName &&
-          isMatchOfficer && (
+      {
+        <div className="flex gap-2">
+          {!liveMatch && isMatchOfficer && (
+            <ActionButton
+              action={startLiveMatch}
+              successMessage="Live match started"
+              errorMessage="Failed to start live match"
+              kind="btn-primary"
+            >
+              Start live match
+            </ActionButton>
+          )}
+          {server && server.name != liveMatch?.liveInfo?.serverName && isMatchOfficer && (
             <ActionButton
               action={setLiveMatchServer}
-              successMessage={`Server ${matchServer.server.name} is now tracking live match`}
+              successMessage={`Server ${server.name} is now tracking live match`}
               errorMessage="Failed to set live match server"
               kind="btn-primary"
             >
-              {`Track ${matchServer.server.name}`}
+              {`Track ${server.name}`}
             </ActionButton>
           )}
-      </div>
+        </div>
+      }
     </section>
   );
 }

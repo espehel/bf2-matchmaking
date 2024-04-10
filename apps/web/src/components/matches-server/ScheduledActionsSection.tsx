@@ -1,4 +1,4 @@
-import { isDefined, MatchServer, ScheduledMatch } from '@bf2-matchmaking/types';
+import { isDefined, MatchServers, ScheduledMatch } from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { api, assertObj } from '@bf2-matchmaking/utils';
@@ -9,7 +9,7 @@ import { generateMatchServers } from '@/app/matches/[match]/server/actions';
 
 interface Props {
   match: ScheduledMatch;
-  matchServer: MatchServer | null;
+  matchServer: MatchServers | null;
 }
 
 export default async function ScheduledActionsSection({ match, matchServer }: Props) {

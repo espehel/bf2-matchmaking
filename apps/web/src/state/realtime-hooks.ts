@@ -1,11 +1,19 @@
-import { MatchStatus, MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
+import {
+  MatchStatus,
+  MatchesJoined,
+  MatchServers,
+  ServersRow,
+} from '@bf2-matchmaking/types';
 import { supabaseRealtime } from '@/lib/supabase/supabase-client';
 import { usePlayer } from '@/state/PlayerContext';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@bf2-matchmaking/utils';
 
-export function useMatchRoom(match: MatchesJoined, server: MatchServer | null) {
+export function useMatchRoom(
+  match: MatchesJoined,
+  server: ServersRow | null | undefined
+) {
   const { player } = usePlayer();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -15,17 +23,17 @@ export function useMatchRoom(match: MatchesJoined, server: MatchServer | null) {
   const [activePlayers, setActivePlayers] = useState<Array<string>>([]);
 
   const launchBF2 = useCallback(() => {
-    if (server?.server?.ip && player?.beta_tester) {
+    if (server?.ip && player?.beta_tester) {
       api
         .live()
-        .getServer(server.server.ip)
+        .getServer(server.ip)
         .then(({ data }) => {
           if (data) {
             window.open(data.joinmeDirect, '_blank');
           }
         });
     }
-  }, [server?.server?.ip && player?.beta_tester]);
+  }, [server?.ip && player?.beta_tester]);
 
   useEffect(() => {
     realtime.getRealtimeMatch(match, playerId).then((realtimeMatch) => {

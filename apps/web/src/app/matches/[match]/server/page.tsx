@@ -14,20 +14,21 @@ export default async function ResultsMatch({ params }: Props) {
   const match = await supabase(cookies)
     .getMatch(Number(params.match))
     .then(verifySingleResult);
-  const { data: matchServer } = await supabase(cookies).getMatchServer(
+  const { data: matchServer } = await supabase(cookies).getMatchServers(
     Number(params.match)
   );
+  // TODO: Find active live server
   return (
     <main className="main flex flex-col gap-6">
       <h1>{`Manage match ${match.id} servers`}</h1>
-      <ActiveServerSection match={match} matchServer={matchServer} />
+      <ActiveServerSection match={match} server={null} />
       {isScheduledMatch(match) && (
         <Suspense fallback={null}>
           <ScheduledActionsSection match={match} matchServer={matchServer} />
         </Suspense>
       )}
       <Suspense fallback={null}>
-        <ServerInstancesSection match={match} matchServer={matchServer} />
+        <ServerInstancesSection match={match} />
       </Suspense>
     </main>
   );

@@ -1,4 +1,4 @@
-import { Instance, MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
+import { Instance, MatchesJoined } from '@bf2-matchmaking/types';
 import { api } from '@bf2-matchmaking/utils';
 import RevalidateForm from '@/components/RevalidateForm';
 import InstanceTableActionsCell from '@/components/matches-server/InstanceTableActionsCell';
@@ -6,15 +6,10 @@ import GenerateServerForm from '@/components/matches-server/GenerateServerForm';
 
 interface Props {
   match: MatchesJoined;
-  matchServer: MatchServer | null;
 }
 
-export default async function ServerInstancesSection({ match, matchServer }: Props) {
+export default async function ServerInstancesSection({ match }: Props) {
   const { data: instances } = await api.platform().getServers(match.id);
-
-  const currentInstance = instances?.find(
-    (instance) => instance.label === matchServer?.server?.name
-  )?.id;
 
   return (
     <section className="section">
@@ -35,22 +30,13 @@ export default async function ServerInstancesSection({ match, matchServer }: Pro
         </thead>
         <tbody>
           {instances?.map((instance, i) => (
-            <tr
-              key={instance.id}
-              className={
-                instance.id === currentInstance ? 'bg-info text-info-content' : ''
-              }
-            >
+            <tr key={instance.id}>
               <td>{i + 1}</td>
               <td>{instance.label}</td>
               <td>{instance.region}</td>
               <td>{instance.status}</td>
               <AddressCell instance={instance} />
-              <InstanceTableActionsCell
-                matchId={match.id}
-                instance={instance}
-                isCurrentInstance={instance.id === currentInstance}
-              />
+              <InstanceTableActionsCell matchId={match.id} instance={instance} />
             </tr>
           ))}
         </tbody>

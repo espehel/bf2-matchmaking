@@ -523,17 +523,17 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          server: string | null
+          server: string
         }
         Insert: {
           created_at?: string
-          id?: number
-          server?: string | null
+          id: number
+          server: string
         }
         Update: {
           created_at?: string
           id?: number
-          server?: string | null
+          server?: string
         }
         Relationships: [
           {
@@ -546,7 +546,7 @@ export type Database = {
           {
             foreignKeyName: "match_servers_id_fkey"
             columns: ["id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },
@@ -701,6 +701,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      players_duplicate: {
+        Row: {
+          avatar_url: string | null
+          beta_tester: boolean | null
+          created_at: string | null
+          id: string | null
+          keyhash: string | null
+          nick: string | null
+          teamspeak_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          beta_tester?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          keyhash?: string | null
+          nick?: string | null
+          teamspeak_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          beta_tester?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          keyhash?: string | null
+          nick?: string | null
+          teamspeak_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       rounds: {
         Row: {
@@ -906,6 +942,62 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      test_matched_clients: {
+        Row: {
+          last_connected: string | null
+          manual_match: string | null
+          player_id: string | null
+          player_nick: string | null
+          similarity_score: number | null
+          teamspeak_id: string
+          ts3_username: string | null
+        }
+        Insert: {
+          last_connected?: string | null
+          manual_match?: string | null
+          player_id?: string | null
+          player_nick?: string | null
+          similarity_score?: number | null
+          teamspeak_id: string
+          ts3_username?: string | null
+        }
+        Update: {
+          last_connected?: string | null
+          manual_match?: string | null
+          player_id?: string | null
+          player_nick?: string | null
+          similarity_score?: number | null
+          teamspeak_id?: string
+          ts3_username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_id_fk"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ts3_uid_clients_import: {
+        Row: {
+          "Last Connected Date": string | null
+          "Unique Identifier": string
+          Username: string | null
+        }
+        Insert: {
+          "Last Connected Date"?: string | null
+          "Unique Identifier": string
+          Username?: string | null
+        }
+        Update: {
+          "Last Connected Date"?: string | null
+          "Unique Identifier"?: string
+          Username?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

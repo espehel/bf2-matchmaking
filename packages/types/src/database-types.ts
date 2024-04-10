@@ -176,8 +176,9 @@ export interface MatchConfigResults extends MatchConfigsRow {
   }>;
 }
 
-export interface MatchServer extends Omit<MatchServersRow, 'server'> {
-  server: ServersRow;
+export interface MatchServers {
+  id: number;
+  servers: Array<ServersRow>;
 }
 
 export interface EventsMatch {

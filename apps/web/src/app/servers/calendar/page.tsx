@@ -1,6 +1,8 @@
 import { api, verify } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/16/solid';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 interface Props {
   searchParams: { month?: string; year?: string };
@@ -9,6 +11,13 @@ export default async function Page({ searchParams }: Props) {
   const servers = await api.live().getServers().then(verify);
 
   const today = DateTime.now();
+  console.log(today.startOf('month').toISO());
+  console.log(today.endOf('month').toISO());
+  const { data: matches } = await supabase(cookies).getMatchServerSchedule(
+    today.startOf('month').toISO(),
+    today.endOf('month').toISO()
+  );
+  console.log(matches);
   const daysInMonth = today.daysInMonth || 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const prevMonth = today.minus({ month: 1 });
@@ -22,13 +31,13 @@ export default async function Page({ searchParams }: Props) {
           <table className="table table-zebra table-pin-rows table-pin-cols">
             <thead>
               <tr>
-                <th className="">Server</th>
+                <th>Server</th>
                 {days.map((day) => (
                   <td key={day}>{day}</td>
                 ))}
               </tr>
             </thead>
-            <tbody className="">
+            <tbody>
               {servers.map((server) => (
                 <tr key={server.address} className="hover">
                   <th className="truncate">{server.info.serverName}</th>

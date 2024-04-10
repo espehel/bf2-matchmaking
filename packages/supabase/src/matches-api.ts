@@ -11,11 +11,12 @@ import {
   MatchPlayersRow,
   MatchResultsInsert,
   MatchResultsJoined,
-  MatchServer,
+  MatchServers,
   MatchServersInsert,
   MatchServersUpdate,
   MatchStatus,
   PlayerResultsJoined,
+  ServersRow,
 } from '@bf2-matchmaking/types';
 
 const MATCHES_JOINED_QUERY =
@@ -55,6 +56,17 @@ export default (client: SupabaseClient<Database>) => ({
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .gte('scheduled_at', scheduledAfter),
+  getMatchServerSchedule: (
+    scheduledAfter: string | null,
+    scheduledBefore: string | null
+  ) =>
+    client
+      .from('match_servers')
+      .select('server, matches(id, scheduled_at)')
+      .not('server', 'is', null)
+      .not('matches.scheduled_at', 'is', null)
+      .gte('matches.scheduled_at', scheduledAfter)
+      .lte('matches.scheduled_at', scheduledBefore),
   getMatchesInIdList: (idList: Array<number>) =>
     client
       .from('matches')
@@ -245,26 +257,18 @@ export default (client: SupabaseClient<Database>) => ({
       .from('match_servers')
       .insert(values)
       .select('*, server(*)')
-      .single<MatchServer>(),
-  upsertMatchServer: (values: MatchServersInsert) =>
-    client
-      .from('match_servers')
-      .upsert(values)
-      .select('*, server(*)')
-      .single<MatchServer>(),
-  deleteMatchServer: (id: number) =>
+      .single<{ id: number; server: ServersRow }>(),
+  deleteMatchServer: (id: number, address: string) =>
+    client.from('match_servers').delete().eq('id', id).eq('server', address).select('*'),
+  deleteAllMatchServers: (id: number) =>
     client.from('match_servers').delete().eq('id', id).select('*'),
-  getMatchServer: (id: number) =>
-    client
-      .from('match_servers')
-      .select('*, server(*)')
-      .eq('id', id)
-      .single<MatchServer>(),
+  getMatchServers: (id: number) =>
+    client.from('matches').select('id, servers(*)').eq('id', id).single<MatchServers>(),
   updateMatchServer: (matchId: number | undefined, values: MatchServersUpdate) =>
     client
       .from('match_servers')
       .update(values)
       .eq('id', matchId)
       .select('*, server(*)')
-      .single<MatchServer>(),
+      .single<MatchServers>(),
 });

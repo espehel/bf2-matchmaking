@@ -35,9 +35,11 @@ export default async function PlayerListItems({ players, team, captains, match }
     </>
   );
   async function fetchPlayerInfo(): Promise<Array<PlayerListItem>> {
-    const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
-    if (matchServer && matchServer.server && match.status === MatchStatus.Ongoing) {
-      const { data } = await api.live().getServerPlayerList(matchServer.server.ip);
+    const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
+    //TODO: handle multiple match servers
+    const server = matchServer?.servers?.at(0);
+    if (server && match.status === MatchStatus.Ongoing) {
+      const { data } = await api.live().getServerPlayerList(server.ip);
       if (data) {
         return data;
       }

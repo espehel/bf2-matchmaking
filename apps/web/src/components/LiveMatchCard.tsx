@@ -10,9 +10,11 @@ interface Props {
 }
 
 export default async function LiveMatchCard({ match, liveInfo, liveState }: Props) {
-  const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
+  const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
+  //TODO: handle multiple match servers
+  const server = matchServer?.servers?.at(0);
   const date = match.scheduled_at || match.started_at || match.created_at;
-  const serverName = liveInfo?.serverName || matchServer?.server?.name || 'No server set';
+  const serverName = liveInfo?.serverName || server?.name || 'No server set';
   const teamText =
     match.config.type === 'Mix'
       ? ''

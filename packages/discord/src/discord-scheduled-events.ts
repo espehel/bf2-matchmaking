@@ -31,10 +31,10 @@ export function createScheduledMatchEvent(
 
 export const getMatchDescription = (
   match: MatchesJoined,
-  server: ServersRow | null | undefined,
+  server: Array<ServersRow> | null | undefined,
   serverName: string
 ) => {
   const mapText = match.maps.length ? match.maps.map((m) => m.name).join(', ') : 'TBD';
-  const serverText = server?.name || serverName;
+  const serverText = server?.map((s) => s.name).join(', ') || serverName;
   return `Maps: ${mapText} | Server: ${serverText}`;
 };

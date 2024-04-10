@@ -1,4 +1,4 @@
-import { isDefined, MatchesJoined, MatchServer } from '@bf2-matchmaking/types';
+import { isDefined, MatchesJoined, MatchServers } from '@bf2-matchmaking/types';
 import RevalidateForm from '@/components/RevalidateForm';
 import ActionButton from '@/components/ActionButton';
 import { api } from '@bf2-matchmaking/utils';
@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
-  matchServer: MatchServer | null;
+  matchServer: MatchServers | null;
 }
 export default async function NoServer({ match, matchServer }: Props) {
   const { data: generatedServers } = await supabase(cookies).getGeneratedServersByMatchId(
@@ -19,7 +19,7 @@ export default async function NoServer({ match, matchServer }: Props) {
     ?.map((gs) => regions?.find((r) => r.id === gs.region)?.city)
     .filter(isDefined);
 
-  if (!matchServer?.server || !cities?.length) {
+  if (!matchServer?.servers || !cities?.length) {
     return (
       <div className="flex justify-between items-center gap-2">
         <h2 className="text-xl">No server selected</h2>

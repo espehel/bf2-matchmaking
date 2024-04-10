@@ -3,7 +3,7 @@ import {
   GeneratedServersInsert,
   GeneratedServersRow,
   MatchesJoined,
-  MatchServer,
+  MatchServers,
   MatchServersInsert,
 } from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase';
@@ -19,16 +19,6 @@ export async function addGeneratedServer(values: GeneratedServersInsert) {
 
   if (result.data) {
     revalidatePath(`/matches/${result.data.match_id}/server`);
-  }
-
-  return result;
-}
-
-export async function upsertMatchServer(values: MatchServersInsert) {
-  const result = await supabase(cookies).upsertMatchServer(values);
-
-  if (result.data) {
-    revalidatePath(`/matches/${result.data.id}/server`);
   }
 
   return result;

@@ -12,8 +12,8 @@ interface Props {
 }
 
 export default async function MatchServerSection({ match }: Props) {
-  const { data: matchServer } = await supabase(cookies).getMatchServer(match.id);
-  const server = matchServer?.server;
+  const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
+  const server = matchServer?.servers.at(0);
 
   return (
     <section className="section max-w-md text-left h-fit">
@@ -25,7 +25,7 @@ export default async function MatchServerSection({ match }: Props) {
           <div className="divider" />
         </>
       )}
-      <SelectServerForm match={match} matchServer={matchServer} />
+      <SelectServerForm match={match} defaultAddress={server?.ip} />
       <Link className="btn btn-secondary" href={`/matches/${match.id}/server`}>
         Manage match servers
       </Link>

@@ -2,9 +2,14 @@
 import { useEffect, useState } from 'react';
 
 export default function ThemeButton() {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'coffee');
+  const [theme, setTheme] = useState<string>();
+
   useEffect(() => {
-    localStorage.setItem('theme', theme);
+    if (theme) {
+      localStorage.setItem('theme', theme);
+    } else {
+      setTheme(localStorage.getItem('theme') || 'coffee');
+    }
   }, [theme]);
 
   return (

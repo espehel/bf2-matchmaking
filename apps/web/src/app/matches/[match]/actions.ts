@@ -118,7 +118,7 @@ export async function deleteMatch(matchId: number) {
     return result;
   }
 
-  await supabase(cookies).deleteMatchServer(matchId);
+  await supabase(cookies).deleteAllMatchServers(matchId);
 
   const match = result.data;
   const guild = match.config.guild;
@@ -194,19 +194,20 @@ export async function setTeams(match: MatchesJoined, serverIp: string) {
   return result;
 }
 
-export async function setServer(matchId: number, serverIp: string) {
+export async function addServer(matchId: number, serverIp: string) {
   const { data: player } = await supabase(cookies).getSessionPlayer();
-  const result = await supabase(cookies).upsertMatchServer({
+  console.log(serverIp);
+  const result = await supabase(cookies).createMatchServer({
     id: matchId,
     server: serverIp,
   });
 
   if (result.error) {
-    logErrorMessage('Failed to set server', result.error, { matchId, serverIp, player });
+    logErrorMessage('Failed to add server', result.error, { matchId, serverIp, player });
     return result;
   }
   const match = await supabase(cookies).getMatch(matchId).then(verifySingleResult);
-  const { data: server } = await supabase(cookies).getMatchServer(matchId);
+  const { data: servers } = await supabase(cookies).getMatchServers(matchId);
   const guild = match.config.guild;
 
   let events: unknown = null;
@@ -214,7 +215,7 @@ export async function setServer(matchId: number, serverIp: string) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.server, 'TBD'),
+          description: getMatchDescription(match, servers?.servers, 'TBD'),
         })
       )
     );
@@ -253,7 +254,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
   }
 
   const { data: match } = await supabase(cookies).getMatch(matchId);
-  const { data: server } = await supabase(cookies).getMatchServer(matchId);
+  const { data: server } = await supabase(cookies).getMatchServers(matchId);
 
   const guild = match?.config.guild;
   let events: unknown = null;
@@ -261,7 +262,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.server, 'TBD'),
+          description: getMatchDescription(match, server?.servers, 'TBD'),
         })
       )
     );
