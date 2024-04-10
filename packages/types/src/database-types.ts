@@ -206,3 +206,10 @@ export interface TeamspeakPlayer extends Omit<PlayersRow, 'teamspeak_id'> {
 export interface PlayerRating extends PlayerRatingsRow {
   player: { nick: string };
 }
+export type MatchConfigType = Database['public']['Enums']['match_type'];
+export interface MatchServerSchedule {
+  id: number;
+  config: { type: MatchConfigType };
+  scheduled_at: string;
+  servers: Array<ServersRow>;
+}

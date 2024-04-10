@@ -12,6 +12,7 @@ import {
   MatchResultsInsert,
   MatchResultsJoined,
   MatchServers,
+  MatchServerSchedule,
   MatchServersInsert,
   MatchServersUpdate,
   MatchStatus,
@@ -61,12 +62,11 @@ export default (client: SupabaseClient<Database>) => ({
     scheduledBefore: string | null
   ) =>
     client
-      .from('match_servers')
-      .select('server, matches(id, scheduled_at)')
-      .not('server', 'is', null)
-      .not('matches.scheduled_at', 'is', null)
-      .gte('matches.scheduled_at', scheduledAfter)
-      .lte('matches.scheduled_at', scheduledBefore),
+      .from('matches')
+      .select('id, config(*), scheduled_at, servers(*)')
+      .gte('scheduled_at', scheduledAfter)
+      .lte('scheduled_at', scheduledBefore)
+      .returns<Array<MatchServerSchedule>>(),
   getMatchesInIdList: (idList: Array<number>) =>
     client
       .from('matches')

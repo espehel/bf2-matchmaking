@@ -71,7 +71,7 @@ const live = () => {
       }),
     getServers: () =>
       getJSON<Array<LiveServer>>(basePath.concat(paths.servers()), {
-        cache: 'no-store',
+        next: { revalidate: 600 },
       }),
     getServer: (ip: string) =>
       getJSON<LiveServer>(basePath.concat(paths.server(ip)), {

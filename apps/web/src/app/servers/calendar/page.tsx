@@ -3,6 +3,11 @@ import { DateTime } from 'luxon';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/16/solid';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import { verifyResult } from '@bf2-matchmaking/supabase';
+import { isDefined, isScheduledMatch, MatchConfigType } from '@bf2-matchmaking/types';
+import Link from 'next/link';
+import Time from '@/components/commons/Time';
+import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
 interface Props {
   searchParams: { month?: string; year?: string };
@@ -10,18 +15,35 @@ interface Props {
 export default async function Page({ searchParams }: Props) {
   const servers = await api.live().getServers().then(verify);
 
-  const today = DateTime.now();
-  console.log(today.startOf('month').toISO());
-  console.log(today.endOf('month').toISO());
-  const { data: matches } = await supabase(cookies).getMatchServerSchedule(
-    today.startOf('month').toISO(),
-    today.endOf('month').toISO()
-  );
-  console.log(matches);
-  const daysInMonth = today.daysInMonth || 31;
+  const startOfMonth = DateTime.fromObject({
+    year: searchParams.year ? Number(searchParams.year) : undefined,
+    month: searchParams.month ? Number(searchParams.month) : undefined,
+    day: 1,
+  });
+
+  const matches = await supabase(cookies)
+    .getMatchServerSchedule(startOfMonth.toISO(), startOfMonth.endOf('month').toISO())
+    .then(verifyResult);
+
+  const daysInMonth = startOfMonth.daysInMonth || 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const prevMonth = today.minus({ month: 1 });
-  const nextMonth = today.plus({ month: 1 });
+  const prevMonth = startOfMonth.minus({ month: 1 });
+  const nextMonth = startOfMonth.plus({ month: 1 });
+
+  const schedule = matches
+    .map(({ id, scheduled_at, config, servers }) => {
+      if (!scheduled_at) {
+        return [];
+      }
+      return servers.map(({ ip }) => ({
+        id,
+        ip,
+        type: config.type,
+        day: DateTime.fromISO(scheduled_at).day,
+        date: scheduled_at,
+      }));
+    })
+    .flat();
 
   return (
     <main className="main">
@@ -41,9 +63,23 @@ export default async function Page({ searchParams }: Props) {
               {servers.map((server) => (
                 <tr key={server.address} className="hover">
                   <th className="truncate">{server.info.serverName}</th>
-                  {days.map((day) => (
-                    <td key={day}>X</td>
-                  ))}
+                  {days.map((day) => {
+                    const match = schedule.find(
+                      (m) => m.ip === server.address && m.day === day
+                    );
+                    return (
+                      <td
+                        key={day}
+                        className={`h-4 w-6 p-1 ${getCellStyle(match?.type)}`}
+                      >
+                        {match ? (
+                          <Link href={`/matches/${match?.id}`}>
+                            <Time date={match.date} format="HH:mm" />
+                          </Link>
+                        ) : null}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
@@ -51,15 +87,23 @@ export default async function Page({ searchParams }: Props) {
         </div>
         <div className="flex justify-between mt-2">
           <div className="join grid grid-cols-3">
-            <button className="btn btn-outline join-item">
+            <Link
+              href={`/servers/calendar?month=${prevMonth.month}&year=${prevMonth.year}`}
+              className="btn btn-outline join-item"
+            >
               <ChevronLeftIcon className="size-4" />
               {prevMonth.monthLong}
-            </button>
-            <div className="join-item btn btn-outline btn-active">{today.monthLong}</div>
-            <button className="btn btn-outline join-item">
+            </Link>
+            <div className="join-item btn btn-outline btn-active">
+              {startOfMonth.monthLong}
+            </div>
+            <Link
+              href={`/servers/calendar?month=${nextMonth.month}&year=${nextMonth.year}`}
+              className="btn btn-outline join-item"
+            >
               {nextMonth.monthLong}
               <ChevronRightIcon className="size-4" />
-            </button>
+            </Link>
           </div>
           <div className="flex gap-2">
             <div className="badge badge-info">Mix</div>
@@ -71,4 +115,18 @@ export default async function Page({ searchParams }: Props) {
       </div>
     </main>
   );
+}
+
+function getCellStyle(matchType: MatchConfigType | undefined) {
+  switch (matchType) {
+    case 'Mix':
+      return 'bg-info text-info-content';
+    case 'PCW':
+      return 'bg-success text-success-content';
+    case 'Ladder':
+      return 'bg-secondary text-secondary-content';
+    case 'Cup':
+      return 'bg-accent text-accent-content';
+  }
+  return '';
 }
