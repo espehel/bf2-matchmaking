@@ -3,7 +3,7 @@ import { error } from '@bf2-matchmaking/logging';
 import { assertArray, assertObj, toFetchError, verify } from '@bf2-matchmaking/utils';
 import { isString } from '@bf2-matchmaking/types';
 import {
-  addPendingServer,
+  connectPendingServer,
   getLiveServer,
   getLiveServers,
   initLiveServer,
@@ -207,7 +207,7 @@ serversRouter.post('/', async (ctx) => {
     .catch(() => null);
 
   if (!serverInfo && isResolvingDns) {
-    addPendingServer({ address, port, rcon_port, rcon_pw, demo_path });
+    connectPendingServer({ address, port, rcon_port, rcon_pw, demo_path });
     ctx.status = 202;
     ctx.body = null;
     return;

@@ -7,7 +7,6 @@ import { error, info } from '@bf2-matchmaking/logging';
 import { loadMapsCache } from './services/maps';
 import cron from 'node-cron';
 import { updateServers } from './tasks/update-servers';
-import { updatePendingServers } from './tasks/update-pending-servers';
 import { updateMatches } from './tasks/update-matches';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 import { initLiveServers } from './services/server/ServerManager';
@@ -21,9 +20,6 @@ loadMapsCache();
 const updateServersTask = cron.schedule('*/10 * * * * *', updateServers, {
   scheduled: false,
 });
-const updatePendingServersTask = cron.schedule('*/30 * * * * *', updatePendingServers, {
-  scheduled: false,
-});
 const updateMatchesTask = cron.schedule('*/2 * * * *', updateMatches, {
   scheduled: false,
 });
@@ -35,7 +31,6 @@ initLiveServers()
     }
     await initLiveMatches();
     updateServersTask.start();
-    updatePendingServersTask.start();
     updateMatchesTask.start();
   })
   .catch((err) => error('app', err));

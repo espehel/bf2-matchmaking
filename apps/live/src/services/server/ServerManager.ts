@@ -1,8 +1,15 @@
 import { Server } from './Server';
-import { client } from '@bf2-matchmaking/supabase';
-import { info, logSupabaseError } from '@bf2-matchmaking/logging';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import {
+  info,
+  logErrorMessage,
+  logMessage,
+  logSupabaseError,
+} from '@bf2-matchmaking/logging';
 import { PendingServer, ServerRconsRow } from '@bf2-matchmaking/types';
 import { Match } from '../match/Match';
+import { retry } from '@bf2-matchmaking/utils/src/async-actions';
+import { connectClient, getServerInfo, rcon } from '../rcon/RconManager';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
 
@@ -72,18 +79,29 @@ export function isServerIdentified(serverPlayers: number, matchSize: number) {
   return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
 }
 
-let pendingServers: Array<PendingServer> = [];
-export function addPendingServer(server: PendingServer) {
-  pendingServers = pendingServers
-    .filter(({ address }) => server.address === address)
-    .concat(server);
-}
-export function getPendingServers() {
-  return pendingServers;
-}
+export function connectPendingServer(server: PendingServer) {
+  const { port, rcon_port, rcon_pw, address, demo_path } = server;
+  connectClient(address, rcon_port, rcon_pw, 5, async () => {
+    try {
+      const serverInfo = await rcon(address, rcon_port, rcon_pw).then(getServerInfo);
 
-export function removePendingServers(...serverAddresses: Array<string>) {
-  pendingServers = pendingServers.filter(
-    ({ address }) => !serverAddresses.includes(address)
-  );
+      await client()
+        .upsertServer({
+          ip: address,
+          port,
+          name: serverInfo.serverName,
+          demos_path: demo_path,
+        })
+        .then(verifySingleResult);
+
+      const serverRcon = await client()
+        .upsertServerRcon({ id: address, rcon_port, rcon_pw })
+        .then(verifySingleResult);
+
+      await initLiveServer(serverRcon);
+      logMessage(`Server ${address}: Connected pending server`);
+    } catch (e) {
+      logErrorMessage(`Server ${address}: Failed to connect pending server`, e);
+    }
+  });
 }

@@ -117,3 +117,11 @@ export const logMessage = (msg: string, context?: LogContext) => {
     .catch((e) => error('logtail', e))
     .finally(flush);
 };
+
+export const logWarnMessage = (msg: string, context?: LogContext) => {
+  logger
+    .warn(msg, context)
+    .then((log) => info('logtail', log.message))
+    .catch((e) => error('logtail', e))
+    .finally(flush);
+};

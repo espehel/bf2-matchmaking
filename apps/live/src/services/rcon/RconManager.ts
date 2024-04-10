@@ -1,6 +1,8 @@
 import { RconClient } from './RconClient';
 import { mapListPlayers, mapServerInfo } from '../../mappers/rcon';
-import { PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import { AsyncResult, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
+import { wait } from '@bf2-matchmaking/utils/src/async-actions';
+import { logErrorMessage, logWarnMessage } from '@bf2-matchmaking/logging';
 
 const clients = new Map<string, RconClient>();
 export async function rcon(ip: string, port: number, password: string) {
@@ -11,6 +13,30 @@ export async function rcon(ip: string, port: number, password: string) {
   const newClient = await RconClient.login(ip, port, password);
   clients.set(ip, newClient);
   return newClient;
+}
+
+export function connectClient(
+  ip: string,
+  port: number,
+  password: string,
+  retries: number,
+  cb: VoidFunction
+) {
+  connect(retries).then((client) => {
+    if (client) {
+      cb();
+    } else {
+      logWarnMessage(`Rcon ${ip}:${port}: Failed to connect after ${retries} retries.`);
+    }
+  });
+  async function connect(retries: number = 5) {
+    const client = await rcon(ip, port, password).catch(() => null);
+    if (!client && retries > 0) {
+      await wait(1);
+      return connect(retries - 1);
+    }
+    return client;
+  }
 }
 
 export async function getPlayerList(client: RconClient): Promise<Array<PlayerListItem>> {
