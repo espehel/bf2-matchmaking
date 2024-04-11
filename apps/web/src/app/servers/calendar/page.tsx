@@ -27,6 +27,14 @@ export default async function Page({ searchParams }: Props) {
 
   const daysInMonth = startOfMonth.daysInMonth || 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const weekDays = days.map((day) =>
+    DateTime.fromObject({
+      year: startOfMonth.year,
+      month: startOfMonth.month,
+      day,
+    }).toFormat('EEE')
+  );
+
   const prevMonth = startOfMonth.minus({ month: 1 });
   const nextMonth = startOfMonth.plus({ month: 1 });
 
@@ -54,23 +62,33 @@ export default async function Page({ searchParams }: Props) {
             <thead>
               <tr>
                 <th>Server</th>
-                {days.map((day) => (
-                  <td key={day}>{day}</td>
-                ))}
+                {days.map((day, i) => {
+                  const weekDay = weekDays[i];
+                  return (
+                    <td key={day} className={getBorderStyle(i)}>
+                      <div className="inline-flex flex-col items-center justify-center">
+                        <div>{weekDay}</div>
+                        <div>{day}</div>
+                      </div>
+                    </td>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
               {servers.map((server) => (
                 <tr key={server.address} className="hover">
                   <th className="truncate">{server.info.serverName}</th>
-                  {days.map((day) => {
+                  {days.map((day, i) => {
                     const match = schedule.find(
                       (m) => m.ip === server.address && m.day === day
                     );
                     return (
                       <td
                         key={day}
-                        className={`h-4 w-6 p-1 ${getCellStyle(match?.type)}`}
+                        className={`h-4 w-6 p-1 ${getCellStyle(
+                          match?.type
+                        )} ${getBorderStyle(i)}`}
                       >
                         {match ? (
                           <Link href={`/matches/${match?.id}`}>
@@ -115,6 +133,10 @@ export default async function Page({ searchParams }: Props) {
       </div>
     </main>
   );
+
+  function getBorderStyle(index: number) {
+    return weekDays[index] === 'Sun' ? 'border-r border-primary' : '';
+  }
 }
 
 function getCellStyle(matchType: MatchConfigType | undefined) {
