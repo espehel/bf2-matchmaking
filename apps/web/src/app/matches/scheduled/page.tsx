@@ -27,11 +27,13 @@ export default async function ScheduledMatchesPage() {
   const hasMatches = matchDates.length > 0;
 
   return (
-    <main className="main text-center">
+    <main className="main">
       <h1 className="mb-8">Scheduled matches</h1>
-      <Suspense fallback={<ScheduledMatchFormFallback />}>
-        <ScheduleMatchForm />
-      </Suspense>
+      <div className="mb-8">
+        <Suspense fallback={<ScheduledMatchFormFallback />}>
+          <ScheduleMatchForm />
+        </Suspense>
+      </div>
       {!hasMatches && <p>Currently no scheduled matches...</p>}
       {hasMatches && (
         <ul className="grid justify-center gap-4">

@@ -24,6 +24,7 @@ import {
   TeamsInsert,
   TeamsJoined,
   TeamsUpdate,
+  VisibleTeam,
 } from '@bf2-matchmaking/types';
 
 const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
@@ -163,10 +164,9 @@ export default (client: SupabaseClient<Database>) => ({
   getVisibleTeams: () =>
     client
       .from('teams')
-      .select<'*, owner(*), players:team_players(*)', TeamsJoined>(
-        '*, owner(*), players:team_players(*)'
-      )
-      .eq('visible', true),
+      .select('*, owner(*), players:team_players(*)')
+      .eq('visible', true)
+      .returns<Array<VisibleTeam>>(),
   getTeam: (id: number) =>
     client
       .from('teams')

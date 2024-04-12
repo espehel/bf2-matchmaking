@@ -20,7 +20,9 @@ export async function updateMatches() {
       if (liveServer && liveServer.isIdle()) {
         resetLiveMatchServers(liveMatch);
         liveServer.setLiveMatch(liveMatch);
-        await updateMatchServer(liveMatch.match.id, liveServer.address);
+        if (liveMatch.match.config.type === 'Mix') {
+          await updateMatchServer(liveMatch.match.id, liveServer.address);
+        }
         continue;
       }
     }

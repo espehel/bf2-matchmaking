@@ -196,9 +196,7 @@ export async function setTeams(match: MatchesJoined, serverIp: string) {
 
 export async function addServer(matchId: number, serverIp: string) {
   const { data: player } = await supabase(cookies).getSessionPlayer();
-  console.log(serverIp);
-  const result = await supabase(cookies).createMatchServer({
-    id: matchId,
+  const result = await supabase(cookies).createMatchServers(matchId, {
     server: serverIp,
   });
 
@@ -215,7 +213,7 @@ export async function addServer(matchId: number, serverIp: string) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, servers?.servers, 'TBD'),
+          description: getMatchDescription(match, servers?.servers),
         })
       )
     );
@@ -262,7 +260,7 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     events = await Promise.all(
       match.events.map((eventId) =>
         patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.servers, 'TBD'),
+          description: getMatchDescription(match, server?.servers),
         })
       )
     );

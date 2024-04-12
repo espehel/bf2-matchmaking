@@ -1,5 +1,5 @@
 'use server';
-import { api, assertString } from '@bf2-matchmaking/utils';
+import { assertString } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
@@ -11,15 +11,8 @@ import { revalidatePath } from 'next/cache';
 import { getArray } from '@bf2-matchmaking/utils/src/form-data';
 export async function createScheduledMatch(formData: FormData) {
   try {
-    const {
-      configSelect,
-      scheduledInput,
-      homeSelect,
-      awaySelect,
-      serverSelect,
-      regionSelect,
-      timezone,
-    } = Object.fromEntries(formData);
+    const { configSelect, scheduledInput, homeSelect, awaySelect, timezone } =
+      Object.fromEntries(formData);
     assertString(configSelect, 'Match type is required.');
     assertString(homeSelect, 'Home team is required.');
     assertString(awaySelect, 'Away team is required.');
@@ -29,7 +22,9 @@ export async function createScheduledMatch(formData: FormData) {
       .toUTC()
       .toISO();
     assertString(scheduled_at);
-    const mapsSelect = getArray(formData, 'mapsSelect');
+
+    const serverSelect = getArray(formData, 'serverSelect');
+    const mapSelect = getArray(formData, 'mapSelect');
 
     if (homeSelect === awaySelect) {
       return { data: null, error: { message: 'Home and away team cannot be the same.' } };
@@ -56,31 +51,19 @@ export async function createScheduledMatch(formData: FormData) {
     }
     const match = result.data;
 
-    let serverName = 'TBD';
-    if (isString(regionSelect)) {
-      await supabase(cookies).createGeneratedServer({
-        match_id: match.id,
-        region: regionSelect,
-      });
-      const { data: regions } = await api.platform().getRegions();
-      const city = regions?.find((r) => r.id === regionSelect)?.city;
-      serverName = `${city} server`;
-    } else if (isString(serverSelect) && serverSelect.length > 0) {
-      await supabase(cookies).createMatchServer({
-        id: match.id,
-        server: serverSelect,
-      });
-      serverName = serverSelect;
-    }
+    const { data: servers } = await supabase(cookies).createMatchServers(
+      match.id,
+      ...serverSelect.map((server) => ({ server }))
+    );
 
     const mapsResult = await supabase(cookies).createMatchMaps(
       match.id,
-      ...mapsSelect.map(Number)
+      ...mapSelect.map(Number)
     );
     if (mapsResult.error) {
       logErrorMessage('Failed to set maps', mapsResult.error, {
         match,
-        mapsSelect,
+        mapsSelect: mapSelect,
         player,
       });
     }
@@ -91,7 +74,10 @@ export async function createScheduledMatch(formData: FormData) {
 
       const { data: event, error: discordError } = await postGuildScheduledEvent(
         match.config.guild,
-        createScheduledMatchEvent(updatedMatch, serverName)
+        createScheduledMatchEvent(
+          updatedMatch,
+          servers?.map(({ server }) => server)
+        )
       );
 
       if (event) {
@@ -108,7 +94,7 @@ export async function createScheduledMatch(formData: FormData) {
         scheduledInput,
         timezone,
         event,
-        mapsSelect,
+        mapsSelect: mapSelect,
       });
     }
     revalidatePath('/matches/schedule');

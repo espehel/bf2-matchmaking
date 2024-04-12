@@ -53,3 +53,7 @@ export function groupBy<T>(
 export function hasEqualElements<T>(a: Array<T>, b: Array<T>) {
   return a.length === b.length && a.every((element) => b.includes(element));
 }
+
+export function sortByName<T extends { name: string }>(array: Array<T>): Array<T> {
+  return [...array].sort((a, b) => a.name.localeCompare(b.name));
+}

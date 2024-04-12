@@ -1,11 +1,13 @@
 'use client';
 import { MouseEventHandler, PropsWithChildren, useCallback, useRef } from 'react';
 import ActionForm, { Props as ActionFormProps } from '@/components/commons/ActionForm';
+import TransitionWrapper from '@/components/commons/TransitionWrapper';
 
 interface Props extends PropsWithChildren {
   title: string;
   openBtnLabel: string;
   openBtnSize?: 'btn-sm' | 'btn-md' | 'btn-lg';
+  openBtnKind?: 'btn-primary' | 'btn-secondary' | 'btn-accent';
   disabled?: boolean;
 }
 
@@ -13,6 +15,7 @@ export default function ActionFormModal({
   title,
   openBtnLabel,
   openBtnSize = 'btn-sm',
+  openBtnKind = 'btn-secondary',
   children,
   disabled,
   ...actionFormProps
@@ -28,7 +31,7 @@ export default function ActionFormModal({
   return (
     <>
       <button
-        className={`btn btn-secondary ${openBtnSize}`}
+        className={`btn ${openBtnKind} ${openBtnSize}`}
         onClick={() => ref.current?.showModal()}
         disabled={disabled}
       >
@@ -41,7 +44,7 @@ export default function ActionFormModal({
             {children}
             <div className="modal-action">
               <button type="submit" className="btn btn-primary">
-                Confirm
+                <TransitionWrapper keepSize={true}>Confirm</TransitionWrapper>
               </button>
               <button onClick={handleCloseForm} className="btn btn-secondary">
                 Cancel

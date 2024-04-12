@@ -53,8 +53,7 @@ export async function createScheduledMatch(options: CreateScheduledMatchOptions)
   logMessage(`Match ${match.id} created`, { match });
 
   if (server) {
-    await client().createMatchServer({
-      id: match.id,
+    await client().createMatchServers(match.id, {
       server,
     });
   }

@@ -252,12 +252,15 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('player_id', playerId)
       .order('created_at', { ascending: false })
       .returns<Array<PlayerResultsJoined>>(),
-  createMatchServer: (values: MatchServersInsert) =>
+  createMatchServers: (
+    matchId: number,
+    ...servers: Array<Omit<MatchServersInsert, 'id'>>
+  ) =>
     client
       .from('match_servers')
-      .insert(values)
+      .insert(servers.map((server) => ({ id: matchId, ...server })))
       .select('*, server(*)')
-      .single<{ id: number; server: ServersRow }>(),
+      .returns<Array<{ id: number; server: ServersRow }>>(),
   deleteMatchServer: (id: number, address: string) =>
     client.from('match_servers').delete().eq('id', id).eq('server', address).select('*'),
   deleteAllMatchServers: (id: number) =>

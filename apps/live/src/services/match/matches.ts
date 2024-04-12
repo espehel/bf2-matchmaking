@@ -262,8 +262,7 @@ export async function setNewMatchServer(
     return null;
   }
 
-  const result = await client().createMatchServer({
-    id: liveMatch.match.id,
+  const result = await client().createMatchServers(liveMatch.match.id, {
     server,
   });
 
@@ -282,10 +281,10 @@ export async function setNewMatchServer(
 export async function updateMatchServer(matchId: number, serverAddress: string) {
   info(
     'updateMatchServer',
-    `Match ${matchId}: Upserting match server with ip ${serverAddress}`
+    `Match ${matchId}: Updating match server with ip ${serverAddress}`
   );
-  const result = await client().createMatchServer({
-    id: matchId,
+  await client().deleteAllMatchServers(matchId);
+  const result = await client().createMatchServers(matchId, {
     server: serverAddress,
   });
   if (result.error) {

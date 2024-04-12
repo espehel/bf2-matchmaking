@@ -6,10 +6,10 @@ import { getMatchThumbnail } from './discord-services';
 
 export function createScheduledMatchEvent(
   match: ScheduledMatch,
-  serverName: string
+  servers: Array<ServersRow> | null | undefined
 ): RESTPostAPIGuildScheduledEventJSONBody {
   const name = `${match.config.type}: ${match.home_team.name} vs. ${match.away_team.name}`;
-  const description = getMatchDescription(match, null, serverName);
+  const description = getMatchDescription(match, servers);
   const scheduled_start_time = match.scheduled_at;
   const scheduled_end_time =
     DateTime.fromISO(match.scheduled_at).plus({ hours: 2 }).toISO() || undefined;
@@ -31,10 +31,9 @@ export function createScheduledMatchEvent(
 
 export const getMatchDescription = (
   match: MatchesJoined,
-  server: Array<ServersRow> | null | undefined,
-  serverName: string
+  server: Array<ServersRow> | null | undefined
 ) => {
   const mapText = match.maps.length ? match.maps.map((m) => m.name).join(', ') : 'TBD';
-  const serverText = server?.map((s) => s.name).join(', ') || serverName;
+  const serverText = server?.length ? server.map((s) => s.name).join(', ') : 'TBD';
   return `Maps: ${mapText} | Server: ${serverText}`;
 };
