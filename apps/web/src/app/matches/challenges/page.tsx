@@ -2,8 +2,6 @@ import { createScheduledMatch } from '@/app/matches/actions';
 import Select from '@/components/commons/Select';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { DateTime } from 'luxon';
-import MatchServerSelect from '@/components/matches/MatchServerSelect';
-import MultiSelect from '@/components/commons/MultiSelect';
 import FormSubmitButton from '@/components/FormSubmitButton';
 import ActionForm from '@/components/commons/ActionForm';
 import React from 'react';
@@ -15,6 +13,7 @@ import {
   PlayersRow,
   TeamsJoined,
   TeamsRow,
+  VisibleTeam,
 } from '@bf2-matchmaking/types';
 
 export default async function ChallengePage() {
@@ -85,7 +84,7 @@ export default async function ChallengePage() {
 }
 
 function isPlayerTeam(player: PlayersRow) {
-  return (team: TeamsJoined) => team.captains.some((c) => player.id === c.player_id);
+  return (team: VisibleTeam) => team.players.some((p) => player.id === p.player_id);
 }
 
 function filterVisible<T extends { visible: boolean }>(array: Array<T>): Array<T> {

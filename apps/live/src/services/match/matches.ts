@@ -265,8 +265,9 @@ export async function setNewMatchServer(
   const result = await client().createMatchServers(liveMatch.match.id, {
     server,
   });
+  const matchServer = result.data?.at(0)?.server;
 
-  if (result.error || !result.data.server) {
+  if (result.error || !matchServer) {
     logErrorMessage(
       `Match ${liveMatch.match.id}: Failed to create server ${server} for LiveMatch`,
       result.error,
@@ -275,7 +276,7 @@ export async function setNewMatchServer(
     return null;
   }
 
-  return result.data.server;
+  return matchServer;
 }
 
 export async function updateMatchServer(matchId: number, serverAddress: string) {
