@@ -20,6 +20,7 @@ export type EventRoundsRow = Database['public']['Tables']['event_rounds']['Row']
 export type EventMatchesRow = Database['public']['Tables']['event_matches']['Row'];
 export type GeneratedServersRow =
   Database['public']['Tables']['generated_servers']['Row'];
+export type ChallengesRow = Database['public']['Tables']['challenges']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -47,6 +48,7 @@ export type TeamsUpdate = Database['public']['Tables']['teams']['Update'];
 export type TeamPlayersUpdate = Database['public']['Tables']['team_players']['Update'];
 export type MatchServersUpdate = Database['public']['Tables']['match_servers']['Update'];
 export type EventMatchesUpdate = Database['public']['Tables']['event_matches']['Update'];
+export type ChallengesUpdate = Database['public']['Tables']['challenges']['Update'];
 
 export enum MatchStatus {
   Open = 'Open',
@@ -218,4 +220,32 @@ export interface MatchServerSchedule {
   config: { type: MatchConfigType };
   scheduled_at: string;
   servers: Array<ServersRow>;
+}
+
+export interface Challenge
+  extends Omit<
+    ChallengesRow,
+    | 'config'
+    | 'home_team'
+    | 'home_map'
+    | 'home_server'
+    | 'away_team'
+    | 'away_map'
+    | 'away_server'
+  > {
+  config: MatchConfigsRow;
+  home_team: TeamsRow;
+  home_map: MapsRow;
+  home_server: ServersRow;
+  away_team: TeamsRow | null;
+  away_map: MapsRow | null;
+  away_server: ServersRow | null;
+}
+
+export interface AcceptedChallenge extends Challenge {
+  status: 'accepted';
+  away_team: TeamsRow;
+  away_map: MapsRow;
+  away_server: ServersRow;
+  match: number;
 }

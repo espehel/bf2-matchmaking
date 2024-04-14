@@ -27,7 +27,7 @@ export default async function CreateChallengeSection() {
     .then(sortByName);
   const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
   return (
-    <section className="section w-fit">
+    <section className="section min-w-[600px] w-fit">
       <h2>Create challenge</h2>
       <ActionForm
         action={createChallenge}
@@ -53,16 +53,18 @@ export default async function CreateChallengeSection() {
               placeholder="Open challenge"
               options={teams.map(({ id, name }) => [id, name])}
             />
-            <DatetimeInput
-              label="Match start"
-              name="scheduledInput"
-              defaultValue={DateTime.utc()
-                .plus({ day: 1 })
-                .set({ hour: 19, minute: 0 })
-                .toISO()}
-              min={DateTime.utc().toISO()}
-            />
           </div>
+        </div>
+        <div className="w-fit min-w-80">
+          <DatetimeInput
+            label="Match start"
+            name="scheduledInput"
+            defaultValue={DateTime.utc()
+              .plus({ day: 1 })
+              .set({ hour: 19, minute: 0 })
+              .toISO()}
+            min={DateTime.utc().toISO()}
+          />
         </div>
         <div className="flex gap-4">
           <Select

@@ -55,7 +55,9 @@ export type Database = {
           home_server: string
           home_team: number
           id: number
+          match: number | null
           scheduled_at: string
+          status: Database["public"]["Enums"]["challenge_status"]
         }
         Insert: {
           away_map?: number | null
@@ -67,7 +69,9 @@ export type Database = {
           home_server: string
           home_team: number
           id?: number
+          match?: number | null
           scheduled_at: string
+          status?: Database["public"]["Enums"]["challenge_status"]
         }
         Update: {
           away_map?: number | null
@@ -79,7 +83,9 @@ export type Database = {
           home_server?: string
           home_team?: number
           id?: number
+          match?: number | null
           scheduled_at?: string
+          status?: Database["public"]["Enums"]["challenge_status"]
         }
         Relationships: [
           {
@@ -129,6 +135,13 @@ export type Database = {
             columns: ["home_team"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_challenges_match_fkey"
+            columns: ["match"]
+            isOneToOne: true
+            referencedRelation: "matches"
             referencedColumns: ["id"]
           },
         ]
@@ -1096,6 +1109,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      challenge_status: "open" | "pending" | "accepted" | "closed"
       match_type: "Mix" | "PCW" | "League" | "Cup" | "Ladder"
     }
     CompositeTypes: {

@@ -1,4 +1,6 @@
 import {
+  AcceptedChallenge,
+  Challenge,
   DiscordConfig,
   DiscordMatch,
   MatchConfigsRow,
@@ -59,4 +61,15 @@ export const isPickedMatchPlayer = (
 
 export function isTeamspeakPlayer(player: PlayersRow | null): player is TeamspeakPlayer {
   return Boolean(player && player.teamspeak_id);
+}
+export function isAcceptedChallenge(
+  challenge: Challenge
+): challenge is AcceptedChallenge {
+  return (
+    challenge.status === 'accepted' &&
+    challenge.away_team !== null &&
+    challenge.away_map !== null &&
+    challenge.away_server !== null &&
+    challenge.match !== null
+  );
 }
