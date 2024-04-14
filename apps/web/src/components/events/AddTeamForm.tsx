@@ -1,4 +1,4 @@
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 import { addEventTeam } from '@/app/events/[event]/actions';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import TeamCombobox from '@/components/TeamCombobox';

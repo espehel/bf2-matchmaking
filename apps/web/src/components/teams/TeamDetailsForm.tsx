@@ -4,7 +4,7 @@ import { TeamAvatar } from '@/components/TeamAvatar';
 import { updateTeam } from '@/app/teams/[team]/actions';
 import PlayerCombobox from '@/components/PlayerCombobox';
 import IconBtn from '@/components/commons/IconBtn';
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 
 interface Props {
   team: TeamsJoined;

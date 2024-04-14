@@ -1,4 +1,4 @@
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 import TextField from '@/components/commons/TextField';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';

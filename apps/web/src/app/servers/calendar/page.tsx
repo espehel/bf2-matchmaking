@@ -86,7 +86,7 @@ export default async function Page({ searchParams }: Props) {
                     return (
                       <td
                         key={day}
-                        className={`h-4 w-6 p-1 ${getCellStyle(
+                        className={`h-4 w-6 p-1 text-center ${getCellStyle(
                           match?.type
                         )} ${getBorderStyle(i)}`}
                       >

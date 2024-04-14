@@ -11,6 +11,7 @@ import ServerMultiSelect from '@/components/form/ServerMultiSelect';
 import MapMultiSelect from '@/components/form/MapMultiSelect';
 
 export default async function ScheduleMatchForm() {
+  const { data: player } = await supabase(cookies).getSessionPlayer();
   const configs = await supabase(cookies)
     .getMatchConfigs()
     .then(verifyResult)
@@ -20,7 +21,6 @@ export default async function ScheduleMatchForm() {
     .then(verifyResult)
     .then(sortByName);
   const servers = await supabase(cookies).getServers().then(verifyResult);
-  const { data: player } = await supabase(cookies).getSessionPlayer();
   const maps = await supabase(cookies).getMaps().then(verifyResult);
 
   const defaultHomeTeam = teams.find((t) =>

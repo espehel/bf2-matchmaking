@@ -1,7 +1,7 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import FormSubmitButton from '@/components/FormSubmitButton';
 import { addResult } from '@/app/results/[match]/actions';
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 
 interface Props {
   match: MatchesJoined;

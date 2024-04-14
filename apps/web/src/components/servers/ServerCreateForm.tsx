@@ -1,6 +1,6 @@
 import { createServer } from '@/app/servers/actions';
 import FormSubmitButton from '@/components/FormSubmitButton';
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 
 export default function ServerCreateForm() {
   const createServerSA = async (data: FormData) => {

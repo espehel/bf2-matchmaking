@@ -5,6 +5,7 @@ interface Props {
   label: string;
   name: string;
   disabled?: boolean;
+  className?: string;
 }
 export default function Select({
   options,
@@ -13,9 +14,10 @@ export default function Select({
   label,
   name,
   disabled,
+  className,
 }: Props) {
   return (
-    <div>
+    <div className={className}>
       <label className="label" htmlFor={name}>
         <span className="label-text">{label}</span>
       </label>

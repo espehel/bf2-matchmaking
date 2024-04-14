@@ -1,5 +1,5 @@
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 import Select from '@/components/commons/Select';
 import TransitionWrapper from '@/components/commons/TransitionWrapper';
 import IconBtn from '@/components/commons/IconBtn';

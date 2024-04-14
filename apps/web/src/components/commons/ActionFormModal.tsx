@@ -1,6 +1,6 @@
 'use client';
 import { MouseEventHandler, PropsWithChildren, useCallback, useRef } from 'react';
-import ActionForm, { Props as ActionFormProps } from '@/components/commons/ActionForm';
+import ActionForm, { Props as ActionFormProps } from '@/components/form/ActionForm';
 import TransitionWrapper from '@/components/commons/TransitionWrapper';
 
 interface Props extends PropsWithChildren {

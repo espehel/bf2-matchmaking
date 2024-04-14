@@ -37,6 +37,7 @@ export type PlayerRatingsInsert =
 export type MatchServersInsert = Database['public']['Tables']['match_servers']['Insert'];
 export type GeneratedServersInsert =
   Database['public']['Tables']['generated_servers']['Insert'];
+export type ChallengesInsert = Database['public']['Tables']['challenges']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];

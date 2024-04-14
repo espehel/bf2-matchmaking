@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import matches from './matches-api';
 import {
+  ChallengesInsert,
   Database,
   DiscordConfig,
   EventMatchesUpdate,
@@ -226,4 +227,7 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('generated_servers').select('*').eq('match_id', matchId),
   createGeneratedServer: (values: GeneratedServersInsert) =>
     client.from('generated_servers').insert(values).select('*').single(),
+  createChallenge: (challenge: ChallengesInsert) =>
+    client.from('challenges').insert([challenge]).select('*').single(),
+  getChallenges: () => client.from('challenges').select('*'),
 });

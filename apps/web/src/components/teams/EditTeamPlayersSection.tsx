@@ -1,7 +1,7 @@
 import { PlayersRow, TeamsJoined } from '@bf2-matchmaking/types';
 import AddPlayerForm from '@/components/teams/AddPlayerForm';
 import TeamPlayerItem from '@/components/teams/TeamPlayerItem';
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 import { createAndAddPlayer } from '@/app/teams/[team]/actions';
 import FormSubmitButton from '@/components/FormSubmitButton';
 

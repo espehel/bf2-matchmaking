@@ -1,4 +1,4 @@
-import ActionForm from '@/components/commons/ActionForm';
+import ActionForm from '@/components/form/ActionForm';
 import { addEventRound } from '@/app/events/[event]/actions';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import TransitionWrapper from '@/components/commons/TransitionWrapper';

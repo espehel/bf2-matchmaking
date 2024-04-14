@@ -44,6 +44,95 @@ export type Database = {
           },
         ]
       }
+      challenges: {
+        Row: {
+          away_map: number | null
+          away_server: string | null
+          away_team: number | null
+          config: number
+          created_at: string
+          home_map: number
+          home_server: string
+          home_team: number
+          id: number
+          scheduled_at: string
+        }
+        Insert: {
+          away_map?: number | null
+          away_server?: string | null
+          away_team?: number | null
+          config: number
+          created_at?: string
+          home_map: number
+          home_server: string
+          home_team: number
+          id?: number
+          scheduled_at: string
+        }
+        Update: {
+          away_map?: number | null
+          away_server?: string | null
+          away_team?: number | null
+          config?: number
+          created_at?: string
+          home_map?: number
+          home_server?: string
+          home_team?: number
+          id?: number
+          scheduled_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_challenges_away_map_fkey"
+            columns: ["away_map"]
+            isOneToOne: false
+            referencedRelation: "maps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_challenges_away_server_fkey"
+            columns: ["away_server"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          },
+          {
+            foreignKeyName: "public_challenges_away_team_fkey"
+            columns: ["away_team"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_challenges_config_fkey"
+            columns: ["config"]
+            isOneToOne: false
+            referencedRelation: "match_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_challenges_home_map_fkey"
+            columns: ["home_map"]
+            isOneToOne: false
+            referencedRelation: "maps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_challenges_home_server_fkey"
+            columns: ["home_server"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
+          },
+          {
+            foreignKeyName: "public_challenges_home_team_fkey"
+            columns: ["home_team"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_matches: {
         Row: {
           away_accepted: boolean
