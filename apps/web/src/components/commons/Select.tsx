@@ -5,6 +5,7 @@ interface Props {
   label: string;
   name: string;
   disabled?: boolean;
+  readonly?: boolean;
   className?: string;
 }
 export default function Select({
@@ -14,6 +15,7 @@ export default function Select({
   label,
   name,
   disabled,
+  readonly,
   className,
 }: Props) {
   return (
@@ -21,12 +23,15 @@ export default function Select({
       <label className="label" htmlFor={name}>
         <span className="label-text">{label}</span>
       </label>
+      {readonly && defaultValue && (
+        <input type="hidden" name={name} value={defaultValue} />
+      )}
       <select
         key={defaultValue}
         name={name}
         className="select select-bordered w-full"
         defaultValue={defaultValue}
-        disabled={disabled}
+        disabled={disabled || readonly}
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map(([value, name]) => (

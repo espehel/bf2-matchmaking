@@ -8,6 +8,7 @@ import {
   MatchesRow,
   MatchPlayersInsert,
   MatchStatus,
+  PendingChallenge,
   PickedMatchPlayer,
   PlayersRow,
   RatedMatchPlayer,
@@ -62,6 +63,11 @@ export const isPickedMatchPlayer = (
 export function isTeamspeakPlayer(player: PlayersRow | null): player is TeamspeakPlayer {
   return Boolean(player && player.teamspeak_id);
 }
+
+export function isPendingChallenge(challenge: Challenge): challenge is PendingChallenge {
+  return challenge.status === 'pending' && challenge.away_team !== null;
+}
+
 export function isAcceptedChallenge(
   challenge: Challenge
 ): challenge is AcceptedChallenge {

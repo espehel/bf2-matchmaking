@@ -10,15 +10,8 @@ interface Props {
 
 export default function AcceptedChallengeCard({ challenge }: Props) {
   return (
-    <div className="card card-compact w-96 bg-base-100 shadow-xl image-full">
-      <figure>
-        <Image
-          className="rounded-box"
-          fill={true}
-          loader={supabaseImageLoader}
-          src={`map_images/${challenge.home_map.id}.webp`}
-          alt={challenge.home_map.name}
-        />
+    <div className="card card-compact w-96 bg-base-100 shadow-xl shadow-base-100 image-full">
+      <figure className="flex">
         <Image
           className="rounded-box"
           fill={true}
@@ -26,12 +19,21 @@ export default function AcceptedChallengeCard({ challenge }: Props) {
           src={`map_images/${challenge.away_map.id}.webp`}
           alt={challenge.away_map.name}
         />
+        <Image
+          className="mask mask-parallelogram mask-half-card rounded-box"
+          fill={true}
+          loader={supabaseImageLoader}
+          src={`map_images/${challenge.home_map.id}.webp`}
+          alt={challenge.home_map.name}
+        />
       </figure>
       <div className="card-body">
         <h2 className="card-title">{`${challenge.home_team.name} vs ${challenge.away_team.name}`}</h2>
         <Time date={challenge.scheduled_at} format="EEEE HH:mm, DD" />
         <div className="card-actions justify-end">
-          <Link href={`/matches/${challenge.match}`}>Go to match</Link>
+          <Link className="btn btn-secondary btn-sm" href={`/matches/${challenge.match}`}>
+            Go to match
+          </Link>
         </div>
       </div>
     </div>

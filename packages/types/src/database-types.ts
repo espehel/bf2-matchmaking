@@ -242,6 +242,11 @@ export interface Challenge
   away_server: ServersRow | null;
 }
 
+export interface PendingChallenge extends Challenge {
+  status: 'pending';
+  away_team: TeamsRow;
+}
+
 export interface AcceptedChallenge extends Challenge {
   status: 'accepted';
   away_team: TeamsRow;

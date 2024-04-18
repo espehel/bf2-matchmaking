@@ -35,6 +35,13 @@
   }
 }
 
+@layer utilities {
+  .mask-half-card {
+    @apply mask-half-1;
+    mask-size: 400%;
+  }
+}
+
 .ReactCollapse--collapse {
   transition: height 300ms;
 }

@@ -1,14 +1,14 @@
-import { Challenge } from '@bf2-matchmaking/types';
+import { PendingChallenge } from '@bf2-matchmaking/types';
 import Time from '@/components/commons/Time';
 import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Image from 'next/image';
-import AcceptOpenChallengeModal from '@/components/challenges/AcceptOpenChallengeModal';
+import AcceptPendingChallengeModal from '@/components/challenges/AcceptPendingChallengeModal';
 
 interface Props {
-  challenge: Challenge;
+  challenge: PendingChallenge;
 }
 
-export default function OpenChallengeCard({ challenge }: Props) {
+export default function PendingChallengeCard({ challenge }: Props) {
   return (
     <div className="card card-compact w-96 bg-base-100 shadow-xl shadow-base-100 image-full">
       <figure>
@@ -21,10 +21,10 @@ export default function OpenChallengeCard({ challenge }: Props) {
         />
       </figure>
       <div className="card-body">
-        <h2 className="card-title">{challenge.home_team.name}</h2>
+        <h2 className="card-title">{`${challenge.home_team.name} vs ${challenge.away_team.name}`}</h2>
         <Time date={challenge.scheduled_at} format="EEEE HH:mm, DD" />
         <div className="card-actions justify-end">
-          <AcceptOpenChallengeModal challenge={challenge} />
+          <AcceptPendingChallengeModal challenge={challenge} />
         </div>
       </div>
     </div>

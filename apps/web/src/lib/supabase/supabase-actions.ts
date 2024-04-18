@@ -27,6 +27,14 @@ export function getActions(client: SupabaseClient) {
     }
     return api.getPlayerByUserId(data.session.user.id);
   }
+  async function getSessionPlayerTeamIds() {
+    const { data: player } = await getSessionPlayer();
+    if (!player) {
+      return [];
+    }
+    const { data: teams } = await api.getTeamsByPlayerId(player.id);
+    return teams ? teams.map((team) => team.id) : [];
+  }
   async function getAdminRoles() {
     const { data, error } = await client.auth.getSession();
     if (data.session) {
@@ -61,26 +69,6 @@ export function getActions(client: SupabaseClient) {
     return adminRoles?.match_admin || false;
   }
 
-  async function isTeamOfficer(...teams: Array<number>) {
-    const { data: player } = await getSessionPlayer();
-    if (!player) {
-      return false;
-    }
-    const { data } = await api.getTeamPlayersByPlayerId(player.id);
-    const teamPlayers =
-      data && teams.length ? data.filter((t) => teams.includes(t.team_id)) : data || [];
-    if (teamPlayers.some((tp) => tp.captain)) {
-      return true;
-    }
-
-    if (!player.user_id) {
-      return false;
-    }
-    const { data: adminRoles } = await api.getAdminRoles(player.user_id);
-
-    return adminRoles?.match_admin || false;
-  }
-
   async function isTeamPlayerOfficer(...teams: Array<number>) {
     const { data: player } = await getSessionPlayer();
     if (!player) {
@@ -105,9 +93,9 @@ export function getActions(client: SupabaseClient) {
     ...api,
     getSessionPlayer,
     getSessionPlayerOrThrow,
+    getSessionPlayerTeamIds,
     getAdminRoles,
     isMatchOfficer,
-    isTeamOfficer,
     isMatchPlayer,
     isTeamPlayerOfficer,
   };

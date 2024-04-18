@@ -46,11 +46,13 @@ export type Database = {
       }
       challenges: {
         Row: {
+          away_accepted: boolean
           away_map: number | null
           away_server: string | null
           away_team: number | null
           config: number
           created_at: string
+          home_accepted: boolean
           home_map: number
           home_server: string
           home_team: number
@@ -60,11 +62,13 @@ export type Database = {
           status: Database["public"]["Enums"]["challenge_status"]
         }
         Insert: {
+          away_accepted?: boolean
           away_map?: number | null
           away_server?: string | null
           away_team?: number | null
           config: number
           created_at?: string
+          home_accepted?: boolean
           home_map: number
           home_server: string
           home_team: number
@@ -74,11 +78,13 @@ export type Database = {
           status?: Database["public"]["Enums"]["challenge_status"]
         }
         Update: {
+          away_accepted?: boolean
           away_map?: number | null
           away_server?: string | null
           away_team?: number | null
           config?: number
           created_at?: string
+          home_accepted?: boolean
           home_map?: number
           home_server?: string
           home_team?: number

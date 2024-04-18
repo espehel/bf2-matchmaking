@@ -26,6 +26,7 @@ import {
   TeamPlayersUpdate,
   TeamsInsert,
   TeamsJoined,
+  TeamsRow,
   TeamsUpdate,
   VisibleTeam,
 } from '@bf2-matchmaking/types';
@@ -182,6 +183,12 @@ export default (client: SupabaseClient<Database>) => ({
       .single(),
   getTeamByDiscordRole: (roleId: string) =>
     client.from('teams').select('*').eq('discord_role', roleId).single(),
+  getTeamsByPlayerId: (playerId: string) =>
+    client
+      .from('teams')
+      .select('*, players!team_players!inner(id)')
+      .eq('players.id', playerId)
+      .returns<Array<TeamsRow>>(),
   updateTeam: (teamId: number, values: TeamsUpdate) =>
     client.from('teams').update(values).eq('id', teamId).select(),
   searchTeams: (query: string) =>

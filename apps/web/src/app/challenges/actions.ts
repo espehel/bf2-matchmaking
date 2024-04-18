@@ -1,5 +1,9 @@
 'use server';
-import { getOptionalValues, getValues } from '@bf2-matchmaking/utils/src/form-data';
+import {
+  getOptionalValue,
+  getOptionalValues,
+  getValues,
+} from '@bf2-matchmaking/utils/src/form-data';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
@@ -25,14 +29,17 @@ export async function createChallenge(formData: FormData) {
     .toISO();
   assertString(scheduled_at);
 
-  const { awayTeam } = getOptionalValues(formData, 'awayTeam');
+  const awayTeam = getOptionalValue(formData, 'awayTeam');
+
+  console.log({ awayTeam });
 
   const res = await supabase(cookies).createChallenge({
     config: Number(configSelect),
     home_team: Number(homeTeam),
-    away_team: awayTeam !== null ? Number(awayTeam) : null,
     home_map: Number(homeMap),
     home_server: homeServer,
+    away_team: awayTeam !== null ? Number(awayTeam) : null,
+    status: awayTeam !== null ? 'pending' : 'open',
     scheduled_at,
   });
 
@@ -51,22 +58,42 @@ export async function acceptChallenge(formData: FormData) {
     'awayServer'
   );
 
+  const { scheduledInput, timezone } = getOptionalValues(
+    formData,
+    'scheduledInput',
+    'timezone'
+  );
+
+  const scheduled_at =
+    scheduledInput &&
+    timezone &&
+    DateTime.fromISO(scheduledInput, { zone: timezone }).toUTC().toISO();
+
   const updatedChallenge = await updateChallenge(Number(challengeId), {
     away_team: Number(awayTeam),
     away_map: Number(awayMap),
     away_server: awayServer,
     status: 'pending',
   }).then(verifySingleResult);
+
+  if (
+    scheduled_at &&
+    DateTime.fromISO(scheduled_at).toMillis() !==
+      DateTime.fromISO(updatedChallenge.scheduled_at).toMillis()
+  ) {
+    return updateChallenge(updatedChallenge.id, {
+      scheduled_at,
+      home_accepted: !updatedChallenge.home_accepted,
+      away_accepted: !updatedChallenge.away_accepted,
+    });
+  }
+
   const match = await createMatchFromChallenge(updatedChallenge);
 
-  const res = await updateChallenge(Number(challengeId), {
+  return updateChallenge(Number(challengeId), {
     match: match.id,
     status: 'accepted',
   });
-  if (!res.error) {
-    revalidatePath('/challenges');
-  }
-  return res;
 }
 
 export async function updateChallenge(challengeId: number, values: ChallengesUpdate) {

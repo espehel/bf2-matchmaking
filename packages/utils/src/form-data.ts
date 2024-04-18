@@ -1,5 +1,5 @@
-import { isString } from '@bf2-matchmaking/types';
-import { assertString } from './assert';
+import { isString, isTruthy } from '@bf2-matchmaking/types';
+import { assertString, assertTruthyString } from './assert';
 
 export function getArray(formData: FormData, key: string) {
   return Array.from(formData.entries())
@@ -10,13 +10,13 @@ export function getArray(formData: FormData, key: string) {
 
 export function getValue(formData: FormData, key: string) {
   const value = formData.get(key);
-  assertString(value, `Missing form data: ${key}`);
+  assertTruthyString(value, `Missing form data: ${key}`);
   return value;
 }
 
 export function getOptionalValue(formData: FormData, key: string) {
   const value = formData.get(key);
-  if (isString(value)) {
+  if (isString(value) && isTruthy(value)) {
     return value;
   }
   return null;

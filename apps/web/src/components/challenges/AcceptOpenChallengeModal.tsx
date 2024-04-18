@@ -12,7 +12,7 @@ interface Props {
   challenge: Challenge;
 }
 
-export default async function AcceptChallengeModal({ challenge }: Props) {
+export default async function AcceptOpenChallengeModal({ challenge }: Props) {
   const player = await supabase(cookies).getSessionPlayerOrThrow();
   const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
   const availableTeams = teams
@@ -38,6 +38,11 @@ export default async function AcceptChallengeModal({ challenge }: Props) {
       successMessage="Challenge accepted"
       extras={{ challengeId: challenge.id.toString() }}
     >
+      <div className="p-4">
+        <p>Home team: {challenge.home_team.name}</p>
+        <p>Home map: {challenge.home_map.name}</p>
+        <p>Home server: {challenge.home_server.name}</p>
+      </div>
       <Select
         label="My team"
         name="awayTeam"
