@@ -69,13 +69,13 @@ export function isPendingChallenge(challenge: Challenge): challenge is PendingCh
 }
 
 export function isAcceptedChallenge(
-  challenge: Challenge
+  challenge: Challenge | null
 ): challenge is AcceptedChallenge {
-  return (
-    challenge.status === 'accepted' &&
-    challenge.away_team !== null &&
-    challenge.away_map !== null &&
-    challenge.away_server !== null &&
-    challenge.match !== null
-  );
+  return challenge
+    ? challenge.status === 'accepted' &&
+        challenge.away_team !== null &&
+        challenge.away_map !== null &&
+        challenge.away_server !== null &&
+        challenge.match !== null
+    : false;
 }

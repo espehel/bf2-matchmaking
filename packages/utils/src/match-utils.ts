@@ -6,6 +6,7 @@ import {
   MatchStatus,
   PlayersRow,
   ScheduledMatch,
+  ServersRow,
 } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 
@@ -89,7 +90,10 @@ export function compareStartedAt(
   return (b?.started_at || '0').localeCompare(a?.started_at || '0');
 }
 
-export function toRaidOrganizerCommand(match: ScheduledMatch) {
+export function toRaidOrganizerCommand(
+  match: ScheduledMatch,
+  servers: Array<ServersRow> | null
+) {
   const title = `title:${match.config.type}: ${match.home_team.name} vs. ${match.away_team.name}`;
   const eventStart = `event_start:${DateTime.fromISO(match.scheduled_at).toFormat(
     'dd.MM.yyyy HH:mm'
@@ -97,7 +101,7 @@ export function toRaidOrganizerCommand(match: ScheduledMatch) {
   const template = 'template:3 - 8v8';
   const description = `description:${
     match.maps.length > 0 ? match.maps.map(({ name }) => name).join(' + ') : 'Maps TBD'
-  }`;
+  } | ${match}`;
 
   return `/event create ${title} ${eventStart} ${template} ${description}`;
 }

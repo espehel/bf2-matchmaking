@@ -37,6 +37,12 @@ export default async function AcceptPendingChallengeModal({ challenge }: Props) 
         awayTeam: challenge.away_team.id.toString(),
       }}
     >
+      <div className="p-4">
+        <p>Home team: {challenge.home_team.name}</p>
+        <p>Away team: {challenge.away_team.name}</p>
+        <p>Home map: {challenge.home_map.name}</p>
+        <p>Home server: {challenge.home_server.name}</p>
+      </div>
       <DatetimeInput
         label="Match start"
         name="scheduledInput"
@@ -60,6 +66,7 @@ export default async function AcceptPendingChallengeModal({ challenge }: Props) 
     </ActionFormModal>
   );
 }
+
 function isNotHomeMap(challenge: Challenge) {
   return (map: MapsRow) => map.id !== challenge.home_map.id;
 }

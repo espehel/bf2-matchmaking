@@ -10,6 +10,7 @@ import ServerSectionLoading from '@/components/matches/server/ServerSectionLoadi
 import MapsSection from '@/components/matches/MapsSection';
 import MatchTimeForm, { MatchTimeFallback } from '@/components/matches/MatchTimeForm';
 import { isActiveMatch } from '@bf2-matchmaking/utils';
+import ChallengeSection from '@/components/matches/ChallengeSection';
 
 interface Props {
   params: { match: string };
@@ -29,12 +30,15 @@ export default async function ResultsMatch({ params }: Props) {
       </div>
       <div className="flex flex-wrap gap-8 justify-center w-full">
         <MatchSection match={match} />
-        {isActiveMatch(match) && (
-          <Suspense fallback={<ServerSectionLoading />}>
-            <MatchServerSection match={match} />
-          </Suspense>
-        )}
-        <MapsSection match={match} key={match.maps.map((m) => m.id).join()} />
+        <div className="flex flex-col gap-2">
+          {match.config.type === 'Ladder' && <ChallengeSection match={match} />}
+          {isActiveMatch(match) && (
+            <Suspense fallback={<ServerSectionLoading />}>
+              <MatchServerSection match={match} />
+            </Suspense>
+          )}
+        </div>
+        {/*<MapsSection match={match} key={match.maps.map((m) => m.id).join()} />*/}
         <Suspense fallback={null}>
           <LiveSection match={match} />
         </Suspense>

@@ -37,7 +37,7 @@ export default async function MatchSection({ match }: Props) {
           Go to results
         </Link>
       )}
-      {isMatchOfficer && (
+      {isMatchOfficer && match.config.type !== 'Ladder' && (
         <Suspense fallback={null}>
           <MatchActions match={match} />
         </Suspense>

@@ -14,7 +14,11 @@ interface Props {
 }
 
 export default async function MatchTimeForm({ match }: Props) {
-  if (!match.scheduled_at || match.config.type === 'Mix') {
+  if (
+    !match.scheduled_at ||
+    match.config.type === 'Mix' ||
+    match.config.type === 'Ladder'
+  ) {
     return <MatchTimeFallback match={match} />;
   }
 

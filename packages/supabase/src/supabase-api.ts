@@ -253,6 +253,14 @@ export default (client: SupabaseClient<Database>) => ({
       )
       .eq('id', challengeId)
       .single<Challenge>(),
+  getChallengeByMatchId: (matchId: number) =>
+    client
+      .from('challenges')
+      .select(
+        '*, config(*), home_team(*), away_team(*), home_map(*), home_server(*), away_map(*), away_server(*)'
+      )
+      .eq('match', matchId)
+      .single<Challenge>(),
   updateChallenge: (challengeId: number, values: ChallengesUpdate) =>
     client.from('challenges').update(values).eq('id', challengeId).select('*').single(),
 });
