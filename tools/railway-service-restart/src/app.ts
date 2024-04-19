@@ -123,4 +123,5 @@ export function assertString(
 
 restartAllActiveServices()
   .then(() => console.log('Services Restarted'))
-  .catch((e) => console.log(e));
+  .catch((e) => console.log(e))
+  .finally(() => process.exit());
