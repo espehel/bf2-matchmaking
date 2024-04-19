@@ -3,6 +3,7 @@ import { gql, GraphQLClient } from 'graphql-request';
 
 assertString(process.env.RAILWAY_API_TOKEN, 'RAILWAY_API_TOKEN is required');
 assertString(process.env.RAILWAY_ENVIRONMENT_ID, 'RAILWAY_ENVIRONMENT_ID is required');
+assertString(process.env.RAILWAY_SERVICE_ID, 'RAILWAY_SERVICE_ID is required');
 const ENDPOINT = 'https://backboard.railway.app/graphql/v2';
 
 interface LatestDeployment {
@@ -101,9 +102,11 @@ async function getService(serviceId: string) {
 }
 
 async function restartAllActiveServices() {
-  console.log('Starting Services...');
   const { environment } = await getServices();
   for (const serviceInstance of environment.serviceInstances.edges) {
+    if (serviceInstance.node.serviceId === process.env.RAILWAY_SERVICE_ID) {
+      continue;
+    }
     if (serviceInstance.node.latestDeployment.status === 'SUCCESS') {
       await deploymentInstanceRestart(
         serviceInstance.node.latestDeployment.id,
