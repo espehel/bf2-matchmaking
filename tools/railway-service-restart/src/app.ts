@@ -101,6 +101,7 @@ async function getService(serviceId: string) {
 }
 
 async function restartAllActiveServices() {
+  console.log('Starting Services...');
   const { environment } = await getServices();
   for (const serviceInstance of environment.serviceInstances.edges) {
     if (serviceInstance.node.latestDeployment.status === 'SUCCESS') {
