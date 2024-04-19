@@ -2,7 +2,8 @@
   "name": "bf2-matchmaking",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "tools/*"
   ],
   "version": "1.0.0",
   "scripts": {

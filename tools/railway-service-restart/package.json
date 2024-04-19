@@ -1,0 +1,26 @@
+{
+  "name": "railway-service-restart",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "build": "rimraf ./build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js",
+    "start": "node build/app.js",
+    "verify": "tsc --noEmit"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.20.2",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "graphql-request": "^6.1.0"
+  }
+}
