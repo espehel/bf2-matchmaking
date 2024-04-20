@@ -5,12 +5,13 @@ import { api } from '@bf2-matchmaking/utils';
 import { generateMatchServers } from '@/app/matches/[match]/server/actions';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import MatchServerList from '@/components/matches/MatchServerList';
 
 interface Props {
   match: MatchesJoined;
-  matchServer: MatchServers | null;
+  matchServers: MatchServers | null;
 }
-export default async function NoServer({ match, matchServer }: Props) {
+export default async function NoServer({ match, matchServers }: Props) {
   const { data: generatedServers } = await supabase(cookies).getGeneratedServersByMatchId(
     match.id
   );
@@ -19,10 +20,11 @@ export default async function NoServer({ match, matchServer }: Props) {
     ?.map((gs) => regions?.find((r) => r.id === gs.region)?.city)
     .filter(isDefined);
 
-  if (!matchServer?.servers || !cities?.length) {
+  if (!matchServers?.servers || !cities?.length) {
     return (
-      <div className="flex justify-between items-center gap-2">
-        <h2 className="text-xl">No server selected</h2>
+      <div className="">
+        <h2 className="text-xl">No active server</h2>
+        <MatchServerList match={match} />
       </div>
     );
   }
@@ -49,7 +51,7 @@ export default async function NoServer({ match, matchServer }: Props) {
         <h2 className="text-xl">{`Server will be created in ${cities.join(
           ', '
         )} 15 min before match start.`}</h2>
-        <RevalidateForm path={`/matches/${matchServer.id}`} />
+        <RevalidateForm path={`/matches/${matchServers.id}`} />
       </div>
       <ActionButton
         action={generateMatchServerInstanceSA}

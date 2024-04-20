@@ -14,7 +14,7 @@ interface Props {
 export default async function MatchSection({ match }: Props) {
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
   return (
-    <section className="section w-fit">
+    <section className="section w-fit h-fit">
       <div>
         <h2 className="text-xl">{`Match ${match.id} - ${match.status}`}</h2>
         {match.status !== MatchStatus.Scheduled && (

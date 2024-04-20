@@ -1,10 +1,10 @@
 import { MatchesJoined, MatchTeam } from '@bf2-matchmaking/types';
 import AddPlayerForm from '@/components/matches/AddPlayerForm';
-import AddTeamPlayerCollapsible from '@/components/AddTeamPlayerCollapsible';
 import PlayerListItems from '@/components/matches/PlayerListItems';
 import { Suspense } from 'react';
 import PlayerListItemsLoading from '@/components/matches/PlayerListItemsLoading';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
+import TeamPlayersList from '@/components/matches/TeamPlayersList';
 
 interface Props {
   match: MatchesJoined;
@@ -21,11 +21,11 @@ export default async function TeamSection({ match, team }: Props) {
     .map((tp) => tp.player_id)
     .concat(match.teams.filter((mp) => mp.captain).map((mp) => mp.player_id));
 
-  const emptySlots = Array.from({ length: match.config.size / 2 - players.length });
   return (
     <section>
       <h3 className="text-xl font-bold mb-2">{`Team ${team.name}`}</h3>
       <ul>
+        <div className="divider">Match players</div>
         <Suspense
           fallback={
             <PlayerListItemsLoading
@@ -43,13 +43,16 @@ export default async function TeamSection({ match, team }: Props) {
             captains={captains}
           />
         </Suspense>
-        {emptySlots.map((e, i, { length }) => (
-          <li key={(i + length) * length} className="flex items-center mb-1 w-52">
-            <AddPlayerForm matchId={match.id} teamId={team.id} config={match.config.id} />
-          </li>
-        ))}
+        <li className="flex items-center mb-1 w-52">
+          <AddPlayerForm
+            matchId={match.id}
+            teamId={team.id}
+            config={match.config.id}
+            label="Add step-in"
+          />
+        </li>
       </ul>
-      {<AddTeamPlayerCollapsible match={match} team={team} />}
+      {<TeamPlayersList match={match} team={team} />}
     </section>
   );
 }

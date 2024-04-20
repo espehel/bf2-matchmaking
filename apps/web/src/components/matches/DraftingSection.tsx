@@ -1,10 +1,8 @@
-import { MatchesJoined, MatchTeam } from '@bf2-matchmaking/types';
+import { MatchesJoined } from '@bf2-matchmaking/types';
 import AddPlayerForm from '@/components/matches/AddPlayerForm';
-import AddTeamPlayerCollapsible from '@/components/AddTeamPlayerCollapsible';
 import PlayerListItems from '@/components/matches/PlayerListItems';
 import { Suspense } from 'react';
 import PlayerListItemsLoading from '@/components/matches/PlayerListItemsLoading';
-import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
 
 interface Props {
   match: MatchesJoined;

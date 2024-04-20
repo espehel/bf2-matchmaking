@@ -336,3 +336,11 @@ export async function acceptMatchTime(
   }
   return result;
 }
+
+export async function removeMatchServer(matchId: number, address: string) {
+  const result = await supabase(cookies).deleteMatchServer(matchId, address);
+  if (result.data) {
+    revalidatePath(`/matches/${matchId}`);
+  }
+  return result;
+}

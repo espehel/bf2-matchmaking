@@ -40,7 +40,7 @@ matchesRouter.post('/:matchid/results', async (ctx) => {
   ctx.body = results;
 });
 
-matchesRouter.post('/:matchid/server/:address', async (ctx) => {
+matchesRouter.post('/:matchid/server', async (ctx) => {
   const force = `${ctx.query.force}`.toLowerCase() === 'true';
 
   const liveMatch = findLiveMatch(Number(ctx.params.matchid));
@@ -50,7 +50,7 @@ matchesRouter.post('/:matchid/server/:address', async (ctx) => {
     return;
   }
 
-  const liveServer = getLiveServer(ctx.params.address);
+  const liveServer = getLiveServer(ctx.request.body.address);
   if (!liveServer) {
     ctx.status = 404;
     ctx.body = { message: 'Live server not found' };
@@ -72,7 +72,7 @@ matchesRouter.post('/:matchid/server/:address', async (ctx) => {
   if ((!liveServer.isIdle() || liveMatch.state !== 'pending') && force) {
     info(
       'postMatchLiveServer',
-      `Forcefully set live server ${ctx.params.address} to match ${liveMatch.match.id}`
+      `Forcefully set live server ${ctx.request.body.address} to match ${liveMatch.match.id}`
     );
   }
 
@@ -100,6 +100,16 @@ matchesRouter.post('/:matchid', async (ctx) => {
   const liveMatch = startLiveMatch(data);
   ctx.status = 201;
   ctx.body = liveMatch;
+});
+
+matchesRouter.get('/:matchid/server', async (ctx) => {
+  const match = findLiveMatch(Number(ctx.params.matchid));
+  if (!match) {
+    ctx.status = 404;
+    ctx.body = { message: 'Live match not found.' };
+    return;
+  }
+  ctx.body = match.server;
 });
 
 matchesRouter.get('/:matchid', async (ctx) => {

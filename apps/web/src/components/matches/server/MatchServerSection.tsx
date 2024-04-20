@@ -5,19 +5,20 @@ import { cookies } from 'next/headers';
 import NoServer from '@/components/matches/server/NoServer';
 import ServerInfo from '@/components/matches/server/ServerInfo';
 import Link from 'next/link';
-import SelectServerForm from '@/components/matches/SelectServerForm';
+import AddServerForm from '@/components/matches/AddServerForm';
+import { api } from '@bf2-matchmaking/utils';
 
 interface Props {
   match: MatchesJoined;
 }
 
 export default async function MatchServerSection({ match }: Props) {
-  const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
-  const server = matchServer?.servers.at(0);
+  const { data: matchServers } = await supabase(cookies).getMatchServers(match.id);
+  const { data: server } = await api.live().getMatchServer(match.id);
 
   return (
     <section className="section max-w-md text-left h-fit">
-      {!server && <NoServer match={match} matchServer={matchServer} />}
+      {!server && <NoServer match={match} matchServers={matchServers} />}
       {server && (
         <>
           <ServerInfo match={match} server={server} />
@@ -25,7 +26,7 @@ export default async function MatchServerSection({ match }: Props) {
           <div className="divider" />
         </>
       )}
-      <SelectServerForm match={match} defaultAddress={server?.ip} />
+      <AddServerForm match={match} />
       <Link className="btn btn-secondary" href={`/matches/${match.id}/server`}>
         Manage match servers
       </Link>

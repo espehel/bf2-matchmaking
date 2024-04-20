@@ -12,8 +12,9 @@ interface Props {
   teamId?: number;
   matchId: number;
   config: number;
+  label?: string;
 }
-export default function AddPlayerForm({ teamId, matchId, config }: Props) {
+export default function AddPlayerForm({ teamId, matchId, config, label }: Props) {
   const { isMatchOfficer } = useMatch();
   const handleFormAction = useCallback(
     async (data: FormData) => {
@@ -34,7 +35,11 @@ export default function AddPlayerForm({ teamId, matchId, config }: Props) {
   return (
     <form action={handleFormAction} className="form-control">
       <div className="flex items-center gap-2">
-        <PlayerCombobox placeholder="Empty slot" size="sm" disabled={!isMatchOfficer} />
+        <PlayerCombobox
+          placeholder={label || 'Empty slot'}
+          size="sm"
+          disabled={!isMatchOfficer}
+        />
         {isMatchOfficer && <SubmitButton />}
       </div>
     </form>

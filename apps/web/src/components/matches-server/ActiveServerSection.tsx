@@ -1,17 +1,20 @@
-import { LiveServer, MatchesJoined } from '@bf2-matchmaking/types';
+import { MatchesJoined } from '@bf2-matchmaking/types';
 import Link from 'next/link';
-import SelectServerForm from '@/components/matches/SelectServerForm';
+import AddServerForm from '@/components/matches/AddServerForm';
+import { api } from '@bf2-matchmaking/utils';
+import MatchServerList from '@/components/matches/MatchServerList';
 
 interface Props {
   match: MatchesJoined;
-  server: LiveServer | null;
 }
 
-export default function ActiveServerSection({ server, match }: Props) {
+export default async function ActiveServerSection({ match }: Props) {
+  const { data: server } = await api.live().getMatchServer(match.id);
   return (
     <section className="section gap-2">
-      <h2>{`Active server: ${server?.info.serverName || 'No match server set'}`}</h2>
-      <SelectServerForm match={match} defaultAddress={server?.address} />
+      <h2>{`Active server: ${server?.name || 'No match server set'}`}</h2>
+      <MatchServerList match={match} />
+      <AddServerForm match={match} />
       <Link className="btn btn-secondary w-fit" href={`/matches/${match.id}`}>
         Back to match
       </Link>

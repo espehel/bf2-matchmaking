@@ -12,6 +12,7 @@ import {
   PostServerPlayersSwitchRequestBody,
   PostServersRequestBody,
   PostRestartServerRequestBody,
+  ServersRow,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
 import { Instance } from '@bf2-matchmaking/types/src/vultr';
@@ -41,8 +42,7 @@ const live = () => {
     serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
     match: (matchId: number) => `/matches/${matchId}`,
-    matchServer: (matchId: number, address: string) =>
-      `/matches/${matchId}/server/${address}`,
+    matchServer: (matchId: number) => `/matches/${matchId}/server`,
     matchResults: (matchId: number) => `/matches/${matchId}/results`,
   };
   return {
@@ -81,10 +81,12 @@ const live = () => {
       deleteJSON<LiveServer>(basePath.concat(paths.server(ip))),
     postMatch: (matchId: number) => postJSON(`${basePath}${paths.match(matchId)}`, {}),
     postMatchServer: (matchId: number, address: string, force: boolean) =>
-      postJSON(`${basePath}${paths.matchServer(matchId, address)}?force=${force}`, {}),
+      postJSON(`${basePath}${paths.matchServer(matchId)}?force=${force}`, { address }),
     getMatches: () => getJSON<Array<LiveMatch>>(basePath.concat(paths.matches())),
     getMatch: (matchId: number) =>
       getJSON<LiveMatch>(basePath.concat(paths.match(matchId))),
+    getMatchServer: (matchId: number) =>
+      getJSON<ServersRow | null>(basePath.concat(paths.matchServer(matchId))),
     postMatchResults: (matchId: number) =>
       postJSON(basePath.concat(paths.matchResults(matchId)), {}),
   };

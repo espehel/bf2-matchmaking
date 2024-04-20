@@ -10,7 +10,7 @@ interface Props {
   defaultAddress?: string;
 }
 
-export default async function SelectServerForm({ match, defaultAddress }: Props) {
+export default async function AddServerForm({ match, defaultAddress }: Props) {
   const { data: servers } = await supabase(cookies).getServers();
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 
@@ -18,7 +18,7 @@ export default async function SelectServerForm({ match, defaultAddress }: Props)
     return null;
   }
 
-  async function setMatchServerSA(data: FormData) {
+  async function addMatchServerSA(data: FormData) {
     'use server';
     const value = data.get('select');
     assertString(value, 'No server selected');
@@ -27,13 +27,13 @@ export default async function SelectServerForm({ match, defaultAddress }: Props)
 
   return (
     <SelectActionForm
-      label="Set match server"
+      label="Add match server"
       options={servers.map(({ ip, name }) => [ip, name])}
       defaultValue={defaultAddress}
-      placeholder={!defaultAddress ? 'Select Server' : undefined}
-      action={setMatchServerSA}
-      successMessage="Changed server"
-      errorMessage="Failed to set server"
+      placeholder={!defaultAddress ? 'Add Server' : undefined}
+      action={addMatchServerSA}
+      successMessage="Added server"
+      errorMessage="Failed to add server"
       disabled={!isMatchOfficer}
     />
   );
