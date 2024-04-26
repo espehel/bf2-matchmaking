@@ -20,6 +20,7 @@ import {
 import { findMap } from '../services/maps';
 import { restartWithInfantryMode, restartWithVehicleMode } from '../services/http-api';
 import { mapMapList } from '../mappers/rcon';
+import { getLiveServer2 } from '../services/server/server-manager';
 export const serversRouter = new Router({
   prefix: '/servers',
 });
@@ -244,15 +245,15 @@ serversRouter.post('/', async (ctx) => {
 });
 
 serversRouter.get('/:ip', async (ctx) => {
-  const server = getLiveServer(ctx.params.ip);
+  const server = await getLiveServer2(ctx.params.ip);
 
   if (!server) {
     ctx.status = 404;
     ctx.body = { message: 'Live server not found' };
     return;
   }
-  await server.update();
-  ctx.body = await toLiveServer(server);
+  //await server.update();
+  ctx.body = server; // await toLiveServer(server);
 });
 
 serversRouter.get('/', async (ctx) => {

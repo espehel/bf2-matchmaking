@@ -20,6 +20,8 @@ export default async function ResultsMatch({ params }: Props) {
     .getMatch(Number(params.match))
     .then(verifySingleResult);
 
+  //TODO: fix live and assign teamplayers as matchplayers when they connect.
+
   return (
     <main className="main flex flex-col items-center text-center">
       <div className="mb-8">

@@ -106,7 +106,7 @@ export const logErrorMessage = (msg: string, err: unknown, context?: LogContext)
 
   logger
     .error(msg, { error: e, ...context })
-    .then((log) => info('logtail', log.message))
+    .then((log) => info('logtail', `${log.message}: ${e}`))
     .catch(() => error('logtail', err))
     .finally(flush);
 };

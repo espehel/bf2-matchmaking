@@ -7,7 +7,7 @@
     "verify": "tsc --noEmit"
   },
   "engines": {
-    "node": "18 || 19"
+    "node": ">=18"
   },
   "devDependencies": {
     "typescript": "latest"
