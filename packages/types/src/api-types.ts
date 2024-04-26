@@ -66,9 +66,12 @@ export interface PostCommandsReinstallRequestBody {
   commands: Array<string>;
 }
 
+export type LiveServerStatus = 'live' | 'idle' | 'offline' | 'lacking';
+
 export interface LiveServer {
   address: string;
   port: number;
+  status: LiveServerStatus;
   info: LiveInfo;
   noVehicles: boolean;
   matchId: number | null;

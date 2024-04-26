@@ -5,6 +5,7 @@ import {
   ChallengesInsert,
   ChallengesUpdate,
   Database,
+  DbServer,
   DiscordConfig,
   EventMatchesUpdate,
   EventsJoined,
@@ -21,6 +22,7 @@ import {
   ServerRconsInsert,
   ServerRconsUpdate,
   ServersInsert,
+  ServersJoined,
   ServersUpdate,
   TeamPlayersInsert,
   TeamPlayersUpdate,
@@ -126,7 +128,8 @@ export default (client: SupabaseClient<Database>) => ({
   deleteServer: (ip: string) => client.from('servers').delete().eq('ip', ip).select(),
   deleteServerRcon: (ip: string) =>
     client.from('server_rcons').delete().eq('id', ip).select(),
-  getServers: () => client.from('servers').select('*'),
+  getServers: () =>
+    client.from('servers').select('*, rcon:server_rcons(*)').returns<Array<DbServer>>(),
   getServer: (ip: string) => client.from('servers').select('*').eq('ip', ip).single(),
   getServerByName: (name: string) =>
     client.from('servers').select('*').eq('name', name).single(),

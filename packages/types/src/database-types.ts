@@ -107,6 +107,10 @@ export interface ServersJoined extends ServersRow {
   matches: Array<{ id: number; status: string }>;
 }
 
+export interface DbServer extends ServersRow {
+  rcon: ServerRconsRow | null;
+}
+
 export type ServersWithRcon = ServerRconsRow & ServersRow;
 
 export type QuickMatch = [MatchConfigsRow, MatchesJoined | null];

@@ -22,6 +22,7 @@ const logger =
     ? createLogger({
         format: combine(timestamp(), DEV_FORMAT, colorize()),
         transports: TRANSPORTS,
+        level: process.env.npm_config_level || 'info',
       })
     : createLogger({
         format: combine(PROD_FORMAT, colorize()),
@@ -40,6 +41,8 @@ export const warn = (label: string, message: string) =>
   logger.log({ level: 'warn', label, message });
 export const info = (label: string, message: string) =>
   logger.log({ level: 'info', label, message });
+export const verbose = (label: string, message: string) =>
+  logger.log({ level: 'verbose', label, message });
 
 invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
 const logtail = new Logtail(process.env.LOGTAIL_SOURCE);

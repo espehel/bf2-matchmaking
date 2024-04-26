@@ -6,11 +6,17 @@ import {
   LiveServer,
   ServerInfo,
 } from '@bf2-matchmaking/types';
-import { getPlayerList, getServerInfo, hasNoVehicles, rcon } from '../rcon/RconManager';
+import {
+  getPlayerList as getPlayerListOrThrow,
+  getServerInfo as getServerInfoOrThrow,
+  hasNoVehicles,
+  rcon,
+} from '../rcon/RconManager';
 import { api, externalApi, getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
 import { Server } from './Server';
+import { getPlayerList, getServerInfo } from '../rcon/bf2-rcon-api';
 
 export async function createLiveInfo({
   id: ip,
@@ -18,7 +24,7 @@ export async function createLiveInfo({
   rcon_pw,
 }: ServerRconsRow): Promise<LiveInfo | null> {
   const info = await rcon(ip, rcon_port, rcon_pw)
-    .then(getServerInfo)
+    .then(getServerInfoOrThrow)
     .catch(() => null);
   if (!info) {
     return null;
@@ -29,7 +35,7 @@ export async function createLiveInfo({
   }
 
   const players: Array<PlayerListItem> = await rcon(ip, rcon_port, rcon_pw)
-    .then(getPlayerList)
+    .then(getPlayerListOrThrow)
     .catch(() => []);
 
   if (players.length !== Number(info.connectedPlayers)) {
@@ -37,6 +43,25 @@ export async function createLiveInfo({
   }
 
   return { ...info, players, ip };
+}
+
+export async function buildLiveInfo(address: string): Promise<LiveInfo | null> {
+  const info = await getServerInfo(address);
+  if (!info) {
+    return null;
+  }
+
+  if (info.connectedPlayers === '0') {
+    return { ...info, players: [], ip: address };
+  }
+
+  const players = await getPlayerList(address);
+
+  if (!players || players.length !== Number(info.connectedPlayers)) {
+    return null;
+  }
+
+  return { ...info, players, ip: address };
 }
 
 export async function toLiveServer(server: Server): Promise<LiveServer> {
@@ -49,6 +74,7 @@ export async function toLiveServer(server: Server): Promise<LiveServer> {
   const city = location?.city || null;
 
   return {
+    status: 'idle',
     address,
     port: Number(gamePort),
     info,

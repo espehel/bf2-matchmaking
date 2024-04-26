@@ -9,10 +9,10 @@ import cron from 'node-cron';
 import { updateServers } from './tasks/update-servers';
 import { updateMatches } from './tasks/update-matches';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
-import { initLiveServers } from './services/server/ServerManager';
 import { initLiveMatches } from './services/match/MatchManager';
 import { serversRouter } from './routers/servers';
 import { matchesRouter } from './routers/matches';
+import { initServers } from './services/server/server-manager';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5002;
 loadMapsCache();
@@ -24,16 +24,7 @@ const updateMatchesTask = cron.schedule('*/2 * * * *', updateMatches, {
   scheduled: false,
 });
 
-initLiveServers()
-  .then(async () => {
-    if (isDevelopment()) {
-      return;
-    }
-    await initLiveMatches();
-    updateServersTask.start();
-    updateMatchesTask.start();
-  })
-  .catch((err) => error('app', err));
+initServers().catch((err) => error('app', err));
 
 new Koa()
   .use(logger())
