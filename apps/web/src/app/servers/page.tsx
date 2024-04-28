@@ -1,11 +1,9 @@
 import { LiveServer } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import ServerCreateForm from '@/components/servers/ServerCreateForm';
 import { api, verify } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
 import CreateServerSection from '@/components/servers/CreateServerSection';
-import { CheckIcon } from '@heroicons/react/24/solid';
 import { CheckCircleIcon } from '@heroicons/react/16/solid';
 
 export default async function Page() {
@@ -30,7 +28,7 @@ export default async function Page() {
           <tbody>
             {servers.map((server) => (
               <tr key={server.address} className="hover">
-                <td className="truncate">{server.info.serverName}</td>
+                <td className="truncate">{server.info?.serverName || server.address}</td>
                 <td>{server.address}</td>
                 <td>{server.port}</td>
                 <td className="truncate">{`${server.city}, ${server.country}`}</td>

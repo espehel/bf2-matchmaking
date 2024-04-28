@@ -4,10 +4,9 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/16/solid';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { isDefined, isScheduledMatch, MatchConfigType } from '@bf2-matchmaking/types';
+import { MatchConfigType } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import Time from '@/components/commons/Time';
-import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
 interface Props {
   searchParams: { month?: string; year?: string };
@@ -78,7 +77,9 @@ export default async function Page({ searchParams }: Props) {
             <tbody>
               {servers.map((server) => (
                 <tr key={server.address} className="hover">
-                  <th className="truncate">{server.info.serverName}</th>
+                  <th className="truncate">
+                    {server.info?.serverName || server.address}
+                  </th>
                   {days.map((day, i) => {
                     const match = schedule.find(
                       (m) => m.ip === server.address && m.day === day
