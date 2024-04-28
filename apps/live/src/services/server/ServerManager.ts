@@ -8,7 +8,6 @@ import {
 } from '@bf2-matchmaking/logging';
 import { PendingServer, ServerRconsRow } from '@bf2-matchmaking/types';
 import { Match } from '../match/Match';
-import { retry } from '@bf2-matchmaking/utils/src/async-actions';
 import { connectClient, getServerInfo, rcon } from '../rcon/RconManager';
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;
@@ -78,6 +77,8 @@ function isMatchServer(liveMatch: Match) {
 export function isServerIdentified(serverPlayers: number, matchSize: number) {
   return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
 }
+
+export function createPendingServer() {}
 
 export function connectPendingServer(server: PendingServer) {
   const { port, rcon_port, rcon_pw, address, demo_path } = server;

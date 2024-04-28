@@ -1,6 +1,6 @@
 import { GameStatus, PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
 
-export const mapServerInfo = (data?: string): ServerInfo | null => {
+export const mapServerInfo = (data?: string | null): ServerInfo | null => {
   if (!data) {
     return null;
   }
@@ -39,7 +39,7 @@ export const mapServerInfo = (data?: string): ServerInfo | null => {
   };
 };
 
-export const mapListPlayers = (data?: string): Array<PlayerListItem> | null =>
+export const mapListPlayers = (data?: string | null): Array<PlayerListItem> | null =>
   data
     ? data
         .split(/(\r\n|\r|\n)/)

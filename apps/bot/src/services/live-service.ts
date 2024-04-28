@@ -1,5 +1,5 @@
 import { api, assertObj, verify } from '@bf2-matchmaking/utils';
-import { LiveServer } from '@bf2-matchmaking/types';
+import { isConnectedLiveServer, LiveServer } from '@bf2-matchmaking/types';
 
 const validCountries = [
   'Denmark',
@@ -12,9 +12,12 @@ const validCountries = [
 
 export async function getAvailableServer() {
   const servers = await api.live().getServers().then(verify);
-  const server = servers.find(
-    (s) => s.info.players.length === 0 && s.country && validCountries.includes(s.country)
-  );
+  const server = servers
+    .filter(isConnectedLiveServer)
+    .find(
+      (s) =>
+        s.info.players.length === 0 && s.country && validCountries.includes(s.country)
+    );
   assertObj(server, 'Failed to find available server');
   return server;
 }
