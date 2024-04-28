@@ -1,13 +1,58 @@
-import { PlayerListItem, ServerInfo } from '@bf2-matchmaking/types';
-import { mapListPlayers, mapServerInfo } from '../../mappers/rcon';
-import { sendMessage } from './socket-manager';
+import { mapListPlayers, mapMapList, mapServerInfo } from '../../mappers/rcon';
+import { getSocket, send } from './socket-manager';
+import { parseError } from '@bf2-matchmaking/utils';
 
-export function getPlayerList(address: string): Promise<Array<PlayerListItem> | null> {
-  return sendMessage(address, 'bf2cc pl').then(mapListPlayers);
+export function unpauseRound(address: string) {
+  return sendMessage(address, 'bf2cc unpause');
 }
 
-export function getServerInfo(address: string): Promise<ServerInfo | null> {
-  return sendMessage(address, 'bf2cc si').then(mapServerInfo);
+export function pauseRound(address: string) {
+  return sendMessage(address, 'bf2cc pause');
+}
+
+export async function getMapList(address: string) {
+  const reply = await sendMessage(address, 'exec maplist.list');
+  if (reply.error) {
+    return reply;
+  }
+  if (!reply.data) {
+    return { data: null, error: 'Empty map list response' };
+  }
+  const data = mapMapList(reply.data);
+  if (!data) {
+    return { data: null, error: 'Failed to parse map list' };
+  }
+  return { data, error: null };
+}
+
+export async function getPlayerList(address: string) {
+  const reply = await sendMessage(address, 'bf2cc pl');
+  if (reply.error) {
+    return reply;
+  }
+  if (!reply.data) {
+    return { data: null, error: 'Empty player list response' };
+  }
+  const data = mapListPlayers(reply.data);
+  if (!data) {
+    return { data: null, error: 'Failed to parse player list' };
+  }
+  return { data, error: null };
+}
+
+export async function getServerInfo(address: string) {
+  const reply = await sendMessage(address, 'bf2cc pl');
+  if (reply.error) {
+    return reply;
+  }
+  if (!reply.data) {
+    return { data: null, error: 'Empty server info response' };
+  }
+  const data = mapServerInfo(reply.data);
+  if (!data) {
+    return { data: null, error: 'Failed to parse server info' };
+  }
+  return { data, error: null };
 }
 
 export async function switchPlayers(address: string, players: Array<string>) {
@@ -33,5 +78,18 @@ export function exec(address: string, command: string) {
 
 export async function hasNoVehicles(address: string) {
   const res = await exec(address, 'sv.noVehicles');
-  return res.trim() === '1';
+  if (res.error) {
+    return res;
+  }
+  return { data: res.data?.trim() === '1', error: null };
+}
+
+async function sendMessage(address: string, message: string) {
+  try {
+    const socket = await getSocket(address);
+    const data = await send(socket, message);
+    return { data, error: null };
+  } catch (e) {
+    return { data: null, error: parseError(e) };
+  }
 }

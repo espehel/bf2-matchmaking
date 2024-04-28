@@ -24,6 +24,7 @@ import {
   PollResult,
   MatchesJoined,
   LogContext,
+  isConnectedLiveServer,
 } from '@bf2-matchmaking/types';
 import { api, isBetaTester } from '@bf2-matchmaking/utils';
 import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
@@ -120,9 +121,12 @@ export async function editLocationPollMessageWithResults(
 
   if (results[0][0] === LocationEmoji.Existing) {
     const { data: servers } = await api.live().getServers();
-    if (servers?.length) {
+    const connectedServers = servers?.filter(isConnectedLiveServer);
+    if (connectedServers?.length) {
       await message.edit({
-        embeds: [{ fields: [...getServerFields(servers), getMatchField(match)] }],
+        embeds: [
+          { fields: [...getServerFields(connectedServers), getMatchField(match)] },
+        ],
       });
     }
   } else if (locationName) {
@@ -152,14 +156,16 @@ export async function sendServersMessage(
   channel: TextBasedChannel
 ) {
   const { data: servers } = await api.live().getServers();
-  if (!servers?.length) {
+  const connectedServers = servers?.filter(isConnectedLiveServer);
+
+  if (!connectedServers?.length) {
     return;
   }
   const serversMessage = await channel.send({
     embeds: [
       {
         fields: [
-          ...getServerFields(servers),
+          ...getServerFields(connectedServers),
           getMatchServerField(match),
           getMatchField(match),
         ],

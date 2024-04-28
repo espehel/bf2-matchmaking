@@ -10,6 +10,7 @@ import {
   PickedMatchPlayer,
   PollResult,
   MatchPlayerResultsInsert,
+  ConnectedLiveServer,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -87,7 +88,7 @@ export const getServerPollEmbed = (
   } server, poll ends <t:${endTime.toUnixInteger()}:R>`,
   fields: createServerPollFields(servers),
 });
-export const getServerEmbed = (server: LiveServer) => ({
+export const getServerEmbed = (server: ConnectedLiveServer) => ({
   description: `Join [${replaceDiscordGG(server.info.serverName)}](${server.joinmeHref})`,
   fields: [
     { name: 'address', value: server.address, inline: true },
@@ -189,7 +190,7 @@ export function buildDebugActualDraftEmbed(
 }
 export const getMatchStartedEmbed = (
   match: MatchesJoined,
-  server?: LiveServer
+  server?: ConnectedLiveServer
 ): APIEmbed =>
   server
     ? {
@@ -399,7 +400,7 @@ export const getMatchServerField = (match: MatchesJoined) => ({
   value: `${api.web().basePath}/matches/${match.id}/server`,
 });
 
-export function getServerFields(servers: Array<LiveServer>) {
+export function getServerFields(servers: Array<ConnectedLiveServer>) {
   return servers
     .filter((server) => !getMatchIdFromDnsName(server.address))
     .map((server) => ({

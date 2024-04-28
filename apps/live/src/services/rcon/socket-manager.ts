@@ -1,30 +1,37 @@
 import net from 'net';
-import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
+import { error, info, verbose } from '@bf2-matchmaking/logging';
 import crypto from 'crypto';
-import { getRcon } from '@bf2-matchmaking/redis';
+import { getRcon, setRcon } from '@bf2-matchmaking/redis';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
+import { Rcon } from '@bf2-matchmaking/redis/src/types';
 
 const TIMEOUT = 3000;
 const TTL = 10 * 60 * 1000;
 const sockets = new Map<string, net.Socket>();
-export async function connectSockets(rcons: Array<ServerRconsRow>) {
+export async function createSockets(rcons: Array<ServerRconsRow>) {
   return Promise.all(
-    rcons.map((rcon) =>
-      connect(rcon)
-        .then(() => rcon.id)
-        .catch(() => null)
-    )
+    rcons
+      .map((r) => ({
+        address: r.id,
+        port: r.rcon_port,
+        pw: r.rcon_pw,
+      }))
+      .map((r) => createSocket(r).then((s) => s && r.address))
   );
 }
-async function connect(rcon: ServerRconsRow) {
-  const oldSocket = sockets.get(rcon.id);
+export async function createSocket(rcon: Rcon) {
+  await setRcon(rcon);
+  return connect(rcon).catch(() => null);
+}
+async function connect(rcon: Rcon) {
+  const oldSocket = sockets.get(rcon.address);
   if (oldSocket) {
-    info('connect', `${rcon.id}:${rcon.rcon_port} Reconnecting with new socket...`);
+    info('connect', `${rcon.address}:${rcon.port} Reconnecting with new socket...`);
     oldSocket.destroy(new Error('Reconnecting with new socket...'));
   }
 
-  const socket = await connectSocket(rcon.id, rcon.rcon_port, rcon.rcon_pw);
+  const socket = await connectSocket(rcon.address, rcon.port, rcon.pw);
 
   socket.on('error', (err) => {
     error(`socket`, err);
@@ -34,16 +41,20 @@ async function connect(rcon: ServerRconsRow) {
   });
   socket.setTimeout(TTL);
 
-  sockets.set(rcon.id, socket);
+  sockets.set(rcon.address, socket);
   return socket;
 }
 
-export async function sendMessage(address: string, message: string) {
-  const socket = await getSocket(address);
-  return send(socket, message);
+export function disconnect(address: string) {
+  const socket = sockets.get(address);
+  if (!socket) {
+    return false;
+  }
+  socket.destroy();
+  return sockets.delete(address);
 }
 
-async function getSocket(address: string) {
+export async function getSocket(address: string) {
   const socket = sockets.get(address);
   if (socket && socket.readyState === 'open') {
     return socket;
@@ -53,7 +64,7 @@ async function getSocket(address: string) {
   return connect(rcon);
 }
 
-function send(socket: net.Socket, message: string) {
+export function send(socket: net.Socket, message: string) {
   return new Promise<string>((resolve, reject) => {
     const handleData = (response: Buffer) => {
       socket.removeListener('error', handleError);

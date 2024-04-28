@@ -5,6 +5,7 @@ import {
   ServersRow,
   LiveServer,
   ServerInfo,
+  DbServer,
 } from '@bf2-matchmaking/types';
 import {
   getPlayerList as getPlayerListOrThrow,
@@ -46,7 +47,7 @@ export async function createLiveInfo({
 }
 
 export async function buildLiveInfo(address: string): Promise<LiveInfo | null> {
-  const info = await getServerInfo(address);
+  const { data: info } = await getServerInfo(address);
   if (!info) {
     return null;
   }
@@ -55,7 +56,7 @@ export async function buildLiveInfo(address: string): Promise<LiveInfo | null> {
     return { ...info, players: [], ip: address };
   }
 
-  const players = await getPlayerList(address);
+  const { data: players } = await getPlayerList(address);
 
   if (!players || players.length !== Number(info.connectedPlayers)) {
     return null;
@@ -114,8 +115,8 @@ export async function upsertServer(
   rcon_pw: string,
   serverInfo: ServerInfo,
   demo_path?: string
-) {
-  await client()
+): Promise<DbServer> {
+  const server = await client()
     .upsertServer({
       ip: address,
       port,
@@ -129,5 +130,5 @@ export async function upsertServer(
     .then(verifySingleResult);
 
   info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
-  return serverRcon;
+  return { ...server, rcon: serverRcon };
 }

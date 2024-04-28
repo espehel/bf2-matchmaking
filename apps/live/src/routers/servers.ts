@@ -2,46 +2,44 @@ import Router from '@koa/router';
 import { error } from '@bf2-matchmaking/logging';
 import { assertArray, assertObj, toFetchError, verify } from '@bf2-matchmaking/utils';
 import { isString } from '@bf2-matchmaking/types';
-import {
-  connectPendingServer,
-  getLiveServer,
-  getLiveServers,
-  initLiveServer,
-  removeLiveServer,
-} from '../services/server/ServerManager';
+
 import { toLiveServer, getAddress, upsertServer } from '../services/server/servers';
-import {
-  exec,
-  getPlayerList,
-  getServerInfo,
-  rcon,
-  restartServer,
-} from '../services/rcon/RconManager';
 import { findMap } from '../services/maps';
 import { restartWithInfantryMode, restartWithVehicleMode } from '../services/http-api';
-import { mapMapList } from '../mappers/rcon';
-import { getLiveServer2 } from '../services/server/server-manager';
+import {
+  createPendingServer,
+  createServer,
+  deleteServer,
+  getLiveServer,
+  getLiveServers,
+} from '../services/server/server-manager';
+import {
+  exec,
+  getMapList,
+  getPlayerList,
+  getServerInfo,
+  pauseRound,
+  restartServer,
+  unpauseRound,
+} from '../services/rcon/bf2-rcon-api';
+import { setRcon } from '@bf2-matchmaking/redis';
+import { DateTime } from 'luxon';
+import { createSocket } from '../services/rcon/socket-manager';
 export const serversRouter = new Router({
   prefix: '/servers',
 });
 
 serversRouter.post('/:ip/restart', async (ctx) => {
-  const liveServer = getLiveServer(ctx.params.ip);
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
   const { mode, map } = ctx.request.body;
   try {
     if (mode === 'infantry') {
-      await restartWithInfantryMode(liveServer, map).then(verify);
+      await restartWithInfantryMode(ctx.params.ip, map).then(verify);
     }
     if (mode === 'vehicles') {
-      await restartWithVehicleMode(liveServer, map).then(verify);
+      await restartWithVehicleMode(ctx.params.ip, map).then(verify);
     }
     if (!mode) {
-      await liveServer.rcon().then(restartServer);
+      await restartServer(ctx.params.ip);
     }
   } catch (e) {
     ctx.status = 502;
@@ -54,30 +52,21 @@ serversRouter.post('/:ip/players/switch', async (ctx) => {
   ctx.status = 501;
 });
 serversRouter.post('/:ip/maps', async (ctx) => {
-  const liveServer = getLiveServer(ctx.params.ip);
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
   try {
     const map = findMap(ctx.request.body.map);
     assertObj(map, 'Could not find map');
 
-    const mapList = await liveServer
-      .rcon()
-      .then(exec('exec maplist.list'))
-      .then(mapMapList);
+    const { data: mapList } = await getMapList(ctx.params.ip);
     assertArray(mapList, 'Could not get map list from server');
 
     const id = mapList.indexOf(map.name.toLowerCase().replace(/ /g, '_'));
 
-    await liveServer.rcon().then(exec(`exec admin.setNextLevel ${id}`));
-    await liveServer.rcon().then(exec('exec admin.runNextLevel'));
+    await exec(ctx.params.ip, `admin.setNextLevel ${id}`);
+    await exec(ctx.params.ip, 'admin.runNextLevel');
 
-    const { currentMapName, nextMapName } = await liveServer.rcon().then(getServerInfo);
-    ctx.body = { currentMapName, nextMapName };
+    const { data: info } = await getServerInfo(ctx.params.ip);
+    assertObj(info, 'Failed to get updated info');
+    ctx.body = { currentMapName: info.currentMapName, nextMapName: info.nextMapName };
   } catch (e) {
     ctx.status = 500;
     ctx.body = toFetchError(e);
@@ -92,16 +81,8 @@ serversRouter.post('/:ip/exec', async (ctx) => {
     return;
   }
 
-  const liveServer = getLiveServer(ctx.params.ip);
-
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
   try {
-    const reply = await liveServer.rcon().then(exec(`exec ${cmd}`));
+    const reply = await exec(ctx.params.ip, cmd);
     ctx.body = { reply };
   } catch (e) {
     ctx.status = 502;
@@ -110,16 +91,8 @@ serversRouter.post('/:ip/exec', async (ctx) => {
 });
 
 serversRouter.post('/:ip/unpause', async (ctx) => {
-  const liveServer = getLiveServer(ctx.params.ip);
-
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
   try {
-    await liveServer.rcon().then(exec('bf2cc unpause'));
+    await unpauseRound(ctx.params.ip);
     ctx.status = 204;
   } catch (e) {
     ctx.status = 502;
@@ -127,16 +100,8 @@ serversRouter.post('/:ip/unpause', async (ctx) => {
   }
 });
 serversRouter.post('/:ip/pause', async (ctx) => {
-  const liveServer = getLiveServer(ctx.params.ip);
-
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
   try {
-    await liveServer.rcon().then(exec('bf2cc pause'));
+    await pauseRound(ctx.params.ip);
     ctx.status = 204;
   } catch (e) {
     ctx.status = 502;
@@ -145,16 +110,8 @@ serversRouter.post('/:ip/pause', async (ctx) => {
 });
 
 serversRouter.get('/:ip/pl', async (ctx) => {
-  const liveServer = getLiveServer(ctx.params.ip);
-
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
   try {
-    ctx.body = await liveServer.rcon().then(getPlayerList);
+    ctx.body = await getPlayerList(ctx.params.ip);
   } catch (e) {
     ctx.status = 502;
     ctx.body = toFetchError(e);
@@ -162,16 +119,8 @@ serversRouter.get('/:ip/pl', async (ctx) => {
 });
 
 serversRouter.get('/:ip/si', async (ctx) => {
-  const liveServer = getLiveServer(ctx.params.ip);
-
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
   try {
-    ctx.body = await liveServer.rcon().then(getServerInfo);
+    ctx.body = await getServerInfo(ctx.params.ip);
   } catch (e) {
     ctx.status = 502;
     ctx.body = toFetchError(e);
@@ -179,15 +128,8 @@ serversRouter.get('/:ip/si', async (ctx) => {
 });
 
 serversRouter.delete('/:ip', async (ctx) => {
-  const liveServer = removeLiveServer(ctx.params.ip);
-
-  if (!liveServer) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
-  ctx.body = liveServer;
+  await deleteServer(ctx.params.ip);
+  ctx.status = 204;
 });
 
 serversRouter.post('/', async (ctx) => {
@@ -202,18 +144,24 @@ serversRouter.post('/', async (ctx) => {
 
   const address = await getAddress(ip);
   const isResolvingDns = address === ip;
+  const socket = createSocket({ address, port: rcon_port, pw: rcon_pw });
 
-  const serverInfo = await rcon(address, rcon_port, rcon_pw)
-    .then(getServerInfo)
-    .catch(() => null);
-
-  if (!serverInfo && isResolvingDns) {
-    connectPendingServer({ address, port, rcon_port, rcon_pw, demo_path });
+  if (!socket && isResolvingDns) {
+    createPendingServer(
+      {
+        address,
+        port,
+        rcon_port,
+        rcon_pw,
+        demo_path,
+      },
+      0
+    );
     ctx.status = 202;
     ctx.body = null;
     return;
   }
-
+  const { data: serverInfo } = await getServerInfo(address);
   if (!serverInfo) {
     ctx.status = 502;
     ctx.body = { message: 'Failed to connect to server.' };
@@ -221,7 +169,7 @@ serversRouter.post('/', async (ctx) => {
   }
 
   try {
-    const serverRcon = await upsertServer(
+    const dbServer = await upsertServer(
       address,
       port,
       rcon_port,
@@ -230,13 +178,14 @@ serversRouter.post('/', async (ctx) => {
       demo_path
     );
 
-    const liveServer = await initLiveServer(serverRcon);
+    await createServer(dbServer);
+    const liveServer = await getLiveServer(address);
     if (!liveServer) {
       ctx.status = 502;
       ctx.body = { message: 'Failed to create live server.' };
       return;
     }
-    ctx.body = await toLiveServer(liveServer);
+    ctx.body = liveServer;
   } catch (e) {
     error('POST /servers', e);
     ctx.status = 500;
@@ -245,17 +194,18 @@ serversRouter.post('/', async (ctx) => {
 });
 
 serversRouter.get('/:ip', async (ctx) => {
-  const server = await getLiveServer2(ctx.params.ip);
+  //await server.update();
+  const server = await getLiveServer(ctx.params.ip);
 
   if (!server) {
     ctx.status = 404;
     ctx.body = { message: 'Live server not found' };
     return;
   }
-  //await server.update();
-  ctx.body = server; // await toLiveServer(server);
+
+  ctx.body = server;
 });
 
 serversRouter.get('/', async (ctx) => {
-  ctx.body = await Promise.all(getLiveServers().map(toLiveServer));
+  ctx.body = await getLiveServers();
 });

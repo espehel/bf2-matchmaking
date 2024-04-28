@@ -22,7 +22,7 @@ function buildTitle(matchQueue: MatchQueue) {
     case 'queue':
       return `**4v4** (${matchQueue.queue.length}/${matchQueue.config.size})`;
     case 'summon':
-      return `Join ${matchQueue.server.info.serverName}`;
+      return `Join ${matchQueue.server.info?.serverName}`;
     case 'start':
       return matchQueue.match
         ? `Match ${matchQueue.match.id} started`

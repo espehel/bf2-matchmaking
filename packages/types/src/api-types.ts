@@ -17,6 +17,7 @@ import {
   User,
 } from './index';
 import { DateTime } from 'luxon';
+import exp from 'node:constants';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -66,13 +67,13 @@ export interface PostCommandsReinstallRequestBody {
   commands: Array<string>;
 }
 
-export type LiveServerStatus = 'live' | 'idle' | 'offline' | 'lacking';
+export type LiveServerStatus = 'live' | 'idle' | 'offline' | 'pending' | 'lacking';
 
 export interface LiveServer {
   address: string;
+  info: LiveInfo | null;
   port: number;
   status: LiveServerStatus;
-  info: LiveInfo;
   noVehicles: boolean;
   matchId: number | null;
   joinmeHref: string;
@@ -81,6 +82,11 @@ export interface LiveServer {
   city: string | null;
   updatedAt: string | null;
   errorAt: string | null;
+}
+
+export interface ConnectedLiveServer extends LiveServer {
+  status: 'live' | 'idle';
+  info: LiveInfo;
 }
 
 export interface LiveInfo extends ServerInfo {

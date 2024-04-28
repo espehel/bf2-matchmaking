@@ -923,19 +923,19 @@ export type Database = {
       }
       server_rcons: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
           rcon_port: number
           rcon_pw: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id: string
           rcon_port: number
           rcon_pw: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           rcon_port?: number
           rcon_pw?: string

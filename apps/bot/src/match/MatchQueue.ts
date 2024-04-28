@@ -1,4 +1,5 @@
 import {
+  ConnectedLiveServer,
   DiscordConfig,
   isTeamspeakPlayer,
   LiveServer,
@@ -26,7 +27,7 @@ export class MatchQueue {
   queue: Array<TeamspeakPlayer> = [];
   queueTimeout: DateTime | null = null;
   #queueMessage: Message<true> | null = null;
-  server: LiveServer;
+  server: ConnectedLiveServer;
   readyPlayers: Array<string> = [];
   #pollInterval: NodeJS.Timeout | null = null;
   #pollTimeout: NodeJS.Timeout | null = null;
@@ -38,7 +39,7 @@ export class MatchQueue {
   state: 'queue' | 'summon' | 'reset' | 'start' = 'queue';
   match: MatchesJoined | null = null;
 
-  constructor(config: DiscordConfig, channel: TextChannel, server: LiveServer) {
+  constructor(config: DiscordConfig, channel: TextChannel, server: ConnectedLiveServer) {
     this.config = config;
     this.channel = channel;
     this.server = server;

@@ -16,7 +16,7 @@ import {
   TeamsJoined,
   TeamspeakPlayer,
 } from './database-types';
-import { PostgrestError, TeamPlayer } from './index';
+import { ConnectedLiveServer, LiveServer, PostgrestError, TeamPlayer } from './index';
 
 export const isMatchesRow = (row: unknown): row is MatchesRow => {
   const casted = row as MatchesRow;
@@ -79,4 +79,8 @@ export function isAcceptedChallenge(
         challenge.away_server !== null &&
         challenge.match !== null
     : false;
+}
+
+export function isConnectedLiveServer(server: LiveServer): server is ConnectedLiveServer {
+  return (server.status === 'live' || server.status === 'idle') && server.info !== null;
 }
