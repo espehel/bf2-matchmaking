@@ -36,7 +36,7 @@ export default async function ServerActions({ server, hasAdmin }: Props) {
       <div className="flex gap-2">
         <GuardedActionButton
           label="Restart to infantry"
-          guard={server.info.players.length > 0}
+          guard={server.info ? server.info.players.length > 0 : false}
           guardLabel="Server is populated, are you sure you want to restart?"
           action={restartServerInfantrySA}
           successMessage="Server restarting with infantry mode"
@@ -45,7 +45,7 @@ export default async function ServerActions({ server, hasAdmin }: Props) {
         />
         <GuardedActionButton
           label="Restart to vehicles"
-          guard={server.info.players.length > 0}
+          guard={server.info ? server.info.players.length > 0 : false}
           guardLabel="Server is populated, are you sure you want to restart?"
           action={restartServerVehiclesSA}
           successMessage="Server restarting with vehicles mode"
@@ -68,11 +68,15 @@ function Heading({ server }: { server: LiveServer }) {
       <p>{`Updated: ${
         server.updatedAt ? DateTime.fromISO(server.updatedAt).toFormat('TTT') : '-'
       }`}</p>
-      <p>{`Game status: ${getKeyName(info.currentGameStatus)}`}</p>
-      <p>{`Map: ${fromSnakeToCapitalized(info.currentMapName)}`}</p>
-      <p>{`Next Map: ${fromSnakeToCapitalized(info.nextMapName)}`}</p>
-      <p>{`Time left: ${formatSecToMin(info.timeLeft)}`}</p>
-      <p>{`No Vehicles: ${server.noVehicles ? 'Yes' : 'No'}`}</p>
+      {info && (
+        <>
+          <p>{`Game status: ${getKeyName(info.currentGameStatus)}`}</p>
+          <p>{`Map: ${fromSnakeToCapitalized(info.currentMapName)}`}</p>
+          <p>{`Next Map: ${fromSnakeToCapitalized(info.nextMapName)}`}</p>;
+          <p>{`Time left: ${formatSecToMin(info.timeLeft)}`}</p>;
+          <p>{`No Vehicles: ${server.noVehicles ? 'Yes' : 'No'}`}</p>
+        </>
+      )}
     </div>
   );
 }
