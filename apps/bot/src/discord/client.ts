@@ -14,12 +14,13 @@ const discordClient = new Client({
     GatewayIntentBits.GuildScheduledEvents,
   ],
 });
-discordClient.setMaxListeners(Number.POSITIVE_INFINITY);
+discordClient.setMaxListeners(10);
 export const getDiscordClient = () =>
   new Promise<Client<true>>(async (resolve, reject) => {
     if (discordClient.isReady()) {
       resolve(discordClient);
     } else {
+      discordClient.removeAllListeners();
       discordClient.on('ready', (client) => {
         info('discord-client', 'Connected');
         resolve(client);
