@@ -68,7 +68,7 @@ function ServerStatus({ server }: { server: LiveServer }) {
         {server.matchId}
       </Link>
     );
-  } else if (server.info) {
+  } else if (server.live) {
     return 'Idle';
   } else {
     return 'Offline';

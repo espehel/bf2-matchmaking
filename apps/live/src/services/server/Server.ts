@@ -1,14 +1,13 @@
 import { DateTime } from 'luxon';
 import { error, info } from '@bf2-matchmaking/logging';
 import {
-  LiveInfo,
+  LiveState,
   PlayerListItem,
   ServerInfo,
   ServerRconsRow,
 } from '@bf2-matchmaking/types';
 import { getPlayerList, getServerInfo, rcon } from '../rcon/RconManager';
 import { Match } from '../match/Match';
-import { createLiveInfo } from './servers';
 
 const STALE_LIMIT_ERROR = 1000 * 30;
 const STALE_LIMIT_IDLE = 1000 * 60;
@@ -19,12 +18,12 @@ export class Server {
   gamePort: string;
   #password: string;
   #liveMatch: Match | null = null;
-  info: LiveInfo;
+  info: LiveState;
   #tickedAt: number = Date.now();
   updatedAt: DateTime = DateTime.now();
   errorAt: DateTime | null = null;
   #waitingSince: DateTime | null = null;
-  constructor(rconInfo: ServerRconsRow, info: LiveInfo) {
+  constructor(rconInfo: ServerRconsRow, info: LiveState) {
     this.address = rconInfo.id;
     this.port = rconInfo.rcon_port;
     this.#password = rconInfo.rcon_pw;
@@ -32,7 +31,7 @@ export class Server {
     this.gamePort = '16567';
   }
   static async create(rconInfo: ServerRconsRow) {
-    const info = await createLiveInfo(rconInfo);
+    const info = null; //await createLiveInfo(rconInfo);
     return info ? new Server(rconInfo, info) : null;
   }
   reset() {
@@ -83,7 +82,7 @@ export class Server {
       const pl = si.connectedPlayers !== '0' ? await this.rcon().then(getPlayerList) : [];
       verifyData(si, pl);
 
-      this.info = { ...si, players: pl, ip: this.address };
+      this.info = { ...si, players: pl };
       this.updatedAt = DateTime.now();
       this.errorAt = null;
 

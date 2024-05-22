@@ -19,7 +19,7 @@ interface Props {
 
 export default async function ServerActions({ server, match }: Props) {
   const { data } = await api.live().getServer(server.ip);
-  const serverInfo = data?.info;
+  const serverInfo = data?.live;
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 
   if (!isMatchOfficer || match.status !== MatchStatus.Ongoing) {

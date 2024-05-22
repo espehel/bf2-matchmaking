@@ -1,6 +1,6 @@
 import {
   isNotNull,
-  LiveInfo,
+  LiveState,
   MatchesJoined,
   PlayerListItem,
   RoundsJoined,
@@ -12,7 +12,7 @@ import { isUniqueString } from './array-utils';
 
 export function toKeyhashList(round: RoundsRow | RoundsJoined) {
   try {
-    const info = parseJSON<LiveInfo>(round.info);
+    const info = parseJSON<LiveState>(round.info);
     return info.players.map(({ keyhash }) => keyhash);
   } catch (e) {
     console.error(e);

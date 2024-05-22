@@ -5,7 +5,7 @@ import {
   MatchResultsInsert,
   RoundsJoined,
   MatchPlayerResultsInsert,
-  LiveInfo,
+  LiveState,
   MatchPlayersRow,
   PlayerRatingsInsert,
   PlayerRatingsRow,
@@ -21,7 +21,7 @@ export const getPlayerRoundStats = (
   round: RoundsJoined
 ): Record<string, RoundStats> | null => {
   try {
-    const info = parseJSON<LiveInfo>(round.info);
+    const info = parseJSON<LiveState>(round.info);
     return info.players
       .map(({ keyhash, score, deaths, scoreKills }) => ({
         [keyhash]: {

@@ -67,30 +67,29 @@ export interface PostCommandsReinstallRequestBody {
   commands: Array<string>;
 }
 
-export type LiveServerStatus = 'live' | 'idle' | 'offline' | 'pending' | 'lacking';
+export type LiveServerStatus = 'live' | 'idle' | 'offline' | 'lacking';
 
 export interface LiveServer {
   address: string;
-  info: LiveInfo | null;
+  live: LiveState | null;
   port: number;
   status: LiveServerStatus;
-  noVehicles: boolean;
+  noVehicles: boolean | null;
   matchId: number | null;
   joinmeHref: string;
   joinmeDirect: string;
   country: string | null;
   city: string | null;
-  updatedAt: string | null;
-  errorAt: string | null;
+  updatedAt?: string;
+  errorAt?: string;
 }
 
 export interface ConnectedLiveServer extends LiveServer {
   status: 'live' | 'idle';
-  info: LiveInfo;
+  live: LiveState;
 }
 
-export interface LiveInfo extends ServerInfo {
-  ip: string;
+export interface LiveState extends ServerInfo {
   players: Array<PlayerListItem>;
 }
 
@@ -128,7 +127,7 @@ export interface PostServerPlayersSwitchRequestBody {
 export type PostMatchResult = MatchesJoined;
 
 export type LiveMatch = {
-  liveInfo: LiveInfo | null;
+  liveInfo: LiveState | null;
   liveState: LiveServerState;
   matchId: number;
   players: Array<PlayersRow>;

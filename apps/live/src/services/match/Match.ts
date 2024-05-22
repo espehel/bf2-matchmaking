@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import {
   LiveServerState,
   MatchesJoined,
-  LiveInfo,
+  LiveState,
   RoundsRow,
   MatchServers,
   MatchPlayersRow,
@@ -36,7 +36,7 @@ export class Match {
   server: ServersRow | null = null;
   state: LiveServerState = 'pending';
   rounds: Array<RoundsRow> = [];
-  liveInfo: LiveInfo | null = null;
+  liveInfo: LiveState | null = null;
   constructor(match: MatchesJoined) {
     this.match = match;
   }
@@ -70,7 +70,7 @@ export class Match {
   hasValidMatch() {
     return this.match.players.length > 0;
   }
-  #updateLiveInfo(liveInfo: LiveInfo) {
+  #updateLiveInfo(liveInfo: LiveState) {
     this.liveInfo = {
       ...liveInfo,
       players: liveInfo.players
@@ -90,7 +90,7 @@ export class Match {
     );
   }
 
-  async #updateConnectedPlayers(liveInfo: LiveInfo) {
+  async #updateConnectedPlayers(liveInfo: LiveState) {
     for (const bf2Player of liveInfo.players) {
       if (this.connectedPlayers.has(bf2Player.keyhash)) {
         continue;
@@ -98,7 +98,7 @@ export class Match {
 
       const player =
         this.match.players.find(hasKeyhash(bf2Player.keyhash)) ||
-        (await addTeamPlayerToLiveMatch(this, bf2Player.keyhash));
+        (await addTeamPlayerToLiveMatch(this.match, bf2Player.keyhash));
       if (!player) {
         continue;
       }
@@ -122,7 +122,7 @@ export class Match {
     }
   }
 
-  async updateState(liveInfo: LiveInfo): Promise<LiveServerState> {
+  async updateState(liveInfo: LiveState): Promise<LiveServerState> {
     await this.#updateConnectedPlayers(liveInfo);
     this.#updateLiveInfo(liveInfo);
     const next = (state: LiveServerState) => this.handleNextState(state, liveInfo);
@@ -179,7 +179,7 @@ export class Match {
 
   async handleNextState(
     nextState: LiveServerState,
-    liveInfo: LiveInfo
+    liveInfo: LiveState
   ): Promise<LiveServerState> {
     if (nextState === 'pending' && this.state !== 'pending') {
       this.pendingSince = DateTime.now();
@@ -214,7 +214,7 @@ export class Match {
       await saveDemosSince(this.server.ip, this.match.started_at, this.server.demos_path);
     }
   }
-  #logChangeLiveState(nextState: LiveServerState, liveInfo: LiveInfo) {
+  #logChangeLiveState(nextState: LiveServerState, liveInfo: LiveState) {
     logChangeLiveState(this.state, nextState, this.match, this.rounds, liveInfo);
   }
 }
