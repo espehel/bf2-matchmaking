@@ -5,7 +5,7 @@ import {
   MatchesJoined,
   MatchStatus,
   PostgrestError,
-  LiveInfo,
+  LiveState,
   RoundsInsert,
   RoundsRow,
   LogContext,
@@ -37,7 +37,7 @@ export const logEditChannelMessage = (
 export const logChangeMatchStatus = (
   status: MatchStatus,
   match: MatchesJoined,
-  liveInfo?: LiveInfo | null
+  liveInfo?: LiveState | null
 ) => {
   logger
     .info(`Changing status for Match ${match.id} to ${status}"`, {
@@ -54,7 +54,7 @@ export const logChangeLiveState = (
   nextState: LiveServerState,
   match: MatchesJoined,
   rounds: Array<RoundsRow>,
-  liveInfo: LiveInfo
+  liveInfo: LiveState
 ) => {
   logger
     .info(
@@ -73,7 +73,7 @@ export const logChangeLiveState = (
 export const logAddMatchRound = (
   round: RoundsInsert,
   match: MatchesJoined,
-  liveInfo: LiveInfo
+  liveInfo: LiveState
 ) => {
   logger
     .info(`Adding Round ${round.id} to Match ${match.id}`, {

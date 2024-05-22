@@ -1,7 +1,7 @@
 import {
   ConnectedLiveServer,
   GameStatus,
-  LiveInfo,
+  LiveState,
   LiveServer,
 } from '@bf2-matchmaking/types';
 import JoinMeButton from '@/components/servers/JoinMeButton';
@@ -20,7 +20,7 @@ export default async function ServerInGameActions({
   isConnected,
   hasAdmin,
 }: Props) {
-  const isPaused = server.info.currentGameStatus === GameStatus.Paused;
+  const isPaused = server.live.currentGameStatus === GameStatus.Paused;
   const isInGameAdmin = isConnected || hasAdmin;
 
   const restartRoundSA = async () => {
@@ -73,14 +73,14 @@ export default async function ServerInGameActions({
           <ChangeMapForm server={server} />
         </div>
         <div className="grow">
-          <PlayersSection info={server.info} />
+          <PlayersSection info={server.live} />
         </div>
       </div>
     </section>
   );
 }
 
-function PlayersSection({ info }: { info: LiveInfo }) {
+function PlayersSection({ info }: { info: LiveState }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="grow border border-accent rounded p-4 overflow-x-auto">

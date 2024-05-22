@@ -7,7 +7,7 @@ import {
 } from '@bf2-matchmaking/logging';
 import {
   isDiscordMatch,
-  LiveInfo,
+  LiveState,
   LiveMatch,
   MatchConfigsRow,
   MatchesJoined,
@@ -17,6 +17,7 @@ import {
   RoundsInsert,
   ServerInfo,
   ServersRow,
+  MatchesRow,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { Match } from './Match';
@@ -38,8 +39,9 @@ import {
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
 import { getJoinmeHref, hasNotKeyhash } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
+import { setMatch } from '@bf2-matchmaking/redis';
 
-export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | null) => {
+export const finishMatch = async (match: MatchesJoined, liveInfo: LiveState | null) => {
   logChangeMatchStatus(MatchStatus.Finished, match, liveInfo);
   const { data: updatedMatch, error } = await client().updateMatch(match.id, {
     status: MatchStatus.Finished,
@@ -217,7 +219,7 @@ export async function sendLiveMatchServerMessage(liveMatch: Match) {
     );
   }
 }
-export async function updateLiveMatchServerIfMix(liveMatch: Match, liveInfo: LiveInfo) {
+export async function updateLiveMatchServerIfMix(liveMatch: Match, liveInfo: any) {
   if (liveMatch.match.config.type !== 'Mix') {
     return;
   }
@@ -325,4 +327,19 @@ export function toLiveMatch(match: Match): LiveMatch {
     players: match.match.players,
     server: match.server,
   };
+}
+
+export async function syncRedisMatch(matchId: string, values?: Partial<MatchesRow>) {
+  const match = values
+    ? await client().updateMatch(Number(matchId), values).then(verifySingleResult)
+    : await client().getMatch(Number(matchId)).then(verifySingleResult);
+
+  await setMatch(match);
+
+  return match;
+}
+
+export async function removeRedisMatch(matchId: string) {
+  logMessage(`Match ${matchId}: Removing live match`);
+  // TODO delete from redis
 }

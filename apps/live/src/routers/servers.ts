@@ -3,7 +3,7 @@ import { error } from '@bf2-matchmaking/logging';
 import { assertArray, assertObj, toFetchError, verify } from '@bf2-matchmaking/utils';
 import { isString } from '@bf2-matchmaking/types';
 
-import { toLiveServer, getAddress, upsertServer } from '../services/server/servers';
+import { getAddress, upsertServer } from '../services/server/servers';
 import { findMap } from '../services/maps';
 import { restartWithInfantryMode, restartWithVehicleMode } from '../services/http-api';
 import {
@@ -22,8 +22,6 @@ import {
   restartServer,
   unpauseRound,
 } from '../services/rcon/bf2-rcon-api';
-import { setRcon } from '@bf2-matchmaking/redis';
-import { DateTime } from 'luxon';
 import { createSocket } from '../services/rcon/socket-manager';
 export const serversRouter = new Router({
   prefix: '/servers',

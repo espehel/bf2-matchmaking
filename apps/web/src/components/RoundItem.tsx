@@ -1,7 +1,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import {
-  LiveInfo,
+  LiveState,
   PlayerListItem,
   RoundsJoined,
   ServerInfo,
@@ -25,7 +25,7 @@ export default function RoundItem({ round }: Props) {
   const onRoundClick = () => {
     setSummaryOpen(!isSummaryOpen);
   };
-  const info = parseNullableJSON<LiveInfo>(round.info);
+  const info = parseNullableJSON<LiveState>(round.info);
 
   if (!info) {
     return null;

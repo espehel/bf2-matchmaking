@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { isTruthy, LiveInfo } from '@bf2-matchmaking/types';
+import { isTruthy, LiveState } from '@bf2-matchmaking/types';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Link from 'next/link';
@@ -22,7 +22,7 @@ export default async function RoundPage({ params, searchParams }: Props) {
   const isPlayerAdmin = Boolean(adminRoles?.player_admin);
   const isRegisterTab = searchParams.tab === 'register' && isPlayerAdmin;
 
-  const info = parseJSON<LiveInfo>(round.info);
+  const info = parseJSON<LiveState>(round.info);
 
   const registeredPlayers = await supabase(cookies)
     .getPlayersByKeyhashList(info.players.map(({ keyhash }) => keyhash).filter(isTruthy))

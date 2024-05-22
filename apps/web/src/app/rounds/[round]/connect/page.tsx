@@ -4,7 +4,7 @@ import PlayerConnectSection from '@/components/PlayerConnectSection';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
 import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
-import { LiveInfo } from '@bf2-matchmaking/types';
+import { LiveState } from '@bf2-matchmaking/types';
 
 interface Props {
   params: { round: string };
@@ -15,7 +15,7 @@ export default async function RoundClaimPage({ params }: Props) {
     .then(verifySingleResult);
   const { data: session } = await supabase(cookies).auth.getSession();
 
-  const info = parseJSON<LiveInfo>(round.info);
+  const info = parseJSON<LiveState>(round.info);
 
   //TODO: use session to fetch player and give option to delete keyhash
   return (

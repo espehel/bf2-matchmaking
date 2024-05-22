@@ -18,7 +18,7 @@ export default async function ChangeMapForm({ server }: Props) {
 
   const currentMap = maps.find(
     (map) =>
-      map.name.toLocaleLowerCase() === server.info?.currentMapName.replace(/_/g, ' ')
+      map.name.toLocaleLowerCase() === server.live?.currentMapName.replace(/_/g, ' ')
   )?.id;
 
   async function changeServerMapSA(data: FormData) {

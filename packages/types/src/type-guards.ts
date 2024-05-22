@@ -82,5 +82,5 @@ export function isAcceptedChallenge(
 }
 
 export function isConnectedLiveServer(server: LiveServer): server is ConnectedLiveServer {
-  return (server.status === 'live' || server.status === 'idle') && server.info !== null;
+  return (server.status === 'live' || server.status === 'idle') && server.live !== null;
 }

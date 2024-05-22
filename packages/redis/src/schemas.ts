@@ -6,19 +6,25 @@ export const rconSchema = z.object({
   port: z.number(),
   pw: z.string(),
 });
-
-export const serverSchema = z.object({
-  address: z.string(),
-  status: z.string(),
-  port: z.coerce.string(),
+export const serverInfoSchema = z.object({
+  port: z.string(),
   joinmeHref: z.string().url(),
   joinmeDirect: z.string().url(),
   country: z.string(),
   city: z.string(),
-  matchId: z.coerce.string().optional(),
-  noVehicles: z.coerce.string(),
-  updatedAt: z.string().datetime({ offset: true }),
+  noVehicles: z.boolean().nullable(),
+  demos_path: z.string().nullable(),
 });
+export const serverSchema = z
+  .object({
+    status: z.string(),
+    matchId: z.string(),
+    liveAt: z.string().datetime({ offset: true }),
+    tickedAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+    errorAt: z.string().datetime({ offset: true }),
+  })
+  .partial();
 
 const playerListItemSchema = z.object({
   index: z.string(),
@@ -69,8 +75,7 @@ const playerListItemSchema = z.object({
   timesForgiven: z.string(),
 });
 
-export const serverInfoSchema = z.object({
-  ip: z.string(),
+export const serverLiveSchema = z.object({
   players: z.array(playerListItemSchema),
   version: z.string(),
   currentGameStatus: z.nativeEnum(GameStatus),
@@ -107,13 +112,13 @@ export const serverInfoSchema = z.object({
   reservedSlots: z.string(),
 });
 
-export const addressListSchema = z.array(z.string());
+export const stringArraySchema = z.array(z.string());
 
 export const pendingServerSchema = z.object({
   address: z.string(),
   port: z.string(),
   rcon_port: z.number(),
   rcon_pw: z.string(),
-  demo_path: z.string().optional(),
+  demos_path: z.string().optional(),
   tries: z.string(),
 });

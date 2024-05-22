@@ -1,8 +1,8 @@
 'use client';
-import { LiveInfo, PlayerListItem } from '@bf2-matchmaking/types';
+import { LiveState, PlayerListItem } from '@bf2-matchmaking/types';
 
 interface Props {
-  liveInfo: LiveInfo;
+  liveInfo: LiveState;
 }
 
 const compareScore = (playerA: PlayerListItem, playerB: PlayerListItem) =>

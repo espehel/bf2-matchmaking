@@ -1,11 +1,11 @@
-import { LiveInfo, LiveServerState, MatchesJoined } from '@bf2-matchmaking/types';
+import { LiveState, LiveServerState, MatchesJoined } from '@bf2-matchmaking/types';
 import Time from '@/components/commons/Time';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 
 interface Props {
   match: MatchesJoined;
-  liveInfo: LiveInfo | null;
+  liveInfo: LiveState | null;
   liveState: LiveServerState;
 }
 

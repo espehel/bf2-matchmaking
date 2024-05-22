@@ -1,19 +1,20 @@
 import { createClient } from 'redis';
 import {
-  LiveInfo,
+  LiveState,
   LiveServerStatus,
   PendingServer,
   ServerRconsRow,
 } from '@bf2-matchmaking/types';
 import {
-  addressListSchema,
+  stringArraySchema,
   pendingServerSchema,
   rconSchema,
   serverInfoSchema,
+  serverLiveSchema,
   serverSchema,
 } from './schemas';
 import { z } from 'zod';
-import { Rcon, Server } from './types';
+import { Rcon, Server, ServerInfo, ServerLive } from './types';
 
 let client: ReturnType<typeof createClient> | null = null;
 
@@ -59,14 +60,14 @@ export async function deleteKeys(...keys: Array<string>) {
   return client.DEL(...keys);
 }
 
-export async function setServerInfo(address: string, value: LiveInfo) {
-  return setValue(`server:${address}:info`, serverInfoSchema.parse(value));
+export async function setServerLive(address: string, value: ServerLive) {
+  return setValue(`server:${address}:live`, serverLiveSchema.parse(value));
 }
-export async function getServerInfo(address: string): Promise<LiveInfo> {
-  return getValue(`server:${address}:info`).then(serverInfoSchema.parse);
+export async function getServerLive(address: string): Promise<ServerLive> {
+  return getValue(`server:${address}:live`).then(serverLiveSchema.parse);
 }
 
-export async function setServer(address: string, values: Server) {
+export async function setServerValues(address: string, values: Server) {
   const client = await getClient();
   return Promise.all(
     Object.entries(serverSchema.parse(values)).map(([key, value]) =>
@@ -74,7 +75,7 @@ export async function setServer(address: string, values: Server) {
     )
   );
 }
-export async function getServer(address: string): Promise<Server> {
+export async function getServerValues(address: string): Promise<Server> {
   const client = await getClient();
   return client.HGETALL(`server:${address}`).then(serverSchema.parse);
 }
@@ -85,28 +86,73 @@ export async function setRcon(rcon: Rcon) {
 export async function getRcon(address: string) {
   return getValue<ServerRconsRow>(`rcon:${address}`).then(rconSchema.parse);
 }
-export async function setPendingServer(pendingServer: PendingServer) {
-  const client = await getClient();
-  return Promise.all([
-    ...Object.entries(pendingServerSchema.parse(pendingServer)).map(([key, value]) =>
-      client.HSET(`pending:${pendingServer.address}`, key, value)
-    ),
-  ]);
+export async function setServerInfo(address: string, info: ServerInfo) {
+  return setValue(`server:${address}:info`, serverInfoSchema.parse(info));
 }
-export async function getPendingServer(address: string) {
-  return getValue<ServerRconsRow>(`pending:${address}`).then(pendingServerSchema.parse);
+export async function getServerInfo(address: string): Promise<ServerInfo> {
+  return getValue<ServerRconsRow>(`server:${address}:info`).then(serverInfoSchema.parse);
 }
 export async function getServersWithStatus(key: LiveServerStatus) {
   const client = await getClient();
-  return client.sMembers(key).then(addressListSchema.parse);
+  const addressList = await client.sMembers(key);
+  return stringArraySchema.parse(addressList);
 }
 export async function addServerWithStatus(address: string, key: LiveServerStatus) {
   const client = await getClient();
   return client.sAdd(key, address);
 }
-export async function removeServerWithStatus(key: LiveServerStatus) {
+export async function removeServerWithStatus(address: string, key: LiveServerStatus) {
   const client = await getClient();
-  return client.sRem(key);
+  return client.sRem(key, address);
+}
+export async function setMatch(match: any) {
+  const client = await getClient();
+  return {} as any;
+}
+export async function getMatch() {
+  const client = await getClient();
+  return {} as any;
+}
+export async function getMatchInfo() {
+  const client = await getClient();
+  return {} as any;
+}
+export async function setMatchInfo(matchId: string, values: any) {
+  const client = await getClient();
+  return {} as any;
+}
+
+export async function getMatchRounds(matchId: string) {
+  const client = await getClient();
+  return {} as any;
+}
+
+export async function setMatchRounds(matchId: string, rounds: any) {
+  const client = await getClient();
+  return {} as any;
+}
+
+export async function updateMatchPlayers(
+  matchId: string,
+  players: Array<string>
+): Promise<Array<string>> {
+  const client = await getClient();
+  await client.SADD(`match${matchId}:players}`, players);
+  return client.SMEMBERS(`match${matchId}:players}`).then(stringArraySchema.parse);
+}
+
+export async function getMatchPlayers(matchId: string): Promise<Map<string, any>> {
+  const client = await getClient();
+  return client.HGETALL(`match${matchId}:players}`);
+}
+
+export async function setMatchPlayer(
+  matchId: string,
+  playerHash: string,
+  mp: any
+): Promise<Map<string, any>> {
+  const client = await getClient();
+  return client.HMSET(`match${matchId}:players}`, playerHash, mp);
 }
 
 function stringifyValue(value: unknown): string {

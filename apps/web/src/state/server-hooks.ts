@@ -23,7 +23,7 @@ export function useServerRestart(
   }, [matchId, server, router]);
 
   useEffect(() => {
-    if (isRestarting && isRestarted && server?.info) {
+    if (isRestarting && isRestarted && server?.live) {
       setRestarting(false);
     }
   }, [isRestarted, isRestarting, server]);

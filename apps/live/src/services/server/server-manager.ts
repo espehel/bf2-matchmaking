@@ -1,4 +1,4 @@
-import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   DbServer,
@@ -12,17 +12,17 @@ import {
 import {
   addServerWithStatus,
   deleteKeys,
-  getPendingServer,
-  getServer,
   getServerInfo,
+  getServerLive,
+  getServerValues,
   getServersWithStatus,
   removeServerWithStatus,
   resetDb,
-  setPendingServer,
-  setServer,
   setServerInfo,
+  setServerLive,
+  setServerValues,
 } from '@bf2-matchmaking/redis';
-import { buildLiveInfo, upsertServer } from './servers';
+import { buildLiveState, upsertServer } from './servers';
 import {
   assertObj,
   externalApi,
@@ -30,7 +30,6 @@ import {
   getJoinmeHref,
 } from '@bf2-matchmaking/utils';
 import { hasNoVehicles, getServerInfo as getBF2ServerInfo } from '../rcon/bf2-rcon-api';
-import { DateTime } from 'luxon';
 import { createSocket, createSockets, disconnect } from '../rcon/socket-manager';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 
@@ -57,36 +56,36 @@ export async function initServers() {
 
 export async function createServer(server: DbServer): Promise<LiveServerStatus> {
   const status = server.rcon ? await connectServer(server.rcon) : 'lacking';
-  const { ip: address, port } = server;
+  const { ip: address, port, demos_path } = server;
   const joinmeHref = await getJoinmeHref(address, port);
   const joinmeDirect = await getJoinmeDirect(address, port);
   const { data: location } = await externalApi.ip().getIpLocation(address);
   const noVehicles = isConnectedStatus(status)
-    ? (await hasNoVehicles(address)).data?.toString() || ''
-    : '';
+    ? (await hasNoVehicles(address)).data
+    : null;
   const country = location?.country || '';
   const city = location?.city || '';
-  await setServer(server.ip, {
-    address,
-    status,
+
+  await setServerInfo(server.ip, {
     port,
     joinmeHref,
     joinmeDirect,
     country,
     city,
     noVehicles,
-    updatedAt: DateTime.utc().toISO() || '',
+    demos_path,
   });
+  await setServerValues(address, { status });
   await addServerWithStatus(address, status);
   return status;
 }
 
 export async function connectServer(rcon: ServerRconsRow): Promise<LiveServerStatus> {
   try {
-    const liveInfo = await buildLiveInfo(rcon.id);
+    const liveInfo = await buildLiveState(rcon.id);
     let status: LiveServerStatus = 'offline';
     if (liveInfo) {
-      await setServerInfo(rcon.id, liveInfo);
+      await setServerLive(rcon.id, liveInfo);
       status = 'idle';
     }
     info('connectServer', `${rcon.id} Initialized with status ${status}`);
@@ -99,15 +98,18 @@ export async function connectServer(rcon: ServerRconsRow): Promise<LiveServerSta
 
 export async function getLiveServer(address: string): Promise<LiveServer | null> {
   try {
-    const server = await getServer(address);
+    const values = await getServerValues(address);
     const info = await getServerInfo(address);
+    const live = await getServerLive(address);
     return {
-      ...server,
-      info,
-      errorAt: null,
-      port: Number(server.port),
-      status: server.status as LiveServerStatus,
-      noVehicles: server.noVehicles === 'true',
+      address,
+      ...info,
+      live,
+      errorAt: values.errorAt,
+      updatedAt: values.updatedAt,
+      port: Number(info.port),
+      status: values.status as LiveServerStatus,
+      noVehicles: info.noVehicles,
       matchId: null,
     };
   } catch (e) {
@@ -134,12 +136,17 @@ function isConnectedStatus(status: LiveServerStatus) {
 }
 
 export async function deleteServer(address: string) {
-  await removeServerWithStatus('idle');
-  await removeServerWithStatus('offline');
-  await removeServerWithStatus('live');
-  await removeServerWithStatus('lacking');
+  await removeServerWithStatus(address, 'idle');
+  await removeServerWithStatus(address, 'offline');
+  await removeServerWithStatus(address, 'live');
+  await removeServerWithStatus(address, 'lacking');
   await deleteKeys(`server:${address}`, `server:${address}:info`, `rcon:${address}`);
   disconnect(address);
+}
+
+export async function resetLiveServer(address: string) {
+  await removeServerWithStatus(address, 'live');
+  await addServerWithStatus(address, 'idle');
 }
 export function createPendingServer(server: PendingServer, retries: number) {
   connectPendingServer(server)

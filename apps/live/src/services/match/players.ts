@@ -30,28 +30,23 @@ export async function updatePlayerRatings(
   return [];
 }
 
-export async function addTeamPlayerToLiveMatch(liveMatch: Match, playerHash: string) {
+export async function addTeamPlayerToLiveMatch(match: MatchesJoined, playerHash: string) {
   try {
-    const teamPlayer = getTeamPlayer(liveMatch.match, playerHash);
+    const teamPlayer = getTeamPlayer(match, playerHash);
     if (!teamPlayer) {
       return null;
     }
 
     await client()
-      .createMatchPlayer(liveMatch.match.id, teamPlayer.player_id, {
+      .createMatchPlayer(match.id, teamPlayer.player_id, {
         team: teamPlayer.team_id,
         captain: teamPlayer.captain,
       })
       .then(verifySingleResult);
 
-    const updatedMatch = await client()
-      .getMatch(liveMatch.match.id)
-      .then(verifySingleResult);
-    liveMatch.setMatch(updatedMatch);
-
     return teamPlayer.player;
   } catch (e) {
-    logErrorMessage('Failed to add team player to match', e, { liveMatch, playerHash });
+    logErrorMessage('Failed to add team player to match', e, { match, playerHash });
     return null;
   }
 }
