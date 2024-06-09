@@ -3,14 +3,9 @@ import FormSubmitButton from '@/components/FormSubmitButton';
 import ActionForm from '@/components/form/ActionForm';
 
 export default function ServerCreateForm() {
-  const createServerSA = async (data: FormData) => {
-    'use server';
-    return createServer(data);
-  };
-
   return (
     <ActionForm
-      action={createServerSA}
+      action={createServer}
       successMessage="Added new Server"
       errorMessage="Failed to add server"
       className="form-control grid grid-cols-2 gap-4"
@@ -25,13 +20,17 @@ export default function ServerCreateForm() {
         <label className="label" htmlFor="portInput">
           <span className="label-text">Port</span>
         </label>
-        <input className="input input-bordered" name="portInput" />
+        <input className="input input-bordered" name="portInput" defaultValue={16567} />
       </div>
       <div>
         <label className="label" htmlFor="rconPortInput">
           <span className="label-text">Rcon port</span>
         </label>
-        <input className="input input-bordered" name="rconPortInput" />
+        <input
+          className="input input-bordered"
+          name="rconPortInput"
+          defaultValue={4711}
+        />
       </div>
       <div>
         <label className="label" htmlFor="rconPwInput">

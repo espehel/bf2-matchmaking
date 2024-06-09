@@ -15,7 +15,7 @@ export interface Props
   extends DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> {
   action: (
     formData: FormData
-  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  ) => Promise<{ data: unknown; error: { message: string } | null } | undefined>;
   successMessage: string;
   errorMessage: string;
   redirect?: string;
@@ -46,7 +46,9 @@ export default function ActionForm({
       startTransition(async () => {
         try {
           const result = await action(formData);
-
+          if (!result) {
+            return;
+          }
           if (result.error) {
             toast.error(`${errorMessage}: ${result.error.message}`);
           } else {

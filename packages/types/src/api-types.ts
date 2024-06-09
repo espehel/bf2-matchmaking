@@ -93,9 +93,10 @@ export interface PostMatchesRequestBody {
 }
 
 export interface PostServersRequestBody {
-  host: string;
+  ip: string;
   port: string;
-  password: string;
+  rcon_pw: string;
+  rcon_port: string;
 }
 export interface PostServersResponseBody {
   info: ServerInfo;

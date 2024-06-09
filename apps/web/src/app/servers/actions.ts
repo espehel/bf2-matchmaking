@@ -1,6 +1,7 @@
 'use server';
 import { assertString, api } from '@bf2-matchmaking/utils';
 import { redirect } from 'next/navigation';
+
 export async function createServer(data: FormData) {
   const { addressInput, portInput, rconPortInput, rconPwInput } =
     Object.fromEntries(data);
@@ -10,9 +11,10 @@ export async function createServer(data: FormData) {
   assertString(rconPwInput);
 
   const result = await api.live().postServers({
-    host: addressInput,
-    password: rconPwInput,
-    port: rconPortInput,
+    ip: addressInput,
+    rcon_pw: rconPwInput,
+    port: portInput,
+    rcon_port: rconPortInput,
   });
 
   if (result.data) {
