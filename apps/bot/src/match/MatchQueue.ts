@@ -101,7 +101,7 @@ export class MatchQueue {
     info('MatchQueue', 'Starting ready check');
     this.state = 'summon';
     this.#pollInterval = setInterval(() => this.pollServer(), 5000);
-    this.queueTimeout = DateTime.now().plus({ minutes: 1 });
+    this.queueTimeout = DateTime.now().plus({ minutes: 10 });
     await this.syncMessage();
 
     this.#pollTimeout = setTimeout(
