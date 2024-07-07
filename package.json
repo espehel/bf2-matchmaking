@@ -26,6 +26,7 @@
     "@types/node": "^18.11.18",
     "prettier": "^2.8.1",
     "supabase": "^1.27.10",
-    "turbo": "^1.6.3"
-  }
+    "turbo": "^2.0.6"
+  },
+  "packageManager": "npm@10.2.3"
 }
