@@ -78,7 +78,7 @@ export default async function Page({ searchParams }: Props) {
               {servers.map((server) => (
                 <tr key={server.address} className="hover">
                   <th className="truncate">
-                    {server.info?.serverName || server.address}
+                    {server.live?.serverName || server.address}
                   </th>
                   {days.map((day, i) => {
                     const match = schedule.find(

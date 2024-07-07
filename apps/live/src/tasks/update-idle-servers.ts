@@ -9,7 +9,7 @@ import {
   setServerValues,
 } from '@bf2-matchmaking/redis';
 import { buildLiveStateSafe } from '../services/server/servers';
-import { DateTime } from 'luxon/src/datetime';
+import { DateTime } from 'luxon';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { error, info } from '@bf2-matchmaking/logging';
 import { LiveState, MatchesJoined } from '@bf2-matchmaking/types';

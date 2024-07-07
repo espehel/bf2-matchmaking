@@ -6,25 +6,38 @@ import { rootRouter } from './routers/root';
 import { error, info } from '@bf2-matchmaking/logging';
 import { loadMapsCache } from './services/maps';
 import cron from 'node-cron';
-import { updateServers } from './tasks/update-servers';
-import { updateMatches } from './tasks/update-matches';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
-import { initLiveMatches } from './services/match/MatchManager';
 import { serversRouter } from './routers/servers';
 import { matchesRouter } from './routers/matches';
 import { initServers } from './services/server/server-manager';
+import { updateLiveServers } from './tasks/update-live-servers';
+import { updateIdleServers } from './tasks/update-idle-servers';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5002;
 loadMapsCache();
 
-const updateServersTask = cron.schedule('*/10 * * * * *', updateServers, {
+const updateLiveServersTask = cron.schedule('*/10 * * * * *', updateLiveServers, {
   scheduled: false,
 });
-const updateMatchesTask = cron.schedule('*/2 * * * *', updateMatches, {
+const updateIdleServersTask = cron.schedule('*/30 * * * * *', updateIdleServers, {
   scheduled: false,
 });
 
-initServers().catch((err) => error('app', err));
+const initShit = false;
+
+if (initShit) {
+  initServers()
+    .then(() => {
+      if (!isDevelopment()) {
+        updateIdleServersTask.start();
+        updateLiveServersTask.start();
+      }
+    })
+    .catch((err) => error('app', err));
+} else if (!isDevelopment()) {
+  updateIdleServersTask.start();
+  updateLiveServersTask.start();
+}
 
 new Koa()
   .use(logger())

@@ -16,7 +16,7 @@ export async function getAvailableServer() {
     .filter(isConnectedLiveServer)
     .find(
       (s) =>
-        s.info.players.length === 0 && s.country && validCountries.includes(s.country)
+        s.live.players.length === 0 && s.country && validCountries.includes(s.country)
     );
   assertObj(server, 'Failed to find available server');
   return server;

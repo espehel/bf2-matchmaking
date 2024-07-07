@@ -18,8 +18,8 @@ export default async function ServerPage({ params }: Props) {
 
   const { data: player } = await supabase(cookies).getSessionPlayer();
   const isConnected =
-    player && liveServer.info
-      ? liveServer.info.players.some((p) => p.keyhash === player.keyhash)
+    player && liveServer.live
+      ? liveServer.live.players.some((p) => p.keyhash === player.keyhash)
       : false;
 
   return (

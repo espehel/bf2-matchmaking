@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
-import { isDefined, MatchStatus } from '@bf2-matchmaking/types';
+import { isActiveLiveMatch, isDefined, MatchStatus } from '@bf2-matchmaking/types';
 import { api, compareStartedAt, verify } from '@bf2-matchmaking/utils';
 import LiveMatchCard from '@/components/LiveMatchCard';
 
@@ -13,10 +13,11 @@ export default async function LiveMatchesList() {
   const liveMatches = await api.live().getMatches().then(verify);
 
   const mergedMatches = liveMatches
-    .map(({ liveInfo, liveState, matchId }) => ({
+    .filter(isActiveLiveMatch)
+    .map(({ matchId, server, state }) => ({
       match: matches.find((m) => m.id === matchId),
-      liveInfo,
-      liveState,
+      liveInfo: server?.live,
+      liveState: state,
     }))
     .sort(({ match: matchA }, { match: matchB }) => compareStartedAt(matchA, matchB));
 

@@ -6,7 +6,6 @@ import {
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { toPlayerRatingUpdate } from '@bf2-matchmaking/utils/src/results-utils';
 import { logErrorMessage } from '@bf2-matchmaking/logging';
-import { Match } from './Match';
 
 export async function updatePlayerRatings(
   playerResults: Array<MatchPlayerResultsInsert>,

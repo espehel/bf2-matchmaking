@@ -119,6 +119,10 @@ export interface LiveMatch {
   server: LiveServer | null;
 }
 
+export interface ActiveLiveMatch extends LiveMatch {
+  server: LiveServer;
+}
+
 export interface PostDemosRequestBody {
   server: string;
   demos: Array<string>;

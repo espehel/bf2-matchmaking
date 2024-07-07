@@ -28,7 +28,7 @@ export default async function Page() {
           <tbody>
             {servers.map((server) => (
               <tr key={server.address} className="hover">
-                <td className="truncate">{server.info?.serverName || server.address}</td>
+                <td className="truncate">{server.name}</td>
                 <td>{server.address}</td>
                 <td>{server.port}</td>
                 <td className="truncate">{`${server.city}, ${server.country}`}</td>
@@ -38,8 +38,8 @@ export default async function Page() {
                 <td>
                   <ServerStatus server={server} />
                 </td>
-                <td>{`${server.info?.players.length || 0}/${
-                  server.info?.maxPlayers || 0
+                <td>{`${server.live?.players.length || 0}/${
+                  server.live?.maxPlayers || 0
                 }`}</td>
                 <td>
                   <Link
