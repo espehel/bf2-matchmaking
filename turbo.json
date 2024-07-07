@@ -5,13 +5,15 @@
       "cache": false
     },
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".cache/**",
-        "dist/**",
-        "build/**"
+      "dependsOn": ["^build"],
+      "outputs": [".cache/**", "dist/**", "build/**"]
+    },
+    "web#build": {
+      "env": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "LOGTAIL_SOURCE",
+        "DISCORD_TOKEN"
       ]
     },
     "dev": {
