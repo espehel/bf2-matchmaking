@@ -10,7 +10,7 @@ interface Props {
 export default async function ServerHeader({ server, isConnected, hasAdmin }: Props) {
   return (
     <div>
-      <h1>{server.info.serverName}</h1>
+      <h1>{server.live?.serverName || server.address}</h1>
       <div className="flex gap-4 items-center font-bold">
         <p className="flex items-center gap-1">
           <ServerStackIcon className="size-4" />

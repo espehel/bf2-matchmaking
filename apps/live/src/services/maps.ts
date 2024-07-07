@@ -17,6 +17,7 @@ export function loadMapsCache() {
     });
 }
 
+// TODO: Fix cache running out
 export function findMap(id: number) {
   const maps = getCachedValue<Array<MapsRow>>('maps');
   return maps?.find((map) => map.id === id);

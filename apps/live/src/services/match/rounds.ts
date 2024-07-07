@@ -1,16 +1,20 @@
-import { MatchesJoined, LiveInfo, RoundsInsert, Json } from '@bf2-matchmaking/types';
+import { MatchesJoined, LiveState, RoundsInsert, Json } from '@bf2-matchmaking/types';
 import { logSupabaseError } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 import { getTeamTuple } from '@bf2-matchmaking/utils/src/round-utils';
 
-export async function insertRound(match: MatchesJoined, liveInfo: LiveInfo) {
+export async function insertRound(
+  match: MatchesJoined,
+  liveInfo: LiveState,
+  server: string | null
+) {
   const [team1, team2] = getTeamTuple(liveInfo.players, match);
 
   const round: RoundsInsert = {
     team1_tickets: liveInfo.team1_tickets,
     team2_tickets: liveInfo.team2_tickets,
-    server: liveInfo.ip,
+    server,
     match: match.id,
     team1,
     team2,
@@ -20,7 +24,7 @@ export async function insertRound(match: MatchesJoined, liveInfo: LiveInfo) {
   return client().createRound(round).then(verifySingleResult);
 }
 
-export async function getMapId(info: LiveInfo) {
+export async function getMapId(info: LiveState) {
   const cachedMap = getCachedValue<number>(info.currentMapName);
   if (cachedMap) {
     return cachedMap;

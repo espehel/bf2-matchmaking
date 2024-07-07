@@ -44,11 +44,11 @@ export default async function LiveSection({ match }: Props) {
     <section className="section bg-accent text-accent-content w-full">
       <h2>Live</h2>
       <div className="text-left">
-        <p>{`State: ${liveMatch?.liveState || 'offline'}`}</p>
-        <p>{`Server: ${liveMatch?.liveInfo?.serverName || 'offline'}`}</p>
+        <p>{`State: ${liveMatch?.state || 'offline'}`}</p>
+        <p>{`Server: ${liveMatch?.server?.name || 'offline'}`}</p>
       </div>
-      {liveMatch?.liveInfo ? (
-        <RoundTable liveInfo={liveMatch.liveInfo} />
+      {liveMatch?.server?.live ? (
+        <RoundTable liveInfo={liveMatch.server.live} />
       ) : (
         <p className="text-xl font-bold">No match server found</p>
       )}
@@ -64,7 +64,7 @@ export default async function LiveSection({ match }: Props) {
               Start live match
             </ActionButton>
           )}
-          {server && server.name != liveMatch?.liveInfo?.serverName && isMatchOfficer && (
+          {server && server.name != liveMatch?.server?.name && isMatchOfficer && (
             <ActionButton
               action={setLiveMatchServer}
               successMessage={`Server ${server.name} is now tracking live match`}

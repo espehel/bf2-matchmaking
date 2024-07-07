@@ -5,6 +5,7 @@ import ServerActions from '@/components/servers/ServerActions';
 import ServerInGameActions from '@/components/servers/ServerInGameActions';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import { isConnectedLiveServer } from '@bf2-matchmaking/types';
 
 interface Props {
   params: { server: string };
@@ -16,20 +17,23 @@ export default async function ServerPage({ params }: Props) {
   const hasAdmin = Boolean(adminRoles?.server_admin);
 
   const { data: player } = await supabase(cookies).getSessionPlayer();
-  const isConnected = player
-    ? liveServer.info.players.some((p) => p.keyhash === player.keyhash)
-    : false;
+  const isConnected =
+    player && liveServer.live
+      ? liveServer.live.players.some((p) => p.keyhash === player.keyhash)
+      : false;
 
   return (
     <main className="main flex flex-col gap-6">
       <ServerHeader server={liveServer} isConnected={isConnected} hasAdmin={hasAdmin} />
       <div className="flex gap-6">
         <ServerActions server={liveServer} hasAdmin={hasAdmin} />
-        <ServerInGameActions
-          server={liveServer}
-          isConnected={isConnected}
-          hasAdmin={hasAdmin}
-        />
+        {isConnectedLiveServer(liveServer) && (
+          <ServerInGameActions
+            server={liveServer}
+            isConnected={isConnected}
+            hasAdmin={hasAdmin}
+          />
+        )}
       </div>
       <ManageServerActions address={params.server} />
     </main>

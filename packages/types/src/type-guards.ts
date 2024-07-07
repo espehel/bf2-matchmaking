@@ -16,7 +16,14 @@ import {
   TeamsJoined,
   TeamspeakPlayer,
 } from './database-types';
-import { PostgrestError, TeamPlayer } from './index';
+import {
+  ActiveLiveMatch,
+  ConnectedLiveServer,
+  LiveMatch,
+  LiveServer,
+  PostgrestError,
+  TeamPlayer,
+} from './index';
 
 export const isMatchesRow = (row: unknown): row is MatchesRow => {
   const casted = row as MatchesRow;
@@ -48,6 +55,7 @@ export const isDefined = <T>(object: undefined | T): object is T =>
   typeof object !== 'undefined';
 
 export const isNotNull = <T>(object: null | T): object is T => object !== null;
+export const isNull = (object: unknown): object is null => object === null;
 
 export const isString = (text: unknown): text is string => typeof text === 'string';
 
@@ -78,4 +86,12 @@ export function isAcceptedChallenge(
         challenge.away_server !== null &&
         challenge.match !== null
     : false;
+}
+
+export function isConnectedLiveServer(server: LiveServer): server is ConnectedLiveServer {
+  return (server.status === 'active' || server.status === 'idle') && server.live !== null;
+}
+
+export function isActiveLiveMatch(match: LiveMatch): match is ActiveLiveMatch {
+  return Boolean(match.server);
 }

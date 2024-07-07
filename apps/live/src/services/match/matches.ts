@@ -4,22 +4,22 @@ import {
   logChangeMatchStatus,
   logErrorMessage,
   logMessage,
+  verbose,
 } from '@bf2-matchmaking/logging';
 import {
   isDiscordMatch,
-  LiveInfo,
+  LiveState,
   LiveMatch,
   MatchConfigsRow,
   MatchesJoined,
   MatchProcessError,
-  MatchServers,
   MatchStatus,
   RoundsInsert,
   ServerInfo,
   ServersRow,
+  MatchesRow,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { Match } from './Match';
 import {
   calculateMatchResults,
   calculatePlayerResults,
@@ -36,16 +36,25 @@ import {
   getDebugMatchResultsEmbed,
 } from '@bf2-matchmaking/discord';
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
-import { getJoinmeHref, hasNotKeyhash } from '@bf2-matchmaking/utils';
+import { assertObj, getJoinmeHref, hasNotKeyhash } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
+import {
+  getActiveMatchServer,
+  getCachedMatchesJoined,
+  getMatchPlayers,
+  getMatchValues,
+  getServerInfo,
+  setMatchValues,
+} from '@bf2-matchmaking/redis';
+import { Match } from '@bf2-matchmaking/redis/src/types';
+import { getLiveServerByMatchId } from '../server/server-manager';
 
-export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | null) => {
-  logChangeMatchStatus(MatchStatus.Finished, match, liveInfo);
-  const { data: updatedMatch, error } = await client().updateMatch(match.id, {
+export const finishMatch = async (matchId: string) => {
+  const { data: updatedMatch, error } = await client().updateMatch(Number(matchId), {
     status: MatchStatus.Finished,
   });
   if (error) {
-    logErrorMessage(`Match ${match.id} failed to finish`, error);
+    logErrorMessage(`Match ${matchId}:  Failed to finish`, error);
     return;
   }
 
@@ -68,7 +77,7 @@ export const finishMatch = async (match: MatchesJoined, liveInfo: LiveInfo | nul
 
     await closeMatch(updatedMatch);
   } catch (e) {
-    logErrorMessage(`Match ${match.id} failed to close`, e);
+    logErrorMessage(`Match ${updatedMatch.id} failed to close`, e);
   }
 };
 export const closeMatch = async (match: MatchesJoined) => {
@@ -98,7 +107,7 @@ export const closeMatch = async (match: MatchesJoined) => {
       closed_at: DateTime.now().toISO(),
     })
     .then(verifySingleResult);
-  logChangeMatchStatus(MatchStatus.Closed, match);
+  logChangeMatchStatus(MatchStatus.Closed, match.id, { match, results });
   return { results, errors: null };
 };
 
@@ -164,19 +173,17 @@ export async function processResults(match: MatchesJoined) {
   return data;
 }
 
-export const hasPlayedAllRounds = (
-  config: MatchConfigsRow,
-  rounds: Array<RoundsInsert>
-) => rounds.length >= config.maps * 2;
+export const hasPlayedAllRounds = (config: MatchConfigsRow, roundsPlayed: number) =>
+  roundsPlayed >= config.maps * 2;
 
-export const isServerEmptied = (rounds: Array<RoundsInsert>, si: ServerInfo) =>
-  rounds.length > 0 && si.connectedPlayers === '0';
+export const isServerEmptied = (roundsPlayed: number, si: ServerInfo) =>
+  roundsPlayed > 0 && si.connectedPlayers === '0';
 
 export const isFirstTimeFullServer = (
   match: MatchesJoined,
   si: ServerInfo,
-  rounds: Array<RoundsInsert>
-) => Number(si.connectedPlayers) === match.players.length && rounds.length === 0;
+  roundsPlayed: number
+) => Number(si.connectedPlayers) === match.players.length && roundsPlayed === 0;
 
 export const isOngoingRound = (si: ServerInfo) => {
   si.currentGameStatus;
@@ -190,94 +197,6 @@ export const isOngoingRound = (si: ServerInfo) => {
 
   return true;
 };
-
-export async function setLiveAt(liveMatch: Match) {
-  if (liveMatch.match.live_at) {
-    return;
-  }
-
-  const { data } = await client().updateMatch(liveMatch.match.id, {
-    live_at: DateTime.now().toISO(),
-  });
-
-  if (data) {
-    liveMatch.setMatch(data);
-  }
-}
-
-export async function sendLiveMatchServerMessage(liveMatch: Match) {
-  if (liveMatch.server) {
-    const joinmeHref = await getJoinmeHref(liveMatch.server.ip, liveMatch.server.port);
-    await sendChannelMessage(LOG_CHANNEL_ID, {
-      embeds: [getLiveMatchEmbed(liveMatch.match, liveMatch.server, joinmeHref)],
-    });
-    logMessage(
-      `Channel ${LOG_CHANNEL_ID}: LiveMatch created for Match ${liveMatch.match.id}`,
-      { liveMatch }
-    );
-  }
-}
-export async function updateLiveMatchServerIfMix(liveMatch: Match, liveInfo: LiveInfo) {
-  if (liveMatch.match.config.type !== 'Mix') {
-    return;
-  }
-
-  if (liveInfo.ip === liveMatch.server?.ip) {
-    return;
-  }
-
-  const matchServer = await setNewMatchServer(liveMatch, liveInfo.ip);
-  if (isDiscordMatch(liveMatch.match) && matchServer) {
-    liveMatch.setServer(matchServer);
-
-    const joinmeHref = await getJoinmeHref(matchServer.ip, matchServer.port);
-    await sendChannelMessage(liveMatch.match.config.channel, {
-      embeds: [
-        getWarmUpStartedEmbed(
-          liveMatch.match,
-          matchServer,
-          liveInfo.serverName,
-          joinmeHref
-        ),
-      ],
-    });
-    logMessage(
-      `Channel ${liveMatch.match.config.channel}: LiveMatch server updated to ${liveInfo.serverName} for Match ${liveMatch.match.id}`,
-      { liveMatch, liveInfo, matchServer }
-    );
-  }
-}
-
-export async function setNewMatchServer(
-  liveMatch: Match,
-  server: string
-): Promise<ServersRow | null> {
-  const deleteResult = await client().deleteAllMatchServers(liveMatch.match.id);
-  if (deleteResult.error) {
-    logErrorMessage(
-      `Match ${liveMatch.match.id}: Failed to delete all servers for LiveMatch`,
-      deleteResult.error,
-      { match: Match }
-    );
-    return null;
-  }
-
-  const result = await client().createMatchServers(liveMatch.match.id, {
-    server,
-  });
-  const matchServer = result.data?.at(0)?.server;
-
-  if (result.error || !matchServer) {
-    logErrorMessage(
-      `Match ${liveMatch.match.id}: Failed to create server ${server} for LiveMatch`,
-      result.error,
-      { match: Match }
-    );
-    return null;
-  }
-
-  return matchServer;
-}
 
 export async function updateMatchServer(matchId: number, serverAddress: string) {
   info(
@@ -317,12 +236,18 @@ export async function fixMissingMatchPlayers(match: MatchesJoined) {
   return null;
 }
 
-export function toLiveMatch(match: Match): LiveMatch {
-  return {
-    liveInfo: match.liveInfo,
-    liveState: match.state,
-    matchId: match.match.id,
-    players: match.match.players,
-    server: match.server,
-  };
+export async function setMatchLiveAt(matchId: number): Promise<Match> {
+  const live_at = DateTime.utc().toISO();
+  verbose('setMatchLiveAt', `Match ${matchId}: Live at ${live_at}`);
+  await client().updateMatch(matchId, { live_at }).then(verifySingleResult);
+  return setMatchValues(matchId, { live_at });
+}
+
+export async function broadcastWarmUpStarted(match: MatchesJoined, address: string) {
+  const serverInfo = await getServerInfo(address);
+  if (isDiscordMatch(match)) {
+    await sendChannelMessage(match.config.channel, {
+      embeds: [getWarmUpStartedEmbed(match.id, address, serverInfo)],
+    });
+  }
 }

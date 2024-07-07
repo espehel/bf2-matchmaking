@@ -1,70 +1,37 @@
-import {
-  PlayerListItem,
-  LiveInfo,
-  ServerRconsRow,
-  ServersRow,
-  LiveServer,
-  ServerInfo,
-} from '@bf2-matchmaking/types';
-import { getPlayerList, getServerInfo, hasNoVehicles, rcon } from '../rcon/RconManager';
-import { api, externalApi, getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
+import { LiveState, ServersRow, ServerInfo, DbServer } from '@bf2-matchmaking/types';
+import { api } from '@bf2-matchmaking/utils';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
-import { Server } from './Server';
+import { getPlayerList, getServerInfo } from '../rcon/bf2-rcon-api';
 
-export async function createLiveInfo({
-  id: ip,
-  rcon_port,
-  rcon_pw,
-}: ServerRconsRow): Promise<LiveInfo | null> {
-  const info = await rcon(ip, rcon_port, rcon_pw)
-    .then(getServerInfo)
-    .catch(() => null);
-  if (!info) {
-    return null;
+export async function buildLiveState(address: string): Promise<LiveState> {
+  const { data: info, error, readyState } = await getServerInfo(address);
+  if (error) {
+    throw new Error(`${address}[${readyState}]: ${error.message}`);
   }
 
   if (info.connectedPlayers === '0') {
-    return { ...info, players: [], ip };
+    return { ...info, players: [] };
   }
 
-  const players: Array<PlayerListItem> = await rcon(ip, rcon_port, rcon_pw)
-    .then(getPlayerList)
-    .catch(() => []);
+  const { data: players } = await getPlayerList(address);
 
-  if (players.length !== Number(info.connectedPlayers)) {
+  if (!players || players.length !== Number(info.connectedPlayers)) {
+    throw new Error(`${address}[${readyState}]: Invalid live state`);
+  }
+
+  return { ...info, players };
+}
+export async function buildLiveStateSafe(address: string): Promise<LiveState | null> {
+  try {
+    return buildLiveState(address);
+  } catch (e) {
     return null;
   }
-
-  return { ...info, players, ip };
 }
 
-export async function toLiveServer(server: Server): Promise<LiveServer> {
-  const { address, gamePort, info, updatedAt, errorAt } = server;
-  const joinmeHref = await getJoinmeHref(server.address, server.gamePort);
-  const joinmeDirect = await getJoinmeDirect(server.address, server.gamePort);
-  const { data: location } = await externalApi.ip().getIpLocation(server.address);
-  const noVehicles = await server.rcon().then(hasNoVehicles);
-  const country = location?.country || null;
-  const city = location?.city || null;
-
-  return {
-    address,
-    port: Number(gamePort),
-    info,
-    noVehicles,
-    updatedAt: updatedAt.toISO(),
-    errorAt: errorAt?.toISO() || null,
-    joinmeHref,
-    joinmeDirect,
-    country,
-    city,
-    matchId: server.getLiveMatch()?.match.id || null,
-  };
-}
-
-export async function updateServerName(servers: Array<ServersRow>, liveInfo: LiveInfo) {
-  const server = servers.find(({ ip }) => ip === liveInfo.ip);
+export async function updateServerName(servers: Array<ServersRow>, liveInfo: LiveState) {
+  /*const server = servers.find(({ ip }) => ip === liveInfo);
   if (server && server.name !== liveInfo.serverName) {
     info(
       'updateServerName',
@@ -73,7 +40,7 @@ export async function updateServerName(servers: Array<ServersRow>, liveInfo: Liv
     await client().updateServer(server.ip, {
       name: liveInfo.serverName,
     });
-  }
+  }*/
 }
 
 export async function getAddress(ip: string) {
@@ -88,8 +55,8 @@ export async function upsertServer(
   rcon_pw: string,
   serverInfo: ServerInfo,
   demo_path?: string
-) {
-  await client()
+): Promise<DbServer> {
+  const server = await client()
     .upsertServer({
       ip: address,
       port,
@@ -103,5 +70,5 @@ export async function upsertServer(
     .then(verifySingleResult);
 
   info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
-  return serverRcon;
+  return { ...server, rcon: serverRcon };
 }

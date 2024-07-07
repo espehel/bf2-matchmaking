@@ -4,12 +4,12 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "rimraf build && esbuild --define:process.env.NODE_ENV=\\\"production\\\" src/app.ts --bundle --platform=node --outfile=build/app.js --external:express  --external:discord.js",
+    "build": "rimraf build && esbuild --define:process.env.NODE_ENV=\\\"production\\\" src/app.ts --bundle --platform=node --outfile=build/app.js --external:express  --external:discord.js --external:cpu-features --external:ssh2",
     "start": "node build/app.js",
     "verify": "tsc --noEmit"
   },
   "engines": {
-    "node": "18 || 19"
+    "node": ">=18"
   },
   "dependencies": {
     "@bf2-matchmaking/discord": "*",

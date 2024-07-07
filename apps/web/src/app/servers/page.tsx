@@ -1,11 +1,9 @@
 import { LiveServer } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import ServerCreateForm from '@/components/servers/ServerCreateForm';
 import { api, verify } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
 import CreateServerSection from '@/components/servers/CreateServerSection';
-import { CheckIcon } from '@heroicons/react/24/solid';
 import { CheckCircleIcon } from '@heroicons/react/16/solid';
 
 export default async function Page() {
@@ -30,7 +28,7 @@ export default async function Page() {
           <tbody>
             {servers.map((server) => (
               <tr key={server.address} className="hover">
-                <td className="truncate">{server.info.serverName}</td>
+                <td className="truncate">{server.name}</td>
                 <td>{server.address}</td>
                 <td>{server.port}</td>
                 <td className="truncate">{`${server.city}, ${server.country}`}</td>
@@ -40,8 +38,8 @@ export default async function Page() {
                 <td>
                   <ServerStatus server={server} />
                 </td>
-                <td>{`${server.info?.players.length || 0}/${
-                  server.info?.maxPlayers || 0
+                <td>{`${server.live?.players.length || 0}/${
+                  server.live?.maxPlayers || 0
                 }`}</td>
                 <td>
                   <Link
@@ -70,7 +68,7 @@ function ServerStatus({ server }: { server: LiveServer }) {
         {server.matchId}
       </Link>
     );
-  } else if (server.info) {
+  } else if (server.live) {
     return 'Idle';
   } else {
     return 'Offline';

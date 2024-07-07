@@ -1,22 +1,5 @@
-import {
-  MatchesJoined,
-  MatchServers,
-  PlayersRow,
-  RoundsInsert,
-  ServerRconsRow,
-  ServersJoined,
-  ServersRow,
-} from './database-types';
-import {
-  DnsRecord,
-  Instance,
-  LiveRound,
-  LiveServerState,
-  PlayerListItem,
-  ServerInfo,
-  User,
-} from './index';
-import { DateTime } from 'luxon';
+import { MatchesJoined, PlayersRow, ServerRconsRow, ServersRow } from './database-types';
+import { LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -66,22 +49,30 @@ export interface PostCommandsReinstallRequestBody {
   commands: Array<string>;
 }
 
+export type LiveServerStatus = 'active' | 'idle' | 'offline' | 'lacking';
+
 export interface LiveServer {
   address: string;
+  name: string;
+  live: LiveState | null;
   port: number;
-  info: LiveInfo;
-  noVehicles: boolean;
+  status: LiveServerStatus;
+  noVehicles: boolean | null;
   matchId: number | null;
   joinmeHref: string;
   joinmeDirect: string;
   country: string | null;
   city: string | null;
-  updatedAt: string | null;
-  errorAt: string | null;
+  updatedAt?: string;
+  errorAt?: string;
 }
 
-export interface LiveInfo extends ServerInfo {
-  ip: string;
+export interface ConnectedLiveServer extends LiveServer {
+  status: 'active' | 'idle';
+  live: LiveState;
+}
+
+export interface LiveState extends ServerInfo {
   players: Array<PlayerListItem>;
 }
 
@@ -118,13 +109,19 @@ export interface PostServerPlayersSwitchRequestBody {
 
 export type PostMatchResult = MatchesJoined;
 
-export type LiveMatch = {
-  liveInfo: LiveInfo | null;
-  liveState: LiveServerState;
+export interface LiveMatch {
   matchId: number;
-  players: Array<PlayersRow>;
-  server: ServersRow | null;
-};
+  state: LiveServerState;
+  roundsPlayed: number;
+  pendingSince: string | null;
+  live_at: string | null;
+  connectedPlayers: Array<string>;
+  server: LiveServer | null;
+}
+
+export interface ActiveLiveMatch extends LiveMatch {
+  server: LiveServer;
+}
 
 export interface PostDemosRequestBody {
   server: string;

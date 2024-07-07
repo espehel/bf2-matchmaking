@@ -10,7 +10,7 @@ interface Props {
 }
 export default async function ServerInfo({ server, match }: Props) {
   const { data } = await api.live().getServer(server.ip);
-  const serverInfo = data?.info;
+  const serverInfo = data?.live;
 
   return (
     <>

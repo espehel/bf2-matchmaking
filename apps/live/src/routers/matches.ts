@@ -1,14 +1,15 @@
 import Router from '@koa/router';
-import {
-  findLiveMatch,
-  getLiveMatches,
-  startLiveMatch,
-} from '../services/match/MatchManager';
 import { client } from '@bf2-matchmaking/supabase';
-import { MatchStatus } from '@bf2-matchmaking/types';
-import { closeMatch, toLiveMatch } from '../services/match/matches';
+import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
+import { closeMatch } from '../services/match/matches';
 import { info } from '@bf2-matchmaking/logging';
-import { getLiveServer, resetLiveMatchServers } from '../services/server/ServerManager';
+import { addActiveServer, getActiveMatches } from '@bf2-matchmaking/redis';
+import {
+  getLiveServer,
+  getLiveServerByMatchId,
+  resetLiveServer,
+} from '../services/server/server-manager';
+import { createPendingMatch, getMatch } from '../services/match/match-manager';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -43,42 +44,43 @@ matchesRouter.post('/:matchid/results', async (ctx) => {
 matchesRouter.post('/:matchid/server', async (ctx) => {
   const force = `${ctx.query.force}`.toLowerCase() === 'true';
 
-  const liveMatch = findLiveMatch(Number(ctx.params.matchid));
-  if (!liveMatch) {
+  const match = await getMatch(ctx.params.matchid);
+  if (!match) {
     ctx.status = 404;
     ctx.body = { message: 'Live match not found.' };
     return;
   }
 
-  const liveServer = getLiveServer(ctx.request.body.address);
+  const liveServer = await getLiveServer(ctx.request.body.address);
   if (!liveServer) {
     ctx.status = 404;
     ctx.body = { message: 'Live server not found' };
     return;
   }
 
-  if (liveMatch.state !== 'pending' && !force) {
+  if (match.state !== 'pending' && !force) {
     ctx.status = 400;
-    ctx.body = { message: `Live match has not started.` };
+    ctx.body = { message: `Live match has started.` };
     return;
   }
 
-  if (!liveServer.isIdle() && !force) {
+  if (liveServer.status !== 'idle' && !force) {
     ctx.status = 400;
     ctx.body = { message: `Live server is already in use.` };
     return;
   }
 
-  if ((!liveServer.isIdle() || liveMatch.state !== 'pending') && force) {
+  if ((liveServer.status !== 'idle' || match.state !== 'pending') && force) {
     info(
       'postMatchLiveServer',
-      `Forcefully set live server ${ctx.request.body.address} to match ${liveMatch.match.id}`
+      `Forcefully set live server ${ctx.request.body.address} to match ${ctx.params.matchid}`
     );
   }
 
-  resetLiveMatchServers(liveMatch);
-  liveServer.reset();
-  liveServer.setLiveMatch(liveMatch);
+  if (match.server) {
+    await resetLiveServer(match.server.address);
+  }
+  await addActiveServer(ctx.request.body.address, ctx.params.matchid);
   ctx.status = 204;
 });
 
@@ -97,23 +99,23 @@ matchesRouter.post('/:matchid', async (ctx) => {
     return;
   }
 
-  const liveMatch = startLiveMatch(data);
+  const liveMatch = await createPendingMatch(data);
   ctx.status = 201;
   ctx.body = liveMatch;
 });
 
 matchesRouter.get('/:matchid/server', async (ctx) => {
-  const match = findLiveMatch(Number(ctx.params.matchid));
-  if (!match) {
+  const server = getLiveServerByMatchId(ctx.params.matchid);
+  if (!server) {
     ctx.status = 404;
-    ctx.body = { message: 'Live match not found.' };
+    ctx.body = { message: 'Live match server not found.' };
     return;
   }
-  ctx.body = match.server;
+  ctx.body = server;
 });
 
 matchesRouter.get('/:matchid', async (ctx) => {
-  const match = findLiveMatch(Number(ctx.params.matchid));
+  const match = await getMatch(ctx.params.matchid);
 
   if (!match) {
     ctx.status = 404;
@@ -121,9 +123,10 @@ matchesRouter.get('/:matchid', async (ctx) => {
     return;
   }
 
-  ctx.body = toLiveMatch(match);
+  ctx.body = match;
 });
 
 matchesRouter.get('/', async (ctx) => {
-  ctx.body = getLiveMatches().map(toLiveMatch);
+  const matches = await getActiveMatches();
+  ctx.body = matches.map(getMatch).filter(isNotNull);
 });

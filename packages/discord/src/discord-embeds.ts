@@ -10,6 +10,7 @@ import {
   PickedMatchPlayer,
   PollResult,
   MatchPlayerResultsInsert,
+  ConnectedLiveServer,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -30,6 +31,7 @@ import {
 } from './embed-utils';
 import { DateTime } from 'luxon';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
+import { ServerInfo } from '@bf2-matchmaking/redis/src/types';
 
 export function buildTeamspeakMatchStartedEmbed(match: MatchesJoined): APIEmbed {
   return {
@@ -87,8 +89,8 @@ export const getServerPollEmbed = (
   } server, poll ends <t:${endTime.toUnixInteger()}:R>`,
   fields: createServerPollFields(servers),
 });
-export const getServerEmbed = (server: LiveServer) => ({
-  description: `Join [${replaceDiscordGG(server.info.serverName)}](${server.joinmeHref})`,
+export const getServerEmbed = (server: ConnectedLiveServer) => ({
+  description: `Join [${replaceDiscordGG(server.live.serverName)}](${server.joinmeHref})`,
   fields: [
     { name: 'address', value: server.address, inline: true },
     { name: 'port', value: server.port, inline: true },
@@ -108,16 +110,17 @@ export const getLiveMatchEmbed = (
   ],
 });
 export const getWarmUpStartedEmbed = (
-  match: MatchesJoined,
-  server: ServersRow,
-  serverName: string,
-  joinmeHref: string
+  matchId: number,
+  address: string,
+  server: ServerInfo
 ) => ({
-  description: `Warm up started on [${replaceDiscordGG(serverName)}](${joinmeHref})`,
+  description: `Warm up started on [${replaceDiscordGG(server.name)}](${
+    server.joinmeHref
+  })`,
   fields: [
-    { name: 'address', value: server.ip, inline: true },
+    { name: 'address', value: address, inline: true },
     { name: 'port', value: server.port, inline: true },
-    getLiveMatchField(match.id),
+    getLiveMatchField(matchId),
   ],
 });
 
@@ -189,11 +192,11 @@ export function buildDebugActualDraftEmbed(
 }
 export const getMatchStartedEmbed = (
   match: MatchesJoined,
-  server?: LiveServer
+  server?: ConnectedLiveServer
 ): APIEmbed =>
   server
     ? {
-        description: `**JOIN** [${replaceDiscordGG(server.info.serverName)}](${
+        description: `**JOIN** [${replaceDiscordGG(server.live.serverName)}](${
           server.joinmeHref
         })`,
         fields: [...getServerInfoFields(server), getLiveMatchField(match.id)],
@@ -399,13 +402,13 @@ export const getMatchServerField = (match: MatchesJoined) => ({
   value: `${api.web().basePath}/matches/${match.id}/server`,
 });
 
-export function getServerFields(servers: Array<LiveServer>) {
+export function getServerFields(servers: Array<ConnectedLiveServer>) {
   return servers
     .filter((server) => !getMatchIdFromDnsName(server.address))
     .map((server) => ({
-      name: server.info.serverName.concat(
-        server.info
-          ? ` (${server.info.connectedPlayers}/${server.info.maxPlayers})`
+      name: server.live.serverName.concat(
+        server.live
+          ? ` (${server.live.connectedPlayers}/${server.live.maxPlayers})`
           : ' (offline)'
       ),
       value: `[${server.address}:${server.port}](${server.joinmeHref})`,
