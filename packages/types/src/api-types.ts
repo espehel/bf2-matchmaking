@@ -1,23 +1,5 @@
-import {
-  MatchesJoined,
-  MatchServers,
-  PlayersRow,
-  RoundsInsert,
-  ServerRconsRow,
-  ServersJoined,
-  ServersRow,
-} from './database-types';
-import {
-  DnsRecord,
-  Instance,
-  LiveRound,
-  LiveServerState,
-  PlayerListItem,
-  ServerInfo,
-  User,
-} from './index';
-import { DateTime } from 'luxon';
-import exp from 'node:constants';
+import { MatchesJoined, PlayersRow, ServerRconsRow, ServersRow } from './database-types';
+import { LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
 export enum ApiErrorType {
   NotVoiceChannel = 'NOT_VOICE_CHANNEL',
@@ -67,10 +49,11 @@ export interface PostCommandsReinstallRequestBody {
   commands: Array<string>;
 }
 
-export type LiveServerStatus = 'live' | 'idle' | 'offline' | 'lacking';
+export type LiveServerStatus = 'active' | 'idle' | 'offline' | 'lacking';
 
 export interface LiveServer {
   address: string;
+  name: string;
   live: LiveState | null;
   port: number;
   status: LiveServerStatus;
@@ -85,7 +68,7 @@ export interface LiveServer {
 }
 
 export interface ConnectedLiveServer extends LiveServer {
-  status: 'live' | 'idle';
+  status: 'active' | 'idle';
   live: LiveState;
 }
 
@@ -126,13 +109,15 @@ export interface PostServerPlayersSwitchRequestBody {
 
 export type PostMatchResult = MatchesJoined;
 
-export type LiveMatch = {
-  liveInfo: LiveState | null;
-  liveState: LiveServerState;
+export interface LiveMatch {
   matchId: number;
-  players: Array<PlayersRow>;
-  server: ServersRow | null;
-};
+  state: LiveServerState;
+  roundsPlayed: number;
+  pendingSince: string | null;
+  live_at: string | null;
+  connectedPlayers: Array<string>;
+  server: LiveServer | null;
+}
 
 export interface PostDemosRequestBody {
   server: string;

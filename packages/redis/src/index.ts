@@ -1,20 +1,19 @@
 import { createClient } from 'redis';
 import {
-  LiveState,
   LiveServerStatus,
-  PendingServer,
   ServerRconsRow,
+  MatchesJoined,
+  MatchPlayersRow,
 } from '@bf2-matchmaking/types';
 import {
   stringArraySchema,
-  pendingServerSchema,
   rconSchema,
   serverInfoSchema,
   serverLiveSchema,
   serverSchema,
+  matchSchema,
 } from './schemas';
-import { z } from 'zod';
-import { Rcon, Server, ServerInfo, ServerLive } from './types';
+import { Match, Rcon, Server, ServerInfo, ServerLive } from './types';
 
 let client: ReturnType<typeof createClient> | null = null;
 
@@ -69,11 +68,7 @@ export async function getServerLive(address: string): Promise<ServerLive> {
 
 export async function setServerValues(address: string, values: Server) {
   const client = await getClient();
-  return Promise.all(
-    Object.entries(serverSchema.parse(values)).map(([key, value]) =>
-      client.HSET(`server:${address}`, key, value)
-    )
-  );
+  return client.HSET(`server:${address}`, ...Object.entries(values));
 }
 export async function getServerValues(address: string): Promise<Server> {
   const client = await getClient();
@@ -92,67 +87,50 @@ export async function setServerInfo(address: string, info: ServerInfo) {
 export async function getServerInfo(address: string): Promise<ServerInfo> {
   return getValue<ServerRconsRow>(`server:${address}:info`).then(serverInfoSchema.parse);
 }
-export async function getServersWithStatus(key: LiveServerStatus) {
+
+export async function setMatchValues(matchId: string | number, values: Partial<Match>) {
   const client = await getClient();
-  const addressList = await client.sMembers(key);
-  return stringArraySchema.parse(addressList);
+  return client.HSET(`match:${matchId}`, ...Object.entries(values));
 }
-export async function addServerWithStatus(address: string, key: LiveServerStatus) {
+export async function getMatchValues(matchId: string | number): Promise<Match> {
   const client = await getClient();
-  return client.sAdd(key, address);
+  return client.HGETALL(`match:${matchId}`).then(matchSchema.parse);
 }
-export async function removeServerWithStatus(address: string, key: LiveServerStatus) {
-  const client = await getClient();
-  return client.sRem(key, address);
+export async function getCachedMatchesJoined(
+  matchId: string
+): Promise<MatchesJoined | null> {
+  return getValue<MatchesJoined>(`match:${matchId}:cache`);
 }
-export async function setMatch(match: any) {
-  const client = await getClient();
-  return {} as any;
-}
-export async function getMatch() {
-  const client = await getClient();
-  return {} as any;
-}
-export async function getMatchInfo() {
-  const client = await getClient();
-  return {} as any;
-}
-export async function setMatchInfo(matchId: string, values: any) {
-  const client = await getClient();
-  return {} as any;
+export async function setCachedMatchesJoined(match: MatchesJoined) {
+  return setValue(`match:${match.id}:cache`, match);
 }
 
-export async function getMatchRounds(matchId: string) {
+export async function incMatchRoundsPlayed(matchId: string | number): Promise<number> {
   const client = await getClient();
-  return {} as any;
+  return client.HINCRBY(`match:${matchId}`, 'roundsPlayed', 1);
 }
 
-export async function setMatchRounds(matchId: string, rounds: any) {
+export async function getMatchPlayers(matchId: string): Promise<Array<string>> {
   const client = await getClient();
-  return {} as any;
-}
-
-export async function updateMatchPlayers(
-  matchId: string,
-  players: Array<string>
-): Promise<Array<string>> {
-  const client = await getClient();
-  await client.SADD(`match${matchId}:players}`, players);
-  return client.SMEMBERS(`match${matchId}:players}`).then(stringArraySchema.parse);
-}
-
-export async function getMatchPlayers(matchId: string): Promise<Map<string, any>> {
-  const client = await getClient();
-  return client.HGETALL(`match${matchId}:players}`);
+  return client.SMEMBERS(`match:${matchId}:players}`).then(stringArraySchema.parse);
 }
 
 export async function setMatchPlayer(
   matchId: string,
-  playerHash: string,
-  mp: any
+  playerHash: string
 ): Promise<Map<string, any>> {
   const client = await getClient();
-  return client.HMSET(`match${matchId}:players}`, playerHash, mp);
+  return client.SADD(`match:${matchId}:players`, playerHash);
+}
+
+export async function removeMatch(matchId: string) {
+  const client = await getClient();
+  await client.DEL(
+    `match:${matchId}`,
+    `match:${matchId}:players`,
+    `match:${matchId}:cached`
+  );
+  await client.SREM('matches', matchId);
 }
 
 function stringifyValue(value: unknown): string {
@@ -160,4 +138,56 @@ function stringifyValue(value: unknown): string {
     return value;
   }
   return JSON.stringify(value);
+}
+
+export async function addActiveServer(address: string, matchId: string) {
+  const client = await getClient();
+  return client.HSET('active', matchId, address);
+}
+export async function getActiveMatchServer(matchId: string): Promise<string | null> {
+  const client = await getClient();
+  return client.HGET('active', matchId);
+}
+export async function getActiveMatchServers(): Promise<Map<string, string>> {
+  const client = await getClient();
+  return client.HGETALL('active');
+}
+export async function getServersWithStatus(key: LiveServerStatus) {
+  const client = await getClient();
+  const addressList =
+    key === 'active' ? await client.HVALS(key) : await client.SMEMBERS(key);
+  return stringArraySchema.parse(addressList);
+}
+export async function addServerWithStatus(
+  address: string,
+  key: Exclude<LiveServerStatus, 'active'>
+) {
+  const client = await getClient();
+  return client.SADD(key, address);
+}
+export async function removeServerWithStatus(address: string, key: LiveServerStatus) {
+  const client = await getClient();
+  if (key === 'active') {
+    return client.HDEL(key, address);
+  }
+  return client.SREM(key, address);
+}
+export async function getActiveMatches() {
+  const client = await getClient();
+  const matchIdList = await client.HKEYS('active');
+  return stringArraySchema.parse(matchIdList);
+}
+export async function hasActiveMatch(matchId: string) {
+  const client = await getClient();
+  const reply = await client.HEXISTS('active', matchId);
+  return Boolean(reply);
+}
+export async function addMatch(matchId: string) {
+  const client = await getClient();
+  return client.SADD('matches', matchId);
+}
+export async function getMatches() {
+  const client = await getClient();
+  const matchIdList = await client.HKEYS('matches');
+  return stringArraySchema.parse(matchIdList);
 }

@@ -1,6 +1,21 @@
 import { z } from 'zod';
 import { GameStatus } from '@bf2-matchmaking/types';
 
+export const matchSchema = z.object({
+  state: z.enum([
+    'pending',
+    'warmup',
+    'prelive',
+    'live',
+    'endlive',
+    'finished',
+    'stale',
+  ] as const),
+  roundsPlayed: z.number(),
+  pendingSince: z.string().datetime({ offset: true }).nullable(),
+  live_at: z.string().datetime({ offset: true }).nullable(),
+});
+
 export const rconSchema = z.object({
   address: z.string(),
   port: z.number(),
@@ -8,6 +23,7 @@ export const rconSchema = z.object({
 });
 export const serverInfoSchema = z.object({
   port: z.string(),
+  name: z.string(),
   joinmeHref: z.string().url(),
   joinmeDirect: z.string().url(),
   country: z.string(),

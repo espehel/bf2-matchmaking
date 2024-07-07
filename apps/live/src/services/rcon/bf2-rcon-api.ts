@@ -45,7 +45,7 @@ export async function getPlayerList(
 }
 
 export async function getServerInfo(address: string): Promise<RconResult<ServerInfo>> {
-  const reply = await sendMessage(address, 'bf2cc pl');
+  const reply = await sendMessage(address, 'bf2cc si');
   if (reply.error) {
     return reply;
   }

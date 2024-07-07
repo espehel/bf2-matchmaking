@@ -4,13 +4,17 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
 import { getTeamTuple } from '@bf2-matchmaking/utils/src/round-utils';
 
-export async function insertRound(match: MatchesJoined, liveInfo: LiveState) {
+export async function insertRound(
+  match: MatchesJoined,
+  liveInfo: LiveState,
+  server: string | null
+) {
   const [team1, team2] = getTeamTuple(liveInfo.players, match);
 
   const round: RoundsInsert = {
     team1_tickets: liveInfo.team1_tickets,
     team2_tickets: liveInfo.team2_tickets,
-    server: liveInfo.ip,
+    server,
     match: match.id,
     team1,
     team2,

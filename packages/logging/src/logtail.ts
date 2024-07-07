@@ -11,6 +11,7 @@ import {
   LogContext,
 } from '@bf2-matchmaking/types';
 import { error, info } from './winston';
+import { Match } from '@bf2-matchmaking/redis/src/types';
 
 invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
 const logger = new Logtail(process.env.LOGTAIL_SOURCE, {
@@ -34,37 +35,16 @@ export const logEditChannelMessage = (
     .finally(flush);
 };
 
-export const logChangeMatchStatus = (
-  status: MatchStatus,
-  match: MatchesJoined,
-  liveInfo?: LiveState | null
-) => {
-  logger
-    .info(`Changing status for Match ${match.id} to ${status}"`, {
-      match: JSON.stringify(match),
-      liveInfo: JSON.stringify(liveInfo),
-    })
-    .then((log) => info('logtail', log.message))
-    .catch((e) => error('logtail', e))
-    .finally(flush);
-};
-
 export const logChangeLiveState = (
+  matchId: string | number,
   prevState: LiveServerState,
   nextState: LiveServerState,
-  match: MatchesJoined,
-  rounds: Array<RoundsRow>,
   liveInfo: LiveState
 ) => {
   logger
-    .info(
-      `Live state for Match ${match.id} changed from "${prevState}" to "${nextState}"`,
-      {
-        match: JSON.stringify(match),
-        rounds: JSON.stringify(rounds),
-        liveInfo: JSON.stringify(liveInfo),
-      }
-    )
+    .info(`Match ${matchId}: Live state changed from "${prevState}" to "${nextState}"`, {
+      liveInfo: JSON.stringify(liveInfo),
+    })
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
@@ -124,4 +104,12 @@ export const logWarnMessage = (msg: string, context?: LogContext) => {
     .then((log) => info('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
+};
+
+export const logChangeMatchStatus = (
+  status: MatchStatus,
+  matchId: string | number,
+  context?: LogContext
+) => {
+  logMessage(`Changing status for Match ${matchId} to ${status}"`, context);
 };
