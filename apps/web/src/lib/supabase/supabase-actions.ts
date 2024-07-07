@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseApi, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { MatchesJoined, TeamsRow } from '@bf2-matchmaking/types';
+import { MatchesJoined } from '@bf2-matchmaking/types';
 import { hasPlayer, isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
 
 export function getActions(client: SupabaseClient) {

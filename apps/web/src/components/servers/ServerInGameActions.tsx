@@ -94,7 +94,7 @@ function PlayersSection({ info }: { info: LiveState }) {
           </thead>
           <tbody>
             {info.players.map((p) => (
-              <tr>
+              <tr key={p.index}>
                 <td>{p.index}</td>
                 <td>{p.getName}</td>
                 <td>{p.score}</td>

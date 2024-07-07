@@ -57,12 +57,12 @@ export default function ManageRatingsSection({ ratings, config, players }: Props
         );
         return [p, currentRating?.rating, nextRating?.rating];
       }),
-    [nextRatings, ratings]
+    [nextRatings, ratings, players]
   );
 
   const sortedTuples = useMemo(
     () => [...playerTuples].sort(comparePlayerTuple),
-    [playerTuples, sortBy]
+    [playerTuples, sortBy, comparePlayerTuple]
   );
 
   const handleUpdateRatings = useCallback(async () => {
@@ -86,8 +86,8 @@ export default function ManageRatingsSection({ ratings, config, players }: Props
     <section className="section flex">
       <h2>Upload new ratings</h2>
       <p>
-        File must be in csv format. Needs to contain the header "rating" and one of
-        "player_id" and "nick".
+        {`File must be in csv format. Needs to contain the header 'rating' and one of
+          'player_id' and 'nick'.`}
       </p>
       <div className="flex flex-row gap-2">
         <FileInput onFileChange={handleFileChange} />

@@ -1,4 +1,3 @@
-'use server';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { cache } from 'react';
