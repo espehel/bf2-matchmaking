@@ -33,7 +33,7 @@ export default async function LiveSection({ match }: Props) {
   async function setLiveMatchServer() {
     'use server';
     assertObj(server);
-    const result = await api.live().postMatchServer(match.id, server.ip, true);
+    const result = await api.live().postMatchServer(match.id, server?.ip, true);
     if (result.data) {
       revalidatePath(`/matches/${match.id}`);
     }

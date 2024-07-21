@@ -105,7 +105,7 @@ matchesRouter.post('/:matchid', async (ctx) => {
 });
 
 matchesRouter.get('/:matchid/server', async (ctx) => {
-  const server = getLiveServerByMatchId(ctx.params.matchid);
+  const server = await getLiveServerByMatchId(ctx.params.matchid);
   if (!server) {
     ctx.status = 404;
     ctx.body = { message: 'Live match server not found.' };
