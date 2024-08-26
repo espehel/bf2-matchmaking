@@ -199,7 +199,7 @@ serversRouter.post('/', async (ctx) => {
 
 serversRouter.get('/:ip', async (ctx) => {
   //await server.update();
-  const server = await getLiveServer(ctx.params.ip);
+  const server = await getLiveServer(ctx.params.ip, false);
 
   if (!server) {
     ctx.status = 404;

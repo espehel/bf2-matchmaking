@@ -38,10 +38,12 @@ import {
 import { hasNoVehicles, getServerInfo as getBF2ServerInfo } from '../rcon/bf2-rcon-api';
 import { createSocket, createSockets, disconnect } from '../rcon/socket-manager';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
+import { loadMapsCache } from '../maps';
 
 export async function initServers() {
   try {
     await resetDb();
+    await loadMapsCache();
     const servers = await client().getServers().then(verifyResult);
     const connectedServers = (
       await createSockets(servers.map((s) => s.rcon).filter(isNotNull))

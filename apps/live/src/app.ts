@@ -14,7 +14,6 @@ import { updateLiveServers } from './tasks/update-live-servers';
 import { updateIdleServers } from './tasks/update-idle-servers';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5002;
-loadMapsCache();
 
 const updateLiveServersTask = cron.schedule('*/10 * * * * *', updateLiveServers, {
   scheduled: false,
