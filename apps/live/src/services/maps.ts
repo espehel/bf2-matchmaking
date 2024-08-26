@@ -1,5 +1,5 @@
 import { client } from '@bf2-matchmaking/supabase';
-import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
+import { info, logErrorMessage } from '@bf2-matchmaking/logging';
 import { getMapName, setMaps } from '@bf2-matchmaking/redis';
 
 export async function loadMapsCache() {

@@ -57,7 +57,7 @@ serversRouter.post('/:ip/players/switch', async (ctx) => {
 });
 serversRouter.post('/:ip/maps', async (ctx) => {
   try {
-    const map = findMap(ctx.request.body.map);
+    const map = await findMap(ctx.request.body.map);
     assertString(map, 'Could not find map');
 
     const { data: mapList } = await getMapList(ctx.params.ip);

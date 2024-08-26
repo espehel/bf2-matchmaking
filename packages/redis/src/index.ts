@@ -189,7 +189,7 @@ export async function getMatches() {
 
 export async function setMaps(maps: Array<[string, string]>) {
   const client = await getClient();
-  return client.HSET('maps', ...maps);
+  return client.HSET('maps', maps);
 }
 
 export async function getMapName(id: string): Promise<string> {
