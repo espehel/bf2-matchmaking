@@ -23,21 +23,14 @@ const updateIdleServersTask = cron.schedule('*/30 * * * * *', updateIdleServers,
   scheduled: false,
 });
 
-const initShit = false;
-
-if (initShit) {
-  initServers()
-    .then(() => {
-      if (!isDevelopment()) {
-        updateIdleServersTask.start();
-        updateLiveServersTask.start();
-      }
-    })
-    .catch((err) => error('app', err));
-} else if (!isDevelopment()) {
-  updateIdleServersTask.start();
-  updateLiveServersTask.start();
-}
+initServers()
+  .then(() => {
+    if (!isDevelopment()) {
+      updateIdleServersTask.start();
+      updateLiveServersTask.start();
+    }
+  })
+  .catch((err) => error('app', err));
 
 new Koa()
   .use(logger())

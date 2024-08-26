@@ -28,7 +28,7 @@ import {
   setServerValues,
   getActiveMatchServer,
 } from '@bf2-matchmaking/redis';
-import { buildLiveState, upsertServer } from './servers';
+import { buildLiveState, buildLiveStateSafe, upsertServer } from './servers';
 import {
   assertObj,
   externalApi,
@@ -103,11 +103,16 @@ export async function connectServer(rcon: ServerRconsRow): Promise<'offline' | '
   }
 }
 
-export async function getLiveServer(address: string): Promise<LiveServer | null> {
+export async function getLiveServer(
+  address: string,
+  cache: boolean = true
+): Promise<LiveServer | null> {
   try {
     const values = await getServerValues(address);
     const info = await getServerInfo(address);
-    const live = await getServerLive(address);
+
+    const live = cache ? await getServerLive(address) : await buildLiveStateSafe(address);
+
     return {
       address,
       ...info,
@@ -131,8 +136,8 @@ export async function getLiveServers(): Promise<LiveServer[]> {
   const lackingServers = await getServersWithStatus('lacking');
   return (
     await Promise.all(
-      [...idleServers, ...offlineServers, ...liveServers, ...lackingServers].map(
-        getLiveServer
+      [...idleServers, ...offlineServers, ...liveServers, ...lackingServers].map((s) =>
+        getLiveServer(s)
       )
     )
   ).filter(isNotNull);
