@@ -1,10 +1,5 @@
 import { createClient } from 'redis';
-import {
-  LiveServerStatus,
-  ServerRconsRow,
-  MatchesJoined,
-  MatchPlayersRow,
-} from '@bf2-matchmaking/types';
+import { LiveServerStatus, ServerRconsRow, MatchesJoined } from '@bf2-matchmaking/types';
 import {
   stringArraySchema,
   rconSchema,
@@ -190,4 +185,14 @@ export async function getMatches() {
   const client = await getClient();
   const matchIdList = await client.HKEYS('matches');
   return stringArraySchema.parse(matchIdList);
+}
+
+export async function setMaps(maps: Array<[string, string]>) {
+  const client = await getClient();
+  return client.HSET('maps', ...maps);
+}
+
+export async function getMapName(id: string): Promise<string> {
+  const client = await getClient();
+  return client.HGET('maps', id);
 }

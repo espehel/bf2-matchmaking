@@ -1,5 +1,5 @@
 import { isString, isTruthy } from '@bf2-matchmaking/types';
-import { assertString, assertTruthyString } from './assert';
+import { assertTruthyString } from './assert';
 
 export function getArray(formData: FormData, key: string) {
   return Array.from(formData.entries())

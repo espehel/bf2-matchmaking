@@ -1,6 +1,12 @@
 import Router from '@koa/router';
 import { error } from '@bf2-matchmaking/logging';
-import { assertArray, assertObj, toFetchError, verify } from '@bf2-matchmaking/utils';
+import {
+  assertArray,
+  assertObj,
+  assertString,
+  toFetchError,
+  verify,
+} from '@bf2-matchmaking/utils';
 import { isString } from '@bf2-matchmaking/types';
 
 import { getAddress, upsertServer } from '../services/server/servers';
@@ -52,12 +58,12 @@ serversRouter.post('/:ip/players/switch', async (ctx) => {
 serversRouter.post('/:ip/maps', async (ctx) => {
   try {
     const map = findMap(ctx.request.body.map);
-    assertObj(map, 'Could not find map');
+    assertString(map, 'Could not find map');
 
     const { data: mapList } = await getMapList(ctx.params.ip);
     assertArray(mapList, 'Could not get map list from server');
 
-    const id = mapList.indexOf(map.name.toLowerCase().replace(/ /g, '_'));
+    const id = mapList.indexOf(map);
 
     await exec(ctx.params.ip, `admin.setNextLevel ${id}`);
     await exec(ctx.params.ip, 'admin.runNextLevel');
