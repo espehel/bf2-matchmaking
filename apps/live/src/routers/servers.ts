@@ -18,6 +18,7 @@ import {
   deleteServer,
   getLiveServer,
   getLiveServers,
+  updateLiveServer,
 } from '../services/server/server-manager';
 import {
   exec,
@@ -198,8 +199,8 @@ serversRouter.post('/', async (ctx) => {
 });
 
 serversRouter.get('/:ip', async (ctx) => {
-  //await server.update(); // TODO do this with redis
-  const server = await getLiveServer(ctx.params.ip, false);
+  await updateLiveServer(ctx.params.ip);
+  const server = await getLiveServer(ctx.params.ip);
 
   if (!server) {
     ctx.status = 404;

@@ -5,32 +5,27 @@ import {
   getMatches,
   getMatchValues,
   getServersWithStatus,
-  setServerLive,
-  setServerValues,
 } from '@bf2-matchmaking/redis';
-import { buildLiveStateSafe } from '../services/server/servers';
-import { DateTime } from 'luxon';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { error, info } from '@bf2-matchmaking/logging';
 import { LiveState, MatchesJoined } from '@bf2-matchmaking/types';
-import { isServerIdentified, resetLiveServer } from '../services/server/server-manager';
+import {
+  isServerIdentified,
+  resetLiveServer,
+  updateLiveServer,
+} from '../services/server/server-manager';
 
 export async function updateIdleServers() {
   info('updateIdleServers', 'Updating idle servers');
   try {
-    const now = DateTime.utc().toISO();
-    assertObj(now, 'Failed to get current time');
     let updatedServers = 0;
 
     const servers = await getServersWithStatus('idle');
     for (const address of servers) {
-      const live = await buildLiveStateSafe(address);
+      const live = await updateLiveServer(address);
       if (!live) {
-        await setServerValues(address, { errorAt: now });
         continue;
       }
-      await setServerValues(address, { errorAt: undefined, updatedAt: now });
-      await setServerLive(address, live);
       updatedServers++;
 
       if (live.players.length === 0) {

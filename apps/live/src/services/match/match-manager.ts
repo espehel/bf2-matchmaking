@@ -1,4 +1,4 @@
-import { LiveMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { LiveMatch, MatchesJoined } from '@bf2-matchmaking/types';
 import {
   addMatch,
   getMatchPlayers,
@@ -7,8 +7,6 @@ import {
   setMatchValues,
 } from '@bf2-matchmaking/redis';
 import { getLiveServerByMatchId } from '../server/server-manager';
-import { client, fallbackResult } from '@bf2-matchmaking/supabase';
-import { info } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 
 export async function createPendingMatch(match: MatchesJoined) {
@@ -38,13 +36,4 @@ export async function getMatch(matchId: string): Promise<LiveMatch | null> {
     connectedPlayers,
     server,
   };
-}
-
-export async function initLiveMatches() {
-  const matches = await client()
-    .getMatchesWithStatus(MatchStatus.Ongoing)
-    .then(fallbackResult([]));
-
-  await Promise.all(matches.map(createPendingMatch));
-  info('initLiveMatches', `Initialized ${matches.length} live matches`);
 }

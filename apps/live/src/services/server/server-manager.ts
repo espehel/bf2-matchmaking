@@ -11,6 +11,7 @@ import {
   isNotNull,
   LiveServer,
   LiveServerStatus,
+  LiveState,
   PendingServer,
   ServerRconsRow,
 } from '@bf2-matchmaking/types';
@@ -39,6 +40,7 @@ import { hasNoVehicles, getServerInfo as getBF2ServerInfo } from '../rcon/bf2-rc
 import { createSocket, createSockets, disconnect } from '../rcon/socket-manager';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { loadMapsCache } from '../maps';
+import { DateTime } from 'luxon';
 
 export async function initServers() {
   try {
@@ -105,15 +107,12 @@ export async function connectServer(rcon: ServerRconsRow): Promise<'offline' | '
   }
 }
 
-export async function getLiveServer(
-  address: string,
-  cache: boolean = true
-): Promise<LiveServer | null> {
+export async function getLiveServer(address: string): Promise<LiveServer | null> {
   try {
     const values = await getServerValues(address);
     const info = await getServerInfo(address);
 
-    const live = cache ? await getServerLive(address) : await buildLiveStateSafe(address);
+    const live = await getServerLive(address);
 
     return {
       address,
@@ -138,8 +137,8 @@ export async function getLiveServers(): Promise<LiveServer[]> {
   const lackingServers = await getServersWithStatus('lacking');
   return (
     await Promise.all(
-      [...idleServers, ...offlineServers, ...liveServers, ...lackingServers].map((s) =>
-        getLiveServer(s)
+      [...idleServers, ...offlineServers, ...liveServers, ...lackingServers].map(
+        getLiveServer
       )
     )
   ).filter(isNotNull);
@@ -215,4 +214,18 @@ export const SERVER_IDENTIFIED_RATIO = 0.3;
 
 export function isServerIdentified(serverPlayers: number, matchSize: number) {
   return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
+}
+
+export async function updateLiveServer(address: string): Promise<LiveState | null> {
+  const now = DateTime.utc().toISO();
+  assertObj(now, 'Failed to get current time');
+
+  const live = await buildLiveStateSafe(address);
+  if (!live) {
+    await setServerValues(address, { errorAt: now });
+    return null;
+  }
+  await setServerValues(address, { errorAt: undefined, updatedAt: now });
+  await setServerLive(address, live);
+  return live;
 }
