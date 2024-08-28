@@ -113,8 +113,8 @@ export interface LiveMatch {
   matchId: number;
   state: LiveServerState;
   roundsPlayed: number;
-  pendingSince: string | null;
-  live_at: string | null;
+  pendingSince?: string | null;
+  live_at?: string | null;
   connectedPlayers: Array<string>;
   server: LiveServer | null;
 }

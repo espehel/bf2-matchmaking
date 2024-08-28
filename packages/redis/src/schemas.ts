@@ -12,8 +12,8 @@ export const matchSchema = z.object({
     'stale',
   ] as const),
   roundsPlayed: z.number(),
-  pendingSince: z.string().datetime({ offset: true }).nullable(),
-  live_at: z.string().datetime({ offset: true }).nullable(),
+  pendingSince: z.string().datetime({ offset: true }).optional().nullable(),
+  live_at: z.string().datetime({ offset: true }).optional().nullable(),
 });
 
 export const rconSchema = z.object({
