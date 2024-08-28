@@ -4,7 +4,6 @@ import logger from 'koa-logger';
 import { bodyParser } from '@koa/bodyparser';
 import { rootRouter } from './routers/root';
 import { error, info } from '@bf2-matchmaking/logging';
-import { loadMapsCache } from './services/maps';
 import cron from 'node-cron';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 import { serversRouter } from './routers/servers';
@@ -24,7 +23,9 @@ const updateIdleServersTask = cron.schedule('*/30 * * * * *', updateIdleServers,
 
 initServers()
   .then(() => {
+    console.log(isDevelopment() ? 'Development mode' : 'Production mode');
     if (!isDevelopment()) {
+      // TODO this seems to not be starting
       updateIdleServersTask.start();
       updateLiveServersTask.start();
     }

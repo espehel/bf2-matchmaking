@@ -83,7 +83,7 @@ export async function getServerInfo(address: string): Promise<ServerInfo> {
   return getValue<ServerRconsRow>(`server:${address}:info`).then(serverInfoSchema.parse);
 }
 
-export async function setMatchValues(matchId: string | number, values: Partial<Match>) {
+export async function setMatchValues(matchId: string | number, values: Match) {
   const client = await getClient();
   return client.HSET(`match:${matchId}`, ...Object.entries(values));
 }

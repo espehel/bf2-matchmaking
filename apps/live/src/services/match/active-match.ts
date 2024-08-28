@@ -117,10 +117,13 @@ async function handleNextState(
   address: string
 ) {
   if (nextState === 'pending' && match.state !== 'pending') {
-    await setMatchValues(cachedMatch.id, { pendingSince: DateTime.utc().toISO() });
+    await setMatchValues(cachedMatch.id, {
+      ...match,
+      pendingSince: DateTime.utc().toISO(),
+    });
   }
   if (nextState !== 'pending' && match.state === 'pending') {
-    await setMatchValues(cachedMatch.id, { pendingSince: null });
+    await setMatchValues(cachedMatch.id, { ...match, pendingSince: null });
   }
 
   if (match.state === 'pending' && nextState === 'warmup') {
@@ -128,7 +131,7 @@ async function handleNextState(
   }
 
   if (nextState === 'live' && !match.live_at) {
-    await setMatchLiveAt(cachedMatch.id);
+    await setMatchLiveAt(cachedMatch.id, match);
   }
 
   if (nextState === 'endlive') {
@@ -137,7 +140,7 @@ async function handleNextState(
 
   if (match.state !== nextState) {
     logChangeLiveState(cachedMatch.id, match.state, nextState, live);
-    await setMatchValues(cachedMatch.id, { state: nextState });
+    await setMatchValues(cachedMatch.id, { ...match, state: nextState });
   }
 }
 

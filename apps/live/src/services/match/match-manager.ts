@@ -9,9 +9,15 @@ import {
 import { getLiveServerByMatchId } from '../server/server-manager';
 import { client, fallbackResult } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
+import { DateTime } from 'luxon';
 
 export async function createPendingMatch(match: MatchesJoined) {
-  await setMatchValues(match.id, { state: 'pending' });
+  await setMatchValues(match.id, {
+    state: 'pending',
+    roundsPlayed: match.rounds.length,
+    pendingSince: DateTime.now().toISO(),
+    live_at: null,
+  });
   await setCachedMatchesJoined(match);
   await addMatch(match.id.toString());
   return getMatch(match.id.toString());

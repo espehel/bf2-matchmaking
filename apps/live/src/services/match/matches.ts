@@ -8,16 +8,11 @@ import {
 } from '@bf2-matchmaking/logging';
 import {
   isDiscordMatch,
-  LiveState,
-  LiveMatch,
   MatchConfigsRow,
   MatchesJoined,
   MatchProcessError,
   MatchStatus,
-  RoundsInsert,
   ServerInfo,
-  ServersRow,
-  MatchesRow,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import {
@@ -28,7 +23,6 @@ import {
 } from '@bf2-matchmaking/utils/src/results-utils';
 import { updatePlayerRatings } from './players';
 import {
-  getLiveMatchEmbed,
   getMatchResultsEmbed,
   getWarmUpStartedEmbed,
   sendChannelMessage,
@@ -36,18 +30,10 @@ import {
   getDebugMatchResultsEmbed,
 } from '@bf2-matchmaking/discord';
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
-import { assertObj, getJoinmeHref, hasNotKeyhash } from '@bf2-matchmaking/utils';
+import { hasNotKeyhash } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
-import {
-  getActiveMatchServer,
-  getCachedMatchesJoined,
-  getMatchPlayers,
-  getMatchValues,
-  getServerInfo,
-  setMatchValues,
-} from '@bf2-matchmaking/redis';
+import { getServerInfo, setMatchValues } from '@bf2-matchmaking/redis';
 import { Match } from '@bf2-matchmaking/redis/src/types';
-import { getLiveServerByMatchId } from '../server/server-manager';
 
 export const finishMatch = async (matchId: string) => {
   const { data: updatedMatch, error } = await client().updateMatch(Number(matchId), {
@@ -236,11 +222,11 @@ export async function fixMissingMatchPlayers(match: MatchesJoined) {
   return null;
 }
 
-export async function setMatchLiveAt(matchId: number): Promise<Match> {
+export async function setMatchLiveAt(matchId: number, match: Match): Promise<Match> {
   const live_at = DateTime.utc().toISO();
   verbose('setMatchLiveAt', `Match ${matchId}: Live at ${live_at}`);
   await client().updateMatch(matchId, { live_at }).then(verifySingleResult);
-  return setMatchValues(matchId, { live_at });
+  return setMatchValues(matchId, { ...match, live_at });
 }
 
 export async function broadcastWarmUpStarted(match: MatchesJoined, address: string) {
