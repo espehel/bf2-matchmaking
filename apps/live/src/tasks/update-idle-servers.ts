@@ -16,41 +16,46 @@ import { LiveState, MatchesJoined } from '@bf2-matchmaking/types';
 import { isServerIdentified, resetLiveServer } from '../services/server/server-manager';
 
 export async function updateIdleServers() {
-  const now = DateTime.utc().toISO();
-  assertObj(now, 'Failed to get current time');
-  let updatedServers = 0;
+  info('updateIdleServers', 'Updating idle servers');
+  try {
+    const now = DateTime.utc().toISO();
+    assertObj(now, 'Failed to get current time');
+    let updatedServers = 0;
 
-  const servers = await getServersWithStatus('idle');
-  for (const address of servers) {
-    const live = await buildLiveStateSafe(address);
-    if (!live) {
-      await setServerValues(address, { errorAt: now });
-      continue;
-    }
-    await setServerValues(address, { errorAt: undefined, updatedAt: now });
-    await setServerLive(address, live);
-    updatedServers++;
+    const servers = await getServersWithStatus('idle');
+    for (const address of servers) {
+      const live = await buildLiveStateSafe(address);
+      if (!live) {
+        await setServerValues(address, { errorAt: now });
+        continue;
+      }
+      await setServerValues(address, { errorAt: undefined, updatedAt: now });
+      await setServerLive(address, live);
+      updatedServers++;
 
-    if (live.players.length === 0) {
-      continue;
-    }
+      if (live.players.length === 0) {
+        continue;
+      }
 
-    const matchId = await findPendingMatch(live);
-    if (!matchId) {
-      continue;
-    }
+      const matchId = await findPendingMatch(live);
+      if (!matchId) {
+        continue;
+      }
 
-    const currentAddress = await getActiveMatchServer(matchId);
-    if (currentAddress) {
-      await resetLiveServer(currentAddress);
+      const currentAddress = await getActiveMatchServer(matchId);
+      if (currentAddress) {
+        await resetLiveServer(currentAddress);
+      }
+      info('updateIdleServers', `Server ${address} assigning to match ${matchId}`);
+      await addActiveServer(address, matchId);
     }
-    info('updateIdleServers', `Server ${address} assigning to match ${matchId}`);
-    await addActiveServer(address, matchId);
+    info(
+      'updateIdleServers',
+      `Updated ${updatedServers}/${servers.length} idle servers successfully`
+    );
+  } catch (e) {
+    error('updateIdleServers', e);
   }
-  info(
-    'updateIdleServers',
-    `Updated ${updatedServers}/${servers.length} idle servers successfully`
-  );
 }
 
 async function findPendingMatch(live: LiveState) {

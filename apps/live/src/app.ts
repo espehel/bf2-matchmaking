@@ -23,12 +23,9 @@ const updateIdleServersTask = cron.schedule('*/30 * * * * *', updateIdleServers,
 
 initServers()
   .then(() => {
-    console.log(isDevelopment() ? 'Development mode' : 'Production mode');
-    if (!isDevelopment()) {
-      // TODO this seems to not be starting
-      updateIdleServersTask.start();
-      updateLiveServersTask.start();
-    }
+    console.log('starting tasks');
+    updateIdleServersTask.start();
+    updateLiveServersTask.start();
   })
   .catch((err) => error('app', err));
 

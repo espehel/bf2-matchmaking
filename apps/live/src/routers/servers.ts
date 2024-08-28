@@ -198,7 +198,7 @@ serversRouter.post('/', async (ctx) => {
 });
 
 serversRouter.get('/:ip', async (ctx) => {
-  //await server.update();
+  //await server.update(); // TODO do this with redis
   const server = await getLiveServer(ctx.params.ip, false);
 
   if (!server) {
