@@ -49,6 +49,20 @@ export async function getValue<T>(key: string) {
   }
 }
 
+export async function setHash(key: string, values: Array<[string, unknown]>) {
+  const client = await getClient();
+  const delValues = values
+    .filter(([, value]) => value === null || value === undefined)
+    .map(([key]) => key);
+  if (delValues.length) {
+    await client.HDEL(key, delValues);
+  }
+  const setValues = values.filter(([, value]) => value !== null && value !== undefined);
+  if (setValues.length) {
+    return client.HSET(key, setValues);
+  }
+}
+
 export async function deleteKeys(...keys: Array<string>) {
   const client = await getClient();
   return client.DEL(...keys);
@@ -62,8 +76,7 @@ export async function getServerLive(address: string): Promise<ServerLive> {
 }
 
 export async function setServerValues(address: string, values: Server) {
-  const client = await getClient();
-  return client.HSET(`server:${address}`, ...Object.entries(values));
+  return setHash(`server:${address}`, Object.entries(values));
 }
 export async function getServerValues(address: string): Promise<Server> {
   const client = await getClient();
@@ -84,8 +97,7 @@ export async function getServerInfo(address: string): Promise<ServerInfo> {
 }
 
 export async function setMatchValues(matchId: string | number, values: Match) {
-  const client = await getClient();
-  return client.HSET(`match:${matchId}`, ...Object.entries(values));
+  return setHash(`match:${matchId}`, Object.entries(values));
 }
 export async function getMatchValues(matchId: string | number): Promise<Match> {
   const client = await getClient();

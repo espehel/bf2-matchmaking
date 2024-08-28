@@ -23,9 +23,10 @@ const updateIdleServersTask = cron.schedule('*/30 * * * * *', updateIdleServers,
 
 initServers()
   .then(() => {
-    console.log('starting tasks');
-    updateIdleServersTask.start();
-    updateLiveServersTask.start();
+    if (!isDevelopment()) {
+      updateIdleServersTask.start();
+      updateLiveServersTask.start();
+    }
   })
   .catch((err) => error('app', err));
 
