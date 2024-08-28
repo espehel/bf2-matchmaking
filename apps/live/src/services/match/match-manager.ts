@@ -12,7 +12,7 @@ import { DateTime } from 'luxon';
 export async function createPendingMatch(match: MatchesJoined) {
   await setMatchValues(match.id, {
     state: 'pending',
-    roundsPlayed: match.rounds.length,
+    roundsPlayed: match.rounds.length.toString(),
     pendingSince: DateTime.now().toISO(),
     live_at: null,
   });
@@ -33,6 +33,7 @@ export async function getMatch(matchId: string): Promise<LiveMatch | null> {
   return {
     matchId: Number(matchId),
     ...match,
+    roundsPlayed: Number(match.roundsPlayed),
     connectedPlayers,
     server,
   };

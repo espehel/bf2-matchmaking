@@ -101,7 +101,7 @@ export async function setMatchValues(matchId: string | number, values: Match) {
 }
 export async function getMatchValues(matchId: string | number): Promise<Match> {
   const client = await getClient();
-  return client.HGETALL(`match:${matchId}`).then(matchSchema.parse);
+  return client.HGETALL(`match:${matchId}`);
 }
 export async function getCachedMatchesJoined(
   matchId: string

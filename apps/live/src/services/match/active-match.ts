@@ -58,11 +58,11 @@ function getNextState(
   match: Match,
   live: LiveState
 ): LiveServerState {
-  if (hasPlayedAllRounds(cachedMatch.config, match.roundsPlayed)) {
+  if (hasPlayedAllRounds(cachedMatch.config, Number(match.roundsPlayed))) {
     return 'finished';
   }
 
-  if (isServerEmptied(match.roundsPlayed, live)) {
+  if (isServerEmptied(Number(match.roundsPlayed), live)) {
     return 'finished';
   }
 

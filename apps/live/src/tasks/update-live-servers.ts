@@ -56,7 +56,7 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveState
     await resetLiveServer(address);
 
     const server = await getServerInfo(address);
-    if (match.roundsPlayed > 0 && server.demos_path && cachedMatch.started_at) {
+    if (Number(match.roundsPlayed) > 0 && server.demos_path && cachedMatch.started_at) {
       await saveDemosSince(address, cachedMatch.started_at, server.demos_path);
     }
   }
