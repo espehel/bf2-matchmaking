@@ -26,8 +26,8 @@ import {
   resetDb,
   setServerInfo,
   setServerLive,
-  setServerValues,
   getActiveMatchServer,
+  setHash,
 } from '@bf2-matchmaking/redis';
 import { buildLiveState, buildLiveStateSafe, upsertServer } from './servers';
 import {
@@ -41,6 +41,7 @@ import { createSocket, createSockets, disconnect } from '../rcon/socket-manager'
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { loadMapsCache } from '../maps';
 import { DateTime } from 'luxon';
+import { Server } from '@bf2-matchmaking/redis/src/types';
 
 export async function initServers() {
   try {
@@ -86,7 +87,7 @@ export async function createServer(server: DbServer): Promise<LiveServerStatus> 
     noVehicles,
     demos_path,
   });
-  await setServerValues(address, { status });
+  await setHash<Server>('server', address, { status });
   await addServerWithStatus(address, status);
   return status;
 }
@@ -110,9 +111,9 @@ export async function connectServer(rcon: ServerRconsRow): Promise<'offline' | '
 export async function getLiveServer(address: string): Promise<LiveServer | null> {
   try {
     const values = await getServerValues(address);
-    const info = await getServerInfo(address);
-
-    const live = await getServerLive(address);
+    const { data: info } = await getServerInfo(address);
+    assertObj(info, `Server ${address} info not found`);
+    const { data: live } = await getServerLive(address);
 
     return {
       address,
@@ -222,10 +223,10 @@ export async function updateLiveServer(address: string): Promise<LiveState | nul
 
   const live = await buildLiveStateSafe(address);
   if (!live) {
-    await setServerValues(address, { errorAt: now });
+    await setHash<Server>('server', address, { errorAt: now });
     return null;
   }
-  await setServerValues(address, { errorAt: undefined, updatedAt: now });
+  await setHash<Server>('server', address, { errorAt: undefined, updatedAt: now });
   await setServerLive(address, live);
   return live;
 }

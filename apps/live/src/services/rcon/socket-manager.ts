@@ -59,7 +59,7 @@ export async function getSocket(address: string) {
   if (socket && socket.readyState === 'open') {
     return socket;
   }
-  const rcon = await getRcon(address);
+  const { data: rcon } = await getRcon(address);
   assertObj(rcon, `Rcon ${address} not found`);
   return connect(rcon);
 }

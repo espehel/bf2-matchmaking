@@ -32,7 +32,7 @@ import {
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
 import { hasNotKeyhash } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
-import { getServerInfo, setMatchValues } from '@bf2-matchmaking/redis';
+import { getServerInfo, setHash } from '@bf2-matchmaking/redis';
 import { Match } from '@bf2-matchmaking/redis/src/types';
 
 export const finishMatch = async (matchId: string) => {
@@ -222,16 +222,16 @@ export async function fixMissingMatchPlayers(match: MatchesJoined) {
   return null;
 }
 
-export async function setMatchLiveAt(matchId: number, match: Match): Promise<Match> {
+export async function setMatchLiveAt(matchId: number, match: Match) {
   const live_at = DateTime.utc().toISO();
   verbose('setMatchLiveAt', `Match ${matchId}: Live at ${live_at}`);
   await client().updateMatch(matchId, { live_at }).then(verifySingleResult);
-  return setMatchValues(matchId, { ...match, live_at });
+  await setHash<Match>('match', matchId, { ...match, live_at });
 }
 
 export async function broadcastWarmUpStarted(match: MatchesJoined, address: string) {
-  const serverInfo = await getServerInfo(address);
-  if (isDiscordMatch(match)) {
+  const { data: serverInfo } = await getServerInfo(address);
+  if (isDiscordMatch(match) && serverInfo) {
     await sendChannelMessage(match.config.channel, {
       embeds: [getWarmUpStartedEmbed(match.id, address, serverInfo)],
     });

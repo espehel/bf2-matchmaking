@@ -1,18 +1,25 @@
 import { createClient } from 'redis';
-import { LiveServerStatus, ServerRconsRow, MatchesJoined } from '@bf2-matchmaking/types';
+import { LiveServerStatus, AsyncResult } from '@bf2-matchmaking/types';
 import {
   stringArraySchema,
   rconSchema,
   serverInfoSchema,
   serverLiveSchema,
   serverSchema,
-  matchSchema,
 } from './schemas';
 import { Match, Rcon, Server, ServerInfo, ServerLive } from './types';
+import { error } from '@bf2-matchmaking/logging';
+import { assertObj } from '@bf2-matchmaking/utils';
+import { Schema, z } from 'zod';
+import { toAsyncError } from '@bf2-matchmaking/utils/src/async-actions';
+
+function toKey(key: string, id: string | number) {
+  return `${key}${id ? `:${id}` : ''}`;
+}
 
 let client: ReturnType<typeof createClient> | null = null;
 
-async function getClient() {
+export async function getClient() {
   if (client && client.isReady) {
     return client;
   }
@@ -34,32 +41,65 @@ export async function resetDb() {
   await client.flushDb();
 }
 
-export async function setValue(key: string, value: unknown) {
-  const client = await getClient();
-  await client.SET(key, stringifyValue(value));
+export async function setValue(
+  schema: Schema,
+  key: string,
+  value: unknown
+): Promise<AsyncResult<string>> {
+  try {
+    const parsed = schema.parse(value);
+    const client = await getClient();
+    const res = await client.SET(key, stringifyValue(parsed));
+    return { data: res, error: null };
+  } catch (e) {
+    error(`setValue ${key} ${JSON.stringify(value)}`, e);
+    return toAsyncError(e);
+  }
 }
 
-export async function getValue<T>(key: string) {
+export async function getValue<T extends Schema>(
+  schema: T,
+  key: string
+): Promise<AsyncResult<z.infer<T>>> {
   const client = await getClient();
   const value = await client.GET(key);
   try {
-    return value !== null ? (JSON.parse(value) as T) : null;
+    assertObj(value, `${key} not found`);
+    const parsed = JSON.parse(value);
+    const validated = schema.parse(parsed);
+    return { data: validated, error: null };
   } catch (e) {
-    return value as T;
+    error(`getValue ${key}`, e);
+    return toAsyncError(e);
   }
 }
 
-export async function setHash(key: string, values: Array<[string, unknown]>) {
-  const client = await getClient();
-  const delValues = values
-    .filter(([, value]) => value === null || value === undefined)
-    .map(([key]) => key);
-  if (delValues.length) {
-    await client.HDEL(key, delValues);
-  }
-  const setValues = values.filter(([, value]) => value !== null && value !== undefined);
-  if (setValues.length) {
-    return client.HSET(key, setValues);
+export async function setHash<T extends Record<string, number | string | boolean | null>>(
+  key: string,
+  id: string | number,
+  values: Partial<T>
+) {
+  try {
+    const client = await getClient();
+    const entries = Object.entries(values);
+    const delValues = entries
+      .filter(([, value]) => value === null || value === undefined)
+      .map(([key]) => key);
+    let removedFields = 0;
+    if (delValues.length) {
+      removedFields = await client.HDEL(toKey(key, id), delValues);
+    }
+    const setValues = entries.filter(
+      ([, value]) => value !== null && value !== undefined
+    );
+    let addedFields = 0;
+    if (setValues.length) {
+      addedFields = await client.HSET(toKey(key, id), setValues);
+    }
+    return { data: { removedFields, addedFields }, error: null };
+  } catch (e) {
+    error(`setHash ${toKey(key, id)}, value: ${JSON.stringify(values)}`, e);
+    return toAsyncError(e);
   }
 }
 
@@ -69,47 +109,39 @@ export async function deleteKeys(...keys: Array<string>) {
 }
 
 export async function setServerLive(address: string, value: ServerLive) {
-  return setValue(`server:${address}:live`, serverLiveSchema.parse(value));
+  return setValue(serverLiveSchema, `server:${address}:live`, value);
 }
-export async function getServerLive(address: string): Promise<ServerLive> {
-  return getValue(`server:${address}:live`).then(serverLiveSchema.parse);
+export async function getServerLive(address: string) {
+  return getValue(serverLiveSchema, `server:${address}:live`);
 }
 
-export async function setServerValues(address: string, values: Server) {
-  return setHash(`server:${address}`, Object.entries(values));
-}
 export async function getServerValues(address: string): Promise<Server> {
   const client = await getClient();
   return client.HGETALL(`server:${address}`).then(serverSchema.parse);
 }
 
 export async function setRcon(rcon: Rcon) {
-  return setValue(`rcon:${rcon.address}`, rconSchema.parse(rcon));
+  return setValue(rconSchema, `rcon:${rcon.address}`, rcon);
 }
 export async function getRcon(address: string) {
-  return getValue<ServerRconsRow>(`rcon:${address}`).then(rconSchema.parse);
+  return getValue(rconSchema, `rcon:${address}`);
 }
 export async function setServerInfo(address: string, info: ServerInfo) {
-  return setValue(`server:${address}:info`, serverInfoSchema.parse(info));
+  return setValue(serverInfoSchema, `server:${address}:info`, info);
 }
-export async function getServerInfo(address: string): Promise<ServerInfo> {
-  return getValue<ServerRconsRow>(`server:${address}:info`).then(serverInfoSchema.parse);
+export async function getServerInfo(address: string) {
+  return getValue(serverInfoSchema, `server:${address}:info`);
 }
 
-export async function setMatchValues(matchId: string | number, values: Match) {
-  return setHash(`match:${matchId}`, Object.entries(values));
-}
 export async function getMatchValues(matchId: string | number): Promise<Match> {
   const client = await getClient();
   return client.HGETALL(`match:${matchId}`);
 }
-export async function getCachedMatchesJoined(
-  matchId: string
-): Promise<MatchesJoined | null> {
-  return getValue<MatchesJoined>(`match:${matchId}:cache`);
+export async function getCachedMatchesJoined(matchId: string) {
+  return getValue(z.unknown(), `match:${matchId}:cache`);
 }
-export async function setCachedMatchesJoined(match: MatchesJoined) {
-  return setValue(`match:${match.id}:cache`, match);
+export async function setCachedMatchesJoined(match: { id: number }) {
+  return setValue(z.unknown(), `match:${match.id}:cache`, match);
 }
 
 export async function incMatchRoundsPlayed(matchId: string | number): Promise<number> {

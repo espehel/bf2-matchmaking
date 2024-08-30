@@ -2,8 +2,8 @@ import {
   getActiveMatchServers,
   getServerInfo,
   removeMatch,
+  setHash,
   setServerLive,
-  setServerValues,
 } from '@bf2-matchmaking/redis';
 import { buildLiveState } from '../services/server/servers';
 import { DateTime } from 'luxon';
@@ -14,6 +14,7 @@ import { LiveState, MatchStatus } from '@bf2-matchmaking/types';
 import { resetLiveServer } from '../services/server/server-manager';
 import { saveDemosSince } from '@bf2-matchmaking/demo';
 import { finishMatch } from '../services/match/matches';
+import { Server } from '@bf2-matchmaking/redis/src/types';
 
 export async function updateLiveServers() {
   const now = DateTime.utc().toISO();
@@ -26,15 +27,15 @@ export async function updateLiveServers() {
   }
   for (const [matchId, address] of servers.entries()) {
     try {
-      await setServerValues(address, { tickedAt: now });
+      await setHash<Server>('server', address, { tickedAt: now });
 
       const live = await buildLiveState(address);
-      await setServerValues(address, { errorAt: undefined, updatedAt: now });
+      await setHash<Server>('server', address, { errorAt: undefined, updatedAt: now });
       await setServerLive(address, live);
 
       await updateLiveMatch(address, matchId, live);
     } catch (e) {
-      await setServerValues(address, { errorAt: now });
+      await setHash<Server>('server', address, { errorAt: now });
       error('updateLiveServers', e);
     }
   }
@@ -55,8 +56,8 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveState
     await removeMatch(matchId);
     await resetLiveServer(address);
 
-    const server = await getServerInfo(address);
-    if (Number(match.roundsPlayed) > 0 && server.demos_path && cachedMatch.started_at) {
+    const { data: server } = await getServerInfo(address);
+    if (Number(match.roundsPlayed) > 0 && server?.demos_path && cachedMatch.started_at) {
       await saveDemosSince(address, cachedMatch.started_at, server.demos_path);
     }
   }

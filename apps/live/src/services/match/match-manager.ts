@@ -4,13 +4,14 @@ import {
   getMatchPlayers,
   getMatchValues,
   setCachedMatchesJoined,
-  setMatchValues,
+  setHash,
 } from '@bf2-matchmaking/redis';
 import { getLiveServerByMatchId } from '../server/server-manager';
 import { DateTime } from 'luxon';
+import { Match } from '@bf2-matchmaking/redis/src/types';
 
 export async function createPendingMatch(match: MatchesJoined) {
-  await setMatchValues(match.id, {
+  await setHash<Match>('match', match.id, {
     state: 'pending',
     roundsPlayed: match.rounds.length.toString(),
     pendingSince: DateTime.now().toISO(),

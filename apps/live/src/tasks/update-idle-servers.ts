@@ -63,9 +63,9 @@ async function findPendingMatch(live: LiveState) {
         continue;
       }
 
-      const cachedMatch = await getCachedMatchesJoined(matchId);
+      const { data: cachedMatch } = await getCachedMatchesJoined(matchId);
       assertObj(cachedMatch, 'Invalid state, match in matches set but not cached');
-      if (!isMatchServer(cachedMatch, live)) {
+      if (!isMatchServer(cachedMatch as MatchesJoined, live)) {
         continue;
       }
       return matchId;

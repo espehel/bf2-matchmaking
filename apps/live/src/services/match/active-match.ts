@@ -12,8 +12,8 @@ import {
   getMatchPlayers,
   setMatchPlayer,
   incMatchRoundsPlayed,
-  setMatchValues,
   setCachedMatchesJoined,
+  setHash,
 } from '@bf2-matchmaking/redis';
 import { addTeamPlayerToLiveMatch } from './players';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -117,13 +117,13 @@ async function handleNextState(
   address: string
 ) {
   if (nextState === 'pending' && match.state !== 'pending') {
-    await setMatchValues(cachedMatch.id, {
+    await setHash<Match>('match', cachedMatch.id, {
       ...match,
       pendingSince: DateTime.utc().toISO(),
     });
   }
   if (nextState !== 'pending' && match.state === 'pending') {
-    await setMatchValues(cachedMatch.id, { ...match, pendingSince: null });
+    await setHash<Match>('match', cachedMatch.id, { ...match, pendingSince: null });
   }
 
   if (match.state === 'pending' && nextState === 'warmup') {
@@ -140,7 +140,7 @@ async function handleNextState(
 
   if (match.state !== nextState) {
     logChangeLiveState(cachedMatch.id, match.state, nextState, live);
-    await setMatchValues(cachedMatch.id, { ...match, state: nextState });
+    await setHash<Match>('match', cachedMatch.id, { ...match, state: nextState });
   }
 }
 
@@ -148,7 +148,8 @@ export async function updateMatchPlayers(
   matchId: string,
   live: LiveState
 ): Promise<MatchesJoined> {
-  let cachedMatch = await getCachedMatchesJoined(matchId);
+  const { data: redisCached } = await getCachedMatchesJoined(matchId);
+  let cachedMatch = redisCached as MatchesJoined | null;
   if (!cachedMatch) {
     info('updateMatchPlayers', `Match ${matchId}: Creating match cache`);
     cachedMatch = await client().getMatch(Number(matchId)).then(verifySingleResult);
