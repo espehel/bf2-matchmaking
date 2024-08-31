@@ -3,7 +3,7 @@ import { client } from '@bf2-matchmaking/supabase';
 import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
 import { closeMatch } from '../services/match/matches';
 import { info } from '@bf2-matchmaking/logging';
-import { addActiveServer, getActiveMatches } from '@bf2-matchmaking/redis';
+import { addActiveMatchServer, getActiveMatches } from '@bf2-matchmaking/redis';
 import {
   getLiveServer,
   getLiveServerByMatchId,
@@ -80,7 +80,7 @@ matchesRouter.post('/:matchid/server', async (ctx) => {
   if (match.server) {
     await resetLiveServer(match.server.address);
   }
-  await addActiveServer(ctx.request.body.address, ctx.params.matchid);
+  await addActiveMatchServer(ctx.request.body.address, ctx.params.matchid);
   ctx.status = 204;
 });
 

@@ -1,5 +1,5 @@
 import {
-  addActiveServer,
+  addActiveMatchServer,
   get,
   getActiveMatchServer,
   getHash,
@@ -54,7 +54,7 @@ async function handlePendingMatch(address: string, liveState: LiveState) {
     await resetLiveServer(currentServer);
   }
   info('handlePendingMatch', `Server ${address} assigning to match ${matchId}`);
-  await addActiveServer(address, matchId);
+  await addActiveMatchServer(address, matchId);
 }
 
 async function findPendingMatch(live: LiveState) {

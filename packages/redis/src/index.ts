@@ -167,7 +167,7 @@ function stringifyValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-export async function addActiveServer(address: string, matchId: string) {
+export async function addActiveMatchServer(address: string, matchId: string) {
   const client = await getClient();
   return client.HSET('active', matchId, address);
 }
@@ -210,7 +210,7 @@ export async function addMatch(matchId: string) {
 }
 export async function getMatches() {
   const client = await getClient();
-  const matchIdList = await client.HKEYS('matches');
+  const matchIdList = await client.SMEMBERS('matches');
   return stringArraySchema.parse(matchIdList);
 }
 
