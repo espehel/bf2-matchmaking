@@ -228,8 +228,8 @@ export async function updateLiveServer(address: string): Promise<LiveState | nul
     await setServerLive(address, live);
     return live;
   } catch (e) {
-    await setHash<Server>('server', address, { errorAt: now });
     error(`updateLiveServer ${address}`, e);
+    await setHash<Server>('server', address, { errorAt: now });
     return null;
   }
 }
