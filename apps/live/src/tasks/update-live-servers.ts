@@ -5,7 +5,7 @@ import {
 } from '@bf2-matchmaking/redis';
 import { DateTime } from 'luxon';
 import { assertObj } from '@bf2-matchmaking/utils';
-import { info, logChangeMatchStatus } from '@bf2-matchmaking/logging';
+import { error, info, logChangeMatchStatus } from '@bf2-matchmaking/logging';
 import { updateMatch, updateMatchPlayers } from '../services/match/active-match';
 import { LiveState, MatchStatus } from '@bf2-matchmaking/types';
 import { resetLiveServer, updateLiveServer } from '../services/server/server-manager';
@@ -28,23 +28,31 @@ export async function updateLiveServers() {
 }
 
 async function updateLiveMatch(address: string, matchId: string, live: LiveState) {
-  const cachedMatch = await updateMatchPlayers(matchId, live);
-  const match = await updateMatch(cachedMatch, live, address);
+  try {
+    const cachedMatch = await updateMatchPlayers(matchId, live);
+    const match = await updateMatch(cachedMatch, live, address);
 
-  if (match.state === 'stale') {
-    info('updateLiveMatch', `No players connected, resetting ${address}`);
-    await resetLiveServer(address);
-  }
-
-  if (match.state === 'finished') {
-    logChangeMatchStatus(MatchStatus.Finished, matchId, { match, live, cachedMatch });
-    await finishMatch(matchId);
-    await removeMatch(matchId);
-    await resetLiveServer(address);
-
-    const { data: server } = await getServerInfo(address);
-    if (Number(match.roundsPlayed) > 0 && server?.demos_path && cachedMatch.started_at) {
-      await saveDemosSince(address, cachedMatch.started_at, server.demos_path);
+    if (match.state === 'stale') {
+      info('updateLiveMatch', `No players connected, resetting ${address}`);
+      await resetLiveServer(address);
     }
+
+    if (match.state === 'finished') {
+      logChangeMatchStatus(MatchStatus.Finished, matchId, { match, live, cachedMatch });
+      await finishMatch(matchId);
+      await removeMatch(matchId);
+      await resetLiveServer(address);
+
+      const { data: server } = await getServerInfo(address);
+      if (
+        Number(match.roundsPlayed) > 0 &&
+        server?.demos_path &&
+        cachedMatch.started_at
+      ) {
+        await saveDemosSince(address, cachedMatch.started_at, server.demos_path);
+      }
+    }
+  } catch (e) {
+    error(`updateLiveMatch ${address} ${matchId}`, e);
   }
 }

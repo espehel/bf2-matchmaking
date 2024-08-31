@@ -1,21 +1,22 @@
 import { LiveMatch, MatchesJoined } from '@bf2-matchmaking/types';
 import {
   addMatch,
+  getHash,
   getMatchPlayers,
-  getMatchValues,
   setCachedMatchesJoined,
   setHash,
 } from '@bf2-matchmaking/redis';
 import { getLiveServerByMatchId } from '../server/server-manager';
 import { DateTime } from 'luxon';
 import { Match } from '@bf2-matchmaking/redis/src/types';
+import { validateMatch } from '@bf2-matchmaking/redis/src/validate';
 
 export async function createPendingMatch(match: MatchesJoined) {
   await setHash<Match>('match', match.id, {
     state: 'pending',
     roundsPlayed: match.rounds.length.toString(),
     pendingSince: DateTime.now().toISO(),
-    live_at: null,
+    live_at: undefined,
   });
   await setCachedMatchesJoined(match);
   await addMatch(match.id.toString());
@@ -24,7 +25,7 @@ export async function createPendingMatch(match: MatchesJoined) {
 
 export async function getMatch(matchId: string): Promise<LiveMatch | null> {
   const server = await getLiveServerByMatchId(matchId);
-  const match = await getMatchValues(matchId);
+  const match = await getHash('match', matchId).then(validateMatch);
   const connectedPlayers = await getMatchPlayers(matchId);
 
   if (!match) {

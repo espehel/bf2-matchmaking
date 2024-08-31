@@ -5,9 +5,8 @@ import {
   rconSchema,
   serverInfoSchema,
   serverLiveSchema,
-  serverSchema,
 } from './schemas';
-import { Match, Rcon, Server, ServerInfo, ServerLive } from './types';
+import { Rcon, ServerInfo, ServerLive } from './types';
 import { error } from '@bf2-matchmaking/logging';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { Schema, z } from 'zod';
@@ -74,6 +73,20 @@ export async function getValue<T extends Schema>(
   }
 }
 
+export async function getHash<T extends Record<string, number | string | boolean>>(
+  key: string,
+  id: string | number
+): Promise<AsyncResult<Partial<T>>> {
+  try {
+    const client = await getClient();
+    const data = await client.HGETALL(toKey(key, id));
+    return { data, error: null };
+  } catch (e) {
+    error(`getHash ${toKey(key, id)}`, e);
+    return toAsyncError(e);
+  }
+}
+
 export async function setHash<T extends Record<string, number | string | boolean | null>>(
   key: string,
   id: string | number,
@@ -115,11 +128,6 @@ export async function getServerLive(address: string) {
   return getValue(serverLiveSchema, `server:${address}:live`);
 }
 
-export async function getServerValues(address: string): Promise<Server> {
-  const client = await getClient();
-  return client.HGETALL(`server:${address}`).then(serverSchema.parse);
-}
-
 export async function setRcon(rcon: Rcon) {
   return setValue(rconSchema, `rcon:${rcon.address}`, rcon);
 }
@@ -133,10 +141,6 @@ export async function getServerInfo(address: string) {
   return getValue(serverInfoSchema, `server:${address}:info`);
 }
 
-export async function getMatchValues(matchId: string | number): Promise<Match> {
-  const client = await getClient();
-  return client.HGETALL(`match:${matchId}`);
-}
 export async function getCachedMatchesJoined(matchId: string) {
   return getValue(z.unknown(), `match:${matchId}:cache`);
 }

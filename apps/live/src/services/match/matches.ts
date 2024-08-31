@@ -222,11 +222,11 @@ export async function fixMissingMatchPlayers(match: MatchesJoined) {
   return null;
 }
 
-export async function setMatchLiveAt(matchId: number, match: Match) {
+export async function setMatchLiveAt(matchId: number) {
   const live_at = DateTime.utc().toISO();
   verbose('setMatchLiveAt', `Match ${matchId}: Live at ${live_at}`);
   await client().updateMatch(matchId, { live_at }).then(verifySingleResult);
-  await setHash<Match>('match', matchId, { ...match, live_at });
+  await setHash<Match>('match', matchId, { live_at });
 }
 
 export async function broadcastWarmUpStarted(match: MatchesJoined, address: string) {

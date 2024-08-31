@@ -2,8 +2,8 @@ import {
   addActiveServer,
   getActiveMatchServer,
   getCachedMatchesJoined,
+  getHash,
   getMatches,
-  getMatchValues,
   getServersWithStatus,
 } from '@bf2-matchmaking/redis';
 import { assertObj } from '@bf2-matchmaking/utils';
@@ -14,6 +14,7 @@ import {
   resetLiveServer,
   updateLiveServer,
 } from '../services/server/server-manager';
+import { validateMatch } from '@bf2-matchmaking/redis/src/validate';
 
 export async function updateIdleServers() {
   info('updateIdleServers', 'Updating idle servers');
@@ -60,7 +61,7 @@ async function findPendingMatch(live: LiveState) {
   const matchList = await getMatches();
   for (const matchId of matchList) {
     try {
-      const match = await getMatchValues(matchId);
+      const match = await getHash('match', matchId).then(validateMatch);
       assertObj(match, 'Invalid state, match in matches set but not as a hash table');
       if (match.state !== 'pending') {
         continue;

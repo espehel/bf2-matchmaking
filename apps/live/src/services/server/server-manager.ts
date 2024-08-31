@@ -20,7 +20,6 @@ import {
   deleteKeys,
   getServerInfo,
   getServerLive,
-  getServerValues,
   getServersWithStatus,
   removeServerWithStatus,
   resetDb,
@@ -28,6 +27,7 @@ import {
   setServerLive,
   getActiveMatchServer,
   setHash,
+  getHash,
 } from '@bf2-matchmaking/redis';
 import { buildLiveState, upsertServer } from './servers';
 import {
@@ -110,7 +110,7 @@ export async function connectServer(rcon: ServerRconsRow): Promise<'offline' | '
 
 export async function getLiveServer(address: string): Promise<LiveServer | null> {
   try {
-    const values = await getServerValues(address);
+    const { data: values } = await getHash<Server>('server', address);
     const { data: info } = await getServerInfo(address);
     assertObj(info, `Server ${address} info not found`);
     const { data: live } = await getServerLive(address);
@@ -119,10 +119,10 @@ export async function getLiveServer(address: string): Promise<LiveServer | null>
       address,
       ...info,
       live,
-      errorAt: values.errorAt,
-      updatedAt: values.updatedAt,
+      errorAt: values?.errorAt,
+      updatedAt: values?.updatedAt,
       port: Number(info.port),
-      status: values.status as LiveServerStatus,
+      status: values?.status as LiveServerStatus,
       noVehicles: info.noVehicles,
       matchId: null,
     };

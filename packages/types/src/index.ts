@@ -1,9 +1,4 @@
-import {
-  MatchPlayersInsert,
-  MatchPlayersRow,
-  PlayersRow,
-  RoundsInsert,
-} from './database-types';
+import { MatchPlayersInsert, PlayersRow } from './database-types';
 
 export * from './database-types.generated';
 export * from './api-types';
@@ -203,12 +198,6 @@ export type LiveServerState =
   | 'endlive'
   | 'finished'
   | 'stale';
-
-export interface LiveRound extends Omit<RoundsInsert, 'si' | 'pl' | 'map'> {
-  si: ServerInfo;
-  pl: Array<PlayerListItem>;
-  map: string;
-}
 
 export interface PendingServer {
   address: string;

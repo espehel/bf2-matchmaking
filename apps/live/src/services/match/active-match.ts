@@ -8,16 +8,15 @@ import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/log
 import { assertObj, formatSecToMin, hasKeyhash } from '@bf2-matchmaking/utils';
 import {
   getCachedMatchesJoined,
-  getMatchValues,
   getMatchPlayers,
   setMatchPlayer,
   incMatchRoundsPlayed,
   setCachedMatchesJoined,
   setHash,
+  getHash,
 } from '@bf2-matchmaking/redis';
 import { addTeamPlayerToLiveMatch } from './players';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { DateTime } from 'luxon';
 import {
   broadcastWarmUpStarted,
   hasPlayedAllRounds,
@@ -28,17 +27,19 @@ import {
 import { insertRound } from './rounds';
 import { Match } from '@bf2-matchmaking/redis/src/types';
 import { isServerIdentified } from '../server/server-manager';
+import { DateTime } from 'luxon';
+import { validateMatch } from '@bf2-matchmaking/redis/src/validate';
 
 export async function updateMatch(
   cachedMatch: MatchesJoined,
   live: LiveState,
   address: string
 ): Promise<Match> {
-  const match = await getMatchValues(cachedMatch.id);
+  const match = await getHash('match', cachedMatch.id).then(validateMatch);
   logState(match, live, cachedMatch);
   const nextState = getNextState(cachedMatch, match, live);
   await handleNextState(match, nextState, cachedMatch, live, address);
-  const nextMatch = await getMatchValues(cachedMatch.id);
+  const nextMatch = await getHash('match', cachedMatch.id).then(validateMatch);
   return nextMatch;
 }
 
@@ -118,12 +119,11 @@ async function handleNextState(
 ) {
   if (nextState === 'pending' && match.state !== 'pending') {
     await setHash<Match>('match', cachedMatch.id, {
-      ...match,
       pendingSince: DateTime.utc().toISO(),
     });
   }
   if (nextState !== 'pending' && match.state === 'pending') {
-    await setHash<Match>('match', cachedMatch.id, { ...match, pendingSince: null });
+    await setHash<Match>('match', cachedMatch.id, { pendingSince: undefined });
   }
 
   if (match.state === 'pending' && nextState === 'warmup') {
@@ -131,7 +131,7 @@ async function handleNextState(
   }
 
   if (nextState === 'live' && !match.live_at) {
-    await setMatchLiveAt(cachedMatch.id, match);
+    await setMatchLiveAt(cachedMatch.id);
   }
 
   if (nextState === 'endlive') {
@@ -140,7 +140,7 @@ async function handleNextState(
 
   if (match.state !== nextState) {
     logChangeLiveState(cachedMatch.id, match.state, nextState, live);
-    await setHash<Match>('match', cachedMatch.id, { ...match, state: nextState });
+    await setHash<Match>('match', cachedMatch.id, { state: nextState });
   }
 }
 

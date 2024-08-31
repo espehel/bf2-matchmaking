@@ -1,4 +1,4 @@
-import { MatchesJoined, PlayersRow, ServerRconsRow, ServersRow } from './database-types';
+import { MatchesJoined, ServerRconsRow, ServersRow } from './database-types';
 import { LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
 export enum ApiErrorType {
