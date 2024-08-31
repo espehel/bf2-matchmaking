@@ -18,8 +18,6 @@ import {
 import {
   addServerWithStatus,
   deleteKeys,
-  getServerInfo,
-  getServerLive,
   getServersWithStatus,
   removeServerWithStatus,
   resetDb,
@@ -28,6 +26,7 @@ import {
   getActiveMatchServer,
   setHash,
   getHash,
+  get,
 } from '@bf2-matchmaking/redis';
 import { buildLiveState, upsertServer } from './servers';
 import {
@@ -42,6 +41,10 @@ import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { loadMapsCache } from '../maps';
 import { DateTime } from 'luxon';
 import { Server } from '@bf2-matchmaking/redis/src/types';
+import {
+  validateServerInfo,
+  validateServerLiveSafe,
+} from '@bf2-matchmaking/redis/src/validate';
 
 export async function initServers() {
   try {
@@ -111,9 +114,8 @@ export async function connectServer(rcon: ServerRconsRow): Promise<'offline' | '
 export async function getLiveServer(address: string): Promise<LiveServer | null> {
   try {
     const { data: values } = await getHash<Server>('server', address);
-    const { data: info } = await getServerInfo(address);
-    assertObj(info, `Server ${address} info not found`);
-    const { data: live } = await getServerLive(address);
+    const info = await get(`server:${address}:info`).then(validateServerInfo);
+    const live = await get(`server:${address}:live`).then(validateServerLiveSafe);
 
     return {
       address,
@@ -218,7 +220,7 @@ export function isServerIdentified(serverPlayers: number, matchSize: number) {
 }
 
 export async function updateLiveServer(address: string): Promise<LiveState | null> {
-  const now = new Date().toISOString();
+  const now = DateTime.now().toISO();
 
   try {
     const live = await buildLiveState(address);

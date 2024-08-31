@@ -40,7 +40,7 @@ export async function resetDb() {
   await client.flushDb();
 }
 
-export async function setValue(
+export async function set(
   schema: Schema,
   key: string,
   value: unknown
@@ -56,17 +56,13 @@ export async function setValue(
   }
 }
 
-export async function getValue<T extends Schema>(
-  schema: T,
-  key: string
-): Promise<AsyncResult<z.infer<T>>> {
+export async function get<T = unknown>(key: string): Promise<AsyncResult<T>> {
   const client = await getClient();
   const value = await client.GET(key);
   try {
     assertObj(value, `${key} not found`);
-    const parsed = JSON.parse(value);
-    const validated = schema.parse(parsed);
-    return { data: validated, error: null };
+    const data = JSON.parse(value);
+    return { data, error: null };
   } catch (e) {
     error(`getValue ${key}`, e);
     return toAsyncError(e);
@@ -122,30 +118,18 @@ export async function deleteKeys(...keys: Array<string>) {
 }
 
 export async function setServerLive(address: string, value: ServerLive) {
-  return setValue(serverLiveSchema, `server:${address}:live`, value);
-}
-export async function getServerLive(address: string) {
-  return getValue(serverLiveSchema, `server:${address}:live`);
+  return set(serverLiveSchema, `server:${address}:live`, value);
 }
 
 export async function setRcon(rcon: Rcon) {
-  return setValue(rconSchema, `rcon:${rcon.address}`, rcon);
-}
-export async function getRcon(address: string) {
-  return getValue(rconSchema, `rcon:${address}`);
+  return set(rconSchema, `rcon:${rcon.address}`, rcon);
 }
 export async function setServerInfo(address: string, info: ServerInfo) {
-  return setValue(serverInfoSchema, `server:${address}:info`, info);
-}
-export async function getServerInfo(address: string) {
-  return getValue(serverInfoSchema, `server:${address}:info`);
+  return set(serverInfoSchema, `server:${address}:info`, info);
 }
 
-export async function getCachedMatchesJoined(matchId: string) {
-  return getValue(z.unknown(), `match:${matchId}:cache`);
-}
 export async function setCachedMatchesJoined(match: { id: number }) {
-  return setValue(z.unknown(), `match:${match.id}:cache`, match);
+  return set(z.unknown(), `match:${match.id}:cache`, match);
 }
 
 export async function incMatchRoundsPlayed(matchId: string | number): Promise<number> {
@@ -219,11 +203,6 @@ export async function getActiveMatches() {
   const client = await getClient();
   const matchIdList = await client.HKEYS('active');
   return stringArraySchema.parse(matchIdList);
-}
-export async function hasActiveMatch(matchId: string) {
-  const client = await getClient();
-  const reply = await client.HEXISTS('active', matchId);
-  return Boolean(reply);
 }
 export async function addMatch(matchId: string) {
   const client = await getClient();

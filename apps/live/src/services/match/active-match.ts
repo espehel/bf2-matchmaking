@@ -7,13 +7,13 @@ import {
 import { info, logAddMatchRound, logChangeLiveState } from '@bf2-matchmaking/logging';
 import { assertObj, formatSecToMin, hasKeyhash } from '@bf2-matchmaking/utils';
 import {
-  getCachedMatchesJoined,
   getMatchPlayers,
   setMatchPlayer,
   incMatchRoundsPlayed,
   setCachedMatchesJoined,
   setHash,
   getHash,
+  get,
 } from '@bf2-matchmaking/redis';
 import { addTeamPlayerToLiveMatch } from './players';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -148,7 +148,7 @@ export async function updateMatchPlayers(
   matchId: string,
   live: LiveState
 ): Promise<MatchesJoined> {
-  const { data: redisCached } = await getCachedMatchesJoined(matchId);
+  const { data: redisCached } = await get<MatchesJoined>(`match:${matchId}:cache`);
   let cachedMatch = redisCached as MatchesJoined | null;
   if (!cachedMatch) {
     info('updateMatchPlayers', `Match ${matchId}: Creating match cache`);

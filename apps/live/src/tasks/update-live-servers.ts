@@ -1,16 +1,11 @@
-import {
-  getActiveMatchServers,
-  getServerInfo,
-  removeMatch,
-} from '@bf2-matchmaking/redis';
-import { DateTime } from 'luxon';
-import { assertObj } from '@bf2-matchmaking/utils';
+import { get, getActiveMatchServers, removeMatch } from '@bf2-matchmaking/redis';
 import { error, info, logChangeMatchStatus } from '@bf2-matchmaking/logging';
 import { updateMatch, updateMatchPlayers } from '../services/match/active-match';
 import { LiveState, MatchStatus } from '@bf2-matchmaking/types';
 import { resetLiveServer, updateLiveServer } from '../services/server/server-manager';
 import { saveDemosSince } from '@bf2-matchmaking/demo';
 import { finishMatch } from '../services/match/matches';
+import { validateServerInfoSafe } from '@bf2-matchmaking/redis/src/validate';
 
 export async function updateLiveServers() {
   const servers = await getActiveMatchServers();
@@ -43,7 +38,7 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveState
       await removeMatch(matchId);
       await resetLiveServer(address);
 
-      const { data: server } = await getServerInfo(address);
+      const server = await get(`server:${address}:info`).then(validateServerInfoSafe);
       if (
         Number(match.roundsPlayed) > 0 &&
         server?.demos_path &&

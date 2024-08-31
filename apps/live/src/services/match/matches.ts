@@ -32,8 +32,9 @@ import {
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
 import { hasNotKeyhash } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
-import { getServerInfo, setHash } from '@bf2-matchmaking/redis';
+import { get, setHash } from '@bf2-matchmaking/redis';
 import { Match } from '@bf2-matchmaking/redis/src/types';
+import { validateServerInfoSafe } from '@bf2-matchmaking/redis/src/validate';
 
 export const finishMatch = async (matchId: string) => {
   const { data: updatedMatch, error } = await client().updateMatch(Number(matchId), {
@@ -230,7 +231,7 @@ export async function setMatchLiveAt(matchId: number) {
 }
 
 export async function broadcastWarmUpStarted(match: MatchesJoined, address: string) {
-  const { data: serverInfo } = await getServerInfo(address);
+  const serverInfo = await get(`server:${address}:info`).then(validateServerInfoSafe);
   if (isDiscordMatch(match) && serverInfo) {
     await sendChannelMessage(match.config.channel, {
       embeds: [getWarmUpStartedEmbed(match.id, address, serverInfo)],

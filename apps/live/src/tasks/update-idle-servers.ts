@@ -1,13 +1,13 @@
 import {
   addActiveServer,
+  get,
   getActiveMatchServer,
-  getCachedMatchesJoined,
   getHash,
   getMatches,
   getServersWithStatus,
 } from '@bf2-matchmaking/redis';
 import { assertObj } from '@bf2-matchmaking/utils';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, warn } from '@bf2-matchmaking/logging';
 import { LiveState, MatchesJoined } from '@bf2-matchmaking/types';
 import {
   isServerIdentified,
@@ -67,9 +67,12 @@ async function findPendingMatch(live: LiveState) {
         continue;
       }
 
-      const { data: cachedMatch } = await getCachedMatchesJoined(matchId);
-      assertObj(cachedMatch, 'Invalid state, match in matches set but not cached');
-      if (!isMatchServer(cachedMatch as MatchesJoined, live)) {
+      const { data: cachedMatch } = await get<MatchesJoined>(`match:${matchId}:cache`);
+      if (!cachedMatch) {
+        warn('findPendingMatch', `Match ${matchId} not found in cache`);
+        continue;
+      }
+      if (!isMatchServer(cachedMatch, live)) {
         continue;
       }
       return matchId;

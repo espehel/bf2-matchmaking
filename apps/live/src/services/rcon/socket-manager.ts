@@ -1,10 +1,10 @@
 import net from 'net';
 import { error, info, verbose } from '@bf2-matchmaking/logging';
 import crypto from 'crypto';
-import { getRcon, setRcon } from '@bf2-matchmaking/redis';
-import { assertObj } from '@bf2-matchmaking/utils';
+import { get, setRcon } from '@bf2-matchmaking/redis';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
 import { Rcon } from '@bf2-matchmaking/redis/src/types';
+import { validateRcon } from '@bf2-matchmaking/redis/src/validate';
 
 const TIMEOUT = 3000;
 const TTL = 10 * 60 * 1000;
@@ -59,8 +59,7 @@ export async function getSocket(address: string) {
   if (socket && socket.readyState === 'open') {
     return socket;
   }
-  const { data: rcon } = await getRcon(address);
-  assertObj(rcon, `Rcon ${address} not found`);
+  const rcon = await get(`rcon:${address}`).then(validateRcon);
   return connect(rcon);
 }
 
