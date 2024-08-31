@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import React from 'react';
 
 export default function Home() {
   return (
@@ -12,6 +13,9 @@ export default function Home() {
               stats and rankings, as well as a tool for managing leagues and cups.
             </p>
             <div className="flex flex-col gap-4">
+              <Link className="btn btn-primary" href="/challenges">
+                Challenge a team
+              </Link>
               <Link className="btn btn-primary" href="/matches/scheduled">
                 Scheduled matches
               </Link>

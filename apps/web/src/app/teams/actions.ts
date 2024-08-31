@@ -1,17 +1,18 @@
 'use server';
-import { assertString } from '@bf2-matchmaking/utils';
+
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { isString } from '@bf2-matchmaking/types';
-export async function createTeam(data: FormData) {
-  const { nameInput, avatarInput } = Object.fromEntries(data);
-  assertString(nameInput);
+import { getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { toAsyncError } from '@bf2-matchmaking/utils/src/async-actions';
 
+export async function createTeam(data: FormData) {
+  const { nameInput, avatarInput } = getValues(data, 'nameInput', 'avatarInput');
   const { data: owner, error } = await supabase(cookies).getSessionPlayer();
 
   if (error) {
-    return { error: error.message, data: null };
+    return toAsyncError(error);
   }
 
   const { data: team, error: teamError } = await supabase(cookies).createTeam({
@@ -21,7 +22,7 @@ export async function createTeam(data: FormData) {
   });
 
   if (teamError) {
-    return { error: 'Failed to create team', data: null };
+    return toAsyncError('Failed to create team');
   }
 
   await supabase(cookies).createTeamPlayer({

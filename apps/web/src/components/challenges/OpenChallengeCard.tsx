@@ -10,7 +10,7 @@ interface Props {
 
 export default function OpenChallengeCard({ challenge }: Props) {
   return (
-    <div className="card card-compact w-96 bg-base-100 shadow-xl shadow-base-100 image-full">
+    <div className="card card-compact w-96 bg-base-100 shadow-md border border-primary shadow-primary image-full">
       <figure>
         <Image
           className="rounded-box"

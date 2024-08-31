@@ -6,7 +6,7 @@ import React from 'react';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { sortByName } from '@bf2-matchmaking/utils';
+import { api, sortByName, verify } from '@bf2-matchmaking/utils';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { DateTime } from 'luxon';
 
@@ -15,11 +15,7 @@ interface Props {
 }
 
 export default async function AcceptPendingChallengeModal({ challenge }: Props) {
-  const servers = await supabase(cookies)
-    .getServers()
-    .then(verifyResult)
-    .then(sortByName);
-
+  const servers = await api.live().getServers().then(verify).then(sortByName);
   const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
   const availableMaps = maps.filter(isNotHomeMap(challenge));
 
@@ -57,7 +53,7 @@ export default async function AcceptPendingChallengeModal({ challenge }: Props) 
         readonly={Boolean(challenge.away_map)}
       />
       <Select
-        options={servers.map(({ ip, name }) => [ip, name])}
+        options={servers.map(({ address, name }) => [address, name])}
         label="Away server"
         name="awayServer"
         defaultValue={challenge.away_server?.ip || challenge.home_server.ip}

@@ -13,24 +13,27 @@ export default async function TeamsPage() {
 
   return (
     <main className="main">
-      <ul className="flex flex-col gap-2 justify-center items-center">
-        {sortedTeams.map((t) => (
-          <li className="sheet max-w-3xl w-full" key={t.id}>
-            <Link className="flex items-center gap-4" href={`/teams/${t.id}`}>
-              <Avatar team={t} />
-              <p className="text-3xl font-bold font-serif text-accent">{t.name}</p>
-              <p className="text-lg font-bold ml-auto self-end">{`Players: ${t.players.length}`}</p>
-              <p className="text-lg font-bold self-end">{`Owner: ${t.owner.nick}`}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {player && (
-        <section className="section max-w-3xl w-full m-auto mt-6">
-          <h2 className="text-xl">Add new team</h2>
-          <TeamCreateForm />
-        </section>
-      )}
+      <h1>Teams</h1>
+      <div className="flex gap-4">
+        <ul className="flex flex-col gap-2">
+          {sortedTeams.map((t) => (
+            <li className="sheet max-w-3xl w-full" key={t.id}>
+              <Link className="flex items-center gap-4" href={`/teams/${t.id}`}>
+                <Avatar team={t} />
+                <p className="text-3xl font-bold font-serif text-accent">{t.name}</p>
+                <p className="text-lg font-bold ml-auto self-end">{`Players: ${t.players.length}`}</p>
+                <p className="text-lg font-bold self-end">{`Owner: ${t.owner.nick}`}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {player && (
+          <section className="section w-fit h-fit px-12">
+            <h2 className="text-xl">Add new team</h2>
+            <TeamCreateForm />
+          </section>
+        )}
+      </div>
     </main>
   );
 }

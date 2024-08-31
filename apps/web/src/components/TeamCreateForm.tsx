@@ -1,22 +1,16 @@
 'use client';
-import { toast } from 'react-toastify';
 import FormSubmitButton from '@/components/FormSubmitButton';
 import { createTeam } from '@/app/teams/actions';
+import ActionForm from '@/components/form/ActionForm';
 
 export default function TeamCreateForm() {
-  const handleFormAction = async (data: FormData) => {
-    const { data: team, error } = await createTeam(data);
-
-    if (error) {
-      toast.error(error);
-    }
-
-    if (team) {
-      toast.success(`Added new team ${team.name}`);
-    }
-  };
   return (
-    <form action={handleFormAction} className="form-control grid grid-cols-2 gap-4">
+    <ActionForm
+      action={createTeam}
+      successMessage="Added new team"
+      errorMessage="Failed to add team"
+      className="form-control gap-4"
+    >
       <div>
         <label className="label" htmlFor="nameInput">
           <span className="label-text">Name</span>
@@ -30,6 +24,6 @@ export default function TeamCreateForm() {
         <input className="input input-bordered" name="avatarInput" />
       </div>
       <FormSubmitButton>Add</FormSubmitButton>
-    </form>
+    </ActionForm>
   );
 }

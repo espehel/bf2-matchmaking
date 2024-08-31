@@ -7,7 +7,8 @@ import MatchDateItems from '@/components/matches/MatchDateItems';
 import ScheduleMatchForm, {
   ScheduledMatchFormFallback,
 } from '@/components/matches/ScheduleMatchForm';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
+import Link from 'next/link';
 
 export default async function ScheduledMatchesPage() {
   const matches = await supabase(cookies)
@@ -29,10 +30,13 @@ export default async function ScheduledMatchesPage() {
   return (
     <main className="main">
       <h1 className="mb-8">Scheduled matches</h1>
-      <div className="mb-8">
+      <div className="flex gap-4 mb-8">
         <Suspense fallback={<ScheduledMatchFormFallback />}>
           <ScheduleMatchForm />
         </Suspense>
+        <Link href="/challenges" className="btn btn-secondary w-36">
+          Challenge a team
+        </Link>
       </div>
       {!hasMatches && <p>Currently no scheduled matches...</p>}
       {hasMatches && (

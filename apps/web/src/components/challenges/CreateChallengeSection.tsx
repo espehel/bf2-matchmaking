@@ -8,8 +8,10 @@ import React from 'react';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { sortByName } from '@bf2-matchmaking/utils';
+import { api, sortByName, verify } from '@bf2-matchmaking/utils';
 import { MatchConfigsRow, PlayersRow, VisibleTeam } from '@bf2-matchmaking/types';
+
+const CONFIG_5v5 = 22;
 
 export default async function CreateChallengeSection() {
   const player = await supabase(cookies).getSessionPlayerOrThrow();
@@ -21,13 +23,10 @@ export default async function CreateChallengeSection() {
   const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
   const myTeams = teams.filter(isPlayerTeam(player));
 
-  const servers = await supabase(cookies)
-    .getServers()
-    .then(verifyResult)
-    .then(sortByName);
+  const servers = await api.live().getServers().then(verify).then(sortByName);
   const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
   return (
-    <section className="section min-w-[600px] w-fit">
+    <section className="section min-w-[600px] w-fit h-fit">
       <h2>Create challenge</h2>
       <ActionForm
         action={createChallenge}
@@ -39,6 +38,7 @@ export default async function CreateChallengeSection() {
           <Select
             label="Match type"
             name="configSelect"
+            defaultValue={CONFIG_5v5}
             options={configs.map(({ id, name }) => [id, name])}
           />
           <div className="flex gap-4">
@@ -73,7 +73,7 @@ export default async function CreateChallengeSection() {
             name="homeMap"
           />
           <Select
-            options={servers.map(({ ip, name }) => [ip, name])}
+            options={servers.map(({ address, name }) => [address, name])}
             label="Home server"
             name="homeServer"
           />
