@@ -2,41 +2,27 @@ import {
   getActiveMatchServers,
   getServerInfo,
   removeMatch,
-  setHash,
-  setServerLive,
 } from '@bf2-matchmaking/redis';
-import { buildLiveState } from '../services/server/servers';
 import { DateTime } from 'luxon';
 import { assertObj } from '@bf2-matchmaking/utils';
-import { error, info, logChangeMatchStatus } from '@bf2-matchmaking/logging';
+import { info, logChangeMatchStatus } from '@bf2-matchmaking/logging';
 import { updateMatch, updateMatchPlayers } from '../services/match/active-match';
 import { LiveState, MatchStatus } from '@bf2-matchmaking/types';
-import { resetLiveServer } from '../services/server/server-manager';
+import { resetLiveServer, updateLiveServer } from '../services/server/server-manager';
 import { saveDemosSince } from '@bf2-matchmaking/demo';
 import { finishMatch } from '../services/match/matches';
-import { Server } from '@bf2-matchmaking/redis/src/types';
 
 export async function updateLiveServers() {
-  const now = DateTime.utc().toISO();
-  assertObj(now, 'Failed to get current time');
-
   const servers = await getActiveMatchServers();
   if (servers.size === 0) {
     info('updateLiveServers', `No live servers`);
     return;
   }
+
   for (const [matchId, address] of servers.entries()) {
-    try {
-      await setHash<Server>('server', address, { tickedAt: now });
-
-      const live = await buildLiveState(address);
-      await setHash<Server>('server', address, { errorAt: undefined, updatedAt: now });
-      await setServerLive(address, live);
-
-      await updateLiveMatch(address, matchId, live);
-    } catch (e) {
-      await setHash<Server>('server', address, { errorAt: now });
-      error('updateLiveServers', e);
+    const liveState = await updateLiveServer(address);
+    if (liveState) {
+      await updateLiveMatch(address, matchId, liveState);
     }
   }
 }

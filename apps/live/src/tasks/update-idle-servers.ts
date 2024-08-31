@@ -22,27 +22,12 @@ export async function updateIdleServers() {
 
     const servers = await getServersWithStatus('idle');
     for (const address of servers) {
-      const live = await updateLiveServer(address);
-      if (!live) {
+      const liveState = await updateLiveServer(address);
+      if (!liveState) {
         continue;
       }
       updatedServers++;
-
-      if (live.players.length === 0) {
-        continue;
-      }
-
-      const matchId = await findPendingMatch(live);
-      if (!matchId) {
-        continue;
-      }
-
-      const currentAddress = await getActiveMatchServer(matchId);
-      if (currentAddress) {
-        await resetLiveServer(currentAddress);
-      }
-      info('updateIdleServers', `Server ${address} assigning to match ${matchId}`);
-      await addActiveServer(address, matchId);
+      await handlePendingMatch(address, liveState);
     }
     info(
       'updateIdleServers',
@@ -51,6 +36,24 @@ export async function updateIdleServers() {
   } catch (e) {
     error('updateIdleServers', e);
   }
+}
+
+async function handlePendingMatch(address: string, liveState: LiveState) {
+  if (liveState.players.length === 0) {
+    return;
+  }
+
+  const matchId = await findPendingMatch(liveState);
+  if (!matchId) {
+    return;
+  }
+
+  const currentServer = await getActiveMatchServer(matchId);
+  if (currentServer) {
+    await resetLiveServer(currentServer);
+  }
+  info('handlePendingMatch', `Server ${address} assigning to match ${matchId}`);
+  await addActiveServer(address, matchId);
 }
 
 async function findPendingMatch(live: LiveState) {

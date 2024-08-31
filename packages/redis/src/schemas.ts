@@ -36,7 +36,6 @@ export const serverSchema = z
     status: z.string(),
     matchId: z.string(),
     liveAt: z.string().datetime({ offset: true }),
-    tickedAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
     errorAt: z.string().datetime({ offset: true }),
   })

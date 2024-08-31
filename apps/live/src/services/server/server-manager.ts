@@ -29,7 +29,7 @@ import {
   getActiveMatchServer,
   setHash,
 } from '@bf2-matchmaking/redis';
-import { buildLiveState, buildLiveStateSafe, upsertServer } from './servers';
+import { buildLiveState, upsertServer } from './servers';
 import {
   assertObj,
   externalApi,
@@ -218,15 +218,16 @@ export function isServerIdentified(serverPlayers: number, matchSize: number) {
 }
 
 export async function updateLiveServer(address: string): Promise<LiveState | null> {
-  const now = DateTime.utc().toISO();
-  assertObj(now, 'Failed to get current time');
+  const now = new Date().toISOString();
 
-  const live = await buildLiveStateSafe(address);
-  if (!live) {
+  try {
+    const live = await buildLiveState(address);
+    await setHash<Server>('server', address, { errorAt: undefined, updatedAt: now });
+    await setServerLive(address, live);
+    return live;
+  } catch (e) {
     await setHash<Server>('server', address, { errorAt: now });
+    error(`updateLiveServer ${address}`, e);
     return null;
   }
-  await setHash<Server>('server', address, { errorAt: undefined, updatedAt: now });
-  await setServerLive(address, live);
-  return live;
 }

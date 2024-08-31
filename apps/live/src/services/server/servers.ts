@@ -22,26 +22,6 @@ export async function buildLiveState(address: string): Promise<LiveState> {
 
   return { ...info, players };
 }
-export async function buildLiveStateSafe(address: string): Promise<LiveState | null> {
-  try {
-    return buildLiveState(address);
-  } catch (e) {
-    return null;
-  }
-}
-
-export async function updateServerName(servers: Array<ServersRow>, liveInfo: LiveState) {
-  /*const server = servers.find(({ ip }) => ip === liveInfo);
-  if (server && server.name !== liveInfo.serverName) {
-    info(
-      'updateServerName',
-      `Server ${server.ip} updating name to ${liveInfo.serverName}`
-    );
-    await client().updateServer(server.ip, {
-      name: liveInfo.serverName,
-    });
-  }*/
-}
 
 export async function getAddress(ip: string) {
   const { data: dns } = await api.platform().getServerDns(ip);
