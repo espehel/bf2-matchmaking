@@ -5,6 +5,7 @@ import {
   getHash,
   getMatches,
   getServersWithStatus,
+  removeServerWithStatus,
 } from '@bf2-matchmaking/redis';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { error, info, warn } from '@bf2-matchmaking/logging';
@@ -55,6 +56,7 @@ async function handlePendingMatch(address: string, liveState: LiveState) {
   }
   info('handlePendingMatch', `Server ${address} assigning to match ${matchId}`);
   await addActiveMatchServer(address, matchId);
+  await removeServerWithStatus(address, 'idle');
 }
 
 async function findPendingMatch(live: LiveState) {
