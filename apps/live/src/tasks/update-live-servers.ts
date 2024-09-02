@@ -13,6 +13,7 @@ export async function updateLiveServers() {
     info('updateLiveServers', `No live servers`);
     return;
   }
+  info('updateLiveServers', `${servers.size} live servers`);
 
   for (const [matchId, address] of servers.entries()) {
     const liveState = await updateLiveServer(address);
