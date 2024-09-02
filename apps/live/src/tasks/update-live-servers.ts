@@ -14,8 +14,6 @@ export async function updateLiveServers() {
     return;
   }
 
-  console.log(servers);
-
   for (const [matchId, address] of servers.entries()) {
     const liveState = await updateLiveServer(address);
     if (liveState) {
