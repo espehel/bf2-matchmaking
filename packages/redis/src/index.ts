@@ -175,7 +175,7 @@ export async function getActiveMatchServer(matchId: string): Promise<string | nu
   const client = await getClient();
   return client.HGET('active', matchId);
 }
-export async function getActiveMatchServers(): Promise<Map<string, string>> {
+export async function getActiveMatchServers(): Promise<Record<string, string>> {
   const client = await getClient();
   return client.HGETALL('active');
 }

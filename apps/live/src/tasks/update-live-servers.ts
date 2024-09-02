@@ -8,14 +8,13 @@ import { finishMatch } from '../services/match/matches';
 import { validateServerInfoSafe } from '@bf2-matchmaking/redis/src/validate';
 
 export async function updateLiveServers() {
-  const servers = await getActiveMatchServers();
-  if (servers.size === 0) {
+  const servers = await getActiveMatchServers().then(Object.entries);
+  if (servers.length === 0) {
     info('updateLiveServers', `No live servers`);
     return;
   }
-  info('updateLiveServers', `${servers.size} live servers`);
 
-  for (const [matchId, address] of servers.entries()) {
+  for (const [matchId, address] of servers) {
     const liveState = await updateLiveServer(address);
     if (liveState) {
       await updateLiveMatch(address, matchId, liveState);
