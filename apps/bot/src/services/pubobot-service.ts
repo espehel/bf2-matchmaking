@@ -24,7 +24,11 @@ export async function createPubobotMatch(
 ): Promise<PubobotMatch> {
   const config = await getConfigCached(message.channelId);
   const match = await createMatch(config, MatchStatus.Open);
-  const pubobotMatch: PubobotMatch = { matchId: match.id, status: MatchStatus.Open };
+  const pubobotMatch: PubobotMatch = {
+    matchId: match.id,
+    status: MatchStatus.Open,
+    channelId: message.channelId,
+  };
   await hash(`pubobot:${id}`).set(pubobotMatch);
   return pubobotMatch;
 }
@@ -55,7 +59,7 @@ export async function startPubobotMatch(message: Message, pubobotMatch: PubobotM
 }
 
 export async function draftPubobotMatch(message: Message, pubobotMatch: PubobotMatch) {
-  const config = await getConfigCached(message.channelId);
+  const config = await getConfigCached(pubobotMatch.channelId);
   const [embed] = message.embeds;
 
   const maps = await buildMatchMaps(embed);
