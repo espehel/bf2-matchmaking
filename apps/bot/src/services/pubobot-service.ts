@@ -77,7 +77,7 @@ export async function draftPubobotMatch(message: Message, pubobotMatch: PubobotM
 
   await createDraftPoll(channel, message, pubobotMatch, updatedMatch);
 
-  const { data: config4v4Cup } = await client().getMatchConfig(19);
+  const config4v4Cup = await getConfigCached(channel.id);
   if (config4v4Cup) {
     await createDraftPoll(channel, message, pubobotMatch, updatedMatch, config4v4Cup);
   }

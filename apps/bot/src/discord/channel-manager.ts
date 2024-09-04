@@ -104,6 +104,8 @@ async function listenToDebugChannel() {
 
     const collector = channel.createMessageCollector();
     addDraftListener(collector);
+    const { data: config4v4Cup } = await client().getMatchConfig(19);
+    await setCachedConfig({ ...config4v4Cup, channel: channel.id });
     return collector;
   } catch (e) {
     error('listenToDebugChannel', e);
