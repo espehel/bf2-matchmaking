@@ -1,14 +1,14 @@
 import { Schema, z } from 'zod';
-import { AsyncResult } from '@bf2-matchmaking/types';
 import { error, warn } from '@bf2-matchmaking/logging';
 import { matchSchema, rconSchema, serverInfoSchema, serverLiveSchema } from './schemas';
+import { RedisResult } from './types';
 
 export function validate<T extends Schema>(
   schema: T,
-  response: AsyncResult<unknown>
+  response: RedisResult<unknown>
 ): z.infer<T> {
   if (response.error) {
-    throw new Error(response.error.message);
+    throw new Error(response.error);
   }
   try {
     return schema.parse(response.data);
@@ -20,7 +20,7 @@ export function validate<T extends Schema>(
 
 export function validateSafe<T extends Schema>(
   schema: T,
-  response: AsyncResult<unknown>
+  response: RedisResult<unknown>
 ): z.infer<T> | null {
   if (!response.data) {
     return null;
@@ -33,20 +33,20 @@ export function validateSafe<T extends Schema>(
   return parsed.data;
 }
 
-export function validateMatch(response: AsyncResult<unknown>) {
+export function validateMatch(response: RedisResult<unknown>) {
   return validate(matchSchema, response);
 }
 
-export async function validateServerInfo(response: AsyncResult<unknown>) {
+export async function validateServerInfo(response: RedisResult<unknown>) {
   return validate(serverInfoSchema, response);
 }
 
-export async function validateServerInfoSafe(response: AsyncResult<unknown>) {
+export async function validateServerInfoSafe(response: RedisResult<unknown>) {
   return validateSafe(serverInfoSchema, response);
 }
-export async function validateRcon(response: AsyncResult<unknown>) {
+export async function validateRcon(response: RedisResult<unknown>) {
   return validate(rconSchema, response);
 }
-export async function validateServerLiveSafe(response: AsyncResult<unknown>) {
+export async function validateServerLiveSafe(response: RedisResult<unknown>) {
   return validateSafe(serverLiveSchema, response);
 }

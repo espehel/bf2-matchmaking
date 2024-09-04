@@ -29,7 +29,7 @@ export const withRating =
     rating: ratings.find((r) => r.player_id === mp.player_id)?.rating || 1500,
   });
 
-export function getUserIds(embed: Embed, name: string) {
+export function getUserIds(embed: Embed, name: string): Array<string> {
   return (
     embed.fields
       ?.find((field) => field.name.includes(name))

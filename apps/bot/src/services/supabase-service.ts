@@ -1,8 +1,14 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage, logMessage, warn } from '@bf2-matchmaking/logging';
 import { User, APIUser, GuildMember } from 'discord.js';
-import { isNotNull, MatchStatus, PlayersRow } from '@bf2-matchmaking/types';
-import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/src/cache';
+import {
+  DiscordConfig,
+  isNotNull,
+  MatchStatus,
+  PlayersRow,
+} from '@bf2-matchmaking/types';
+import { get, setCachedConfig } from '@bf2-matchmaking/redis';
+import { hash } from '@bf2-matchmaking/redis/src/hash';
 
 export async function upsertMembers(members: Array<GuildMember>) {
   const { data } = await client().upsertPlayers(
@@ -93,14 +99,15 @@ export async function createScheduledMatch(options: CreateScheduledMatchOptions)
 }
 
 export async function findMapId(mapName: string): Promise<number | null> {
-  const cachedMap = getCachedValue<number>(mapName);
+  const mapHash = hash<Record<string, number>>('maps:name');
+  const { data: cachedMap } = await mapHash.get(mapName);
   if (cachedMap) {
     return cachedMap;
   }
 
   const { data } = await client().searchMap(mapName);
   if (data) {
-    setCachedValue(mapName, data.id);
+    await mapHash.set({ [mapName]: data.id });
     return data.id;
   }
 
@@ -131,4 +138,17 @@ export async function getPlayerByTeamspeakId(clid: string): Promise<PlayersRow |
 
 export function get4v4BetaConfig() {
   return client().getMatchConfig(20).then(verifySingleResult);
+}
+
+export async function getConfigCached(channelId: string) {
+  const { data: cached } = await get<DiscordConfig>(`config:${channelId}`);
+  if (cached) {
+    return cached;
+  }
+  warn('getConfigCached', `Config ${channelId} not found in cache`);
+  const config = await client()
+    .getMatchConfigByChannelId(channelId)
+    .then(verifySingleResult);
+  await setCachedConfig(config);
+  return config;
 }

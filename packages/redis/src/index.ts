@@ -6,9 +6,9 @@ import {
   serverInfoSchema,
   serverLiveSchema,
 } from './schemas';
-import { Rcon, ServerInfo, ServerLive } from './types';
+import { Rcon, RedisResult, ServerInfo, ServerLive } from './types';
 import { error } from '@bf2-matchmaking/logging';
-import { assertObj } from '@bf2-matchmaking/utils';
+import { assertObj, parseError } from '@bf2-matchmaking/utils';
 import { Schema, z } from 'zod';
 import { toAsyncError } from '@bf2-matchmaking/utils/src/async-actions';
 
@@ -44,42 +44,42 @@ export async function set(
   schema: Schema,
   key: string,
   value: unknown
-): Promise<AsyncResult<string>> {
+): Promise<RedisResult<string>> {
   try {
     const parsed = schema.parse(value);
     const client = await getClient();
     const res = await client.SET(key, stringifyValue(parsed));
-    return { data: res, error: null };
+    return { data: res, success: true };
   } catch (e) {
     error(`setValue ${key} ${JSON.stringify(value)}`, e);
-    return toAsyncError(e);
+    return { error: parseError(e), success: false };
   }
 }
 
-export async function get<T = unknown>(key: string): Promise<AsyncResult<T>> {
+export async function get<T = unknown>(key: string): Promise<RedisResult<T>> {
   const client = await getClient();
   const value = await client.GET(key);
   try {
     assertObj(value, `${key} not found`);
     const data = JSON.parse(value);
-    return { data, error: null };
+    return { data, success: true };
   } catch (e) {
     error(`getValue ${key}`, e);
-    return toAsyncError(e);
+    return { error: parseError(e), success: false };
   }
 }
 
 export async function getHash<T extends Record<string, number | string | boolean>>(
   key: string,
   id: string | number
-): Promise<AsyncResult<Partial<T>>> {
+): Promise<RedisResult<Partial<T>>> {
   try {
     const client = await getClient();
     const data = await client.HGETALL(toKey(key, id));
-    return { data, error: null };
+    return { data, success: true };
   } catch (e) {
     error(`getHash ${toKey(key, id)}`, e);
-    return toAsyncError(e);
+    return { error: parseError(e), success: false };
   }
 }
 
@@ -105,10 +105,10 @@ export async function setHash<T extends Record<string, number | string | boolean
     if (setValues.length) {
       addedFields = await client.HSET(toKey(key, id), setValues);
     }
-    return { data: { removedFields, addedFields }, error: null };
+    return { data: { removedFields, addedFields }, success: true };
   } catch (e) {
     error(`setHash ${toKey(key, id)}, value: ${JSON.stringify(values)}`, e);
-    return toAsyncError(e);
+    return { error: parseError(e), success: false };
   }
 }
 
@@ -130,6 +130,10 @@ export async function setServerInfo(address: string, info: ServerInfo) {
 
 export async function setCachedMatchesJoined(match: { id: number }) {
   return set(z.unknown(), `match:${match.id}:cache`, match);
+}
+
+export async function setCachedConfig(config: { channel: string }) {
+  return set(z.unknown(), `config:${config.channel}`, config);
 }
 
 export async function incMatchRoundsPlayed(matchId: string | number): Promise<number> {

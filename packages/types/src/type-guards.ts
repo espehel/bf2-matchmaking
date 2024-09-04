@@ -22,6 +22,7 @@ import {
   LiveMatch,
   LiveServer,
   PostgrestError,
+  PubobotMatch,
   TeamPlayer,
 } from './index';
 
@@ -94,4 +95,8 @@ export function isConnectedLiveServer(server: LiveServer): server is ConnectedLi
 
 export function isActiveLiveMatch(match: LiveMatch): match is ActiveLiveMatch {
   return Boolean(match.server);
+}
+
+export function isPubobotMatch(value: unknown): value is PubobotMatch {
+  return Boolean(value && (value as PubobotMatch).matchId);
 }

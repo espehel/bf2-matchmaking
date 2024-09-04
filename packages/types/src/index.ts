@@ -7,6 +7,7 @@ export * from './type-guards';
 export * from './cloudflare';
 export * from './vultr';
 export * from './fetch';
+export * from './discord';
 
 type WebhookPostgresChangesPayloadBase = {
   schema: string;

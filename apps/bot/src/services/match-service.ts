@@ -1,15 +1,16 @@
-import { PubobotMatch } from './PubobotMatch';
 import {
   DiscordConfig,
+  isNotNull,
   MatchesUpdate,
   MatchPlayersInsert,
   MatchStatus,
-  PlayersRow,
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { getPlayersByIdList } from './player-service';
-import { toMatchPlayer, toMatchPlayerWithTeamAndRating } from './utils';
+import { getUserIds, toMatchPlayer, toMatchPlayerWithTeamAndRating } from './utils';
+import { findMapId } from './supabase-service';
+import { Embed } from 'discord.js';
 
 export async function getMatch(matchId: number) {
   const { data, error } = await client().getMatch(matchId);
@@ -33,30 +34,6 @@ export async function createMatch(config: DiscordConfig, status: MatchStatus) {
   return match;
 }
 
-export async function buildMatchPlayers(
-  pubMatch: PubobotMatch,
-  players: Array<PlayersRow>
-): Promise<Array<MatchPlayersInsert>> {
-  return players.map(toMatchPlayer(pubMatch.match.id));
-}
-
-export async function createMatchPlayersForPubmatch(
-  pubMatch: PubobotMatch,
-  matchPlayers: Array<MatchPlayersInsert>
-) {
-  await client().deleteAllMatchPlayersForMatchId(pubMatch.match.id);
-  const { data, error: playersError } = await client().createMatchPlayers(matchPlayers);
-  info('createMatchPlayers', `Create match players ${JSON.stringify(data)}`);
-
-  if (playersError) {
-    logErrorMessage('Failed to create match players', playersError, {
-      pubMatch,
-      matchPlayers,
-    });
-  }
-  return data;
-}
-
 export async function createMatchPlayers(matchPlayers: Array<MatchPlayersInsert>) {
   const { data, error: playersError } = await client().createMatchPlayers(matchPlayers);
   info('createMatchPlayers', `Created match players ${JSON.stringify(data)}`);
@@ -69,38 +46,41 @@ export async function createMatchPlayers(matchPlayers: Array<MatchPlayersInsert>
   return data;
 }
 
-export async function createMatchMaps(pubMatch: PubobotMatch, maps: Array<number>) {
-  const { data, error: mapsError } = await client().createMatchMaps(
-    pubMatch.match.id,
-    ...maps
-  );
+export async function buildMatchMaps(embed: Embed) {
+  const mapName = embed.fields?.find((f) => f.name === 'Map')?.value || null;
+  const map = mapName ? await findMapId(mapName) : null;
+  return [map].filter(isNotNull);
+}
+
+export async function createMatchMaps(matchId: number, maps: Array<number>) {
+  const { data, error: mapsError } = await client().createMatchMaps(matchId, ...maps);
+  info('createMatchMaps', `Created match maps ${JSON.stringify(data)}`);
   if (mapsError) {
-    logErrorMessage('Failed to create match maps', mapsError, { pubMatch, maps });
+    logErrorMessage('Failed to create match maps', mapsError, { maps });
   }
 
   return data;
 }
 
-export async function updateMatch(pubMatch: PubobotMatch, values: MatchesUpdate) {
-  const match = await client()
-    .updateMatch(pubMatch.match.id, values)
-    .then(verifySingleResult);
-  logMessage(`Match ${pubMatch.match.id}: Updated with status ${match.status}`, {
+export async function updateMatch(matchId: number, values: MatchesUpdate) {
+  const match = await client().updateMatch(matchId, values).then(verifySingleResult);
+  logMessage(`Match ${matchId}: Updated with status ${match.status}`, {
     match,
     values,
   });
   return match;
 }
 
-export async function buildMatchTeams(
+export async function buildMatchPlayersFromStartingEmbed(
+  embed: Embed,
   matchId: number,
-  configId: number,
-  team1Ids: Array<string>,
-  team2Ids: Array<string>
-): Promise<[Array<PlayersRow>, Array<MatchPlayersInsert>]> {
+  configId: number
+): Promise<Array<MatchPlayersInsert>> {
+  const team1Ids = getUserIds(embed, 'USMC');
+  const team2Ids = getUserIds(embed, 'MEC/PLA');
+
   const team1 = await getPlayersByIdList(team1Ids);
   const team2 = await getPlayersByIdList(team2Ids);
-  const players = [...team1, ...team2];
 
   const { data: ratings } = await client().getPlayerRatingsByIdList(
     team1Ids.concat(team2Ids),
@@ -111,5 +91,44 @@ export async function buildMatchTeams(
     ...team2.map(toMatchPlayerWithTeamAndRating(matchId, 2, ratings || [])),
   ];
 
-  return [players, teams];
+  return teams;
+}
+
+export async function buildMatchPlayersFromDraftingEmbed(
+  embed: Embed,
+  matchId: number
+): Promise<Array<MatchPlayersInsert>> {
+  const playerIds = [
+    ...getUserIds(embed, 'MEC/PLA'),
+    ...getUserIds(embed, 'USMC'),
+    ...getUserIds(embed, 'Unpicked'),
+  ];
+  const players = await getPlayersByIdList(playerIds);
+  return players.map(toMatchPlayer(matchId));
+}
+
+export async function createMatchTeams(
+  matchId: number,
+  configId: number,
+  teams: Array<MatchPlayersInsert>
+) {
+  await client().deleteAllMatchPlayersForMatchId(matchId);
+  const { data, error: playersError } = await client().createMatchPlayers(teams);
+  info('createMatchPlayers', `Create match players ${JSON.stringify(data)}`);
+
+  if (playersError) {
+    logErrorMessage('Failed to create match players', playersError, {
+      teams,
+      matchId,
+      configId,
+    });
+    return null;
+  }
+
+  logMessage(`Match ${matchId}: Created teams`, {
+    teams,
+    data,
+  });
+
+  return data;
 }

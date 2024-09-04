@@ -4,42 +4,41 @@ import {
   MatchPlayersInsert,
   PickedMatchPlayer,
   PlayerRatingsRow,
-  PlayersRow,
   RatedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { compareRating, shuffleArray } from '@bf2-matchmaking/utils';
-import { getUserIds, sumRating, toMatchPlayer, withRating } from './utils';
+import { getUserIds, sumRating, withRating } from './utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
-import { PubobotMatch } from './PubobotMatch';
 import { getLogChannel, sendMessage } from './message-service';
 import {
   buildDebugActualDraftEmbed,
   buildDebugSuggestedDraftEmbed,
 } from '@bf2-matchmaking/discord';
+import { Message } from 'discord.js';
 
 export const VALID_DRAFT_CONFIGS = [2, 9];
 
 export async function buildPubotDraftWithConfig(
-  pubMatch: PubobotMatch,
+  match: MatchesJoined,
   config: MatchConfigsRow
 ): Promise<Array<PickedMatchPlayer> | null> {
   try {
     const ratings = await client()
       .getPlayerRatingsByIdList(
-        pubMatch.teams.map((mp) => mp.player_id),
+        match.teams.map((mp) => mp.player_id),
         config.id
       )
       .then(verifyResult);
 
-    const draft = buildMixTeams(pubMatch.teams, ratings);
+    const draft = buildMixTeams(match.teams, ratings);
     const pickList = buildDraftOrder(draft);
-    if (pubMatch.teams.length === config.size && pickList.length === config.size) {
-      await logSuggestedDraft(pubMatch, draft, config);
+    if (match.teams.length === config.size && pickList.length === config.size) {
+      await logSuggestedDraft(match, draft, config);
       return pickList;
     }
     logMessage(`Config ${config.name}: Draft conditions where not met`, {
-      pubMatch,
+      pubMatch: match,
       pickList,
       config,
     });
@@ -47,7 +46,7 @@ export async function buildPubotDraftWithConfig(
   } catch (e) {
     logErrorMessage(`Failed to create draft for ${config.name}`, e, {
       config,
-      pubMatch,
+      pubMatch: match,
     });
     return null;
   }
@@ -78,7 +77,7 @@ export async function buildDraftWithConfig(
 }
 
 async function logSuggestedDraft(
-  pubMatch: PubobotMatch,
+  match: MatchesJoined,
   draft: [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>],
   config: MatchConfigsRow
 ) {
@@ -87,29 +86,17 @@ async function logSuggestedDraft(
     channel,
     {
       embeds: [
-        buildDebugSuggestedDraftEmbed(
-          pubMatch.match.id,
-          config.name,
-          pubMatch.players,
-          draft
-        ),
+        buildDebugSuggestedDraftEmbed(match.id, config.name, match.players, draft),
       ],
     },
     { draft, config }
   );
 }
 
-export async function logActualDraft(pubMatch: PubobotMatch) {
+export async function logActualDraft(match: MatchesJoined) {
   const channel = await getLogChannel();
   return sendMessage(channel, {
-    embeds: [
-      buildDebugActualDraftEmbed(
-        pubMatch.match.id,
-        'Actual',
-        pubMatch.players,
-        pubMatch.teams
-      ),
-    ],
+    embeds: [buildDebugActualDraftEmbed(match.id, 'Actual', match.players, match.teams)],
   });
 }
 
@@ -181,9 +168,9 @@ export function buildDraftOrder(
   return [team1[0], team2[0], ...shuffleArray(team1.slice(1).concat(team2.slice(1)))];
 }
 
-export function getUnpickList(pubMatch: PubobotMatch): Array<string> {
+export function getUnpickList(message: Message): Array<string> {
   return [
-    ...getUserIds(pubMatch.getEmbed(), 'USMC'),
-    ...getUserIds(pubMatch.getEmbed(), 'MEC/PLA'),
+    ...getUserIds(message.embeds[0], 'USMC'),
+    ...getUserIds(message.embeds[0], 'MEC/PLA'),
   ];
 }

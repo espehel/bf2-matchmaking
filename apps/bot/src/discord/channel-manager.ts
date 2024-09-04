@@ -6,6 +6,7 @@ import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supab
 import { MessageCollector } from 'discord.js';
 import { addDraftListener, addMatchListener } from './match-listener';
 import { getDebugChannel } from '../services/message-service';
+import { setCachedConfig } from '@bf2-matchmaking/redis';
 
 const channelListenerMap = new Map<string, MessageCollector>();
 
@@ -88,6 +89,7 @@ async function listenToChannel(config: DiscordConfig) {
       return null;
     }
 
+    await setCachedConfig(config);
     const collector = channel.createMessageCollector();
     addMatchListener(collector, config);
     return collector;
