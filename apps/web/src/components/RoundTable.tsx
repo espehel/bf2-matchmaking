@@ -13,7 +13,7 @@ export default function RoundTable({ liveInfo }: Props) {
   const getTeam = (teamNumber: string) =>
     teamNumber === '1' ? liveInfo.team1_Name : liveInfo.team2_Name;
   return (
-    <table className="table mt-2 bg-base-100 shadow-xl">
+    <table className="table text-secondary-content mt-2 bg-secondary shadow-sm shadow-primary">
       <thead>
         <tr>
           <th />
@@ -27,7 +27,7 @@ export default function RoundTable({ liveInfo }: Props) {
       </thead>
       <tbody>
         {sortedPlayers.map((player, i) => (
-          <tr key={player.index} className="hover">
+          <tr key={player.index} className="hover:bg-accent hover:text-accent-content">
             <th>{i + 1}</th>
             <td className="truncate">{player.getName}</td>
             <td>{player.score}</td>

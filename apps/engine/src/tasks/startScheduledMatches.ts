@@ -1,8 +1,7 @@
-import { MatchesJoined, MatchStatus, ScheduledMatch } from '@bf2-matchmaking/types';
+import { MatchStatus, ScheduledMatch } from '@bf2-matchmaking/types';
 import matches from '../state/matches';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { api } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 
 export async function startScheduledMatches() {

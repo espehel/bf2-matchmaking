@@ -41,7 +41,7 @@ export default async function LiveSection({ match }: Props) {
   }
 
   return (
-    <section className="section bg-accent text-accent-content w-full">
+    <section className="section w-full">
       <h2>Live</h2>
       <div className="text-left">
         <p>{`State: ${liveMatch?.state || 'offline'}`}</p>

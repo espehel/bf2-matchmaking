@@ -4,11 +4,12 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { isString } from '@bf2-matchmaking/types';
-import { getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { getOptionalValue, getValue } from '@bf2-matchmaking/utils/src/form-data';
 import { toAsyncError } from '@bf2-matchmaking/utils/src/async-actions';
 
 export async function createTeam(data: FormData) {
-  const { nameInput, avatarInput } = getValues(data, 'nameInput', 'avatarInput');
+  const nameInput = getValue(data, 'nameInput');
+  const avatarInput = getOptionalValue(data, 'avatarInput');
   const { data: owner, error } = await supabase(cookies).getSessionPlayer();
 
   if (error) {
