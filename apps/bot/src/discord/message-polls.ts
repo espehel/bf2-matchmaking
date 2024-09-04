@@ -6,6 +6,7 @@ import {
   PollEmoji,
   PickedMatchPlayer,
   MatchConfigsRow,
+  PubobotMatch,
 } from '@bf2-matchmaking/types';
 import { Message, MessageReaction, TextChannel } from 'discord.js';
 import { DateTime } from 'luxon';
@@ -26,6 +27,7 @@ import {
   editLocationPollMessageWithResults,
   replyMessage,
   sendLogMessage,
+  sendMessage,
 } from '../services/message-service';
 import { wait } from '@bf2-matchmaking/utils/src/async-actions';
 import { MessagePoll } from './MessagePoll';
@@ -55,7 +57,9 @@ function removePolls(matchId: number) {
 }
 
 export async function createDraftPoll(
+  channel: TextChannel,
   message: Message,
+  pubobotMatch: PubobotMatch,
   match: MatchesJoined,
   configOption?: MatchConfigsRow
 ) {
@@ -67,6 +71,8 @@ export async function createDraftPoll(
   const config = configOption || match.config;
 
   const pickList = await buildPubotDraftWithConfig(match, config);
+  // TODO this should be updated after new messages, maybe add to redis?
+  const unpickList = getUnpickList(message);
   if (!pickList) {
     return;
   }
@@ -74,7 +80,7 @@ export async function createDraftPoll(
   info('createDraftPoll', `Match ${match.id} pick list created, creating poll...`);
 
   const pollEndTime = DateTime.now().plus({ minutes: 2 });
-  const poll = await MessagePoll.createPoll(message.channel as TextChannel, {
+  const poll = await MessagePoll.createPoll(channel, {
     embeds: [
       buildDraftPollEmbed(match, pickList.flat(), match.players, null, pollEndTime),
     ],
@@ -86,7 +92,7 @@ export async function createDraftPoll(
     .setEndtime(pollEndTime)
     .setValidUsers(new Set(pickList.map((p) => p.player_id)))
     .onReaction(handleDraftPollReaction(pickList, match, pollEndTime))
-    .onPollEnd(handlePollEnd(message, pickList, match, config))
+    .onPollEnd(handlePollEnd(channel, pickList, unpickList, pubobotMatch, match, config))
     .startPoll();
   info('createDraftPoll', `Match ${match.id} Poll started`);
 
@@ -113,12 +119,15 @@ function handleDraftPollReaction(
   };
 }
 function handlePollEnd(
-  message: Message,
+  channel: TextChannel,
   pickList: Array<PickedMatchPlayer>,
+  unpickList: Array<string>,
+  pubobotMatch: PubobotMatch,
   match: MatchesJoined,
   config: MatchConfigsRow
 ) {
   return async (results: Array<PollResult>) => {
+    //TODO should fetch updated pubobotmatch here, possibly contianing updated unpick list
     const isAccepted = isDraftPollResolvedWithAccept(results, pickList);
 
     await sendLogMessage({
@@ -126,7 +135,7 @@ function handlePollEnd(
     });
 
     if (isAccepted) {
-      await handleDraftAccepted(message, match, pickList);
+      await handleDraftAccepted(channel, pubobotMatch, match, pickList, unpickList);
       info('createDraftPoll', `Match ${match.id} Draft executed`);
     }
 
@@ -170,29 +179,28 @@ function isDraftPollResolvedWithAccept(
 }
 
 export async function handleDraftAccepted(
-  message: Message,
+  channel: TextChannel,
+  pubobotMatch: PubobotMatch,
   match: MatchesJoined,
-  pickList: Array<PickedMatchPlayer>
+  pickList: Array<PickedMatchPlayer>,
+  unpickList: Array<string>
 ) {
-  const pubobotMatchId = getPubobotId(message);
-  const unpickList = getUnpickList(message);
-
   logMessage(`Match ${match.id}: Executing suggested draft`, {
-    pubobotMatchId,
-    match: match,
+    pubobotMatch,
+    match,
     unpickList,
     pickList,
   });
 
   for (const playerId of unpickList) {
-    await replyMessage(message, `!put <@${playerId}> Unpicked ${pubobotMatchId}`);
+    await sendMessage(channel, `!put <@${playerId}> Unpicked ${pubobotMatch.id}`);
     await wait(1);
   }
 
   for (const mp of pickList) {
-    await replyMessage(
-      message,
-      `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubobotMatchId}`
+    await sendMessage(
+      channel,
+      `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubobotMatch.id}`
     );
     await wait(1);
   }

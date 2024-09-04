@@ -17,6 +17,7 @@ import {
 import { hash } from '@bf2-matchmaking/redis/src/hash';
 import { getConfigCached } from './supabase-service';
 import { DateTime } from 'luxon';
+import { getTextChannelFromConfig } from '../discord/discord-utils';
 
 export async function createPubobotMatch(
   message: Message,
@@ -25,6 +26,7 @@ export async function createPubobotMatch(
   const config = await getConfigCached(message.channelId);
   const match = await createMatch(config, MatchStatus.Open);
   const pubobotMatch: PubobotMatch = {
+    id,
     matchId: match.id,
     status: MatchStatus.Open,
     channelId: message.channelId,
@@ -71,11 +73,13 @@ export async function draftPubobotMatch(message: Message, pubobotMatch: PubobotM
     status: MatchStatus.Drafting,
   });
 
-  await createDraftPoll(message, updatedMatch);
+  const channel = await getTextChannelFromConfig(updatedMatch.config);
+
+  await createDraftPoll(channel, message, pubobotMatch, updatedMatch);
 
   const { data: config4v4Cup } = await client().getMatchConfig(19);
   if (config4v4Cup) {
-    await createDraftPoll(message, updatedMatch, config4v4Cup);
+    await createDraftPoll(channel, message, pubobotMatch, updatedMatch, config4v4Cup);
   }
 }
 
