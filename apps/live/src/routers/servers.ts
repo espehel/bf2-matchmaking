@@ -87,8 +87,12 @@ serversRouter.post('/:ip/exec', async (ctx) => {
   }
 
   try {
-    const reply = await exec(ctx.params.ip, cmd);
-    ctx.body = { reply };
+    const { data, error } = await exec(ctx.params.ip, cmd);
+    if (error) {
+      ctx.status = 502;
+      ctx.body = error;
+    }
+    ctx.body = data;
   } catch (e) {
     ctx.status = 502;
     ctx.body = toFetchError(e);
@@ -116,16 +120,26 @@ serversRouter.post('/:ip/pause', async (ctx) => {
 
 serversRouter.get('/:ip/pl', async (ctx) => {
   try {
-    ctx.body = await getPlayerList(ctx.params.ip);
+    const { data, error } = await getPlayerList(ctx.params.ip);
+    if (error) {
+      ctx.status = 502;
+      ctx.body = error;
+    }
+    ctx.body = data;
   } catch (e) {
-    ctx.status = 502;
+    ctx.status = 500;
     ctx.body = toFetchError(e);
   }
 });
 
 serversRouter.get('/:ip/si', async (ctx) => {
   try {
-    ctx.body = await getServerInfo(ctx.params.ip);
+    const { data, error } = await getServerInfo(ctx.params.ip);
+    if (error) {
+      ctx.status = 502;
+      ctx.body = error;
+    }
+    ctx.body = data;
   } catch (e) {
     ctx.status = 502;
     ctx.body = toFetchError(e);

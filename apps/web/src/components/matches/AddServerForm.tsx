@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { assertString } from '@bf2-matchmaking/utils';
+import { api, assertString } from '@bf2-matchmaking/utils';
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase';
 import SelectActionForm from '@/components/SelectActionForm';
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default async function AddServerForm({ match, defaultAddress }: Props) {
-  const { data: servers } = await supabase(cookies).getServers();
+  const { data: servers } = await api.live().getServers();
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 
   if (!servers) {
@@ -28,7 +28,7 @@ export default async function AddServerForm({ match, defaultAddress }: Props) {
   return (
     <SelectActionForm
       label="Add match server"
-      options={servers.map(({ ip, name }) => [ip, name])}
+      options={servers.map(({ address, name }) => [address, name])}
       defaultValue={defaultAddress}
       placeholder={!defaultAddress ? 'Add Server' : undefined}
       action={addMatchServerSA}
