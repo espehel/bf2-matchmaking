@@ -246,7 +246,7 @@ export async function broadcastWarmUpStarted(match: MatchesJoined, address: stri
 }
 
 export async function updateMatchRating(matchResult: MatchResultsInsert, config: number) {
-  if (!matchResult.rating_inc) {
+  if (matchResult.rating_inc === null || matchResult.rating_inc === undefined) {
     return null;
   }
   const { data, error } = await client().getChallengeTeam(matchResult.team, config);

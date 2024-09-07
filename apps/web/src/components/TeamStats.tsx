@@ -9,6 +9,12 @@ export default function TeamStats({ matchResult }: Props) {
     <div className="flex flex-col gap-2 items-center justify-around">
       <p className="font-extrabold text-5xl text-secondary">{`Team ${matchResult.team.name}`}</p>
       <div className="stats stats-horizontal shadow h-fit">
+        {matchResult.rating_inc !== null && (
+          <div className="stat bg-primary text-primary-content">
+            <div className="stat-title text-primary-content">Score</div>
+            <div className="stat-value">{matchResult.rating_inc}</div>
+          </div>
+        )}
         <div className="stat">
           <div className="stat-title">Maps</div>
           <div className="stat-value">{matchResult.maps}</div>

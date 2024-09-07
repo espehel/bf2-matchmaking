@@ -278,14 +278,14 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('challenge_teams')
       .select('*')
-      .eq('team', teamId)
+      .eq('team_id', teamId)
       .eq('config', configId)
       .single(),
   updateChallengeTeamRating: (teamId: number, configId: number, rating: number) =>
     client
       .from('challenge_teams')
       .update({ rating })
-      .eq('team', teamId)
+      .eq('team_id', teamId)
       .eq('config', configId)
       .select()
       .single(),
