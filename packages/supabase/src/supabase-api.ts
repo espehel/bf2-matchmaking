@@ -287,6 +287,6 @@ export default (client: SupabaseClient<Database>) => ({
       .update({ rating })
       .eq('team_id', teamId)
       .eq('config', configId)
-      .select()
+      .select('*')
       .single(),
 });

@@ -138,7 +138,7 @@ export function calculateMatchResults(
   return [
     {
       match_id: match.id,
-      team: 1,
+      team: match.home_team.id,
       maps: mapsHome,
       rounds: roundsHome,
       tickets: ticketsHome,
@@ -147,7 +147,7 @@ export function calculateMatchResults(
     },
     {
       match_id: match.id,
-      team: 2,
+      team: match.away_team.id,
       maps: mapsAway,
       rounds: roundsAway,
       tickets: ticketsAway,
