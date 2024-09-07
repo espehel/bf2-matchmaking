@@ -11,6 +11,7 @@ import {
   MatchConfigsRow,
   MatchesJoined,
   MatchProcessError,
+  MatchResultsInsert,
   MatchStatus,
   ServerInfo,
 } from '@bf2-matchmaking/types';
@@ -138,13 +139,18 @@ export async function processResults(match: MatchesJoined) {
     .createMatchPlayerResults(...playerResults)
     .then(verifyResult);
 
-  const updatedRatings = await updatePlayerRatings(playerResults, match.config.id);
+  const updatedPlayerRatings = await updatePlayerRatings(playerResults, match.config.id);
+  const updatedMatchRatings = await Promise.all([
+    updateMatchRating(resultsHome, match.config.id),
+    updateMatchRating(resultsAway, match.config.id),
+  ]);
   logMessage(`Match ${match.id} results created`, {
     match,
     resultsHome,
     resultsAway,
     playerResults,
-    updatedRatings,
+    updatedPlayerRatings,
+    updatedMatchRatings,
   });
   if (isDiscordMatch(match)) {
     await sendChannelMessage(match.config.channel, {
@@ -237,4 +243,23 @@ export async function broadcastWarmUpStarted(match: MatchesJoined, address: stri
       embeds: [getWarmUpStartedEmbed(match.id, address, serverInfo)],
     });
   }
+}
+
+export async function updateMatchRating(matchResult: MatchResultsInsert, config: number) {
+  if (!matchResult.rating_inc) {
+    return null;
+  }
+  const { data, error } = await client().getChallengeTeam(matchResult.team, config);
+  if (error) {
+    return error;
+  }
+  const res = await client().updateChallengeTeamRating(
+    data.team_id,
+    data.config,
+    data.rating + matchResult.rating_inc
+  );
+  if (res.error) {
+    return res.error;
+  }
+  return res.data;
 }

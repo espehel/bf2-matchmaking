@@ -4,6 +4,7 @@ import {
   Challenge,
   ChallengesInsert,
   ChallengesUpdate,
+  ChallengeTeamsInsert,
   Database,
   DbServer,
   DiscordConfig,
@@ -12,6 +13,7 @@ import {
   GeneratedServersInsert,
   MatchConfigResults,
   MatchConfigsRow,
+  MatchConfigType,
   PlayerRating,
   PlayerRatingsInsert,
   PlayerRatingsJoined,
@@ -145,6 +147,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('channel', channelId)
       .single(),
   getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
+  getMatchConfigsWithType: (configType: MatchConfigType) =>
+    client.from('match_configs').select<'*', MatchConfigsRow>('*').eq('type', configType),
   getMatchConfig: (id: number) =>
     client.from('match_configs').select('*').eq('id', id).single<MatchConfigsRow>(),
   getMatchConfigResults: (id: number) =>
@@ -178,9 +182,11 @@ export default (client: SupabaseClient<Database>) => ({
     client
       .from('teams')
       .select<
-        '*, owner(*), players!team_players(*), captains:team_players(*)',
+        '*, owner(*), players!team_players(*), captains:team_players(*), challenges:challenge_teams(*)',
         TeamsJoined
-      >('*, owner(*), players!team_players(*), captains:team_players(*)')
+      >(
+        '*, owner(*), players!team_players(*), captains:team_players(*), challenges:challenge_teams(*)'
+      )
       .eq('id', id)
       .eq('captains.captain', true)
       .single(),
@@ -266,4 +272,21 @@ export default (client: SupabaseClient<Database>) => ({
       .single<Challenge>(),
   updateChallenge: (challengeId: number, values: ChallengesUpdate) =>
     client.from('challenges').update(values).eq('id', challengeId).select('*').single(),
+  insertChallengeTeam: (values: ChallengeTeamsInsert) =>
+    client.from('challenge_teams').insert(values).select('*').single(),
+  getChallengeTeam: (teamId: number, configId: number) =>
+    client
+      .from('challenge_teams')
+      .select('*')
+      .eq('team', teamId)
+      .eq('config', configId)
+      .single(),
+  updateChallengeTeamRating: (teamId: number, configId: number, rating: number) =>
+    client
+      .from('challenge_teams')
+      .update({ rating })
+      .eq('team', teamId)
+      .eq('config', configId)
+      .select()
+      .single(),
 });

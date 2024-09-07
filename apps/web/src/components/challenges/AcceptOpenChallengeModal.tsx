@@ -1,12 +1,12 @@
 import { Challenge, MapsRow, PlayersRow, VisibleTeam } from '@bf2-matchmaking/types';
 import ActionFormModal from '@/components/commons/ActionFormModal';
-import { acceptChallenge } from '@/app/challenges/actions';
 import Select from '@/components/commons/Select';
 import React from 'react';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { api, sortByName, verify } from '@bf2-matchmaking/utils';
+import { acceptChallenge } from '@/app/challenges/[team]/actions';
 
 interface Props {
   challenge: Challenge;

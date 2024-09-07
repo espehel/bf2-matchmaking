@@ -44,6 +44,42 @@ export type Database = {
           },
         ]
       }
+      challenge_teams: {
+        Row: {
+          config: number
+          created_at: string
+          rating: number
+          team_id: number
+        }
+        Insert: {
+          config: number
+          created_at?: string
+          rating?: number
+          team_id: number
+        }
+        Update: {
+          config?: number
+          created_at?: string
+          rating?: number
+          team_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_teams_config_fkey"
+            columns: ["config"]
+            isOneToOne: false
+            referencedRelation: "match_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_teams_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenges: {
         Row: {
           away_accepted: boolean
@@ -588,6 +624,7 @@ export type Database = {
           is_winner: boolean
           maps: number
           match_id: number
+          rating_inc: number | null
           rounds: number
           team: number
           tickets: number
@@ -597,6 +634,7 @@ export type Database = {
           is_winner: boolean
           maps: number
           match_id: number
+          rating_inc?: number | null
           rounds: number
           team: number
           tickets: number
@@ -606,6 +644,7 @@ export type Database = {
           is_winner?: boolean
           maps?: number
           match_id?: number
+          rating_inc?: number | null
           rounds?: number
           team?: number
           tickets?: number
@@ -645,18 +684,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "match_servers_active_server_fkey"
-            columns: ["server"]
-            isOneToOne: false
-            referencedRelation: "servers"
-            referencedColumns: ["ip"]
-          },
-          {
             foreignKeyName: "match_servers_id_fkey"
             columns: ["id"]
             isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_servers_server_fkey"
+            columns: ["server"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["ip"]
           },
         ]
       }

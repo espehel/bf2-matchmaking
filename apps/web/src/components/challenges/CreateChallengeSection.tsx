@@ -1,5 +1,4 @@
 import ActionForm from '@/components/form/ActionForm';
-import { createChallenge } from '@/app/challenges/actions';
 import Select from '@/components/commons/Select';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { DateTime } from 'luxon';
@@ -9,19 +8,25 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { api, sortByName, verify } from '@bf2-matchmaking/utils';
-import { MatchConfigsRow, PlayersRow, VisibleTeam } from '@bf2-matchmaking/types';
+import { MatchConfigsRow, TeamsJoined } from '@bf2-matchmaking/types';
+import { createChallenge } from '@/app/challenges/[team]/actions';
 
 const CONFIG_5v5 = 22;
 
-export default async function CreateChallengeSection() {
-  const player = await supabase(cookies).getSessionPlayerOrThrow();
+interface Props {
+  selectedTeam: TeamsJoined;
+}
+
+export default async function CreateChallengeSection({ selectedTeam }: Props) {
   const configs = await supabase(cookies)
     .getMatchConfigs()
     .then(verifyResult)
-    .then(filterLadder);
+    .then(filterAvailableChallenge(selectedTeam));
+  if (configs.length === 0) {
+    return null;
+  }
 
   const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
-  const myTeams = teams.filter(isPlayerTeam(player));
 
   const servers = await api.live().getServers().then(verify).then(sortByName);
   const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
@@ -38,14 +43,17 @@ export default async function CreateChallengeSection() {
           <Select
             label="Match type"
             name="configSelect"
-            defaultValue={CONFIG_5v5}
+            defaultValue={configs.at(0)?.id}
             options={configs.map(({ id, name }) => [id, name])}
+            readonly={configs.length === 1}
           />
           <div className="flex gap-4">
             <Select
               label="My team"
               name="homeTeam"
-              options={myTeams.map(({ id, name }) => [id, name])}
+              defaultValue={selectedTeam.id}
+              readonly={true}
+              options={[[selectedTeam.id, selectedTeam.name]]}
             />
             <Select
               label="Opponent"
@@ -84,10 +92,9 @@ export default async function CreateChallengeSection() {
   );
 }
 
-function isPlayerTeam(player: PlayersRow) {
-  return (team: VisibleTeam) => team.players.some((p) => player.id === p.player_id);
-}
-
-function filterLadder(array: Array<MatchConfigsRow>): Array<MatchConfigsRow> {
-  return array.filter((c) => c.type === 'Ladder');
+function filterAvailableChallenge(team: TeamsJoined) {
+  return (configs: Array<MatchConfigsRow>) =>
+    configs.filter((config) =>
+      team.challenges.some((challenge) => challenge.config === config.id)
+    );
 }

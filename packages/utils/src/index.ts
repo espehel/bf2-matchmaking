@@ -9,6 +9,7 @@ export * from './assert';
 export * from './server-utils';
 export * from './error';
 export * from './string-utils';
+export * from './challenges';
 
 import { ip } from './ip-api';
 export const externalApi = {

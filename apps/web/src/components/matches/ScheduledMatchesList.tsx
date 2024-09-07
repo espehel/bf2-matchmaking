@@ -8,9 +8,8 @@ import ScheduleMatchForm, {
   ScheduledMatchFormFallback,
 } from '@/components/matches/ScheduleMatchForm';
 import React, { Suspense } from 'react';
-import Link from 'next/link';
 
-export default async function ScheduledMatchesPage() {
+export default async function ScheduledMatchesList() {
   const matches = await supabase(cookies)
     .getScheduledMatches(DateTime.now().set({ hour: 0, minute: 0 }).toISO())
     .then(verifyResult);
@@ -28,17 +27,18 @@ export default async function ScheduledMatchesPage() {
   const hasMatches = matchDates.length > 0;
 
   return (
-    <main className="main">
-      <h1 className="mb-8">Scheduled matches</h1>
-      <div className="flex gap-4 mb-8">
+    <section className="max-w-4xl m-auto mb-8">
+      <div className="flex justify-between items-end mb-8">
+        <h2 className="text-xl font-bold text-base-content">Scheduled matches</h2>
         <Suspense fallback={<ScheduledMatchFormFallback />}>
           <ScheduleMatchForm />
         </Suspense>
-        <Link href="/challenges" className="btn btn-secondary w-36">
-          Challenge a team
-        </Link>
       </div>
-      {!hasMatches && <p>Currently no scheduled matches...</p>}
+      {!hasMatches && (
+        <p className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100 h-28 text-xl">
+          Currently no scheduled matches...
+        </p>
+      )}
       {hasMatches && (
         <ul className="grid justify-center gap-4">
           {matchDates.map((date) => (
@@ -46,6 +46,6 @@ export default async function ScheduledMatchesPage() {
           ))}
         </ul>
       )}
-    </main>
+    </section>
   );
 }

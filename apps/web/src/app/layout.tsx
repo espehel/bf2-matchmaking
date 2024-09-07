@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={inter.className}>
         <PlayerProvider player={player} adminRoles={adminRoles}>
           <Header />
-          <div className="mt-8">{children}</div>
+          <div>{children}</div>
           <ToastContainer />
         </PlayerProvider>
         <ThemeButton />

@@ -6,9 +6,10 @@ import AcceptOpenChallengeModal from '@/components/challenges/AcceptOpenChalleng
 
 interface Props {
   challenge: Challenge;
+  readOnly?: boolean;
 }
 
-export default function OpenChallengeCard({ challenge }: Props) {
+export default function OpenChallengeCard({ challenge, readOnly = false }: Props) {
   return (
     <div className="card card-compact w-96 bg-base-100 shadow-md border border-primary shadow-primary image-full">
       <figure>
@@ -23,9 +24,11 @@ export default function OpenChallengeCard({ challenge }: Props) {
       <div className="card-body">
         <h2 className="card-title">{challenge.home_team.name}</h2>
         <Time date={challenge.scheduled_at} format="EEEE HH:mm, DD" />
-        <div className="card-actions justify-end">
-          <AcceptOpenChallengeModal challenge={challenge} />
-        </div>
+        {!readOnly && (
+          <div className="card-actions justify-end">
+            <AcceptOpenChallengeModal challenge={challenge} />
+          </div>
+        )}
       </div>
     </div>
   );

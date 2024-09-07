@@ -84,7 +84,7 @@ export async function createScheduledMatch(formData: FormData) {
         mapsSelect: mapSelect,
       });
     }
-    revalidatePath('/matches/schedule');
+    revalidatePath('/matches');
     return result;
   } catch (e) {
     console.error(e);

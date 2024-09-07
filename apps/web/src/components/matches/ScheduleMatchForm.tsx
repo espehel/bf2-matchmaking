@@ -31,9 +31,9 @@ export default async function ScheduleMatchForm() {
   return (
     <ActionFormModal
       title="Schedule match"
-      openBtnLabel="Schedule new match"
+      openBtnLabel="Schedule match"
       openBtnKind="btn-primary"
-      openBtnSize="btn-md"
+      openBtnSize="btn-sm"
       action={createScheduledMatch}
       successMessage="Match scheduled."
       errorMessage="Failed to schedule match"

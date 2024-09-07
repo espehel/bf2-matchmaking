@@ -15,6 +15,9 @@ interface Props {
   successMessage: string;
   errorMessage: string;
   placeholder?: string;
+  extras?: Record<string, string>;
+  className?: string;
+  name?: string;
 }
 export default function SelectActionForm({
   options,
@@ -25,6 +28,9 @@ export default function SelectActionForm({
   successMessage,
   errorMessage,
   placeholder,
+  extras,
+  className,
+  name = 'select',
 }: Props) {
   return (
     <ActionForm
@@ -32,15 +38,18 @@ export default function SelectActionForm({
       successMessage={successMessage}
       errorMessage={errorMessage}
       resetOnSuccess={false}
+      extras={extras}
+      className="w-full"
     >
       <div className="flex gap-2 items-end">
         <Select
           options={options}
           label={label}
-          name="select"
+          name={name}
           defaultValue={defaultValue}
           disabled={disabled}
           placeholder={placeholder}
+          className={className}
         />
         <TransitionWrapper button={true}>
           <IconBtn

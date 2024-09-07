@@ -1,3 +1,5 @@
+import { ChangeEventHandler } from 'react';
+
 interface Props {
   options: Array<[string | number, string]>;
   defaultValue?: string | number;
@@ -7,6 +9,7 @@ interface Props {
   disabled?: boolean;
   readonly?: boolean;
   className?: string;
+  onChange?: ChangeEventHandler<HTMLSelectElement>;
 }
 export default function Select({
   options,
@@ -17,6 +20,7 @@ export default function Select({
   disabled,
   readonly,
   className,
+  onChange,
 }: Props) {
   return (
     <div className={className}>
@@ -32,6 +36,7 @@ export default function Select({
         className="select select-bordered w-full"
         defaultValue={defaultValue}
         disabled={disabled || readonly}
+        onChange={onChange}
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map(([value, name]) => (

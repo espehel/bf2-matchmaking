@@ -21,6 +21,7 @@ export type EventMatchesRow = Database['public']['Tables']['event_matches']['Row
 export type GeneratedServersRow =
   Database['public']['Tables']['generated_servers']['Row'];
 export type ChallengesRow = Database['public']['Tables']['challenges']['Row'];
+export type ChallengeTeamssRow = Database['public']['Tables']['challenge_teams']['Row'];
 
 export type PlayersInsert = Database['public']['Tables']['players']['Insert'];
 export type RoundsInsert = Database['public']['Tables']['rounds']['Insert'];
@@ -39,6 +40,8 @@ export type MatchServersInsert = Database['public']['Tables']['match_servers']['
 export type GeneratedServersInsert =
   Database['public']['Tables']['generated_servers']['Insert'];
 export type ChallengesInsert = Database['public']['Tables']['challenges']['Insert'];
+export type ChallengeTeamsInsert =
+  Database['public']['Tables']['challenge_teams']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
@@ -156,6 +159,7 @@ export interface TeamsJoined extends Omit<TeamsRow, 'owner'> {
   owner: PlayersRow;
   players: Array<PlayersRow>;
   captains: Array<TeamPlayersRow>;
+  challenges: Array<ChallengeTeamssRow>;
 }
 
 export interface MatchResultInfo {

@@ -4,7 +4,7 @@ import React from 'react';
 export default function Home() {
   return (
     <main className="main">
-      <div className="hero bg-base-200">
+      <div className="hero">
         <div className="hero-content text-center">
           <div className="max-w-md">
             <h1 className="text-5xl font-bold">Matchmaking and stats for BF2</h1>

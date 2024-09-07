@@ -26,7 +26,11 @@ export default async function LiveMatchesList() {
   return (
     <section className="max-w-4xl m-auto">
       <h2 className="mb-8 text-xl font-bold text-left text-base-content">Live matches</h2>
-      {!hasLiveMatches && <p>Currently no live matches...</p>}
+      {!hasLiveMatches && (
+        <p className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100 h-28 text-xl">
+          Currently no live matches...
+        </p>
+      )}
       {hasLiveMatches && (
         <ul>
           {mergedMatches.map(({ match, liveInfo, liveState }) =>

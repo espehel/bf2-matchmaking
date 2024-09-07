@@ -1,6 +1,5 @@
 import { Challenge, MapsRow, PendingChallenge } from '@bf2-matchmaking/types';
 import ActionFormModal from '@/components/commons/ActionFormModal';
-import { acceptChallenge } from '@/app/challenges/actions';
 import Select from '@/components/commons/Select';
 import React from 'react';
 import { supabase } from '@/lib/supabase/supabase';
@@ -9,6 +8,7 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import { api, sortByName, verify } from '@bf2-matchmaking/utils';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { DateTime } from 'luxon';
+import { acceptChallenge } from '@/app/challenges/[team]/actions';
 
 interface Props {
   challenge: PendingChallenge;

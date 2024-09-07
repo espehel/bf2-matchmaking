@@ -129,6 +129,11 @@ export function calculateMatchResults(
     [mapsHome, roundsHome, ticketsHome],
     [mapsAway, roundsAway, ticketsAway]
   );
+  let [ratingIncHome, ratingIncAway]: [number | null, number | null] = [null, null];
+  if (match.config.type === 'Ladder') {
+    ratingIncHome = mapsHome + (isHomeWinner ? 1 : 0);
+    ratingIncAway = mapsAway + (isAwayWinner ? 1 : 0);
+  }
 
   return [
     {
@@ -138,6 +143,7 @@ export function calculateMatchResults(
       rounds: roundsHome,
       tickets: ticketsHome,
       is_winner: isHomeWinner,
+      rating_inc: ratingIncHome,
     },
     {
       match_id: match.id,
@@ -146,6 +152,7 @@ export function calculateMatchResults(
       rounds: roundsAway,
       tickets: ticketsAway,
       is_winner: isAwayWinner,
+      rating_inc: ratingIncAway,
     },
   ];
 }
