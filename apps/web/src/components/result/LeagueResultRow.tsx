@@ -59,8 +59,8 @@ function getTickets(result?: MatchResultsRow) {
   return isDefined(result) ? result.tickets.toString() : '---';
 }
 function getPoints(result?: MatchResultsRow) {
-  if (isDefined(result)) {
-    return (result.is_winner ? result.maps + 1 : result.maps).toString();
+  if (isDefined(result) && result.rating_inc !== null) {
+    return result.rating_inc;
   }
   return '---';
 }

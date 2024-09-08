@@ -4,7 +4,7 @@ import matches from '../state/matches';
 import { client } from '@bf2-matchmaking/supabase';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { retry, wait } from '@bf2-matchmaking/utils/src/async-actions';
-import { broadcastMatchStart, joinMatchRoom, leaveMatchRoom } from '../state/match-rooms';
+import { joinMatchRoom } from '../state/match-rooms';
 
 export async function handleMatchInserted(match: MatchesJoined) {
   if (isOpenMatch(match)) {
@@ -55,6 +55,11 @@ async function handleMatchFinished(match: MatchesJoined) {
         await retry(() => deleteInstance(match, instance), 5);
       })
     );
+  }
+
+  const { data: challenge } = await client().getChallengeByMatchId(match.id);
+  if (challenge) {
+    await client().updateChallenge(challenge.id, { status: 'closed' });
   }
 
   //leaveMatchRoom(match);

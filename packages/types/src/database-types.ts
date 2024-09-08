@@ -153,6 +153,7 @@ export interface PlayerResultsJoined extends Omit<MatchPlayerResultsRow, 'info'>
 export interface VisibleTeam extends Omit<TeamsRow, 'owner'> {
   owner: PlayersRow;
   players: Array<TeamPlayersRow>;
+  challenges: Array<ChallengeTeamssRow>;
 }
 
 export interface TeamsJoined extends Omit<TeamsRow, 'owner'> {

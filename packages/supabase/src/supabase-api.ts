@@ -175,7 +175,7 @@ export default (client: SupabaseClient<Database>) => ({
   getVisibleTeams: () =>
     client
       .from('teams')
-      .select('*, owner(*), players:team_players(*)')
+      .select('*, owner(*), players:team_players(*),challenges:challenge_teams(*)')
       .eq('visible', true)
       .returns<Array<VisibleTeam>>(),
   getTeam: (id: number) =>
@@ -281,10 +281,17 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('team_id', teamId)
       .eq('config', configId)
       .single(),
-  updateChallengeTeamRating: (teamId: number, configId: number, rating: number) =>
+  getChallengeTeamsByConfig: (configId: number) =>
+    client.from('challenge_teams').select('*, team:teams(*)').eq('config', configId),
+  updateChallengeTeamRating: (
+    teamId: number,
+    configId: number,
+    rating: number,
+    match_count: number
+  ) =>
     client
       .from('challenge_teams')
-      .update({ rating })
+      .update({ rating, match_count })
       .eq('team_id', teamId)
       .eq('config', configId)
       .select('*')

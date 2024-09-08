@@ -8,10 +8,8 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { api, sortByName, verify } from '@bf2-matchmaking/utils';
-import { MatchConfigsRow, TeamsJoined } from '@bf2-matchmaking/types';
+import { MatchConfigsRow, TeamsJoined, VisibleTeam } from '@bf2-matchmaking/types';
 import { createChallenge } from '@/app/challenges/[team]/actions';
-
-const CONFIG_5v5 = 22;
 
 interface Props {
   selectedTeam: TeamsJoined;
@@ -23,10 +21,19 @@ export default async function CreateChallengeSection({ selectedTeam }: Props) {
     .then(verifyResult)
     .then(filterAvailableChallenge(selectedTeam));
   if (configs.length === 0) {
-    return null;
+    return (
+      <section className="section min-w-[600px] w-fit h-fit">
+        <h2>Create challenge</h2>
+        <p>No match types available. Sign up on the left side menu.</p>
+      </section>
+    );
   }
 
-  const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
+  const teams = await supabase(cookies)
+    .getVisibleTeams()
+    .then(verifyResult)
+    .then(filterNotSelectedTeam(selectedTeam))
+    .then(filterAvailableTeams(configs));
 
   const servers = await api.live().getServers().then(verify).then(sortByName);
   const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
@@ -97,4 +104,18 @@ function filterAvailableChallenge(team: TeamsJoined) {
     configs.filter((config) =>
       team.challenges.some((challenge) => challenge.config === config.id)
     );
+}
+
+function filterAvailableTeams(configs: Array<MatchConfigsRow>) {
+  return (teams: Array<VisibleTeam>) =>
+    teams.filter((team) =>
+      configs.some((config) =>
+        team.challenges.some((challenge) => challenge.config === config.id)
+      )
+    );
+}
+
+function filterNotSelectedTeam(selectedTeam: TeamsJoined) {
+  return (teams: Array<VisibleTeam>) =>
+    teams.filter((team) => team.id !== selectedTeam.id);
 }

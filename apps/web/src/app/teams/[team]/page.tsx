@@ -7,6 +7,8 @@ import EditTeamPlayersSection from '@/components/teams/EditTeamPlayersSection';
 import TeamPlayersSection from '@/components/teams/TeamPlayersSection';
 import { Suspense } from 'react';
 import LoadingSection from '@/components/commons/LoadingSection';
+import Link from 'next/link';
+import { ChevronLeftIcon } from '@heroicons/react/16/solid';
 
 interface Props {
   params: { team: string };
@@ -27,6 +29,23 @@ export default async function TeamPage({ params, searchParams }: Props) {
       <Suspense fallback={<LoadingSection />}>
         {edit ? <TeamDetailsForm team={team} /> : <TeamDetailsSection team={team} />}
       </Suspense>
+      {isTeamOfficer && (
+        <div className="flex gap-4">
+          {edit ? (
+            <Link className="btn btn-secondary" href={`/teams/${team.id}`}>
+              <ChevronLeftIcon className="size-8" />
+              Back
+            </Link>
+          ) : (
+            <Link className="btn btn-secondary" href={`/teams/${team.id}/?edit=true`}>
+              Add players
+            </Link>
+          )}
+          <Link className="btn btn-secondary" href={`/challenges/${team.id}`}>
+            Go to challenges
+          </Link>
+        </div>
+      )}
       <Suspense fallback={<LoadingSection />}>
         {edit ? (
           <EditTeamPlayersSection team={team} />

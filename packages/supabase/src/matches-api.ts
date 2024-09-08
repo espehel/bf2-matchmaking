@@ -225,7 +225,10 @@ export default (client: SupabaseClient<Database>) => ({
   createMatchPlayerResults: (...results: Array<MatchPlayerResultsInsert>) =>
     client.from('match_player_results').insert(results).select(),
   getMatchResults: () =>
-    client.from('match_results').select<'*, team(*)', MatchResultsJoined>('*, team(*)'),
+    client
+      .from('match_results')
+      .select<'*, team(*)', MatchResultsJoined>('*, team(*)')
+      .limit(20),
   getMatchResultsByMatchId: (matchId: number) =>
     client
       .from('match_results')

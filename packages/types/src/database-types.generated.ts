@@ -48,18 +48,21 @@ export type Database = {
         Row: {
           config: number
           created_at: string
+          match_count: number
           rating: number
           team_id: number
         }
         Insert: {
           config: number
           created_at?: string
+          match_count?: number
           rating?: number
           team_id: number
         }
         Update: {
           config?: number
           created_at?: string
+          match_count?: number
           rating?: number
           team_id?: number
         }

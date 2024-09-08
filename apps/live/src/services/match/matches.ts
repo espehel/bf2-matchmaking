@@ -256,7 +256,8 @@ export async function updateMatchRating(matchResult: MatchResultsInsert, config:
   const res = await client().updateChallengeTeamRating(
     data.team_id,
     data.config,
-    data.rating + matchResult.rating_inc
+    data.rating + matchResult.rating_inc,
+    data.match_count + 1
   );
   if (res.error) {
     return res.error;

@@ -7,6 +7,7 @@ import { isOpenChallenge } from '@bf2-matchmaking/utils';
 import AuthButton from '@/components/AuthButton';
 import { TeamsRow } from '@bf2-matchmaking/types';
 import OpenChallengeCard from '@/components/challenges/OpenChallengeCard';
+import LeaderboardSection from '@/components/challenges/LeaderboardSection';
 
 async function getPlayerTeams(): Promise<Array<TeamsRow> | null> {
   const { data: player } = await supabase(cookies).getSessionPlayer();
@@ -25,7 +26,7 @@ export default async function ChallengePage() {
   return (
     <main className="main">
       <h1>Challenges</h1>
-      <div className="flex gap-16 p-8">
+      <div className="flex flex-wrap gap-16 p-8">
         {playerTeams ? (
           <ManageTeamsSection teams={playerTeams} />
         ) : (
@@ -34,6 +35,7 @@ export default async function ChallengePage() {
             <AuthButton className="btn btn-accent w-20" session={null} />
           </section>
         )}
+        <LeaderboardSection />
         <section className="section">
           <h2>Open Challenges</h2>
           <ul>
