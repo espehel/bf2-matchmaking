@@ -23,9 +23,9 @@ export function isServerIdentified(serverPlayers: number, matchSize: number) {
 export async function initServers() {
   try {
     const servers = await client().getServers().then(verifyResult);
-    const connectedServers = await createSockets(
-      servers.map((s) => s.rcon).filter(isNotNull)
-    );
+    const connectedServers = (
+      await createSockets(servers.map((s) => s.rcon).filter(isNotNull))
+    ).filter(isNotNull);
     info(
       'initServers',
       `Connected ${connectedServers.length}/${servers.length} server sockets`

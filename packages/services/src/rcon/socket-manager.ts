@@ -9,17 +9,9 @@ const TIMEOUT = 3000;
 const TTL = 10 * 60 * 1000;
 const sockets = new Map<string, net.Socket>();
 export async function createSockets(rcons: Array<ServerRconsRow>) {
-  const connectedSockets = [];
-  for (const rcon of rcons) {
-    const socket = await createSocket(rcon);
-    if (socket) {
-      connectedSockets.push(rcon.id);
-    }
-  }
-  return connectedSockets;
+  return Promise.all(rcons.map((r) => createSocket(r).then((s) => s && r.id)));
 }
 export async function createSocket(rcon: ServerRconsRow) {
-  await json(`rcon:${rcon.id}`).set(rcon);
   return connect(rcon).catch(() => null);
 }
 async function connect(rcon: ServerRconsRow) {

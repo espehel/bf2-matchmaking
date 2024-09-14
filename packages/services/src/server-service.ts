@@ -1,19 +1,12 @@
-import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import {
   DbServer,
-  isNotNull,
   LiveInfo,
   LiveServerStatus,
   ServerRconsRow,
 } from '@bf2-matchmaking/types';
-import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 import { externalApi, getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
-import {
-  createSockets,
-  getPlayerList,
-  getServerInfo,
-  hasNoVehicles,
-} from './rcon/bf2-rcon-api';
+import { getPlayerList, getServerInfo, hasNoVehicles } from './rcon/bf2-rcon-api';
 import {
   addServerWithStatus,
   setServer,

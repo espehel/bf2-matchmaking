@@ -2,6 +2,7 @@
   "name": "@bf2-matchmaking/redis",
   "exports": {
     "./cache": "./src/cache.ts",
+    "./client": "./src/client.ts",
     "./generic": "./src/core/generic.ts",
     "./hash": "./src/core/hash.ts",
     "./json": "./src/core/json.ts",

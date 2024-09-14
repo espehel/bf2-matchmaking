@@ -30,6 +30,7 @@ import {
 } from './server-service';
 import { DateTime } from 'luxon';
 import { createServer, updateLiveServer } from '@bf2-matchmaking/services/server';
+import { json } from '@bf2-matchmaking/redis/json';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -164,6 +165,12 @@ serversRouter.post('/', async (ctx) => {
 
   const address = await getAddress(ip);
   const isResolvingDns = address === ip;
+  await json(`rcon:${address}`).set({
+    id: address,
+    rcon_port,
+    rcon_pw,
+    created_at: DateTime.now().toISO(),
+  });
   const socket = createSocket({
     id: address,
     rcon_port,

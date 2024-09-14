@@ -4,7 +4,7 @@ import { set } from '../core/set';
 import { assertString } from '@bf2-matchmaking/utils';
 import { json } from '../core/json';
 import { Server, ServerInfo } from '../types';
-import { serverInfoSchema, serverSchema } from '../schemas';
+import { serverInfoSchema } from '../schemas';
 
 export function getServersWithStatus(status: LiveServerStatus) {
   if (status === 'active') {
@@ -56,8 +56,8 @@ export async function getServer(address: string) {
 }
 
 export async function setServerLive(address: string, server: Server) {
-  return json(`servers:live:${address}`).set(server);
+  return hash(`servers:live:${address}`).set(server);
 }
 export async function getServerLive(address: string) {
-  return json(`servers:live:${address}`).get().then(serverSchema.parse);
+  return hash<Server>(`servers:live:${address}`).getAll();
 }

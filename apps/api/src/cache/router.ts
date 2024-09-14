@@ -5,6 +5,9 @@ import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { del } from '@bf2-matchmaking/redis/generic';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
+import { json } from '@bf2-matchmaking/redis/json';
+import { DateTime } from 'luxon';
+import { ServerRconsRow } from '@bf2-matchmaking/types';
 
 export const cacheRouter = new Router({
   prefix: '/cache',
@@ -34,4 +37,14 @@ cacheRouter.post('/maps', async (ctx: Context) => {
 
 cacheRouter.get('/maps', async (ctx: Context) => {
   ctx.body = await hash('cache:maps').getAll();
+});
+
+cacheRouter.post('/rcons', async (ctx: Context) => {
+  const servers = await client().getServers().then(verifyResult);
+  for (const server of servers) {
+    if (server.rcon) {
+      await json<ServerRconsRow>(`rcon:${server.ip}`).set(server.rcon);
+    }
+  }
+  ctx.body = 'OK';
 });

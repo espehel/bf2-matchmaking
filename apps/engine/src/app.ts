@@ -10,6 +10,7 @@ import { closeOldMatches } from './tasks/closeOldMatches';
 import { updateLiveServers } from './tasks/update-live-servers';
 import { updateIdleServers } from './tasks/update-idle-servers';
 import { initServers } from './server/server-manager';
+import { getClient } from '@bf2-matchmaking/redis/client';
 
 const closeOldMatchesTask = cron.schedule('0 0,8,16 * * *', closeOldMatches, {
   scheduled: false,
@@ -29,6 +30,7 @@ assertString(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN is not define
 discordClient
   .login(process.env.DISCORD_TOKEN)
   .then(async () => {
+    await getClient(); // TODO fix connect race without exposing client?
     await initServers();
     await initChannelListener();
     initScheduledEventsListener();
