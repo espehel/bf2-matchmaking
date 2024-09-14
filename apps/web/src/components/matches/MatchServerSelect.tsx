@@ -1,7 +1,8 @@
 'use client';
-import { Region, ServersRow } from '@bf2-matchmaking/types';
+import { Region } from '@bf2-matchmaking/types/platform';
 import Select from '@/components/commons/Select';
 import React, { useState } from 'react';
+import { ServersRow } from '@bf2-matchmaking/types';
 
 interface Props {
   servers: Array<ServersRow>;

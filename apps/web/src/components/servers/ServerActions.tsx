@@ -1,4 +1,4 @@
-import { GameStatus, LiveState, LiveServer } from '@bf2-matchmaking/types';
+import { GameStatus, LiveInfo, LiveServer } from '@bf2-matchmaking/types';
 import { formatSecToMin, fromSnakeToCapitalized } from '@bf2-matchmaking/utils';
 import JoinMeButton from '@/components/servers/JoinMeButton';
 import { DateTime } from 'luxon';

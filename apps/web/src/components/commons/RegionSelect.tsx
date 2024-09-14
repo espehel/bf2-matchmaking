@@ -1,5 +1,5 @@
 import React from 'react';
-import { Region } from '@bf2-matchmaking/types';
+import { Region } from '@bf2-matchmaking/types/platform';
 import Select from '@/components/commons/Select';
 
 interface Props {

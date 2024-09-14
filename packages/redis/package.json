@@ -1,7 +1,15 @@
 {
   "name": "@bf2-matchmaking/redis",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "exports": {
+    "./cache": "./src/cache.ts",
+    "./generic": "./src/core/generic.ts",
+    "./hash": "./src/core/hash.ts",
+    "./json": "./src/core/json.ts",
+    "./set": "./src/core/set.ts",
+    "./stream": "./src/core/stream.ts",
+    "./matches": "./src/domain/matches.ts",
+    "./servers": "./src/domain/servers.ts"
+  },
   "version": "1.0.0",
   "engines": {
     "node": ">=18"
@@ -13,7 +21,7 @@
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
-    "redis": "^4.6.13",
+    "redis": "^4.7.0",
     "zod": "^3.23.4"
   },
   "devDependencies": {

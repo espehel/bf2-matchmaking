@@ -1,4 +1,4 @@
-import { LiveState, RoundsJoined } from '@bf2-matchmaking/types';
+import { LiveInfo, RoundsJoined } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function RoundLink({ round }: Props) {
-  const info = parseJSON<LiveState>(round.info);
+  const info = parseJSON<LiveInfo>(round.info);
   return (
     <Link href={`/rounds/${round.id}`}>
       <div className="card card-side w-full bg-base-100 shadow-xl">

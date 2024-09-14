@@ -1,6 +1,6 @@
 import { revalidatePath } from 'next/cache';
 import { XCircleIcon } from '@heroicons/react/24/outline';
-import { Instance } from '@bf2-matchmaking/types';
+import { Instance } from '@bf2-matchmaking/types/platform';
 import IconBtn from '@/components/commons/IconBtn';
 import { deleteServer } from '@/app/servers/[server]/actions';
 import { api } from '@bf2-matchmaking/utils';

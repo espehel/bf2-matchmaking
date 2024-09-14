@@ -3,7 +3,7 @@ import ActionForm from '@/components/form/ActionForm';
 import TransitionWrapper from '@/components/commons/TransitionWrapper';
 import IconBtn from '@/components/commons/IconBtn';
 import MultiSelect from '@/components/commons/MultiSelect';
-import { Region } from '@bf2-matchmaking/types';
+import { Region } from '@bf2-matchmaking/types/platform';
 import { addGeneratedServer } from '@/app/matches/[match]/server/actions';
 import { getArray } from '@bf2-matchmaking/utils/src/form-data';
 

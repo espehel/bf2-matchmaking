@@ -1,28 +1,6 @@
 import { MatchesJoined, ServerRconsRow, ServersRow } from './database-types';
 import { LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
-export enum ApiErrorType {
-  NotVoiceChannel = 'NOT_VOICE_CHANNEL',
-  NoMatchStagingChannel = 'NO_MATCH_STAGING_CHANNEL',
-  NoMatchDiscordChannel = 'NO_MATCH_DISCORD_CHANNEL',
-}
-
-export class ApiError extends Error {
-  status: number;
-  constructor(type: ApiErrorType) {
-    super(type);
-    switch (type) {
-      case ApiErrorType.NoMatchStagingChannel:
-      case ApiErrorType.NotVoiceChannel:
-      case ApiErrorType.NoMatchDiscordChannel:
-        this.status = 400;
-        break;
-      default:
-        this.status = 500;
-    }
-  }
-}
-
 export enum MatchEvent {
   Summon = 'Summon',
   Draft = 'Draft',
@@ -54,7 +32,7 @@ export type LiveServerStatus = 'active' | 'idle' | 'offline' | 'lacking';
 export interface LiveServer {
   address: string;
   name: string;
-  live: LiveState | null;
+  live: LiveInfo | null;
   port: number;
   status: LiveServerStatus;
   noVehicles: boolean | null;
@@ -69,10 +47,10 @@ export interface LiveServer {
 
 export interface ConnectedLiveServer extends LiveServer {
   status: 'active' | 'idle';
-  live: LiveState;
+  live: LiveInfo;
 }
 
-export interface LiveState extends ServerInfo {
+export interface LiveInfo extends ServerInfo {
   players: Array<PlayerListItem>;
 }
 
@@ -115,7 +93,6 @@ export interface LiveMatch {
   roundsPlayed: number;
   pendingSince?: string | null;
   live_at?: string | null;
-  connectedPlayers: Array<string>;
   server: LiveServer | null;
 }
 

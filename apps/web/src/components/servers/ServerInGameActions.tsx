@@ -1,7 +1,7 @@
 import {
   ConnectedLiveServer,
   GameStatus,
-  LiveState,
+  LiveInfo,
   LiveServer,
 } from '@bf2-matchmaking/types';
 import JoinMeButton from '@/components/servers/JoinMeButton';
@@ -80,7 +80,7 @@ export default async function ServerInGameActions({
   );
 }
 
-function PlayersSection({ info }: { info: LiveState }) {
+function PlayersSection({ info }: { info: LiveInfo }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="grow border border-accent rounded p-4 overflow-x-auto">

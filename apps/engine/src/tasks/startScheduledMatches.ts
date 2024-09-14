@@ -1,11 +1,12 @@
 import { MatchStatus, ScheduledMatch } from '@bf2-matchmaking/types';
-import matches from '../state/matches';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
+import { getScheduled } from '@bf2-matchmaking/redis/matches';
 
 export async function startScheduledMatches() {
-  const matchesToStart = matches.getScheduled().filter(isScheduledToStart);
+  const scheduled = await getScheduled();
+  const matchesToStart = scheduled.filter(isScheduledToStart);
   if (matchesToStart.length) {
     info('startScheduledMatches', `Starting ${matchesToStart.length} matches`);
     await Promise.all(matchesToStart.map(startMatch));

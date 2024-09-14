@@ -31,7 +31,6 @@ import {
 } from './embed-utils';
 import { DateTime } from 'luxon';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
-import { ServerInfo } from '@bf2-matchmaking/redis/src/types';
 
 export function buildTeamspeakMatchStartedEmbed(match: MatchesJoined): APIEmbed {
   return {
@@ -112,7 +111,7 @@ export const getLiveMatchEmbed = (
 export const getWarmUpStartedEmbed = (
   matchId: number,
   address: string,
-  server: ServerInfo
+  server: { joinmeHref: string; name: string; port: string }
 ) => ({
   description: `Warm up started on [${replaceDiscordGG(server.name)}](${
     server.joinmeHref

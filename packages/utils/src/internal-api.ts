@@ -5,17 +5,17 @@ import {
   PostServerExecRequestBody,
   PostServerExecResponseBody,
   LiveMatch,
-  DnsRecordWithoutPriority,
-  Region,
-  PostDemosRequestBody,
-  PostDemosResponseBody,
   PostServerPlayersSwitchRequestBody,
   PostServersRequestBody,
   PostRestartServerRequestBody,
   ServersRow,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
-import { Instance } from '@bf2-matchmaking/types/src/vultr';
+import {
+  Instance,
+  DnsRecordWithoutPriority,
+  Region,
+} from '@bf2-matchmaking/types/platform';
 
 const web = () => {
   const basePath = 'https://bf2.gg';
@@ -28,7 +28,7 @@ const web = () => {
   };
 };
 const live = () => {
-  const basePath = 'https://live.bf2.gg';
+  const basePath = 'https://api.bf2.gg';
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
@@ -91,25 +91,9 @@ const live = () => {
       postJSON(basePath.concat(paths.matchResults(matchId)), {}),
   };
 };
-const bot = () => {
-  const basePath = 'https://bot.bf2.gg';
-  const paths = {
-    channelsListeners: (channelId: string) => `/matches/${channelId}/listeners`,
-    demos: () => `/demos`,
-  };
-  return {
-    paths,
-    postChannelsListeners: (channelId: string) =>
-      postJSON(basePath.concat(paths.channelsListeners(channelId)), {}),
-    deleteChannelsListeners: (channelId: string) =>
-      postJSON(basePath.concat(paths.channelsListeners(channelId)), {}),
-    postDemos: (body: PostDemosRequestBody) =>
-      postJSON<PostDemosResponseBody>(basePath.concat(paths.demos()), body),
-  };
-};
 
 const engine = () => {
-  const basePath = 'https://engine.bf2.gg';
+  const basePath = 'https://api.bf2.gg';
   const paths = {
     matchUsersXml: (matchId: number | string) => `/matches/${matchId}/users.xml`,
   };
@@ -121,7 +105,7 @@ const engine = () => {
 };
 
 const platform = () => {
-  const basePath = 'https://platform.bf2.gg';
+  const basePath = 'https://api.bf2.gg/platform';
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,

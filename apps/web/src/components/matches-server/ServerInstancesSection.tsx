@@ -1,4 +1,5 @@
-import { Instance, MatchesJoined } from '@bf2-matchmaking/types';
+import { MatchesJoined } from '@bf2-matchmaking/types';
+import { Instance } from '@bf2-matchmaking/types/platform';
 import { api } from '@bf2-matchmaking/utils';
 import RevalidateForm from '@/components/RevalidateForm';
 import InstanceTableActionsCell from '@/components/matches-server/InstanceTableActionsCell';

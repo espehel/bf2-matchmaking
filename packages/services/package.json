@@ -1,0 +1,24 @@
+{
+  "name": "@bf2-matchmaking/services",
+  "exports": {
+    "./error": "./src/error.ts",
+    "./matches": "./src/match-service.ts",
+    "./rcon": "./src/rcon/bf2-rcon-api.ts",
+    "./server": "./src/server-service.ts"
+  },
+  "version": "1.0.0",
+  "scripts": {
+    "verify": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bf2-matchmaking/logging": "*",
+    "@bf2-matchmaking/redis": "*",
+    "@bf2-matchmaking/supabase": "*",
+    "@bf2-matchmaking/utils": "*",
+    "@bf2-matchmaking/types": "*",
+    "luxon": "^3.4.4"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}

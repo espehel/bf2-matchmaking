@@ -1,0 +1,19 @@
+{
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "allowJs": true,
+    "outDir": "build",
+    "rootDir": "src",
+    "strict": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": true,
+    "skipLibCheck": true,
+    "moduleResolution": "nodenext",
+    "lib": ["ESNext", "DOM"]
+  }
+}

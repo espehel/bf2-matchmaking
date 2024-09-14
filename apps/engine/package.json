@@ -1,49 +1,42 @@
 {
   "name": "engine",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "dev": "concurrently \"npm:dev-*\"",
-    "build": "rimraf ./build && esbuild --define:process.env.NODE_ENV=\\\"production\\\" src/app.ts --bundle --platform=node --outfile=build/app.js --external:express",
-    "start": "node --experimental-fetch build/app.js",
-    "dev-nodemon": "nodemon",
-    "tunnel": "lt --port 5004 --subdomain bf2-matchmaking",
+    "dev": "nodemon",
+    "build": "rimraf build && esbuild --define:process.env.NODE_ENV=\\\"production\\\" src/app.ts --bundle --platform=node --outfile=build/app.js --external:discord.js --external:cpu-features --external:ssh2",
+    "start": "node build/app.js",
     "verify": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=18"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/koa": "^2.13.9",
-    "@types/koa__router": "^12.0.1",
-    "@types/koa-logger": "^3.1.3",
-    "@types/node": "^20.8.6",
-    "@types/node-cron": "^3.0.9",
-    "concurrently": "^8.2.1",
-    "esbuild": "^0.19.4",
-    "localtunnel": "^1.8.3",
-    "nodemon": "^3.0.1",
-    "rimraf": "^5.0.5",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "node": ">=20"
   },
   "dependencies": {
     "@bf2-matchmaking/discord": "*",
     "@bf2-matchmaking/logging": "*",
+    "@bf2-matchmaking/redis": "*",
     "@bf2-matchmaking/server": "*",
+    "@bf2-matchmaking/services": "*",
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
-    "@koa/bodyparser": "^5.0.0",
-    "@koa/router": "^11.0.2",
-    "dotenv": "^16.3.1",
-    "koa": "^2.14.2",
-    "koa-logger": "^3.2.1",
-    "luxon": "^3.4.3",
-    "node-cron": "^3.0.2"
+    "@types/node-cron": "^3.0.11",
+    "discord.js": "^14.16.1",
+    "dotenv": "^16.4.5",
+    "luxon": "^3.5.0",
+    "node-cron": "^3.0.3",
+    "ts3-nodejs-library": "^3.5.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^22.5.4",
+    "esbuild": "^0.17.0",
+    "nodemon": "^2.0.15",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.5.4"
   }
 }

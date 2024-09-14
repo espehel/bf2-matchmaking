@@ -1,12 +1,13 @@
-import matches from '../state/matches';
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { client } from '@bf2-matchmaking/supabase';
 import { api } from '@bf2-matchmaking/utils';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
+import { getStarted } from '@bf2-matchmaking/redis/matches';
 
 export async function closeOldMatches() {
-  const oldMatches = matches.getStarted().filter(isOlderThan3Hours);
+  const started = await getStarted();
+  const oldMatches = started.filter(isOlderThan3Hours);
   info('closeOldMatches', `Handling ${oldMatches.length} old matches`);
 
   const matchesWithRounds = oldMatches.filter((m) => m.rounds.length > 0);

@@ -10,6 +10,9 @@ export * from './server-utils';
 export * from './error';
 export * from './string-utils';
 export * from './challenges';
+export * from './object-utils';
+export * from './team-utils';
+export * from './async-actions';
 
 import { ip } from './ip-api';
 export const externalApi = {
