@@ -147,7 +147,6 @@ const platform = () => {
 
 export const api = {
   live,
-  bot,
   web,
   platform,
   engine,

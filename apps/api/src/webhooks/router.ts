@@ -11,7 +11,6 @@ import {
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info } from '@bf2-matchmaking/logging';
-import { api } from '@bf2-matchmaking/utils';
 import { handleMatchInserted, handleMatchStatusUpdate } from './match-handler';
 
 export const webhooksRouter = new Router({
@@ -48,12 +47,14 @@ webhooksRouter.post('/matches', async (ctx) => {
 webhooksRouter.post('/match_configs', async (ctx) => {
   const { body } = ctx.request;
   if (isDiscordConfigsInsert(body) || isDiscordConfigsUpdate(body)) {
-    await api.bot().postChannelsListeners(body.record.channel);
+    // TODO
+    //await api.bot().postChannelsListeners(body.record.channel);
     ctx.status = 202;
     return;
   }
   if (isDiscordConfigsDelete(body)) {
-    await api.bot().deleteChannelsListeners(body.old_record.channel);
+    // TODO
+    //await api.bot().deleteChannelsListeners(body.old_record.channel);
     ctx.status = 202;
     return;
   }
