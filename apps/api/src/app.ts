@@ -11,7 +11,7 @@ import { cacheRouter } from './cache/router';
 import { matchesRouter } from './matches/router';
 import { serversRouter } from './servers/router';
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5001;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 loadStartupScripts()
   .then((startupScripts) => {
     info('app', `Loaded ${startupScripts.size} startup scripts`);

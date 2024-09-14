@@ -6,7 +6,6 @@ import { del } from '@bf2-matchmaking/redis/generic';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
 import { json } from '@bf2-matchmaking/redis/json';
-import { DateTime } from 'luxon';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
 
 export const cacheRouter = new Router({

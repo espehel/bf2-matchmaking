@@ -10,16 +10,21 @@ interface JsonMSetItem {
   value: z.infer<typeof jsonSchema>;
 }
 
+function getFirstElement<T>(array: unknown): T | null {
+  if (Array.isArray(array) && array.length > 0) {
+    return array[0];
+  }
+  return null;
+}
+
 export function json<T = unknown>(key: string) {
-  const get = async () => {
+  const get = async (): Promise<T | null> => {
     const client = await getClient();
-    return client.json.GET(key, { path: '$' }) as Promise<T | null>;
+    return client.json.GET(key, { path: '$' }).then(getFirstElement<T>);
   };
-  const getProperty = async <K extends keyof T & string>(
-    property: K
-  ): Promise<T[K] | null> => {
+  const getProperty = async <K extends keyof T & string>(property: K) => {
     const client = await getClient();
-    return client.json.GET(key, { path: `$.${property}` }) as Promise<T[K] | null>;
+    return client.json.GET(key, { path: `$.${property}` }).then(getFirstElement<T[K]>);
   };
 
   const set = async (data: T) => {

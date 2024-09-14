@@ -22,7 +22,7 @@ export function isServerIdentified(serverPlayers: number, matchSize: number) {
 
 export async function initServers() {
   try {
-    const servers = await client().getServers().then(verifyResult);
+    const servers = await client().getServers().then(verifyResult); //TODO use redis
     const connectedServers = (
       await createSockets(servers.map((s) => s.rcon).filter(isNotNull))
     ).filter(isNotNull);
