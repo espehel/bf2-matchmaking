@@ -3,7 +3,6 @@ import { assertArray, assertObj, assertString } from '@bf2-matchmaking/utils';
 import { Instance, Plan, Region, StartupScript } from '@bf2-matchmaking/types/platform';
 import { info, logMessage } from '@bf2-matchmaking/logging';
 import { VULTR } from './constants';
-import { isString } from '@bf2-matchmaking/types';
 
 assertString(process.env.VULTR_API_KEY, 'VULTR_API_KEY is not set.');
 
@@ -11,19 +10,6 @@ const client = Vultr.initialize({
   apiKey: process.env.VULTR_API_KEY,
   rateLimit: 600,
 });
-
-let startupScripts = new Map<string, string>();
-export async function loadStartupScripts() {
-  const { startup_scripts } = await client.startupScripts.listStartupScripts({});
-  assertArray(startup_scripts);
-  startupScripts = new Map(
-    (startup_scripts as Array<{ name: string; id: string }>).map(({ name, id }) => [
-      name,
-      id,
-    ])
-  );
-  return startupScripts;
-}
 
 export async function deleteStartupScript(name: string) {
   const { startup_scripts } = (await client.startupScripts.listStartupScripts({})) as {
@@ -87,8 +73,7 @@ export async function createServerInstance(
 }
 
 export async function deleteServerInstance(id: string) {
-  const result = await client.instances.deleteInstance({ 'instance-id': id });
-  return result;
+  return client.instances.deleteInstance({ 'instance-id': id });
 }
 export async function getInstanceByIp(ip: string): Promise<Instance | null> {
   const { instances } = await client.instances.listInstances({});

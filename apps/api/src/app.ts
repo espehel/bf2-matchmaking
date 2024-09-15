@@ -2,8 +2,7 @@ import 'dotenv/config';
 import Koa from 'koa';
 import logger from 'koa-logger';
 import { bodyParser } from '@koa/bodyparser';
-import { error, info } from '@bf2-matchmaking/logging';
-import { loadStartupScripts } from './platform/vultr';
+import { info } from '@bf2-matchmaking/logging';
 import Router from '@koa/router';
 import { webhooksRouter } from './webhooks/router';
 import { platformRouter } from './platform/router';
@@ -12,13 +11,6 @@ import { matchesRouter } from './matches/router';
 import { serversRouter } from './servers/router';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
-loadStartupScripts()
-  .then((startupScripts) => {
-    info('app', `Loaded ${startupScripts.size} startup scripts`);
-  })
-  .catch((e) => {
-    error('app', e);
-  });
 
 export const rootRouter = new Router();
 rootRouter.get('/health', (ctx) => {
