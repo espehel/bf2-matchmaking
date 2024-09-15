@@ -1,4 +1,4 @@
-import { error, info, logChangeMatchStatus } from '@bf2-matchmaking/logging';
+import { error, info, logChangeMatchStatus, verbose } from '@bf2-matchmaking/logging';
 import { updateMatch, updateMatchPlayers } from '../match/active-match';
 import { LiveInfo, MatchStatus } from '@bf2-matchmaking/types';
 import { resetLiveServer } from '../server/server-manager';
@@ -11,7 +11,7 @@ import { updateLiveServer } from '@bf2-matchmaking/services/server';
 export async function updateLiveServers() {
   const servers = await getActiveMatchServers().then(Object.entries<string>);
   if (servers.length === 0) {
-    info('updateLiveServers', `No live servers`);
+    verbose('updateLiveServers', `No live servers`);
     return;
   }
 

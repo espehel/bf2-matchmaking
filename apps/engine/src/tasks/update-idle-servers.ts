@@ -1,5 +1,5 @@
 import { assertObj } from '@bf2-matchmaking/utils';
-import { error, info, warn } from '@bf2-matchmaking/logging';
+import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
 import { LiveInfo, MatchesJoined } from '@bf2-matchmaking/types';
 import { isServerIdentified, resetLiveServer } from '../server/server-manager';
 import {
@@ -12,7 +12,7 @@ import { getMatch, getMatchesLive, getMatchLive } from '@bf2-matchmaking/redis/m
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
 
 export async function updateIdleServers() {
-  info('updateIdleServers', 'Updating idle servers');
+  verbose('updateIdleServers', 'Updating idle servers');
   try {
     let updatedServers = 0;
 
@@ -25,7 +25,7 @@ export async function updateIdleServers() {
       updatedServers++;
       await handlePendingMatch(address, liveState);
     }
-    info(
+    verbose(
       'updateIdleServers',
       `Updated ${updatedServers}/${servers.length} idle servers successfully`
     );
