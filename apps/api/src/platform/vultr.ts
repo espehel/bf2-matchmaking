@@ -44,15 +44,15 @@ async function createStartupScript(name: string, script: string) {
   return startup_script.id;
 }
 
-export async function getServerInstances(match?: unknown) {
+export async function getServerInstances(matchId?: string) {
   const { instances } = await client.instances.listInstances({});
   assertArray(instances, 'Failed to get instances');
 
-  if (isString(match)) {
-    return (instances as Array<Instance>).filter((i) => i.tag === match);
+  if (matchId) {
+    return (instances as Array<Instance>).filter((i) => i.tag === matchId);
   }
 
-  return instances;
+  return instances as Array<Instance>;
 }
 
 export async function createServerInstance(

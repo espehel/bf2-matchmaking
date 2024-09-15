@@ -1,29 +1,21 @@
 import Router from '@koa/router';
-import {
-  createServerInstance,
-  deleteServerInstance,
-  deleteStartupScript,
-  getInstanceByIp,
-  getRegions,
-  getServerInstances,
-  pollInstance,
-} from './vultr';
+import { createServerInstance, getInstanceByIp, getRegions, pollInstance } from './vultr';
 import { error, info } from '@bf2-matchmaking/logging';
-import { createDnsRecord, deleteDnsRecord, getDnsByIp, getDnsByName } from './cloudflare';
+import { createDnsRecord, getDnsByIp, getDnsByName } from './cloudflare';
 import { Instance } from '@bf2-matchmaking/types/platform';
 import { Context } from 'koa';
 import { DEFAULTS } from './constants';
-import { api, toFetchError } from '@bf2-matchmaking/utils';
-import { createServerDns } from './platform-service';
+import { toFetchError } from '@bf2-matchmaking/utils';
+import { createServerDns, getDnsRecord, getInstancesByMatchId } from './platform-service';
 import { ServiceError } from '@bf2-matchmaking/services/error';
+import { deleteServer } from '../servers/server-service';
 
 export const platformRouter = new Router({
   prefix: '/platform',
 });
 
 platformRouter.get('/servers', async (ctx: Context) => {
-  const { match } = ctx.query;
-  ctx.body = await getServerInstances(match);
+  ctx.body = await getInstancesByMatchId(ctx.query.match);
 });
 
 interface ServersRequestBody extends Omit<Request, 'body'> {
@@ -93,47 +85,17 @@ platformRouter.get('/servers/:ip', async (ctx) => {
   ctx.body = instance;
 });
 platformRouter.delete('/servers/:ip', async (ctx: Context) => {
-  const dns = await getDnsByName(ctx.params.ip);
-  const instance = await getInstanceByIp(dns?.content || ctx.params.ip);
-
-  if (!instance) {
-    error(
-      'DELETE /servers/:ip',
-      `Server ${ctx.params.ip} not found {content: "${dns?.content}", name: "${dns?.name}"}`
-    );
-    ctx.status = 404;
-    ctx.body = { message: 'Server not found' };
-    return;
+  try {
+    ctx.body = await deleteServer(ctx.params.ip);
+  } catch (e) {
+    if (e instanceof ServiceError) {
+      ctx.status = e.status;
+      ctx.body = { message: e.message };
+    } else {
+      ctx.status = 500;
+      ctx.body = toFetchError(e);
+    }
   }
-
-  const host = dns?.name || ctx.params.ip;
-
-  const { data: si } = await api.live().getServerInfo(host);
-  if (si && Number(si.connectedPlayers) > 3) {
-    ctx.status = 409;
-    ctx.body = { message: 'Server is not empty' };
-    return;
-  }
-
-  // TODO fix: could use vercel blob + redis stream
-  //await saveDemosAll(host);
-
-  await Promise.all([
-    await deleteServerInstance(instance.id),
-    await deleteStartupScript(instance.label),
-    await api.live().deleteServer(host),
-  ]);
-
-  if (dns) {
-    await deleteDnsRecord(dns.id);
-  }
-
-  info(
-    'DELETE /servers/:ip',
-    `Instance ${host} deleted. [id: "${instance.id}", dns content: "${dns?.content}", tag: "${instance.tag}", label: "${instance.label}"]`
-  );
-  ctx.status = 200;
-  ctx.body = instance;
 });
 
 platformRouter.post('/servers/:ip/dns', async (ctx: Context) => {
@@ -151,13 +113,17 @@ platformRouter.post('/servers/:ip/dns', async (ctx: Context) => {
 });
 
 platformRouter.get('/servers/:ip/dns', async (ctx) => {
-  const dns = await getDnsByIp(ctx.params.ip);
-  if (!dns) {
-    ctx.status = 400;
-    ctx.body = { message: `Could not find DNS record for ${ctx.params.ip}` };
-    return;
+  try {
+    ctx.body = await getDnsRecord(ctx.params.ip);
+  } catch (e) {
+    if (e instanceof ServiceError) {
+      ctx.status = e.status;
+      ctx.body = { message: e.message };
+    } else {
+      ctx.status = 500;
+      ctx.body = toFetchError(e);
+    }
   }
-  ctx.body = dns;
 });
 
 platformRouter.get('/regions', async (ctx: Context) => {
