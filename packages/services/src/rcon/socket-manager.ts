@@ -1,5 +1,5 @@
 import net from 'net';
-import { error, info, verbose } from '@bf2-matchmaking/logging';
+import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
 import crypto from 'crypto';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
 import { json } from '@bf2-matchmaking/redis/json';
@@ -114,13 +114,16 @@ function connectSocket(host: string, port: number, password: string) {
         clearTimeout(timeout);
         socket.removeAllListeners();
         resolve(socket);
+      } else if (sent.includes('Authentication failed')) {
+        warn('connectSocket', `${host}:${port} Authentication failed`);
+        reject('Authentication failed');
       } else {
         verbose('connectSocket', `${host}:${port} Received data "${sent}"`);
       }
     });
 
     socket.on('error', (err) => {
-      verbose('connectSocket', `${host}:${port} Received error "${err}"`);
+      error('connectSocket', `${host}:${port} Received error "${err}"`);
       reject(err);
     });
 
@@ -129,7 +132,8 @@ function connectSocket(host: string, port: number, password: string) {
       if (hadError) {
         verbose('connectSocket', `${host}:${port} Disconnected with error`);
       } else {
-        verbose('connectSocket', `${host}:${port} Disconnected`);
+        warn('connectSocket', `${host}:${port} Disconnected`);
+        reject('Connection closed');
       }
     });
   });

@@ -13,7 +13,9 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    logError(JSON.stringify(error))
+    const location = window.location.href;
+    const userAgent = window.navigator.userAgent;
+    logError(JSON.stringify(error), { location, userAgent })
       .then(() => console.error(error.message))
       .catch((err) => console.error(err));
   }, [error]);

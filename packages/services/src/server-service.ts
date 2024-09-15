@@ -90,7 +90,7 @@ export async function updateLiveServer(address: string): Promise<LiveInfo | null
     await setServerLiveInfo(address, live);
     return live;
   } catch (e) {
-    error(`updateLiveServer ${address}`, e);
+    error('updateLiveServer', e);
     await setServerLive(address, { errorAt: now });
     return null;
   }
