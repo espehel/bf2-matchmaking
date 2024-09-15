@@ -28,7 +28,7 @@ export async function getMatch(matchId: string): Promise<LiveMatch | null> {
   return {
     matchId: Number(matchId),
     ...match,
-    roundsPlayed: match.roundsPlayed,
+    roundsPlayed: Number(match.roundsPlayed),
     server,
   };
 }

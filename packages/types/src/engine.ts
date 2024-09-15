@@ -9,6 +9,6 @@ export type LiveServerState =
 
 export interface MatchLive {
   state: LiveServerState;
-  roundsPlayed: number;
+  roundsPlayed: string;
   pendingSince?: string | null;
 }
