@@ -29,7 +29,7 @@ export async function addServerWithStatus(
   matchId?: string
 ) {
   if (key !== 'active') {
-    await set(`servers:${key}`).add(address);
+    return set(`servers:${key}`).add(address);
   }
   assertString(matchId, 'matchId must be defined when key is active');
   return addActiveMatchServer(address, matchId);

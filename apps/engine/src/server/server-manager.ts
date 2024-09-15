@@ -35,7 +35,6 @@ export async function initServers() {
     );
     info('initServers', `Created ${serverStatuses.length} live servers`);
   } catch (e) {
-    console.log(e);
     logErrorMessage('Failed to init live servers', e);
   }
 }
