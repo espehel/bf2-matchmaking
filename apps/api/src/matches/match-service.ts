@@ -10,7 +10,7 @@ import { getLiveServerByMatchId } from '../servers/server-service';
 export async function createPendingMatch(match: MatchesJoined) {
   await setMatchLive(match.id, {
     state: 'pending',
-    roundsPlayed: match.rounds.length,
+    roundsPlayed: match.rounds.length.toString(),
     pendingSince: DateTime.now().toISO(),
   });
   await addMatchesLive(match.id.toString());

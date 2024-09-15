@@ -10,7 +10,7 @@ export const matchSchema = z.object({
     'finished',
     'stale',
   ] as const),
-  roundsPlayed: z.number(),
+  roundsPlayed: z.string(),
   pendingSince: z.string().datetime({ offset: true }).optional(),
 });
 
