@@ -11,6 +11,11 @@ import { updateLiveServers } from './tasks/update-live-servers';
 import { updateIdleServers } from './tasks/update-idle-servers';
 import { initServers } from './server/server-manager';
 import { getClient } from '@bf2-matchmaking/redis/client';
+import * as http from 'node:http';
+import { IncomingMessage, ServerResponse } from 'node:http';
+import { json } from '@bf2-matchmaking/redis/json';
+
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5005;
 
 const closeOldMatchesTask = cron.schedule('0 0,8,16 * * *', closeOldMatches, {
   scheduled: false,
@@ -31,6 +36,7 @@ discordClient
   .login(process.env.DISCORD_TOKEN)
   .then(async () => {
     await getClient(); // TODO fix connect race without exposing client?
+    await json('app:engine:state').set({});
     await initServers();
     await initChannelListener();
     initScheduledEventsListener();
@@ -39,6 +45,30 @@ discordClient
     updateLiveServersTask.start();
     updateIdleServersTask.start();
   })
-  .then(() => {
+  .then(async () => {
+    http.createServer(requestListener).listen(PORT, () => {
+      info('app', `Engine state api listening on port ${PORT}`);
+    });
     info('app', 'Initialized!');
   });
+
+function requestListener(req: IncomingMessage, res: ServerResponse) {
+  res.setHeader('Content-Type', 'application/json');
+  switch (req.url) {
+    case '/health':
+      res.writeHead(200);
+      res.end('OK');
+      break;
+    case '/state':
+      json('app:engine:state')
+        .get()
+        .then((state) => {
+          res.writeHead(200);
+          res.end(JSON.stringify(state));
+        });
+      break;
+    default:
+      res.writeHead(404);
+      res.end(JSON.stringify({ message: 'Resource not found' }));
+  }
+}

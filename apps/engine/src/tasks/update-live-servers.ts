@@ -7,6 +7,10 @@ import { removeLiveMatch } from '@bf2-matchmaking/redis/matches';
 import { saveDemosSince } from '../services/demo-service';
 import { finishMatch } from '@bf2-matchmaking/services/matches';
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
+import { json } from '@bf2-matchmaking/redis/json';
+import { AppEngineState } from '@bf2-matchmaking/types/engine';
+import { DateTime } from 'luxon';
+import { parseError } from '@bf2-matchmaking/utils';
 
 export async function updateLiveServers() {
   const servers = await getActiveMatchServers().then(Object.entries<string>);
@@ -48,7 +52,21 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
         await saveDemosSince(address, cachedMatch.started_at, server.demos_path);
       }
     }
+
+    await json<AppEngineState>('app:engine:state').setProperty(address.replace('.', ''), {
+      status: 'ok',
+      error: null,
+      updatedAt: DateTime.now().toISO(),
+      matchId,
+      ...match,
+    });
   } catch (e) {
     error(`updateLiveMatch ${address} ${matchId}`, e);
+    await json<AppEngineState>('app:engine:state').setProperty(address.replace('.', ''), {
+      status: 'error',
+      error: parseError(e),
+      updatedAt: DateTime.now().toISO(),
+      matchId,
+    });
   }
 }

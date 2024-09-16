@@ -7,11 +7,14 @@ import {
 import { createServer } from '@bf2-matchmaking/services/server';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { createSockets } from '@bf2-matchmaking/services/rcon';
+import { json } from '@bf2-matchmaking/redis/json';
+import { AppEngineState } from '@bf2-matchmaking/types/engine';
 
 export async function resetLiveServer(address: string) {
   verbose('resetLiveServer', `Server ${address}: Resetting...`);
   await removeServerWithStatus(address, 'active');
   await addServerWithStatus(address, 'idle');
+  await json<AppEngineState>('app:engine:state').delProperty(address.replace('.', ''));
 }
 
 export const SERVER_IDENTIFIED_RATIO = 0.3;

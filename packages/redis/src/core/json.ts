@@ -32,12 +32,24 @@ export function json<T = unknown>(key: string) {
     return client.json.SET(key, '$', jsonSchema.parse(data));
   };
 
+  const setProperty = async <K extends keyof T & string>(property: K, value: T[K]) => {
+    const client = await getClient();
+    return client.json.SET(key, `$.${property}`, jsonSchema.parse(value));
+  };
+
+  const delProperty = async <K extends keyof T & string>(property: K) => {
+    const client = await getClient();
+    return client.json.DEL(key, `$.${property}`);
+  };
+
   return {
     get,
     getProperty,
     set,
+    setProperty,
     exists: () => exists(key),
     del: () => del(key),
+    delProperty,
   };
 }
 

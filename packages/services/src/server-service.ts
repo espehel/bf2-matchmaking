@@ -4,11 +4,13 @@ import {
   LiveServerStatus,
   ServerRconsRow,
 } from '@bf2-matchmaking/types';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { externalApi, getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
 import { getPlayerList, getServerInfo, hasNoVehicles } from './rcon/bf2-rcon-api';
 import {
   addServerWithStatus,
+  getServerLive,
+  removeServerWithStatus,
   setServer,
   setServerLive,
   setServerLiveInfo,
@@ -84,14 +86,23 @@ function isConnectedStatus(status: LiveServerStatus) {
 export async function updateLiveServer(address: string): Promise<LiveInfo | null> {
   const now = DateTime.now().toISO();
 
+  const server = await getServerLive(address);
   try {
     const live = await buildLiveState(address);
     await setServerLive(address, { errorAt: undefined, updatedAt: now });
     await setServerLiveInfo(address, live);
     return live;
   } catch (e) {
-    error('updateLiveServer', e);
-    await setServerLive(address, { errorAt: now });
+    if (!server.errorAt) {
+      error('updateLiveServer', e);
+      await setServerLive(address, { errorAt: now });
+      return null;
+    }
+    if (DateTime.fromISO(server.errorAt).diffNow('hours').minutes < -30) {
+      logMessage(`Server ${address} is offline`, { server });
+      await removeServerWithStatus(address, 'idle');
+      await addServerWithStatus(address, 'offline');
+    }
     return null;
   }
 }

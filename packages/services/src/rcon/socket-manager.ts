@@ -132,7 +132,7 @@ function connectSocket(host: string, port: number, password: string) {
       if (hadError) {
         verbose('connectSocket', `${host}:${port} Disconnected with error`);
       } else {
-        warn('connectSocket', `${host}:${port} Disconnected`);
+        verbose('connectSocket', `${host}:${port} Disconnected`);
         reject('Connection closed');
       }
     });

@@ -36,7 +36,7 @@ export async function addServerWithStatus(
 }
 export async function removeServerWithStatus(address: string, key: LiveServerStatus) {
   if (key === 'active') {
-    return hash('server:active').delValue(address);
+    return hash('servers:active').delValue(address);
   }
   return set(`servers:${key}`).remove(address);
 }

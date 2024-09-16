@@ -1,4 +1,4 @@
-import { assertObj } from '@bf2-matchmaking/utils';
+import { assertObj, parseError } from '@bf2-matchmaking/utils';
 import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
 import { LiveInfo, MatchesJoined } from '@bf2-matchmaking/types';
 import { isServerIdentified, resetLiveServer } from '../server/server-manager';
@@ -10,6 +10,9 @@ import {
 } from '@bf2-matchmaking/redis/servers';
 import { getMatch, getMatchesLive, getMatchLive } from '@bf2-matchmaking/redis/matches';
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
+import { json } from '@bf2-matchmaking/redis/json';
+import { AppEngineState } from '@bf2-matchmaking/types/engine';
+import { DateTime } from 'luxon';
 
 export async function updateIdleServers() {
   verbose('updateIdleServers', 'Updating idle servers');
@@ -29,8 +32,20 @@ export async function updateIdleServers() {
       'updateIdleServers',
       `Updated ${updatedServers}/${servers.length} idle servers successfully`
     );
+    await json<AppEngineState>('app:engine:state').setProperty('idleServerTask', {
+      status: 'ok',
+      error: null,
+      updated: updatedServers,
+      updatedAt: DateTime.now().toISO(),
+    });
   } catch (e) {
     error('updateIdleServers', e);
+    await json<AppEngineState>('app:engine:state').setProperty('idleServerTask', {
+      status: 'error',
+      error: parseError(e),
+      updated: null,
+      updatedAt: DateTime.now().toISO(),
+    });
   }
 }
 

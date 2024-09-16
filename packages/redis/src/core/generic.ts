@@ -11,6 +11,16 @@ export async function exists(key: string): Promise<boolean> {
   return res !== 0;
 }
 
+export async function hello() {
+  const client = await getClient();
+  return client.HELLO();
+}
+
+export async function getConnections() {
+  const client = await getClient();
+  return client.CLIENT_LIST();
+}
+
 export async function resetDb() {
   const client = await getClient();
   return client.flushDb();
