@@ -49,7 +49,21 @@ export function hash<T extends Record<string, number | string>>(key: string) {
 
   const delEntry = async (entry: string | Array<string>): Promise<number> => {
     const client = await getClient();
-    return await client.HDEL(key, entry);
+    return client.HDEL(key, entry);
+  };
+
+  const delValue = async (value: string): Promise<number> => {
+    const client = await getClient();
+    const map = await client.HGETALL(key);
+
+    let deleted = 0;
+    for (const matchId in map) {
+      if (map[matchId] === value) {
+        deleted += await client.HDEL(key, matchId);
+      }
+    }
+
+    return deleted;
   };
 
   return {
@@ -61,5 +75,6 @@ export function hash<T extends Record<string, number | string>>(key: string) {
     inc,
     values,
     keys,
+    delValue,
   };
 }
