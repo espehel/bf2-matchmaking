@@ -2,6 +2,7 @@ import { mapListPlayers, mapMapList, mapServerInfo } from './mapper';
 import { getSocket, send } from './socket-manager';
 import { toFetchError } from '@bf2-matchmaking/utils';
 import { PlayerListItem, ServerInfo, RconResult } from '@bf2-matchmaking/types/rcon';
+import { ServiceError } from '../error';
 
 export { createSockets, createSocket, disconnect } from './socket-manager';
 
@@ -100,4 +101,13 @@ async function sendMessage(address: string, message: string): Promise<RconResult
   } catch (e) {
     return { data: null, error: toFetchError(e), readyState };
   }
+}
+
+export function verifyRconResult<T>(result: RconResult<T>): T {
+  if (result.error) {
+    throw ServiceError.BadGateway(
+      `result.error.message[readyState=${result.readyState}]`
+    );
+  }
+  return result.data;
 }

@@ -31,6 +31,7 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createServer } from '@bf2-matchmaking/services/server';
 import { DateTime } from 'luxon';
 import { json } from '@bf2-matchmaking/redis/json';
+import { ServiceError } from '@bf2-matchmaking/services/error';
 
 export async function getLiveServerByMatchId(matchId: string) {
   const address = await getActiveMatchServer(matchId);
@@ -145,6 +146,10 @@ export async function connectPendingServer(server: PendingServer) {
     serverInfo,
     demo_path
   );
+  info(
+    'connectPendingServer',
+    `Upserted server ${address} with name ${serverInfo.serverName}`
+  );
   await createServer(dbServer);
 }
 
@@ -156,19 +161,26 @@ export async function upsertServer(
   serverInfo: ServerInfo,
   demo_path?: string
 ): Promise<DbServer> {
-  const server = await client()
-    .upsertServer({
-      ip: address,
-      port,
-      name: serverInfo.serverName,
-      demos_path: demo_path,
-    })
-    .then(verifySingleResult);
+  const { data: server, error: serverError } = await client().upsertServer({
+    ip: address,
+    port,
+    name: serverInfo.serverName,
+    demos_path: demo_path,
+  });
+  if (serverError) {
+    error('upsertServer', serverError);
+    throw ServiceError.BadGateway('Failed to add server to database');
+  }
 
-  const serverRcon = await client()
-    .upsertServerRcon({ id: address, rcon_port, rcon_pw })
-    .then(verifySingleResult);
+  const { data: serverRcon, error: serverRconError } = await client().upsertServerRcon({
+    id: address,
+    rcon_port,
+    rcon_pw,
+  });
+  if (serverRconError) {
+    error('upsertServerRcon', serverRconError);
+    throw ServiceError.BadGateway('Failed to add server rcon to database');
+  }
 
-  info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
   return { ...server, rcon: serverRcon };
 }

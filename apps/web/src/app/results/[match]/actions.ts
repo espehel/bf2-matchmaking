@@ -38,7 +38,6 @@ export async function addResult(match: MatchesJoined, data: FormData) {
       return [key, Number(value)];
     })
   );
-  console.log(obj);
   const {
     homeRoundInput,
     homeMapsInput,

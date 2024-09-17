@@ -1,13 +1,11 @@
 import Router from '@koa/router';
 import { createServerInstance, getInstanceByIp, getRegions, pollInstance } from './vultr';
-import { error, info } from '@bf2-matchmaking/logging';
-import { createDnsRecord, getDnsByIp, getDnsByName } from './cloudflare';
+import { info } from '@bf2-matchmaking/logging';
+import { createDnsRecord, getDnsByName } from './cloudflare';
 import { Instance } from '@bf2-matchmaking/types/platform';
 import { Context } from 'koa';
 import { DEFAULTS } from './constants';
-import { toFetchError } from '@bf2-matchmaking/utils';
 import { createServerDns, getDnsRecord, getInstancesByMatchId } from './platform-service';
-import { ServiceError } from '@bf2-matchmaking/services/error';
 import { deleteServer } from '../servers/server-service';
 
 export const platformRouter = new Router({
@@ -30,16 +28,14 @@ platformRouter.post('/servers', async (ctx: Context) => {
   const { name, region, match, map, vehicles, subDomain } = <ServersRequestBody>(
     ctx.request.body
   );
-  if (!name || !region || !match || !subDomain) {
-    ctx.status = 400;
-    ctx.body = { message: 'Missing name, region, match, map, subdomain or vehicles' };
-    return;
-  }
+  ctx.assert(name, 400, 'Missing name');
+  ctx.assert(region, 400, 'Missing region');
+  ctx.assert(match, 400, 'Missing match');
+  ctx.assert(subDomain, 400, 'Missing subdomain');
+
   const dns = await getDnsByName(subDomain);
   if (dns) {
-    ctx.status = 409;
-    ctx.body = { message: 'Subdomain already exists' };
-    return;
+    ctx.throw(409, 'Subdomain already exists');
   }
 
   const instance = await createServerInstance(
@@ -49,11 +45,7 @@ platformRouter.post('/servers', async (ctx: Context) => {
     map || DEFAULTS.map,
     vehicles === 'true' ? vehicles : ''
   );
-  if (!instance) {
-    ctx.status = 500;
-    ctx.body = { message: 'Failed to create server' };
-    return;
-  }
+  ctx.assert(instance, 500, 'Failed to create server');
 
   pollInstance(instance.id, async (instance: Instance) => {
     if (instance.main_ip !== '0.0.0.0') {
@@ -70,60 +62,25 @@ platformRouter.post('/servers', async (ctx: Context) => {
   ctx.body = instance;
 });
 
-platformRouter.get('/servers/:ip', async (ctx) => {
+platformRouter.get('/servers/:ip', async (ctx: Context) => {
   const dns = await getDnsByName(ctx.params.ip);
   const instance = await getInstanceByIp(dns?.content || ctx.params.ip);
   if (!instance) {
-    error(
-      'GET /servers/:ip',
-      `Server ${ctx.params.ip} not found {content: "${dns?.content}", name: "${dns?.name}"}`
-    );
-    ctx.status = 404;
-    ctx.body = { message: 'Server not found' };
-    return;
+    ctx.throw(404, 'Server not found', { dns });
   }
   ctx.body = instance;
 });
+
 platformRouter.delete('/servers/:ip', async (ctx: Context) => {
-  try {
-    ctx.body = await deleteServer(ctx.params.ip);
-  } catch (e) {
-    if (e instanceof ServiceError) {
-      ctx.status = e.status;
-      ctx.body = { message: e.message };
-    } else {
-      ctx.status = 500;
-      ctx.body = toFetchError(e);
-    }
-  }
+  ctx.body = await deleteServer(ctx.params.ip);
 });
 
 platformRouter.post('/servers/:ip/dns', async (ctx: Context) => {
-  try {
-    ctx.body = await createServerDns(ctx.params.ip);
-  } catch (e) {
-    if (e instanceof ServiceError) {
-      ctx.status = e.status;
-      ctx.body = { message: e.message };
-    } else {
-      ctx.status = 500;
-      ctx.body = toFetchError(e);
-    }
-  }
+  ctx.body = await createServerDns(ctx.params.ip);
 });
 
-platformRouter.get('/servers/:ip/dns', async (ctx) => {
-  try {
-    ctx.body = await getDnsRecord(ctx.params.ip);
-  } catch (e) {
-    if (e instanceof ServiceError) {
-      ctx.status = e.status;
-      ctx.body = { message: e.message };
-    } else {
-      ctx.status = 500;
-      ctx.body = toFetchError(e);
-    }
-  }
+platformRouter.get('/servers/:id/dns', async (ctx) => {
+  ctx.body = await getDnsRecord(ctx.params.id, ctx.query.type);
 });
 
 platformRouter.get('/regions', async (ctx: Context) => {

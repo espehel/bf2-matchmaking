@@ -1,13 +1,5 @@
 import Router from '@koa/router';
-import {
-  assertArray,
-  assertObj,
-  assertString,
-  toFetchError,
-  verify,
-} from '@bf2-matchmaking/utils';
-import { isString } from '@bf2-matchmaking/types';
-import { error } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 import {
   createSocket,
   exec,
@@ -17,6 +9,7 @@ import {
   pauseRound,
   restartServer,
   unpauseRound,
+  verifyRconResult,
 } from '@bf2-matchmaking/services/rcon';
 import { restartWithInfantryMode, restartWithVehicleMode } from './http-api';
 import { hash } from '@bf2-matchmaking/redis/hash';
@@ -31,121 +24,85 @@ import {
 import { DateTime } from 'luxon';
 import { createServer, updateLiveServer } from '@bf2-matchmaking/services/server';
 import { json } from '@bf2-matchmaking/redis/json';
+import { Context } from 'koa';
 
 export const serversRouter = new Router({
   prefix: '/servers',
 });
 
-serversRouter.post('/:ip/restart', async (ctx) => {
+serversRouter.post('/:ip/restart', async (ctx: Context) => {
   const { mode, map } = ctx.request.body;
-  try {
-    if (mode === 'infantry') {
-      await restartWithInfantryMode(ctx.params.ip, map).then(verify);
+
+  if (mode === 'infantry') {
+    const result = await restartWithInfantryMode(ctx.params.ip, map);
+    if (result.error) {
+      error('api/servers/:ip/restart', result.error);
+      ctx.throw(502, 'Could not restart server with infantry mode', { result });
     }
-    if (mode === 'vehicles') {
-      await restartWithVehicleMode(ctx.params.ip, map).then(verify);
-    }
-    if (!mode) {
-      await restartServer(ctx.params.ip);
-    }
-  } catch (e) {
-    ctx.status = 502;
-    ctx.body = toFetchError(e);
   }
+  if (mode === 'vehicles') {
+    const result = await restartWithVehicleMode(ctx.params.ip, map);
+    if (result.error) {
+      error('api/servers/:ip/restart', result.error);
+      ctx.throw(502, 'Could not restart server with vehicles mode', { result });
+    }
+  }
+  if (!mode) {
+    const result = await restartServer(ctx.params.ip);
+    if (result.error) {
+      error('api/servers/:ip/restart', result.error);
+      ctx.throw(502, 'Could not restart server with default mode', { result });
+    }
+  }
+
   ctx.status = 204;
 });
+
 serversRouter.post('/:ip/players/switch', async (ctx) => {
   ctx.body = { message: 'Not implemented' };
   ctx.status = 501;
 });
-serversRouter.post('/:ip/maps', async (ctx) => {
-  try {
-    const map = await hash('cache:maps').get(ctx.request.body.map.toString());
-    assertString(map, 'Could not find map');
 
-    const { data: mapList } = await getMapList(ctx.params.ip);
-    assertArray(mapList, 'Could not get map list from server');
+serversRouter.post('/:ip/maps', async (ctx: Context) => {
+  const map = await hash<Record<string, string>>('cache:maps').get(
+    ctx.request.body.map.toString()
+  );
+  ctx.assert(map, 404, 'Could not find map');
 
-    const id = mapList.indexOf(map);
+  const { data: mapList } = await getMapList(ctx.params.ip);
+  ctx.assert(mapList, 502, 'Could not get map list from server');
 
-    await exec(ctx.params.ip, `admin.setNextLevel ${id}`);
-    await exec(ctx.params.ip, 'admin.runNextLevel');
+  const id = mapList.indexOf(map);
 
-    const { data: info } = await getServerInfo(ctx.params.ip);
-    assertObj(info, 'Failed to get updated info');
-    ctx.body = { currentMapName: info.currentMapName, nextMapName: info.nextMapName };
-  } catch (e) {
-    ctx.status = 500;
-    ctx.body = toFetchError(e);
-  }
+  await exec(ctx.params.ip, `admin.setNextLevel ${id}`).then(verifyRconResult);
+  await exec(ctx.params.ip, 'admin.runNextLevel').then(verifyRconResult);
+
+  const info = await getServerInfo(ctx.params.ip).then(verifyRconResult);
+
+  ctx.body = { currentMapName: info.currentMapName, nextMapName: info.nextMapName };
 });
-serversRouter.post('/:ip/exec', async (ctx) => {
+
+serversRouter.post('/:ip/exec', async (ctx: Context) => {
   const { cmd } = ctx.request.body;
-
-  if (!isString(cmd)) {
-    ctx.status = 400;
-    ctx.body = { message: 'Missing cmd' };
-    return;
-  }
-
-  try {
-    const { data, error } = await exec(ctx.params.ip, cmd);
-    if (error) {
-      ctx.status = 502;
-      ctx.body = error;
-    }
-    ctx.body = data;
-  } catch (e) {
-    ctx.status = 502;
-    ctx.body = toFetchError(e);
-  }
+  ctx.assert(cmd, 400, 'Missing cmd');
+  ctx.body = await exec(ctx.params.ip, cmd).then(verifyRconResult);
 });
 
 serversRouter.post('/:ip/unpause', async (ctx) => {
-  try {
-    await unpauseRound(ctx.params.ip);
-    ctx.status = 204;
-  } catch (e) {
-    ctx.status = 502;
-    ctx.body = toFetchError(e);
-  }
+  await unpauseRound(ctx.params.ip).then(verifyRconResult);
+  ctx.status = 204;
 });
 serversRouter.post('/:ip/pause', async (ctx) => {
-  try {
-    await pauseRound(ctx.params.ip);
-    ctx.status = 204;
-  } catch (e) {
-    ctx.status = 502;
-    ctx.body = toFetchError(e);
-  }
+  await pauseRound(ctx.params.ip).then(verifyRconResult);
+  ctx.status = 204;
 });
 
 serversRouter.get('/:ip/pl', async (ctx) => {
-  try {
-    const { data, error } = await getPlayerList(ctx.params.ip);
-    if (error) {
-      ctx.status = 502;
-      ctx.body = error;
-    }
-    ctx.body = data;
-  } catch (e) {
-    ctx.status = 500;
-    ctx.body = toFetchError(e);
-  }
+  ctx.body = await getPlayerList(ctx.params.ip).then(verifyRconResult);
 });
 
-serversRouter.get('/:ip/si', async (ctx) => {
-  try {
-    const { data, error } = await getServerInfo(ctx.params.ip);
-    if (error) {
-      ctx.status = 502;
-      ctx.body = error;
-    }
-    ctx.body = data;
-  } catch (e) {
-    ctx.status = 502;
-    ctx.body = toFetchError(e);
-  }
+serversRouter.get('/:ip/si', async (ctx: Context) => {
+  ctx.body = await getServerInfo(ctx.params.ip).then(verifyRconResult);
 });
 
 serversRouter.delete('/:ip', async (ctx) => {
@@ -153,15 +110,13 @@ serversRouter.delete('/:ip', async (ctx) => {
   ctx.status = 204;
 });
 
-serversRouter.post('/', async (ctx) => {
+serversRouter.post('/', async (ctx: Context) => {
   const { ip, port, rcon_pw, demo_path } = ctx.request.body;
   const rcon_port = Number(ctx.request.body.rcon_port);
-
-  if (!isString(ip) || !isString(port) || !rcon_port || !isString(rcon_pw)) {
-    ctx.status = 400;
-    ctx.body = { message: 'Missing ip, port, rcon_port or rcon_pw' };
-    return;
-  }
+  ctx.assert(rcon_port, 400, 'Missing rcon_port');
+  ctx.assert(ip, 400, 'Missing ip');
+  ctx.assert(port, 400, 'Missing port');
+  ctx.assert(rcon_pw, 400, 'Missing rcon_pw');
 
   const address = await getAddress(ip);
   const isResolvingDns = address === ip;
@@ -194,47 +149,29 @@ serversRouter.post('/', async (ctx) => {
     return;
   }
   const { data: serverInfo } = await getServerInfo(address);
-  if (!serverInfo) {
-    ctx.status = 502;
-    ctx.body = { message: 'Failed to connect to server.' };
-    return;
-  }
+  ctx.assert(serverInfo, 502, 'Failed to connect to server.');
 
-  try {
-    const dbServer = await upsertServer(
-      address,
-      port,
-      rcon_port,
-      rcon_pw,
-      serverInfo,
-      demo_path
-    );
+  const dbServer = await upsertServer(
+    address,
+    port,
+    rcon_port,
+    rcon_pw,
+    serverInfo,
+    demo_path
+  );
+  info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
 
-    await createServer(dbServer);
-    const liveServer = await getLiveServer(address);
-    if (!liveServer) {
-      ctx.status = 502;
-      ctx.body = { message: 'Failed to create live server.' };
-      return;
-    }
-    ctx.body = liveServer;
-  } catch (e) {
-    error('POST /servers', e);
-    ctx.status = 500;
-    ctx.body = toFetchError(e);
-  }
+  await createServer(dbServer);
+  const liveServer = await getLiveServer(address);
+  ctx.assert(liveServer, 502, 'Failed to create live server');
+
+  ctx.body = liveServer;
 });
 
-serversRouter.get('/:ip', async (ctx) => {
+serversRouter.get('/:ip', async (ctx: Context) => {
   await updateLiveServer(ctx.params.ip);
   const server = await getLiveServer(ctx.params.ip);
-
-  if (!server) {
-    ctx.status = 404;
-    ctx.body = { message: 'Live server not found' };
-    return;
-  }
-
+  ctx.assert(server, 404, 'Live server not found');
   ctx.body = server;
 });
 

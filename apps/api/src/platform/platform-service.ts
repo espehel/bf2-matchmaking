@@ -6,11 +6,10 @@ import {
 } from './vultr';
 import { createDnsRecord, deleteDnsRecord, getDnsByIp, getDnsByName } from './cloudflare';
 import { ServiceError } from '@bf2-matchmaking/services/error';
-import { DnsRecord } from '@bf2-matchmaking/types/platform';
 import { error, info } from '@bf2-matchmaking/logging';
 import { getServerLiveInfo } from '@bf2-matchmaking/redis/servers';
 
-export async function createServerDns(address: string): Promise<DnsRecord> {
+export async function createServerDns(address: string) {
   const instance = await getInstanceByIp(address);
   if (!instance) {
     throw ServiceError.NotFound('Instance not found');
@@ -64,7 +63,7 @@ export async function deleteInstance(ip: string) {
     await deleteStartupScript(instance.label),
   ]);
 
-  if (dns) {
+  if (dns?.id) {
     await deleteDnsRecord(dns.id);
   }
 
@@ -75,10 +74,14 @@ export async function deleteInstance(ip: string) {
   return instance;
 }
 
-export async function getDnsRecord(ip: string) {
-  const dns = await getDnsByIp(ip);
+export async function getDnsRecord(
+  identifier: string,
+  type: 'ip' | 'name' | unknown = 'ip'
+) {
+  const dns =
+    type === 'ip' ? await getDnsByIp(identifier) : await getDnsByName(identifier);
   if (!dns) {
-    throw ServiceError.NotFound(`Could not find DNS record for ${ip}`);
+    throw ServiceError.NotFound(`Could not find DNS record with ip ${identifier}`);
   }
   return dns;
 }

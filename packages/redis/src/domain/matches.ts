@@ -133,6 +133,13 @@ export async function removeMatchesLive(matchId: string) {
 export async function getMatchLive(matchId: string | number) {
   return hash(`matches:live:${matchId}`).getAll().then(matchSchema.parse);
 }
+export async function getMatchLiveSafe(matchId: string | number) {
+  try {
+    return await getMatchLive(matchId);
+  } catch (e) {
+    return null;
+  }
+}
 export async function setMatchLive(matchId: string | number, values: Partial<Match>) {
   return hash(`matches:live:${matchId}`).set(values);
 }
