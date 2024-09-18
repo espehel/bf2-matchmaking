@@ -4,6 +4,7 @@ import { api } from '@bf2-matchmaking/utils';
 import RevalidateForm from '@/components/RevalidateForm';
 import InstanceTableActionsCell from '@/components/matches-server/InstanceTableActionsCell';
 import GenerateServerForm from '@/components/matches-server/GenerateServerForm';
+import { Suspense } from 'react';
 
 interface Props {
   match: MatchesJoined;
@@ -36,14 +37,20 @@ export default async function ServerInstancesSection({ match }: Props) {
               <td>{instance.label}</td>
               <td>{instance.region}</td>
               <td>{instance.status}</td>
-              <AddressCell instance={instance} />
-              <InstanceTableActionsCell matchId={match.id} instance={instance} />
+              <Suspense fallback={<td></td>}>
+                <AddressCell instance={instance} />
+              </Suspense>
+              <Suspense fallback={<td></td>}>
+                <InstanceTableActionsCell matchId={match.id} instance={instance} />
+              </Suspense>
             </tr>
           ))}
         </tbody>
       </table>
       {(!instances || instances.length === 0) && <div>No server instances created</div>}
-      <GenerateServerForm match={match} hasInstance={Boolean(instances?.length)} />
+      <Suspense fallback={null}>
+        <GenerateServerForm match={match} hasInstance={Boolean(instances?.length)} />
+      </Suspense>
     </section>
   );
 }

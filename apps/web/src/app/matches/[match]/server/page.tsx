@@ -6,6 +6,7 @@ import ActiveServerSection from '@/components/matches-server/ActiveServerSection
 import { Suspense } from 'react';
 import ScheduledActionsSection from '@/components/matches-server/ScheduledActionsSection';
 import { isScheduledMatch } from '@bf2-matchmaking/types';
+import LoadingSection from '@/components/commons/LoadingSection';
 
 interface Props {
   params: { match: string };
@@ -27,7 +28,7 @@ export default async function ResultsMatch({ params }: Props) {
           <ScheduledActionsSection match={match} matchServer={matchServers} />
         </Suspense>
       )}
-      <Suspense fallback={null}>
+      <Suspense fallback={<LoadingSection />}>
         <ServerInstancesSection match={match} />
       </Suspense>
     </main>

@@ -6,7 +6,7 @@ import { initScheduledEventsListener } from './discord/scheduled-events-listener
 import { assertString } from '@bf2-matchmaking/utils';
 import { initServers } from './server/server-manager';
 import { getClient } from '@bf2-matchmaking/redis/client';
-import * as http from 'node:http';
+import { createServer } from 'node:http';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { json } from '@bf2-matchmaking/redis/json';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
@@ -42,7 +42,7 @@ discordClient
     closeOldChallengesTask.start();
   })
   .then(async () => {
-    http.createServer(requestListener).listen(PORT, () => {
+    createServer(requestListener).listen(PORT, () => {
       info('app', `Engine state api listening on port ${PORT}`);
     });
     info('app', 'Initialized!');

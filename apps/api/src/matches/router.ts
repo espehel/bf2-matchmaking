@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import { generateMatchUsersXml } from './users-generator';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client } from '@bf2-matchmaking/supabase';
 import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
 import { addActiveMatchServer } from '@bf2-matchmaking/redis/servers';
@@ -17,7 +17,6 @@ import {
 import { createPendingMatch, getMatch } from './match-service';
 import { closeMatch } from '@bf2-matchmaking/services/matches';
 import { Context } from 'koa';
-import { ServiceError } from '@bf2-matchmaking/services/error';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
