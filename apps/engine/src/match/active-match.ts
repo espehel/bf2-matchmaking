@@ -14,6 +14,7 @@ import {
   hasPlayedAllRounds,
   isOngoingRound,
   isServerEmptied,
+  isStale,
   setMatchLiveNow,
 } from './match-manager';
 import { insertRound } from './rounds-manager';
@@ -65,14 +66,15 @@ function getNextState(
     return 'finished';
   }
 
+  if (isStale(match)) {
+    return 'stale';
+  }
+
   if (!isServerIdentified(live.players.length, cachedMatch.config.size)) {
     return 'pending';
   }
 
-  if (
-    match.state === 'pending' &&
-    isServerIdentified(live.players.length, cachedMatch.config.size)
-  ) {
+  if (match.state === 'pending') {
     return 'warmup';
   }
 

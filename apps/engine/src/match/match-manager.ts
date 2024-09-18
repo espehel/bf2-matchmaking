@@ -1,6 +1,7 @@
 import { error, info, verbose } from '@bf2-matchmaking/logging';
 import {
   isDiscordMatch,
+  isString,
   MatchConfigsRow,
   MatchesJoined,
   ServerInfo,
@@ -10,12 +11,23 @@ import { getWarmUpStartedEmbed, sendChannelMessage } from '@bf2-matchmaking/disc
 import { DateTime } from 'luxon';
 import { putMatch } from '@bf2-matchmaking/redis/matches';
 import { getServer } from '@bf2-matchmaking/redis/servers';
+import { MatchLive } from '@bf2-matchmaking/types/engine';
 
-export const hasPlayedAllRounds = (config: MatchConfigsRow, roundsPlayed: number) =>
-  roundsPlayed >= config.maps * 2;
+export function hasPlayedAllRounds(config: MatchConfigsRow, roundsPlayed: number) {
+  return roundsPlayed >= config.maps * 2;
+}
 
-export const isServerEmptied = (roundsPlayed: number, si: ServerInfo) =>
-  roundsPlayed > 0 && si.connectedPlayers === '0';
+export function isServerEmptied(roundsPlayed: number, si: ServerInfo) {
+  return roundsPlayed > 0 && si.connectedPlayers === '0';
+}
+
+export function isStale(match: MatchLive) {
+  return (
+    match.state === 'pending' &&
+    isString(match.pendingSince) &&
+    DateTime.fromISO(match.pendingSince).diffNow('hours').hours < -3
+  );
+}
 
 export const isFirstTimeFullServer = (
   match: MatchesJoined,

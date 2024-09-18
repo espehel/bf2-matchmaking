@@ -6,7 +6,12 @@ import {
   MatchStatus,
 } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import {
+  info,
+  logErrorMessage,
+  logMessage,
+  logWarnMessage,
+} from '@bf2-matchmaking/logging';
 import { getUserIds, toMatchPlayer, toMatchPlayerWithTeamAndRating } from './utils';
 import { findMapId } from './supabase-service';
 import { Embed } from 'discord.js';
@@ -78,6 +83,13 @@ export async function buildMatchPlayersFromStartingEmbed(
 ): Promise<Array<MatchPlayersInsert>> {
   const team1Ids = getUserIds(embed, 'USMC');
   const team2Ids = getUserIds(embed, 'MEC/PLA');
+
+  if (team1Ids.length === 0) {
+    logWarnMessage(`Match ${matchId}: No players found for "USMC"`);
+  }
+  if (team2Ids.length === 0) {
+    logWarnMessage(`Match ${matchId}: No players found for "MEC/PLA"`);
+  }
 
   const team1 = await getPlayersByIdList(team1Ids);
   const team2 = await getPlayersByIdList(team2Ids);
