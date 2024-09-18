@@ -25,9 +25,15 @@ import { DateTime } from 'luxon';
 import { createServer, updateLiveServer } from '@bf2-matchmaking/services/server';
 import { json } from '@bf2-matchmaking/redis/json';
 import { Context } from 'koa';
+import { protect } from '../auth';
 
 export const serversRouter = new Router({
   prefix: '/servers',
+});
+
+serversRouter.get('/rcons', protect(), async (ctx) => {
+  const servers = await getLiveServers();
+  ctx.body = await Promise.all(servers.map((s) => json(`rcon:${s.address}`).get()));
 });
 
 serversRouter.post('/:ip/restart', async (ctx: Context) => {

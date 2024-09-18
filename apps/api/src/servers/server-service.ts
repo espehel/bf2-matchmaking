@@ -63,7 +63,7 @@ export async function getLiveServer(address: string): Promise<LiveServer | null>
       matchId: null,
     };
   } catch (e) {
-    error('getLiveServer', e);
+    error(`getLiveServer:${address}`, e);
     return null;
   }
 }
