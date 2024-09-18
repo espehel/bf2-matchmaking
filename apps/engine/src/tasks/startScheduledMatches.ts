@@ -3,8 +3,9 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { getScheduled } from '@bf2-matchmaking/redis/matches';
+import cron from 'node-cron';
 
-export async function startScheduledMatches() {
+async function startScheduledMatches() {
   const scheduled = await getScheduled();
   const matchesToStart = scheduled.filter(isScheduledToStart);
   if (matchesToStart.length) {
@@ -84,3 +85,11 @@ async function startMatch(match: ScheduledMatch) {
 
   return server;
 }*/
+
+export const startScheduledMatchesTask = cron.schedule(
+  '0,30 * * * *',
+  startScheduledMatches,
+  {
+    scheduled: false,
+  }
+);

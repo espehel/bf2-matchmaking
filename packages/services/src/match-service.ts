@@ -27,8 +27,8 @@ import {
 } from '@bf2-matchmaking/discord';
 import { fixMissingMatchPlayers, updatePlayerRatings } from './player-service';
 
-export const finishMatch = async (matchId: string) => {
-  const { data: updatedMatch, error } = await client().updateMatch(Number(matchId), {
+export const finishMatch = async (matchId: string | number) => {
+  const { data: updatedMatch, error } = await client().updateMatch(matchId, {
     status: MatchStatus.Finished,
   });
   if (error) {

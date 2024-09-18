@@ -13,8 +13,9 @@ import { updateLiveServer } from '@bf2-matchmaking/services/server';
 import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
+import cron from 'node-cron';
 
-export async function updateIdleServers() {
+async function updateIdleServers() {
   verbose('updateIdleServers', 'Updating idle servers');
   try {
     let updatedServers = 0;
@@ -101,3 +102,7 @@ function isMatchServer(match: MatchesJoined, live: LiveInfo) {
     players.length
   );
 }
+
+export const updateIdleServersTask = cron.schedule('*/30 * * * * *', updateIdleServers, {
+  scheduled: false,
+});

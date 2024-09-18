@@ -125,7 +125,7 @@ export default (client: SupabaseClient<Database>) => ({
       .or(
         `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
       ),
-  updateMatch: (matchId: number | undefined, values: MatchesUpdate) =>
+  updateMatch: (matchId: number | string | undefined, values: MatchesUpdate) =>
     client
       .from('matches')
       .update(values)

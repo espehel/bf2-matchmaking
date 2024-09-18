@@ -1157,7 +1157,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      challenge_status: "open" | "pending" | "accepted" | "closed"
+      challenge_status: "open" | "pending" | "accepted" | "closed" | "expired"
       match_type: "Mix" | "PCW" | "League" | "Cup" | "Ladder"
     }
     CompositeTypes: {

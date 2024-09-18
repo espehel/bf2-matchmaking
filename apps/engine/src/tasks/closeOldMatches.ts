@@ -4,8 +4,9 @@ import { api } from '@bf2-matchmaking/utils';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { getStarted } from '@bf2-matchmaking/redis/matches';
+import cron from 'node-cron';
 
-export async function closeOldMatches() {
+async function closeOldMatches() {
   const started = await getStarted();
   const oldMatches = started.filter(isOlderThan3Hours);
   info('closeOldMatches', `Handling ${oldMatches.length} old matches`);
@@ -60,3 +61,7 @@ async function forceCloseMatch(match: MatchesJoined) {
     logMessage(`Match ${match.id} force closed`, { match });
   }
 }
+
+export const closeOldMatchesTask = cron.schedule('0 0,8,16 * * *', closeOldMatches, {
+  scheduled: false,
+});

@@ -11,8 +11,9 @@ import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
 import { parseError } from '@bf2-matchmaking/utils';
+import cron from 'node-cron';
 
-export async function updateLiveServers() {
+async function updateLiveServers() {
   const servers = await getActiveMatchServers().then(Object.entries<string>);
   if (servers.length === 0) {
     verbose('updateLiveServers', `No live servers`);
@@ -70,3 +71,7 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
     });
   }
 }
+
+export const updateLiveServersTask = cron.schedule('*/10 * * * * *', updateLiveServers, {
+  scheduled: false,
+});
