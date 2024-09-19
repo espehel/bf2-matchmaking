@@ -23,9 +23,10 @@ import { DateTime } from 'luxon';
 import {
   getMatch,
   getMatchLive,
-  getMatchPlayers,
+  getPlayers,
   incMatchRoundsPlayed,
   setMatchLive,
+  updatePlayers,
 } from '@bf2-matchmaking/redis/matches';
 import { syncMatchCache } from './match-manager';
 import { MatchLive } from '@bf2-matchmaking/types/engine';
@@ -37,7 +38,8 @@ export async function updateMatch(
 ): Promise<MatchLive> {
   const match = await getMatchLive(cachedMatch.id);
   logState(match, live, cachedMatch);
-  const nextState = getNextState(cachedMatch, match, live);
+  await updatePlayers(cachedMatch.id, live);
+  const nextState = await getNextState(cachedMatch, match, live);
   await handleNextState(match, nextState, cachedMatch, live, address);
   return getMatchLive(cachedMatch.id);
 }
@@ -53,11 +55,13 @@ function logState(match: MatchLive, live: LiveInfo, cachedMatch: MatchesJoined) 
   );
 }
 
-function getNextState(
+async function getNextState(
   cachedMatch: MatchesJoined,
   match: MatchLive,
   live: LiveInfo
-): LiveServerState {
+): Promise<LiveServerState> {
+  const players = await getPlayers(cachedMatch.id).then(Object.keys);
+
   if (hasPlayedAllRounds(cachedMatch.config, Number(match.roundsPlayed))) {
     return 'finished';
   }
@@ -86,10 +90,7 @@ function getNextState(
     return 'live';
   }
 
-  if (
-    match.state === 'warmup' &&
-    Number(live.players.length) !== cachedMatch.config.size
-  ) {
+  if (match.state === 'warmup' && players.length < cachedMatch.config.size) {
     return 'warmup';
   }
 
@@ -152,14 +153,12 @@ export async function updateMatchPlayers(
   assertObj(cachedMatch, `Match ${matchId} not cached`);
 
   let isDirty = false;
-  const players = await getMatchPlayers(matchId);
-  assertObj(players, `Match ${matchId} not cached with players`);
   for (const bf2Player of live.players) {
     if (bf2Player.getName.includes('STREAM')) {
       continue;
     }
 
-    let player: PlayersRow | null | undefined = players.find(
+    let player: PlayersRow | null | undefined = cachedMatch.players.find(
       hasKeyhash(bf2Player.keyhash)
     );
 

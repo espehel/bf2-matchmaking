@@ -6,6 +6,7 @@ import { getMultiple, json, setMultiple } from '../core/json';
 import { matchSchema } from '../schemas';
 import { hash } from '../core/hash';
 import { Match } from '../types';
+import { LiveInfo, LiveServerState } from '@bf2-matchmaking/types/engine';
 
 const activeStatuses = [
   MatchStatus.Scheduled,
@@ -72,8 +73,16 @@ export async function getScheduled() {
 export async function getMatch(matchId: string | number) {
   return json<MatchesJoined>(`matches:${matchId}`).get();
 }
-export async function getMatchPlayers(matchId: string | number) {
-  return json<MatchesJoined>(`matches:${matchId}`).getProperty('players');
+export async function getPlayers(matchId: string | number) {
+  return hash<Record<string, string>>(`matches:${matchId}:players`).getAll();
+}
+
+export async function updatePlayers(matchId: string | number, liveInfo: LiveInfo) {
+  const now = new Date().toISOString();
+  const entries: Array<[string, string]> = liveInfo.players
+    .filter((player) => !player.getName.includes('STREAM'))
+    .map((player) => [player.keyhash, now]);
+  return hash(`matches:${matchId}:players`).setEntries(entries);
 }
 
 export async function putMatch(match: MatchesJoined) {

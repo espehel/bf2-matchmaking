@@ -12,6 +12,11 @@ export function hash<T extends Record<string, number | string>>(key: string) {
     return client.HGET(key, field) as Promise<T[keyof T] | undefined>;
   };
 
+  const setEntries = async (entries: Array<[keyof T & string, T[keyof T]]>) => {
+    const client = await getClient();
+    return client.HSET(key, entries);
+  };
+
   const set = async (values: Partial<Record<keyof T, T[keyof T] | null>>) => {
     const client = await getClient();
     const entries = Object.entries(values);
@@ -70,6 +75,7 @@ export function hash<T extends Record<string, number | string>>(key: string) {
     getAll,
     get,
     set,
+    setEntries,
     del: () => del(key),
     delEntry,
     inc,

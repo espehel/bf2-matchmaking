@@ -6,7 +6,7 @@ import { del } from '@bf2-matchmaking/redis/generic';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
 import { json } from '@bf2-matchmaking/redis/json';
-import { ServerRconsRow } from '@bf2-matchmaking/types';
+import { MatchesJoined, ServerRconsRow } from '@bf2-matchmaking/types';
 
 export const cacheRouter = new Router({
   prefix: '/cache',
@@ -46,4 +46,10 @@ cacheRouter.post('/rcons', async (ctx: Context) => {
     }
   }
   ctx.body = 'OK';
+});
+
+cacheRouter.post('/matches/:matchid', async (ctx: Context) => {
+  const { data: match } = await client().getMatch(ctx.params.matchid);
+  ctx.assert(match, 404, 'Live match not found.');
+  ctx.body = await json<MatchesJoined>(`matches:${match.id}`).set(match);
 });

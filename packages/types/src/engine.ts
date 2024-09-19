@@ -1,3 +1,5 @@
+import { PlayerListItem, ServerInfo } from './rcon';
+
 export type LiveServerState =
   | 'pending'
   | 'warmup'
@@ -29,3 +31,7 @@ export type AppEngineState = Record<
     updatedAt: string;
   };
 };
+
+export interface LiveInfo extends ServerInfo {
+  players: Array<PlayerListItem>;
+}
