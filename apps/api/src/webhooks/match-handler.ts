@@ -1,8 +1,13 @@
-import { LiveMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import { LiveMatch, MatchesRow, MatchStatus } from '@bf2-matchmaking/types';
 import { isClosedMatch, isOpenMatch, retry, wait } from '@bf2-matchmaking/utils';
-import { client } from '@bf2-matchmaking/supabase';
-import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { putMatch, removeMatch } from '@bf2-matchmaking/redis/matches';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import {
+  putMatch,
+  removeMatch,
+  updateMatchScheduledAt,
+  updateMatchStatus,
+} from '@bf2-matchmaking/redis/matches';
 import { Instance } from '@bf2-matchmaking/types/platform';
 import { createPendingMatch } from '../matches/match-service';
 import {
@@ -11,15 +16,15 @@ import {
   getInstancesByMatchId,
 } from '../platform/platform-service';
 import { deleteServer } from '../servers/server-service';
+import { patchGuildScheduledEvent } from '@bf2-matchmaking/discord';
 
-export async function handleMatchInserted(match: MatchesJoined) {
+export async function handleMatchInserted(match: MatchesRow) {
   try {
     if (isOpenMatch(match)) {
-      await putMatch(match);
+      const joinedMatch = await client().getMatch(match.id).then(verifySingleResult);
+      await putMatch(joinedMatch);
     }
-    /*if (match.status === MatchStatus.Summoning) {
-    await joinMatchRoom(match);
-  }*/
+
     if (match.status === MatchStatus.Ongoing) {
       await handleMatchOngoing(match);
     }
@@ -27,21 +32,43 @@ export async function handleMatchInserted(match: MatchesJoined) {
     logErrorMessage(`Match ${match.id} failed to handle insertion`, e, { match });
   }
 }
-export async function handleMatchStatusUpdate(match: MatchesJoined) {
+
+export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
   try {
-    if (isOpenMatch(match)) {
-      await putMatch(match);
+    const isOk = await updateMatchScheduledAt(match);
+    logMessage(
+      `Match ${match.id} scheduled_at updated to ${match.scheduled_at} (${isOk})`
+    );
+    if (!isOk) {
+      return;
     }
+    if (match.events.length > 0) {
+      await updateDiscordEvents(match);
+      info(
+        'handleMatchScheduledAtUpdate',
+        `Match ${match.id}: ${match.events.length} discord events updated`
+      );
+    }
+  } catch (e) {
+    logErrorMessage(`Match ${match.id} failed to handle scheduled_at update`, e, {
+      match,
+    });
+  }
+}
+
+export async function handleMatchStatusUpdate(match: MatchesRow) {
+  try {
+    const isOk = await updateMatchStatus(match);
+    logMessage(`Match ${match.id} status updated to ${match.status} (${isOk})`);
+    if (!isOk) {
+      return;
+    }
+
     if (isClosedMatch(match)) {
       await removeMatch(match);
     }
-
-    if (match.status === MatchStatus.Summoning) {
-      //await joinMatchRoom(match);
-    }
     if (match.status === MatchStatus.Ongoing) {
       await handleMatchOngoing(match);
-      //await broadcastMatchStart(match);
     }
     if (match.status === MatchStatus.Finished) {
       await handleMatchFinished(match);
@@ -51,7 +78,7 @@ export async function handleMatchStatusUpdate(match: MatchesJoined) {
   }
 }
 
-async function handleMatchOngoing(match: MatchesJoined) {
+async function handleMatchOngoing(match: MatchesRow) {
   const liveMatch = await startLiveMatch(match);
   if (liveMatch) {
     logMessage(`Match ${match.id} live tracking started`, {
@@ -60,7 +87,7 @@ async function handleMatchOngoing(match: MatchesJoined) {
     });
   }
 }
-async function handleMatchFinished(match: MatchesJoined) {
+async function handleMatchFinished(match: MatchesRow) {
   const instances = await getInstancesByMatchId(match.id);
   if (instances.length > 0) {
     await Promise.all(
@@ -74,15 +101,9 @@ async function handleMatchFinished(match: MatchesJoined) {
   if (challenge) {
     await client().updateChallenge(challenge.id, { status: 'closed' });
   }
-
-  //leaveMatchRoom(match);
 }
 
-/*function handleMatchSummoning(match: MatchesJoined) {
-  joinMatchRoom(match);
-}*/
-
-async function deleteServerInstance(match: MatchesJoined, instance: Instance) {
+async function deleteServerInstance(match: MatchesRow, instance: Instance) {
   await wait(30);
   const address = await getAddress(instance.main_ip);
   try {
@@ -106,7 +127,7 @@ async function deleteServerInstance(match: MatchesJoined, instance: Instance) {
   }
 }
 
-async function startLiveMatch(match: MatchesJoined): Promise<LiveMatch | null> {
+async function startLiveMatch(match: MatchesRow): Promise<LiveMatch | null> {
   return createPendingMatch(match);
 }
 
@@ -116,5 +137,19 @@ async function getAddress(ip: string) {
     return dns.name;
   } catch (e) {
     return ip;
+  }
+}
+
+async function updateDiscordEvents(match: MatchesRow) {
+  const { scheduled_at, events, id } = match;
+  const { guild } = await client().getMatchConfig(id).then(verifySingleResult);
+  if (guild && scheduled_at) {
+    await Promise.all(
+      events.map((eventId) =>
+        patchGuildScheduledEvent(guild, eventId, {
+          scheduled_start_time: scheduled_at,
+        })
+      )
+    );
   }
 }

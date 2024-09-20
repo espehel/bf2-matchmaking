@@ -1,14 +1,19 @@
-import { isScheduledMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { info } from '@bf2-matchmaking/logging';
+import {
+  isScheduledMatch,
+  MatchesJoined,
+  MatchesRow,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
+import { info, warn } from '@bf2-matchmaking/logging';
 import { set, sets } from '../core/set';
 import { del } from '../core/generic';
 import { getMultiple, json, setMultiple } from '../core/json';
 import { matchSchema } from '../schemas';
 import { hash } from '../core/hash';
 import { Match } from '../types';
-import { LiveInfo, LiveServerState } from '@bf2-matchmaking/types/engine';
+import { LiveInfo } from '@bf2-matchmaking/types/engine';
 
-const activeStatuses = [
+const activeStatuses: string[] = [
   MatchStatus.Scheduled,
   MatchStatus.Summoning,
   MatchStatus.Drafting,
@@ -87,7 +92,7 @@ export async function updatePlayers(matchId: string | number, liveInfo: LiveInfo
 
 export async function putMatch(match: MatchesJoined) {
   if (!activeStatuses.includes(match.status)) {
-    info('putMatch', `Match ${match.id} has invalid status ${match.status}`);
+    warn('putMatch', `Match ${match.id} has invalid status ${match.status}`);
     return;
   }
 
@@ -112,7 +117,38 @@ export async function putMatch(match: MatchesJoined) {
   info('putMatch', `Match ${match.id} updated`);
 }
 
-export async function removeMatch(match: MatchesJoined) {
+export async function updateMatchStatus(match: MatchesRow) {
+  const matchJson = json<MatchesJoined>(`matches:${match.id}`);
+  if (!activeStatuses.includes(match.status)) {
+    warn('putMatch', `Match ${match.id} has invalid status ${match.status}`);
+    return null;
+  }
+  if (!(await matchJson.exists())) {
+    warn('putMatch', `Match ${match.id} not found`);
+    return null;
+  }
+
+  const reply = await matchJson.setProperty('status', match.status as MatchStatus);
+
+  if (reply === 'OK') {
+    const oldStatus = await matchJson.getProperty('status');
+    await set(`matches:${oldStatus}`).remove(match.id.toString());
+    await set(`matches:${match.status}`).add(match.id.toString());
+  }
+
+  return reply;
+}
+
+export async function updateMatchScheduledAt(match: MatchesRow) {
+  const matchJson = json<MatchesJoined>(`matches:${match.id}`);
+  if (!(await matchJson.exists())) {
+    warn('updateMatchScheduledAt', `Match ${match.id} not found`);
+    return;
+  }
+  return matchJson.setProperty('scheduled_at', match.scheduled_at);
+}
+
+export async function removeMatch(match: MatchesRow) {
   const matchJson = json<MatchesJoined>(`matches:${match.id}`);
 
   if (!(await matchJson.exists())) {

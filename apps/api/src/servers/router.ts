@@ -38,24 +38,23 @@ serversRouter.get('/rcons', protect(), async (ctx) => {
 
 serversRouter.post('/:ip/restart', async (ctx: Context) => {
   const { mode, map } = ctx.request.body;
-
   if (mode === 'infantry') {
     const result = await restartWithInfantryMode(ctx.params.ip, map);
-    if (result.error) {
+    if (result.error && result.error.message !== 'Unexpected end of JSON input') {
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with infantry mode', { result });
     }
   }
   if (mode === 'vehicles') {
     const result = await restartWithVehicleMode(ctx.params.ip, map);
-    if (result.error) {
+    if (result.error && result.error.message !== 'Unexpected end of JSON input') {
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with vehicles mode', { result });
     }
   }
   if (!mode) {
     const result = await restartServer(ctx.params.ip);
-    if (result.error) {
+    if (result.error && result.error.message !== 'Unexpected end of JSON input') {
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with default mode', { result });
     }

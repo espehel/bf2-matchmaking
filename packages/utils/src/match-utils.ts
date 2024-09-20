@@ -138,7 +138,7 @@ export function getServerVehicles(match: MatchesJoined) {
   return match.config.vehicles ? 'true' : 'false';
 }
 
-export function isActiveMatch(match: MatchesJoined) {
+export function isActiveMatch(match: MatchesRow) {
   return (
     match.status === MatchStatus.Scheduled ||
     match.status === MatchStatus.Open ||
@@ -148,10 +148,10 @@ export function isActiveMatch(match: MatchesJoined) {
   );
 }
 
-export function isOpenMatch(match: MatchesJoined) {
+export function isOpenMatch(match: MatchesRow) {
   return isActiveMatch(match) || match.status === MatchStatus.Finished;
 }
 
-export function isClosedMatch(match: MatchesJoined) {
+export function isClosedMatch(match: MatchesRow) {
   return match.status === MatchStatus.Closed || match.status === MatchStatus.Deleted;
 }

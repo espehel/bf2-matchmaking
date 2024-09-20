@@ -292,18 +292,6 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
   if (result.error) {
     return result;
   }
-  const match = result.data;
-  const guild = match.config.guild;
-  let events: unknown = null;
-  if (guild && match.events.length > 0) {
-    events = await Promise.all(
-      match.events.map((eventId) =>
-        patchGuildScheduledEvent(guild, eventId, {
-          scheduled_start_time: scheduled_at,
-        })
-      )
-    );
-  }
 
   revalidatePath(`/matches/${matchId}`);
   return result;

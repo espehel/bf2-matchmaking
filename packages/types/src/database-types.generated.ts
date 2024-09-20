@@ -715,7 +715,7 @@ export type Database = {
           ready_at: string | null
           scheduled_at: string | null
           started_at: string | null
-          status: string
+          status: Database["public"]["Enums"]["match_status"]
         }
         Insert: {
           away_team?: number
@@ -729,7 +729,7 @@ export type Database = {
           ready_at?: string | null
           scheduled_at?: string | null
           started_at?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["match_status"]
         }
         Update: {
           away_team?: number
@@ -743,7 +743,7 @@ export type Database = {
           ready_at?: string | null
           scheduled_at?: string | null
           started_at?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["match_status"]
         }
         Relationships: [
           {
@@ -1158,6 +1158,15 @@ export type Database = {
     }
     Enums: {
       challenge_status: "open" | "pending" | "accepted" | "closed" | "expired"
+      match_status:
+        | "Open"
+        | "Scheduled"
+        | "Summoning"
+        | "Drafting"
+        | "Ongoing"
+        | "Finished"
+        | "Closed"
+        | "Deleted"
       match_type: "Mix" | "PCW" | "League" | "Cup" | "Ladder"
     }
     CompositeTypes: {
