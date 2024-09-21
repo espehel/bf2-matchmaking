@@ -204,6 +204,14 @@ export async function sendLogMessage(
   }
 }
 
+export async function getTextChannel(channelId: string) {
+  const channel = await discordClient.channels.fetch(channelId);
+  if (!isTextBasedChannel(channel)) {
+    throw new Error('Failed to fetch text channel');
+  }
+  return channel;
+}
+
 export async function getDemoChannel() {
   const channel = await discordClient.channels.fetch(DEMO_CHANNEL_ID);
   if (!isTextBasedChannel(channel)) {

@@ -7,3 +7,4 @@ export * from './message-utils';
 export const LOG_CHANNEL_ID = '1159853830247292959'; // ATS #log-channel
 export const DEMO_CHANNEL_ID = '1035999895968030800'; // PB #8v8-test
 export const DEBUG_CHANNEL_ID = '1040703302565904394'; // PB #bot-debug
+export const CHANNEL_ID_8v8 = '1045376644422045706'; // PB 8v8

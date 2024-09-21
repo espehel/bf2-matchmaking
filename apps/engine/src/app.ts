@@ -15,8 +15,12 @@ import { startScheduledMatchesTask } from './tasks/startScheduledMatches';
 import { updateLiveServersTask } from './tasks/update-live-servers';
 import { updateIdleServersTask } from './tasks/update-idle-servers';
 import { closeOldChallengesTask } from './tasks/closeOldChallenges';
+import {
+  set8v8queueCheckinTask,
+  reset8v8queueCheckinTask,
+} from './tasks/convert8v8queue';
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5005;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5006;
 
 info('app', 'Starting...');
 assertString(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN is not defined');
@@ -24,7 +28,6 @@ discordClient
   .login(process.env.DISCORD_TOKEN)
   .then(async () => {
     await getClient(); // TODO fix connect race without exposing client?
-
     if (isDevelopment()) {
       warn('app', 'Starting in development mode');
       return;
@@ -40,6 +43,8 @@ discordClient
     updateLiveServersTask.start();
     updateIdleServersTask.start();
     closeOldChallengesTask.start();
+    set8v8queueCheckinTask.start();
+    reset8v8queueCheckinTask.start();
   })
   .then(async () => {
     createServer(requestListener).listen(PORT, () => {
