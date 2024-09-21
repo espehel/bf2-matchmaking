@@ -14,6 +14,7 @@ import { Match } from '../types';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
 
 const activeStatuses: string[] = [
+  MatchStatus.Open,
   MatchStatus.Scheduled,
   MatchStatus.Summoning,
   MatchStatus.Drafting,
