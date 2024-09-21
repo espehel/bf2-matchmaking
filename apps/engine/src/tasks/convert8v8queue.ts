@@ -18,7 +18,8 @@ async function set8v8queueCheckin() {
   await sendMessage(channel, '!set_queue 2100 check_in_timeout 00:04:00');
   await sendMessage(
     channel,
-    `Check-in timeout set to **4 minutes** for 2100. Resetting **<t:${DateTime.now()
+    `Check-in timeout set to **4 minutes** for 2100. Resetting **<t:${DateTime.local()
+      .setZone('CET')
       .set({
         hour: 23,
         minute: 59,
@@ -42,5 +43,6 @@ export const reset8v8queueCheckinTask = cron.schedule(
   reset8v8queueCheckin,
   {
     scheduled: false,
+    timezone: 'CET',
   }
 );
