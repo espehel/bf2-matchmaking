@@ -7,7 +7,6 @@ import LiveSection from '@/components/matches/LiveSection';
 import RoundsList from '@/components/RoundsList';
 import { Suspense } from 'react';
 import ServerSectionLoading from '@/components/matches/server/ServerSectionLoading';
-import MapsSection from '@/components/matches/MapsSection';
 import MatchTimeForm, { MatchTimeFallback } from '@/components/matches/MatchTimeForm';
 import { isActiveMatch } from '@bf2-matchmaking/utils';
 import ChallengeSection from '@/components/matches/ChallengeSection';

@@ -138,7 +138,7 @@ export function getServerVehicles(match: MatchesJoined) {
   return match.config.vehicles ? 'true' : 'false';
 }
 
-export function isActiveMatch(match: MatchesRow) {
+export function isActiveMatch(match: MatchesRow | MatchesJoined) {
   return (
     match.status === MatchStatus.Scheduled ||
     match.status === MatchStatus.Open ||

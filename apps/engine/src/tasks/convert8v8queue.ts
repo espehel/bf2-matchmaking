@@ -37,6 +37,6 @@ async function reset8v8queueCheckin() {
   await sendMessage(channel, '!reset 2100');
   await sendMessage(channel, '**Reset** 2100 queue, check-in timeout **removed**.');
 }
-export const reset8v8queueCheckinTask = cron.schedule('23 59 * * *', set8v8queueCheckin, {
+export const reset8v8queueCheckinTask = cron.schedule('59 23 * * *', set8v8queueCheckin, {
   scheduled: false,
 });
