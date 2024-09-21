@@ -29,6 +29,7 @@ async function set8v8queueCheckin() {
   );
 }
 export const set8v8queueCheckinTask = cron.schedule('20 21 * * *', set8v8queueCheckin, {
+  timezone: 'CET',
   scheduled: false,
 });
 
