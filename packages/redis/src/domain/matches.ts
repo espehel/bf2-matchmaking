@@ -197,3 +197,16 @@ export async function removeLiveMatch(matchId: string) {
   await del(`matches:live:${matchId}`);
   await set('matches:live').remove(matchId);
 }
+
+export function addMatchServer(matchId: string | number, address: string) {
+  return set(`matches:${matchId}:servers`).add(address);
+}
+export function removeMatchServer(matchId: string | number, address: string) {
+  return set(`matches:${matchId}:servers`).remove(address);
+}
+export function getMatchServers(matchId: string | number) {
+  return set(`matches:${matchId}:servers`).members();
+}
+export function isMatchServer(matchId: string | number, address: string) {
+  return set(`matches:${matchId}:servers`).isMember(address);
+}

@@ -7,6 +7,7 @@ import {
   MatchesJoined,
   MatchesRow,
   MatchPlayersInsert,
+  MatchServersRow,
   MatchStatus,
   PendingChallenge,
   PickedMatchPlayer,
@@ -29,6 +30,10 @@ import {
 export const isMatchesRow = (row: unknown): row is MatchesRow => {
   const casted = row as MatchesRow;
   return Boolean(casted && casted.id && casted.status);
+};
+export const isMatchServersRow = (row: unknown): row is MatchServersRow => {
+  const server = row as MatchServersRow;
+  return Boolean(server && server.server && server.id);
 };
 export const isDiscordConfig = (
   config: Partial<MatchConfigsRow>

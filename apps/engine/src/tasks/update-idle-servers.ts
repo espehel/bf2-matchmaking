@@ -1,14 +1,19 @@
 import { assertObj, parseError } from '@bf2-matchmaking/utils';
 import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
 import { LiveInfo, MatchesJoined } from '@bf2-matchmaking/types';
-import { isServerIdentified, resetLiveServer } from '../server/server-manager';
+import { isActiveMatchServer, resetLiveServer } from '../server/server-manager';
 import {
   addActiveMatchServer,
   getActiveMatchServer,
   getServersWithStatus,
   removeServerWithStatus,
 } from '@bf2-matchmaking/redis/servers';
-import { getMatch, getMatchesLive, getMatchLive } from '@bf2-matchmaking/redis/matches';
+import {
+  getMatch,
+  getMatchesLive,
+  getMatchLive,
+  isMatchServer,
+} from '@bf2-matchmaking/redis/matches';
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
 import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
@@ -55,7 +60,7 @@ async function handlePendingMatch(address: string, liveState: LiveInfo) {
     return;
   }
 
-  const matchId = await findPendingMatch(liveState);
+  const matchId = await findPendingMatch(address, liveState);
   if (!matchId) {
     return;
   }
@@ -69,7 +74,7 @@ async function handlePendingMatch(address: string, liveState: LiveInfo) {
   await removeServerWithStatus(address, 'idle');
 }
 
-async function findPendingMatch(live: LiveInfo) {
+async function findPendingMatch(address: string, live: LiveInfo) {
   const matchList = await getMatchesLive();
   for (const matchId of matchList) {
     try {
@@ -84,7 +89,7 @@ async function findPendingMatch(live: LiveInfo) {
         warn('findPendingMatch', `Match ${matchId} not found in cache`);
         continue;
       }
-      if (!isMatchServer(cachedMatch, live)) {
+      if (!(await hasMatchPlayers(address, cachedMatch, live))) {
         continue;
       }
       return matchId;
@@ -95,11 +100,19 @@ async function findPendingMatch(live: LiveInfo) {
   return null;
 }
 
-function isMatchServer(match: MatchesJoined, live: LiveInfo) {
-  const players = match.players;
-  return isServerIdentified(
-    players.filter((p) => live.players.some((sp) => sp.keyhash === p.keyhash)).length,
-    players.length
+async function hasMatchPlayers(address: string, match: MatchesJoined, live: LiveInfo) {
+  const playerKeyhashes = match.players.map((p) => p.keyhash);
+
+  if (await isMatchServer(match.id, address)) {
+    playerKeyhashes
+      .concat(match.home_team.players.map((p) => p.player.keyhash))
+      .concat(match.away_team.players.map((p) => p.player.keyhash));
+  }
+
+  return isActiveMatchServer(
+    playerKeyhashes.filter((keyhash) => live.players.some((sp) => sp.keyhash === keyhash))
+      .length,
+    playerKeyhashes.length
   );
 }
 

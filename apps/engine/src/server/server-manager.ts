@@ -17,10 +17,10 @@ export async function resetLiveServer(address: string) {
   await json<AppEngineState>('app:engine:state').delProperty(address.replace('.', ''));
 }
 
-export const SERVER_IDENTIFIED_RATIO = 0.3;
+export const ACTIVE_SERVER_RATIO = 0.3;
 
-export function isServerIdentified(serverPlayers: number, matchSize: number) {
-  return serverPlayers / matchSize >= SERVER_IDENTIFIED_RATIO;
+export function isActiveMatchServer(serverPlayers: number, matchSize: number) {
+  return serverPlayers / matchSize >= ACTIVE_SERVER_RATIO;
 }
 
 export async function initServers() {

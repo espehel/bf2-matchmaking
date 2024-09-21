@@ -18,7 +18,7 @@ import {
   setMatchLiveNow,
 } from './match-manager';
 import { insertRound } from './rounds-manager';
-import { isServerIdentified } from '../server/server-manager';
+import { isActiveMatchServer } from '../server/server-manager';
 import { DateTime } from 'luxon';
 import {
   getMatch,
@@ -74,7 +74,7 @@ async function getNextState(
     return 'stale';
   }
 
-  if (!isServerIdentified(live.players.length, cachedMatch.config.size)) {
+  if (!isActiveMatchServer(live.players.length, cachedMatch.config.size)) {
     return 'pending';
   }
 

@@ -17,11 +17,16 @@ export function set(key: string) {
     const client = await getClient();
     return client.SMEMBERS(key);
   };
+  const isMember = async (value: string): Promise<boolean> => {
+    const client = await getClient();
+    return client.SISMEMBER(key, value);
+  };
   return {
     add,
     remove,
     del,
     members,
+    isMember,
   };
 }
 

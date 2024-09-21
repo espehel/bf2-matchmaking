@@ -1,20 +1,22 @@
 import Router from '@koa/router';
-import {
-  DiscordConfig,
-  isDiscordConfig,
-  isMatchesRow,
-  MatchesRow,
-  WEBHOOK_POSTGRES_CHANGES_TYPE,
-  WebhookPostgresDeletePayload,
-  WebhookPostgresInsertPayload,
-  WebhookPostgresUpdatePayload,
-} from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
 import {
   handleMatchInserted,
   handleMatchScheduledAtUpdate,
   handleMatchStatusUpdate,
 } from './match-handler';
+import {
+  isDeletePayload,
+  isDiscordConfigsDelete,
+  isDiscordConfigsInsert,
+  isDiscordConfigsUpdate,
+  isMatchesInsert,
+  isMatchesUpdate,
+  isMatchServersDelete,
+  isMatchServersInsert,
+} from './webhook-utils';
+import { addMatchServer, removeMatchServer } from '@bf2-matchmaking/redis/matches';
+import { isMatchServersRow } from '@bf2-matchmaking/types';
 
 export const webhooksRouter = new Router({
   prefix: '/webhooks',
@@ -69,58 +71,15 @@ webhooksRouter.post('/match_configs', async (ctx) => {
   ctx.body = { message: 'Invalid payload' };
 });
 
-function isDiscordConfigsInsert(
-  payload: unknown
-): payload is WebhookPostgresInsertPayload<DiscordConfig> {
-  return isInsertPayload(payload) && isDiscordConfig(payload.record);
-}
-function isDiscordConfigsDelete(
-  payload: unknown
-): payload is WebhookPostgresDeletePayload<DiscordConfig> & {
-  old_record: DiscordConfig;
-} {
-  return isDeletePayload(payload) && isDiscordConfig(payload.old_record);
-}
-function isDiscordConfigsUpdate(
-  payload: unknown
-): payload is WebhookPostgresUpdatePayload<DiscordConfig> {
-  return isUpdatePayload(payload) && isDiscordConfig(payload.record);
-}
-
-function isMatchesUpdate(payload: unknown): payload is Omit<
-  WebhookPostgresUpdatePayload<MatchesRow>,
-  'old_record'
-> & {
-  old_record: MatchesRow;
-} {
-  return (
-    isUpdatePayload(payload) &&
-    isMatchesRow(payload.record) &&
-    isMatchesRow(payload.old_record)
-  );
-}
-function isMatchesInsert(
-  payload: unknown
-): payload is WebhookPostgresInsertPayload<MatchesRow> {
-  return isInsertPayload(payload) && isMatchesRow(payload.record);
-}
-function isInsertPayload<T extends Record<string, string>>(
-  payload: unknown
-): payload is WebhookPostgresInsertPayload<T> {
-  const casted = payload as WebhookPostgresInsertPayload<T>;
-  return Boolean(casted.type === WEBHOOK_POSTGRES_CHANGES_TYPE.INSERT);
-}
-
-function isUpdatePayload<T extends Record<string, string>>(
-  payload: unknown
-): payload is WebhookPostgresUpdatePayload<T> {
-  const casted = payload as WebhookPostgresUpdatePayload<T>;
-  return Boolean(casted.type === WEBHOOK_POSTGRES_CHANGES_TYPE.UPDATE);
-}
-
-function isDeletePayload<T extends Record<string, string>>(
-  payload: unknown
-): payload is WebhookPostgresDeletePayload<T> {
-  const casted = payload as WebhookPostgresDeletePayload<T>;
-  return Boolean(casted.type === WEBHOOK_POSTGRES_CHANGES_TYPE.DELETE);
-}
+webhooksRouter.post('/match_servers', async (ctx) => {
+  const { body } = ctx.request;
+  if (isMatchServersInsert(body)) {
+    await addMatchServer(body.record.id, body.record.server);
+  } else if (isMatchServersDelete(body)) {
+    await removeMatchServer(body.old_record.id, body.old_record.server);
+  } else {
+    ctx.status = 400;
+    ctx.body = { message: 'Invalid payload' };
+  }
+  ctx.status = 202;
+});
