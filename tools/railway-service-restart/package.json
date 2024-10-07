@@ -1,8 +1,9 @@
 {
-  "name": "railway-service-restart",
+  "name": "@bf2-matchmaking/railway-service-restart",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "exports": {
+    ".": "./src/lib.ts"
+  },
   "scripts": {
     "build": "rimraf ./build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js",
     "start": "node build/app.js",
@@ -11,9 +12,6 @@
   "engines": {
     "node": ">=18"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.20.2",
     "rimraf": "^5.0.5",
