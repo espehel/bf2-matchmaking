@@ -66,10 +66,7 @@ export async function updateMatchServer(matchId: number, serverAddress: string) 
 export async function setMatchLiveNow(matchId: number) {
   const live_at = DateTime.utc().toISO();
   verbose('setMatchLiveAt', `Match ${matchId}: Live at ${live_at}`);
-  const updatedMatch = await client()
-    .updateMatch(matchId, { live_at })
-    .then(verifySingleResult);
-  await putMatch(updatedMatch);
+  await client().updateMatch(matchId, { live_at }).then(verifySingleResult);
 }
 
 export async function syncMatchCache(matchId: number | string) {

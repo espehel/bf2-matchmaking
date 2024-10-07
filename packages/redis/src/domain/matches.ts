@@ -106,47 +106,27 @@ export async function putMatch(match: MatchesJoined) {
     return;
   }
 
-  const oldStatus = await matchJson.getProperty('status');
-
-  if (oldStatus !== match.status) {
-    await set(`matches:${oldStatus}`).remove(match.id.toString());
-    await set(`matches:${match.status}`).add(match.id.toString());
-    info('putMatch', `Match ${match.id} updated status ${oldStatus} to ${match.status}`);
-  }
-
   await matchJson.set(match);
   info('putMatch', `Match ${match.id} updated`);
 }
 
-export async function updateMatchStatus(match: MatchesRow) {
-  const matchJson = json<MatchesJoined>(`matches:${match.id}`);
-  if (!activeStatuses.includes(match.status)) {
-    warn('putMatch', `Match ${match.id} has invalid status ${match.status}`);
+export async function updateMatchSets(newMatch: MatchesRow, oldMatch: MatchesRow) {
+  const matchJson = json<MatchesJoined>(`matches:${newMatch.id}`);
+  if (!activeStatuses.includes(newMatch.status)) {
+    warn('updateMatchSets', `Match ${newMatch.id} has invalid status ${newMatch.status}`);
     return null;
   }
   if (!(await matchJson.exists())) {
-    warn('putMatch', `Match ${match.id} not found`);
+    warn('updateMatchSets', `Match ${newMatch.id} not found`);
     return null;
   }
 
-  const reply = await matchJson.setProperty('status', match.status as MatchStatus);
-
-  if (reply === 'OK') {
-    const oldStatus = await matchJson.getProperty('status');
-    await set(`matches:${oldStatus}`).remove(match.id.toString());
-    await set(`matches:${match.status}`).add(match.id.toString());
-  }
-
-  return reply;
-}
-
-export async function updateMatchScheduledAt(match: MatchesRow) {
-  const matchJson = json<MatchesJoined>(`matches:${match.id}`);
-  if (!(await matchJson.exists())) {
-    warn('updateMatchScheduledAt', `Match ${match.id} not found`);
-    return;
-  }
-  return matchJson.setProperty('scheduled_at', match.scheduled_at);
+  await set(`matches:${oldMatch.status}`).remove(newMatch.id.toString());
+  await set(`matches:${newMatch.status}`).add(newMatch.id.toString());
+  info(
+    'updateMatchSets',
+    `Match ${newMatch.id} updated status ${oldMatch.status} to ${newMatch.status}`
+  );
 }
 
 export async function removeMatch(match: MatchesRow) {
@@ -160,6 +140,22 @@ export async function removeMatch(match: MatchesRow) {
   await set(`matches:${match.status}`).remove(match.id.toString());
   await matchJson.del();
   info('removeMatch', `Match ${match.id} removed with status ${match.status}`);
+}
+
+export async function updateMatchProperties(newMatch: MatchesRow) {
+  const matchJson = json<MatchesJoined>(`matches:${newMatch.id}`);
+  const match = await matchJson.get();
+  if (!match) {
+    warn('updateMatchProperties', `Match ${newMatch.id} not found`);
+    return;
+  }
+
+  for (const [key, value] of Object.entries(newMatch)) {
+    if (match[key as keyof MatchesRow] !== value) {
+      await matchJson.setProperty(key as keyof MatchesRow, value);
+      info('updateMatchProperties', `Match ${newMatch.id} updated ${key} to ${value}`);
+    }
+  }
 }
 
 export async function getLiveMatches() {

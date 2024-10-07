@@ -2,12 +2,7 @@ import { LiveMatch, MatchesRow, MatchStatus } from '@bf2-matchmaking/types';
 import { isClosedMatch, isOpenMatch, retry, wait } from '@bf2-matchmaking/utils';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import {
-  putMatch,
-  removeMatch,
-  updateMatchScheduledAt,
-  updateMatchStatus,
-} from '@bf2-matchmaking/redis/matches';
+import { putMatch, removeMatch, updateMatchSets } from '@bf2-matchmaking/redis/matches';
 import { Instance } from '@bf2-matchmaking/types/platform';
 import { createPendingMatch } from '../matches/match-service';
 import {
@@ -35,13 +30,6 @@ export async function handleMatchInserted(match: MatchesRow) {
 
 export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
   try {
-    const isOk = await updateMatchScheduledAt(match);
-    logMessage(
-      `Match ${match.id} scheduled_at updated to ${match.scheduled_at} (${isOk})`
-    );
-    if (!isOk) {
-      return;
-    }
     if (match.events.length > 0) {
       await updateDiscordEvents(match);
       info(
@@ -56,9 +44,9 @@ export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
   }
 }
 
-export async function handleMatchStatusUpdate(match: MatchesRow) {
+export async function handleMatchStatusUpdate(match: MatchesRow, oldMatch: MatchesRow) {
   try {
-    const isOk = await updateMatchStatus(match);
+    const isOk = await updateMatchSets(match, oldMatch);
     logMessage(`Match ${match.id} status updated to ${match.status} (${isOk})`);
     if (!isOk) {
       return;

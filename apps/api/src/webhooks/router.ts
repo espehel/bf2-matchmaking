@@ -1,12 +1,11 @@
 import Router from '@koa/router';
-import { info } from '@bf2-matchmaking/logging';
+import { info, logMessage } from '@bf2-matchmaking/logging';
 import {
   handleMatchInserted,
   handleMatchScheduledAtUpdate,
   handleMatchStatusUpdate,
 } from './match-handler';
 import {
-  isDeletePayload,
   isDiscordConfigsDelete,
   isDiscordConfigsInsert,
   isDiscordConfigsUpdate,
@@ -15,8 +14,11 @@ import {
   isMatchServersDelete,
   isMatchServersInsert,
 } from './webhook-utils';
-import { addMatchServer, removeMatchServer } from '@bf2-matchmaking/redis/matches';
-import { isMatchServersRow } from '@bf2-matchmaking/types';
+import {
+  addMatchServer,
+  removeMatchServer,
+  updateMatchProperties,
+} from '@bf2-matchmaking/redis/matches';
 
 export const webhooksRouter = new Router({
   prefix: '/webhooks',
@@ -25,27 +27,30 @@ export const webhooksRouter = new Router({
 webhooksRouter.post('/matches', async (ctx) => {
   const { body } = ctx.request;
   if (isMatchesInsert(body)) {
+    // TODO this is not working for scheduled matches
     info('routers/matches', `Match ${body.record.id} ${body.record.status}`);
     await handleMatchInserted(body.record);
-    ctx.status = 202;
+    ctx.status = 204;
     return;
   }
 
   if (isMatchesUpdate(body)) {
     const { old_record, record } = body;
-    info('routers/matches', `Match ${record.id} ${old_record.status}->${record.status}`);
 
-    let dirty = false;
+    await updateMatchProperties(record);
+    logMessage(`Match ${record.id} with status ${record.status} updated properties`, {
+      record,
+      old_record,
+    });
+
     if (old_record.status !== record.status) {
-      await handleMatchStatusUpdate(record);
-      dirty = true;
+      await handleMatchStatusUpdate(record, old_record);
     }
     if (old_record.scheduled_at !== record.scheduled_at) {
-      dirty = true;
       await handleMatchScheduledAtUpdate(record);
     }
 
-    ctx.status = dirty ? 202 : 204;
+    ctx.status = 204;
     return;
   }
 

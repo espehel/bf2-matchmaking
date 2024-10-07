@@ -19,7 +19,7 @@ export default async function ResultsMatch({ params }: Props) {
     .getMatch(Number(params.match))
     .then(verifySingleResult);
 
-  //TODO: fix live and assign teamplayers as matchplayers when they connect.
+  //TODO: add server restart to match server view
 
   return (
     <main className="main flex flex-col items-center text-center">
