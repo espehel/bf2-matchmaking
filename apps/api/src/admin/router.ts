@@ -33,16 +33,18 @@ adminRouter.post('/reset', async (ctx) => {
   await Promise.all(rcons.map((rcon) => json(`rcon:${rcon.id}`).set(rcon)));
   await Promise.all(matches.map((match) => putMatch(match)));
 
-  const res = await runService(RESTART_TOOL_SERVICE_ID);
+  setTimeout(async () => {
+    const { deploymentInstanceExecutionCreate } = await runService(
+      RESTART_TOOL_SERVICE_ID
+    );
+    logMessage('System: Resetting system and rebuilding caches', {
+      locations,
+      maps,
+      rcons,
+      matches,
+      deploymentInstanceExecutionCreate,
+    });
+  }, 500);
 
-  logMessage('System: Resetting system and rebuilding caches', {
-    locations,
-    maps,
-    rcons,
-    matches,
-    res,
-  });
-
-  ctx.status = res.deploymentInstanceExecutionCreate ? 204 : 502;
-  ctx.body = res;
+  ctx.status = 202;
 });
