@@ -3,7 +3,6 @@ import { gql, GraphQLClient } from 'graphql-request';
 
 assertString(process.env.RAILWAY_API_TOKEN, 'RAILWAY_API_TOKEN is required');
 assertString(process.env.RAILWAY_ENVIRONMENT_ID, 'RAILWAY_ENVIRONMENT_ID is required');
-assertString(process.env.RAILWAY_SERVICE_ID, 'RAILWAY_SERVICE_ID is required');
 const ENDPOINT = 'https://backboard.railway.app/graphql/v2';
 
 interface LatestDeployment {
@@ -63,6 +62,26 @@ export async function getServices() {
   });
 }
 
+async function getLatestDeployment(serviceId: string) {
+  const query = gql`
+    query serviceInstance($environmentId: String!, $serviceId: String!) {
+      serviceInstance(environmentId: $environmentId, serviceId: $serviceId) {
+        id
+      }
+    }
+  `;
+
+  const variables = {
+    serviceId: serviceId,
+    environmentId: process.env.RAILWAY_ENVIRONMENT_ID,
+  };
+  const result = await graphqlClient.request<{ serviceInstance: { id: string } }>({
+    document: query,
+    variables,
+  });
+  return result.serviceInstance.id;
+}
+
 export async function deploymentInstanceRestart(deploymentId: string, serviceId: string) {
   try {
     const { service } = await getService(serviceId);
@@ -101,63 +120,21 @@ async function getService(serviceId: string) {
   });
 }
 
-async function getServiceStatus(serviceId: string) {
+export async function runService(serviceId: string) {
+  const latestDeploymentId = await getLatestDeployment(serviceId);
   let query = gql`
-    query {
-      service(id: $id) {
-        id
-        name
-        status
-      }
+    mutation deploymentInstanceExecutionCreate($serviceInstanceId: String!) {
+      deploymentInstanceExecutionCreate(input: { serviceInstanceId: $serviceInstanceId })
     }
   `;
 
   const variables = {
-    id: serviceId,
+    serviceInstanceId: latestDeploymentId,
   };
-
   return graphqlClient.request({
     document: query,
     variables,
   });
-}
-
-export async function restartAllActiveServices() {
-  const { environment } = await getServices();
-  for (const serviceInstance of environment.serviceInstances.edges) {
-    if (serviceInstance.node.serviceId === process.env.RAILWAY_SERVICE_ID) {
-      continue;
-    }
-    if (serviceInstance.node.latestDeployment.status === 'SUCCESS') {
-      await deploymentInstanceRestart(
-        serviceInstance.node.latestDeployment.id,
-        serviceInstance.node.serviceId
-      );
-    }
-  }
-}
-
-export async function runService(serviceId: string) {
-  let query = gql`
-    mutation {
-      serviceStart(id: $id) {
-        id
-        status
-      }
-    }
-  `;
-
-  const variables = {
-    id: serviceId,
-  };
-  const result = await graphqlClient.request({
-    document: query,
-    variables,
-  });
-
-  const status = await getServiceStatus(serviceId);
-
-  return { result, status };
 }
 
 export function assertString(

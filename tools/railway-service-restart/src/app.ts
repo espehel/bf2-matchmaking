@@ -1,4 +1,10 @@
-import { deploymentInstanceRestart, getServices } from '@bf2-matchmaking/railway';
+import {
+  assertString,
+  deploymentInstanceRestart,
+  getServices,
+} from '@bf2-matchmaking/railway';
+
+assertString(process.env.RAILWAY_SERVICE_ID, 'RAILWAY_SERVICE_ID is required');
 
 async function restartAllActiveServices() {
   const { environment } = await getServices();
