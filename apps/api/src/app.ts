@@ -9,6 +9,7 @@ import { platformRouter } from './platform/router';
 import { cacheRouter } from './cache/router';
 import { matchesRouter } from './matches/router';
 import { serversRouter } from './servers/router';
+import { adminRouter } from './admin/router';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 
@@ -20,6 +21,8 @@ rootRouter.get('/health', (ctx) => {
 new Koa()
   .use(logger())
   .use(bodyParser())
+  .use(adminRouter.routes())
+  .use(adminRouter.allowedMethods())
   .use(cacheRouter.routes())
   .use(cacheRouter.allowedMethods())
   .use(matchesRouter.routes())
