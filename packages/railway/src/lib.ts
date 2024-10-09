@@ -131,7 +131,9 @@ export async function runService(serviceId: string) {
   const variables = {
     serviceInstanceId: latestDeploymentId,
   };
-  return graphqlClient.request({
+  return graphqlClient.request<{
+    deploymentInstanceExecutionCreate: boolean;
+  }>({
     document: query,
     variables,
   });
