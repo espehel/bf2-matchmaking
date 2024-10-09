@@ -1,0 +1,20 @@
+{
+  "name": "@bf2-matchmaking/railway",
+  "exports": {
+    ".": "./src/lib.ts"
+  },
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "verify": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "graphql-request": "^6.1.0"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}

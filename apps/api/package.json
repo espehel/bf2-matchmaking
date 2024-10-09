@@ -31,10 +31,10 @@
   },
   "dependencies": {
     "@bf2-matchmaking/logging": "*",
+    "@bf2-matchmaking/railway": "*",
     "@bf2-matchmaking/redis": "*",
     "@bf2-matchmaking/services": "*",
     "@bf2-matchmaking/supabase": "*",
-    "@bf2-matchmaking/railway-service-restart": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
     "@koa/bodyparser": "^5.1.1",

@@ -1,9 +1,6 @@
 {
   "name": "@bf2-matchmaking/railway-service-restart",
   "version": "1.0.0",
-  "exports": {
-    ".": "./src/lib.ts"
-  },
   "scripts": {
     "build": "rimraf ./build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js",
     "start": "node build/app.js",
@@ -18,7 +15,6 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "graphql-request": "^6.1.0"
+    "@bf2-matchmaking/railway": "*"
   }
 }

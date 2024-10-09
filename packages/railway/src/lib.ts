@@ -35,7 +35,7 @@ const graphqlClient = new GraphQLClient(ENDPOINT, {
   cache: 'no-cache',
 });
 
-async function getServices() {
+export async function getServices() {
   let query = gql`
     query getServices($id: String!) {
       environment(id: $id) {
@@ -63,7 +63,7 @@ async function getServices() {
   });
 }
 
-async function deploymentInstanceRestart(deploymentId: string, serviceId: string) {
+export async function deploymentInstanceRestart(deploymentId: string, serviceId: string) {
   try {
     const { service } = await getService(serviceId);
     console.log(`Service ${service.name}, Deployment ${deploymentId} restarting...`);
@@ -101,6 +101,27 @@ async function getService(serviceId: string) {
   });
 }
 
+async function getServiceStatus(serviceId: string) {
+  let query = gql`
+    query {
+      service(id: $id) {
+        id
+        name
+        status
+      }
+    }
+  `;
+
+  const variables = {
+    id: serviceId,
+  };
+
+  return graphqlClient.request({
+    document: query,
+    variables,
+  });
+}
+
 export async function restartAllActiveServices() {
   const { environment } = await getServices();
   for (const serviceInstance of environment.serviceInstances.edges) {
@@ -114,6 +135,29 @@ export async function restartAllActiveServices() {
       );
     }
   }
+}
+
+export async function runService(serviceId: string) {
+  let query = gql`
+    mutation {
+      serviceStart(id: $id) {
+        id
+        status
+      }
+    }
+  `;
+
+  const variables = {
+    id: serviceId,
+  };
+  const result = await graphqlClient.request({
+    document: query,
+    variables,
+  });
+
+  const status = await getServiceStatus(serviceId);
+
+  return { result, status };
 }
 
 export function assertString(

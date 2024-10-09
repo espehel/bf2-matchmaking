@@ -1,12 +1,12 @@
 import Router from '@koa/router';
-import { restartAllActiveServices } from '@bf2-matchmaking/railway-service-restart';
+import { runService } from '@bf2-matchmaking/railway';
+
+const RESTART_TOOL_SERVICE_ID = 'c5633c6e-3e36-4939-b2a6-46658cabd47e';
 
 export const rootRouter = new Router({
   prefix: '/admin',
 });
 
 rootRouter.post('/reset', async (ctx) => {
-  setTimeout(async () => restartAllActiveServices, 1000);
-  ctx.status = 202;
-  ctx.body = 'Restarting services...';
+  ctx.body = await runService(RESTART_TOOL_SERVICE_ID);
 });
