@@ -10,7 +10,7 @@
     "verify": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "keywords": [],
   "author": "",
