@@ -9,7 +9,13 @@ import cron from 'node-cron';
 async function closeOldMatches() {
   const { data: openMatches } = await client().getMatchesWithStatus(MatchStatus.Open);
   if (openMatches && openMatches.length > 0) {
-    await Promise.all(openMatches.map(softDeleteMatch));
+    await client().updateMatches(
+      openMatches.map((match) => match.id),
+      {
+        status: MatchStatus.Deleted,
+      }
+    );
+    logMessage(`Soft deleted ${openMatches.length} matches`, { openMatches });
   }
   const started = await getStarted();
   const oldMatches = started.filter(isOlderThan3Hours);
@@ -63,21 +69,6 @@ async function forceCloseMatch(match: MatchesJoined) {
     });
   } else {
     logMessage(`Match ${match.id} force closed`, { match });
-  }
-}
-
-async function softDeleteMatch(match: MatchesJoined) {
-  const { error } = await client().updateMatch(match.id, {
-    status: MatchStatus.Deleted,
-    closed_at: DateTime.now().toISO(),
-  });
-
-  if (error) {
-    logErrorMessage(`Match ${match.id} failed to soft delete`, error, {
-      match,
-    });
-  } else {
-    logMessage(`Match ${match.id} soft deleted`, { match });
   }
 }
 

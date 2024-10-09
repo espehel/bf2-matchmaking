@@ -23,7 +23,6 @@ export async function buildRconsCache() {
 export async function buildMatchesCache() {
   return client()
     .getMatchesWithStatus(
-      MatchStatus.Open,
       MatchStatus.Scheduled,
       MatchStatus.Summoning,
       MatchStatus.Drafting,

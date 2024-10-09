@@ -132,6 +132,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('id', matchId)
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
       .single(),
+  updateMatches: async (matches: Array<number>, values: Partial<MatchesUpdate>) =>
+    await client.from('matches').update(values).in('id', matches).select(),
   deleteMatch: (matchId: number | undefined) =>
     client.from('matches').delete().eq('id', matchId),
   createMatchPlayer: (
