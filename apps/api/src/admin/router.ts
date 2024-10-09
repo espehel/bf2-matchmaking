@@ -47,4 +47,5 @@ adminRouter.post('/reset', async (ctx) => {
   }, 500);
 
   ctx.status = 202;
+  ctx.body = { message: 'Caches rebuilt, restarting services...' };
 });
