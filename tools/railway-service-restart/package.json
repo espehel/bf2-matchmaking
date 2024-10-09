@@ -1,5 +1,5 @@
 {
-  "name": "@bf2-matchmaking/railway-service-restart",
+  "name": "railway-service-restart",
   "version": "1.0.0",
   "scripts": {
     "build": "rimraf ./build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js",
