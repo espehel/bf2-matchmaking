@@ -1,4 +1,5 @@
 import { getClient } from '../client';
+import { RedisFlushModes } from 'redis';
 
 export async function del(keys: Array<string> | string) {
   const client = await getClient();
@@ -23,5 +24,5 @@ export async function getConnections() {
 
 export async function flush() {
   const client = await getClient();
-  return client.flushAll();
+  return client.flushDb(RedisFlushModes.ASYNC);
 }
