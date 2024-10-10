@@ -23,5 +23,5 @@ export async function getConnections() {
 
 export async function resetDb() {
   const client = await getClient();
-  return client.flushDb();
+  return client.flushAll();
 }
