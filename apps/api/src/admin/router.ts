@@ -11,6 +11,7 @@ import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
 import { logMessage } from '@bf2-matchmaking/logging';
 import { putMatch } from '@bf2-matchmaking/redis/matches';
+import { DateTime } from 'luxon';
 
 const RESTART_TOOL_SERVICE_ID = 'c5633c6e-3e36-4939-b2a6-46658cabd47e';
 
@@ -32,7 +33,7 @@ adminRouter.post('/reset', async (ctx) => {
   const rconsResult = await hash('cache:rcons').setEntries(rcons);
   await Promise.all(matches.map((match) => putMatch(match)));
 
-  const matchesCached = matches.length;
+  await hash('system').set({ resetAt: DateTime.now().toISO() });
 
   setTimeout(async () => {
     const { deploymentInstanceExecutionCreate } = await runService(
@@ -58,6 +59,6 @@ adminRouter.post('/reset', async (ctx) => {
     locationsResult,
     mapsResult,
     rconsResult,
-    matchesCached,
+    matchesCached: matches.length,
   };
 });

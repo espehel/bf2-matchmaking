@@ -19,6 +19,8 @@ import {
   set8v8queueCheckinTask,
   reset8v8queueCheckinTask,
 } from './tasks/convert8v8queue';
+import { hash } from '@bf2-matchmaking/redis/hash';
+import { DateTime } from 'luxon';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5006;
 
@@ -33,6 +35,7 @@ discordClient
       return;
     }
 
+    await hash('system').set({ engineStartedAt: DateTime.now().toISO() });
     await json('app:engine:state').set({});
     await initServers();
     await initChannelListener();

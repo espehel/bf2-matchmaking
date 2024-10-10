@@ -2,7 +2,7 @@ import 'dotenv/config';
 import Koa from 'koa';
 import logger from 'koa-logger';
 import { bodyParser } from '@koa/bodyparser';
-import { info } from '@bf2-matchmaking/logging';
+import { info, warn } from '@bf2-matchmaking/logging';
 import Router from '@koa/router';
 import { webhooksRouter } from './webhooks/router';
 import { platformRouter } from './platform/router';
@@ -10,6 +10,9 @@ import { cacheRouter } from './cache/router';
 import { matchesRouter } from './matches/router';
 import { serversRouter } from './servers/router';
 import { adminRouter } from './admin/router';
+import { hash } from '@bf2-matchmaking/redis/hash';
+import { DateTime } from 'luxon';
+import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 
@@ -35,6 +38,11 @@ new Koa()
   .use(webhooksRouter.allowedMethods())
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods())
-  .listen(PORT, () => {
+  .listen(PORT, async () => {
     info('app', `api listening on port ${PORT}`);
+    if (isDevelopment()) {
+      warn('app', 'Starting in development mode');
+      return;
+    }
+    await hash('system').set({ apiStartedAt: DateTime.now().toISO() });
   });
