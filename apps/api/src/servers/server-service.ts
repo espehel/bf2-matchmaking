@@ -21,17 +21,15 @@ import {
   LiveServerStatus,
   PendingServer,
   ServerInfo,
-  ServerRconsRow,
 } from '@bf2-matchmaking/types';
 import { createSocket, disconnect, getServerInfo } from '@bf2-matchmaking/services/rcon';
 import { del } from '@bf2-matchmaking/redis/generic';
 import { assertObj, wait } from '@bf2-matchmaking/utils';
 import { getDnsByIp } from '../platform/cloudflare';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client } from '@bf2-matchmaking/supabase';
 import { createServer } from '@bf2-matchmaking/services/server';
-import { DateTime } from 'luxon';
-import { json } from '@bf2-matchmaking/redis/json';
 import { ServiceError } from '@bf2-matchmaking/services/error';
+import { hash } from '@bf2-matchmaking/redis/hash';
 
 export async function getLiveServerByMatchId(matchId: string) {
   const address = await getActiveMatchServer(matchId);
@@ -93,7 +91,8 @@ export async function deleteServer(address: string) {
   await removeServerWithStatus(address, 'offline');
   await removeServerWithStatus(address, 'active');
   await removeServerWithStatus(address, 'lacking');
-  await del([`server:${address}`, `server:${address}:info`, `rcon:${address}`]);
+  await del([`server:${address}`, `server:${address}:info`]);
+  await hash('cache:rcons').delEntry(address);
   disconnect(address);
 }
 
@@ -121,36 +120,20 @@ export function createPendingServer(server: PendingServer, retries: number) {
 export async function connectPendingServer(server: PendingServer) {
   const { address, port, rcon_port, rcon_pw, demo_path } = server;
 
-  await json<ServerRconsRow>(`rcon:${address}`).set({
-    id: address,
-    rcon_port,
-    rcon_pw,
-    created_at: DateTime.now().toISO(),
-  });
-  const socket = createSocket({
-    id: address,
-    rcon_port,
-    rcon_pw,
-    created_at: DateTime.now().toISO(),
-  });
+  await hash('cache:rcons').setEntries([[address, rcon_pw]]);
+
+  const socket = createSocket(address, rcon_pw);
   assertObj(socket, 'Failed to create socket');
 
   const { data: serverInfo } = await getServerInfo(address);
   assertObj(serverInfo, 'Failed to get server info');
 
-  const dbServer = await upsertServer(
-    address,
-    port,
-    rcon_port,
-    rcon_pw,
-    serverInfo,
-    demo_path
-  );
+  await upsertServer(address, port, rcon_port, rcon_pw, serverInfo, demo_path);
   info(
     'connectPendingServer',
     `Upserted server ${address} with name ${serverInfo.serverName}`
   );
-  await createServer(dbServer);
+  await createServer(address);
 }
 
 export async function upsertServer(

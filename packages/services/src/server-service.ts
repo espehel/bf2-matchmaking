@@ -1,9 +1,4 @@
-import {
-  DbServer,
-  LiveInfo,
-  LiveServerStatus,
-  ServerRconsRow,
-} from '@bf2-matchmaking/types';
+import { LiveInfo, LiveServerStatus } from '@bf2-matchmaking/types';
 import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { externalApi, getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
 import { getPlayerList, getServerInfo, hasNoVehicles } from './rcon/bf2-rcon-api';
@@ -16,20 +11,29 @@ import {
   setServerLiveInfo,
 } from '@bf2-matchmaking/redis/servers';
 import { DateTime } from 'luxon';
+import { client } from '@bf2-matchmaking/supabase';
 
-export async function createServer(server: DbServer): Promise<LiveServerStatus> {
-  const status = server.rcon ? await connectServer(server.rcon) : 'lacking';
-  const { ip: address, port, demos_path, name } = server;
+export async function createServer(address: string): Promise<LiveServerStatus> {
+  const { data: server } = await client().getServer(address);
+  const status = server ? await connectServer(address) : 'lacking';
+  await setServerLive(address, { status });
+  await addServerWithStatus(address, status);
+
+  if (!server) {
+    return status;
+  }
+
+  const { port, demos_path, name } = server;
   const joinmeHref = await getJoinmeHref(address, port);
   const joinmeDirect = await getJoinmeDirect(address, port);
   const { data: location } = await externalApi.ip().getIpLocation(address);
   const noVehicles = isConnectedStatus(status)
     ? (await hasNoVehicles(address)).data
-    : null;
+    : null; // TODO change this value after server restart
   const country = location?.country || '';
   const city = location?.city || '';
 
-  await setServer(server.ip, {
+  await setServer(address, {
     port,
     name,
     joinmeHref,
@@ -39,20 +43,18 @@ export async function createServer(server: DbServer): Promise<LiveServerStatus> 
     noVehicles,
     demos_path,
   });
-  await setServerLive(address, { status });
-  await addServerWithStatus(address, status);
   return status;
 }
 
-export async function connectServer(rcon: ServerRconsRow): Promise<'offline' | 'idle'> {
+export async function connectServer(address: string): Promise<'offline' | 'idle'> {
   try {
-    const liveInfo = await buildLiveState(rcon.id);
+    const liveInfo = await buildLiveState(address);
     let status: LiveServerStatus = 'offline';
     if (liveInfo) {
-      await setServerLiveInfo(rcon.id, liveInfo);
+      await setServerLiveInfo(address, liveInfo);
       status = 'idle';
     }
-    info('connectServer', `${rcon.id} Initialized with status ${status}`);
+    info('connectServer', `${address} Initialized with status ${status}`);
     return status;
   } catch (e) {
     error('connectServer', e);

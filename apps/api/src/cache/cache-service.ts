@@ -7,7 +7,7 @@ export async function buildLocationsCache() {
   return regions.map(({ id }) => id);
 }
 
-export async function buildMapsCache() {
+export async function buildMapsCache(): Promise<[string, string][]> {
   const maps = await client().getMaps().then(verifyResult);
   return maps.map((map) => [
     map.id.toString(),
@@ -15,9 +15,12 @@ export async function buildMapsCache() {
   ]);
 }
 
-export async function buildRconsCache() {
+export async function buildRconsCache(): Promise<[string, string][]> {
   const servers = await client().getServers().then(verifyResult);
-  return servers.map((server) => server.rcon).filter(isNotNull);
+  return servers
+    .map((server) => server.rcon)
+    .filter(isNotNull)
+    .map((rcon) => [rcon.id, rcon.rcon_pw]);
 }
 
 export async function buildMatchesCache() {

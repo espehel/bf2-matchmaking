@@ -1,27 +1,31 @@
 import net from 'net';
 import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
 import crypto from 'crypto';
-import { ServerRconsRow } from '@bf2-matchmaking/types';
-import { json } from '@bf2-matchmaking/redis/json';
-import { assertObj } from '@bf2-matchmaking/utils';
+import { assertString } from '@bf2-matchmaking/utils';
+import { hash } from '@bf2-matchmaking/redis/hash';
+import { DEFAULT_RCON_PORT } from './constants';
 
 const TIMEOUT = 3000;
 const TTL = 10 * 60 * 1000;
 const sockets = new Map<string, net.Socket>();
-export async function createSockets(rcons: Array<ServerRconsRow>) {
-  return Promise.all(rcons.map((r) => createSocket(r).then((s) => s && r.id)));
+export async function createSockets(rcons: Array<[string, string]>) {
+  return Promise.all(
+    rcons.map(([address, password]) =>
+      createSocket(address, password).then((s) => s && address)
+    )
+  );
 }
-export async function createSocket(rcon: ServerRconsRow) {
-  return connect(rcon).catch(() => null);
+export async function createSocket(address: string, password: string) {
+  return connect(address, password).catch(() => null);
 }
-async function connect(rcon: ServerRconsRow) {
-  const oldSocket = sockets.get(rcon.id);
+async function connect(address: string, password: string) {
+  const oldSocket = sockets.get(address);
   if (oldSocket) {
-    info('connect', `${rcon.id}:${rcon.rcon_port} Reconnecting with new socket...`);
+    info('connect', `${address}:${DEFAULT_RCON_PORT} Reconnecting with new socket...`);
     oldSocket.destroy(new Error('Reconnecting with new socket...'));
   }
 
-  const socket = await connectSocket(rcon.id, rcon.rcon_port, rcon.rcon_pw);
+  const socket = await connectSocket(address, DEFAULT_RCON_PORT, password);
 
   socket.on('error', (err) => {
     error(`socket`, err);
@@ -31,7 +35,7 @@ async function connect(rcon: ServerRconsRow) {
   });
   socket.setTimeout(TTL);
 
-  sockets.set(rcon.id, socket);
+  sockets.set(address, socket);
   return socket;
 }
 
@@ -49,9 +53,9 @@ export async function getSocket(address: string) {
   if (socket && socket.readyState === 'open') {
     return socket;
   }
-  const rcon = await json<ServerRconsRow>(`rcon:${address}`).get();
-  assertObj(rcon, `Rcon ${address} not found in redis`);
-  return connect(rcon);
+  const rconPW = await hash('cache:rcons').get(address);
+  assertString(rconPW, `Rcon ${address} not found in redis`);
+  return connect(address, rconPW);
 }
 
 export function send(socket: net.Socket, message: string) {

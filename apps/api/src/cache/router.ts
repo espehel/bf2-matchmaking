@@ -35,8 +35,11 @@ cacheRouter.get('/maps', async (ctx: Context) => {
 
 cacheRouter.post('/rcons', async (ctx: Context) => {
   const rcons = await buildRconsCache();
-  await Promise.all(rcons.map((rcon) => json(`rcon:${rcon.id}`).set(rcon)));
-  ctx.body = 'OK';
+  ctx.body = await hash('cache:rcons').setEntries(rcons);
+});
+
+cacheRouter.get('/rcons', async (ctx: Context) => {
+  ctx.body = await hash('cache:rcons').getAll();
 });
 
 cacheRouter.post('/matches/:matchid', async (ctx: Context) => {

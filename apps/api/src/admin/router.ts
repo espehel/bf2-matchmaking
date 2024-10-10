@@ -10,7 +10,6 @@ import { flush } from '@bf2-matchmaking/redis/generic';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
 import { logMessage } from '@bf2-matchmaking/logging';
-import { json } from '@bf2-matchmaking/redis/json';
 import { putMatch } from '@bf2-matchmaking/redis/matches';
 
 const RESTART_TOOL_SERVICE_ID = 'c5633c6e-3e36-4939-b2a6-46658cabd47e';
@@ -29,12 +28,11 @@ adminRouter.post('/reset', async (ctx) => {
 
   const flushResult = await flush();
   const locationsResult = await set('cache:locations').add(...locations);
-  const mapsResult = await hash('cache:maps').set(Object.fromEntries(maps));
-  await Promise.all(rcons.map((rcon) => json(`rcon:${rcon.id}`).set(rcon)));
+  const mapsResult = await hash('cache:maps').setEntries(maps);
+  const rconsResult = await hash('cache:rcons').setEntries(rcons);
   await Promise.all(matches.map((match) => putMatch(match)));
 
   const matchesCached = matches.length;
-  const rconsCached = rcons.length;
 
   setTimeout(async () => {
     const { deploymentInstanceExecutionCreate } = await runService(
@@ -45,7 +43,8 @@ adminRouter.post('/reset', async (ctx) => {
       locationsResult,
       maps,
       mapsResult,
-      rcons,
+      rcons: rcons.map((entry) => entry[0]),
+      rconsResult,
       matches,
       deploymentInstanceExecutionCreate,
       flushResult,
@@ -58,7 +57,7 @@ adminRouter.post('/reset', async (ctx) => {
     flushResult,
     locationsResult,
     mapsResult,
+    rconsResult,
     matchesCached,
-    rconsCached,
   };
 });

@@ -21,11 +21,10 @@ import {
   getLiveServers,
   upsertServer,
 } from './server-service';
-import { DateTime } from 'luxon';
 import { createServer, updateLiveServer } from '@bf2-matchmaking/services/server';
-import { json } from '@bf2-matchmaking/redis/json';
 import { Context } from 'koa';
 import { protect } from '../auth';
+import { ServerRconsRow } from '@bf2-matchmaking/types';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -33,7 +32,13 @@ export const serversRouter = new Router({
 
 serversRouter.get('/rcons', protect(), async (ctx) => {
   const servers = await getLiveServers();
-  ctx.body = await Promise.all(servers.map((s) => json(`rcon:${s.address}`).get()));
+  const rcons = await hash<Record<string, string>>('cache:rcons').getAll();
+  ctx.body = servers.map<ServerRconsRow>((s) => ({
+    id: s.address,
+    rcon_pw: rcons[s.address],
+    rcon_port: 4711,
+    created_at: '',
+  }));
 });
 
 serversRouter.post('/:ip/restart', async (ctx: Context) => {
@@ -125,18 +130,8 @@ serversRouter.post('/', async (ctx: Context) => {
 
   const address = await getAddress(ip);
   const isResolvingDns = address === ip;
-  await json(`rcon:${address}`).set({
-    id: address,
-    rcon_port,
-    rcon_pw,
-    created_at: DateTime.now().toISO(),
-  });
-  const socket = createSocket({
-    id: address,
-    rcon_port,
-    rcon_pw,
-    created_at: DateTime.now().toISO(),
-  });
+  await hash('cache:rcons').setEntries([[address, rcon_pw]]);
+  const socket = createSocket(address, rcon_pw);
 
   if (!socket && isResolvingDns) {
     createPendingServer(
@@ -156,17 +151,10 @@ serversRouter.post('/', async (ctx: Context) => {
   const { data: serverInfo } = await getServerInfo(address);
   ctx.assert(serverInfo, 502, 'Failed to connect to server.');
 
-  const dbServer = await upsertServer(
-    address,
-    port,
-    rcon_port,
-    rcon_pw,
-    serverInfo,
-    demo_path
-  );
+  await upsertServer(address, port, rcon_port, rcon_pw, serverInfo, demo_path);
   info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
 
-  await createServer(dbServer);
+  await createServer(address);
   const liveServer = await getLiveServer(address);
   ctx.assert(liveServer, 502, 'Failed to create live server');
 
