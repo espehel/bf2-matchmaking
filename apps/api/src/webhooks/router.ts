@@ -19,6 +19,8 @@ import {
   removeMatchServer,
   updateMatchProperties,
 } from '@bf2-matchmaking/redis/matches';
+import { json } from '@bf2-matchmaking/redis/json';
+import { MatchesJoined } from '@bf2-matchmaking/types';
 
 export const webhooksRouter = new Router({
   prefix: '/webhooks',
@@ -28,7 +30,7 @@ webhooksRouter.post('/matches', async (ctx) => {
   const { body } = ctx.request;
   if (isMatchesInsert(body)) {
     // TODO this is not working for scheduled matches
-    info('routers/matches', `Match ${body.record.id} ${body.record.status}`);
+    info('webhooks/matches/insert', `Match ${body.record.id} ${body.record.status}`);
     await handleMatchInserted(body.record);
     ctx.status = 204;
     return;
@@ -36,6 +38,14 @@ webhooksRouter.post('/matches', async (ctx) => {
 
   if (isMatchesUpdate(body)) {
     const { old_record, record } = body;
+    info('webhooks/matches/update', `Match ${record.id} ${record.status}`);
+
+    const exists = await json<MatchesJoined>(`matches:${record.id}`).exists();
+    if (!exists) {
+      await handleMatchInserted(body.record);
+      ctx.status = 204;
+      return;
+    }
 
     await updateMatchProperties(record);
     logMessage(`Match ${record.id} with status ${record.status} updated properties`, {
@@ -79,8 +89,16 @@ webhooksRouter.post('/match_configs', async (ctx) => {
 webhooksRouter.post('/match_servers', async (ctx) => {
   const { body } = ctx.request;
   if (isMatchServersInsert(body)) {
+    info(
+      'webhooks/match_servers/insert',
+      `Match ${body.record.id} -> ${body.record.server}`
+    );
     await addMatchServer(body.record.id, body.record.server);
   } else if (isMatchServersDelete(body)) {
+    info(
+      'webhooks/match_servers/delete',
+      `Match ${body.old_record.id} -> ${body.old_record.server}`
+    );
     await removeMatchServer(body.old_record.id, body.old_record.server);
   } else {
     ctx.status = 400;
