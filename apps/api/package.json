@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "rimraf ./build && esbuild src/app.ts --bundle --platform=node --outfile=build/app.js",
+    "build": "rimraf ./build && esbuild --define:process.env.NODE_ENV=\\\"production\\\" src/app.ts --bundle --platform=node --outfile=build/app.js",
     "start": "node build/app.js",
     "verify": "tsc --noEmit"
   },

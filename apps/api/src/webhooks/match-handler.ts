@@ -2,7 +2,12 @@ import { LiveMatch, MatchesRow, MatchStatus } from '@bf2-matchmaking/types';
 import { isClosedMatch, isOpenMatch, retry, wait } from '@bf2-matchmaking/utils';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { putMatch, removeMatch, updateMatchSets } from '@bf2-matchmaking/redis/matches';
+import {
+  cleanUpPubobotMatch,
+  putMatch,
+  removeMatch,
+  updateMatchSets,
+} from '@bf2-matchmaking/redis/matches';
 import { Instance } from '@bf2-matchmaking/types/platform';
 import { createPendingMatch } from '../matches/match-service';
 import {
@@ -54,6 +59,7 @@ export async function handleMatchStatusUpdate(match: MatchesRow, oldMatch: Match
 
     if (isClosedMatch(match)) {
       await removeMatch(match);
+      await cleanUpPubobotMatch(match.id);
     }
     if (match.status === MatchStatus.Ongoing) {
       await handleMatchOngoing(match);

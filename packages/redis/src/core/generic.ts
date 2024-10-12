@@ -26,3 +26,12 @@ export async function flush() {
   const client = await getClient();
   return client.flushDb(RedisFlushModes.ASYNC);
 }
+
+export async function matchKeys(pattern: string) {
+  const client = await getClient();
+  const res = [];
+  for await (const value of client.scanIterator({ MATCH: pattern })) {
+    res.push(value);
+  }
+  return res;
+}

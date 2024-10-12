@@ -6,12 +6,13 @@ import {
 } from '@bf2-matchmaking/types';
 import { info, warn } from '@bf2-matchmaking/logging';
 import { set, sets } from '../core/set';
-import { del } from '../core/generic';
+import { del, matchKeys } from '../core/generic';
 import { getMultiple, json, setMultiple } from '../core/json';
 import { matchSchema } from '../schemas';
 import { hash } from '../core/hash';
 import { Match } from '../types';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
+import { getClient } from '../client';
 
 const activeStatuses: string[] = [
   MatchStatus.Open,
@@ -206,4 +207,18 @@ export function getMatchServers(matchId: string | number) {
 }
 export function isMatchServer(matchId: string | number, address: string) {
   return set(`matches:${matchId}:servers`).isMember(address);
+}
+
+export async function cleanUpPubobotMatch(matchId: number | string) {
+  const client = await getClient();
+
+  for await (const key of client.scanIterator({ MATCH: 'pubobot:*' })) {
+    const mid = await hash(key).get('matchId');
+    if (matchId == mid) {
+      await del(key);
+      return key;
+    }
+  }
+
+  return null;
 }
