@@ -128,6 +128,7 @@ export async function updateMatchSets(newMatch: MatchesRow, oldMatch: MatchesRow
     'updateMatchSets',
     `Match ${newMatch.id} updated status ${oldMatch.status} to ${newMatch.status}`
   );
+  return 'ok';
 }
 
 export async function removeMatch(match: MatchesRow) {
