@@ -18,6 +18,27 @@ const parseError = (error: any): FetchError => {
   }
   return { message: JSON.stringify(error) };
 };
+async function parseResponse<T>(
+  res: Response
+): Promise<FetchSuccessResponse<T> | FetchErrorResponse> {
+  const { status, statusText } = res;
+
+  if (!res.ok) {
+    const error = await res.text();
+    return { data: null, error: parseError(error), status, statusText };
+  }
+
+  if (status === 204 || status === 202) {
+    return { data: {} as T, error: null, status, statusText };
+  }
+
+  try {
+    const data = await res.json();
+    return { data, error: null, status, statusText };
+  } catch (e) {
+    return { data: {} as T, error: null, status, statusText };
+  }
+}
 export const getText = async (
   url: string,
   options: Partial<RequestInit> & { next?: any } = {}
@@ -62,18 +83,7 @@ export const getJSON = async <T>(
       method: 'GET',
       ...options,
     });
-    const { status, statusText } = res;
-    if (res.ok) {
-      try {
-        const data: T = await res.json();
-        return { data, error: null, status, statusText };
-      } catch (e) {
-        return { data: {} as T, error: null, status, statusText };
-      }
-    } else {
-      const error = await res.text();
-      return { data: null, error: parseError(error), status, statusText };
-    }
+    return parseResponse<T>(res);
   } catch (error) {
     return { data: null, error: parseError(error), status: -1, statusText: '' };
   }
@@ -93,20 +103,7 @@ export const deleteJSON = async <T>(
       method: 'DELETE',
       ...options,
     });
-    const { status, statusText } = res;
-    if (status === 204 || status === 202) {
-      return { data: {} as T, error: null, status, statusText };
-    } else if (res.ok) {
-      try {
-        const data: T = await res.json();
-        return { data, error: null, status, statusText };
-      } catch (e) {
-        return { data: {} as T, error: null, status, statusText };
-      }
-    } else {
-      const error = await res.text();
-      return { data: null, error: parseError(error), status, statusText };
-    }
+    return parseResponse<T>(res);
   } catch (error) {
     return { data: null, error: parseError(error), status: -1, statusText: '' };
   }
@@ -128,17 +125,10 @@ export const postJSON = async <T>(
       method: 'POST',
       body: bodyInit,
       cache: 'no-store',
+      ...options,
     });
-    const { status, statusText } = res;
-    if (status === 204 || status === 202) {
-      return { data: {} as T, error: null, status, statusText };
-    } else if (res.ok) {
-      const data: T = await res.json();
-      return { data, error: null, status, statusText };
-    } else {
-      const error = await res.text();
-      return { data: null, error: parseError(error), status, statusText };
-    }
+
+    return parseResponse<T>(res);
   } catch (error) {
     return { data: null, error: parseError(error), status: -1, statusText: '' };
   }
