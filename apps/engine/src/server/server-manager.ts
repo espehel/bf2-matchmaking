@@ -32,7 +32,7 @@ export async function initServers() {
     );
     info(
       'initServers',
-      `Connected ${connectedServers.length}/${servers.length} server sockets`
+      `Connected ${connectedServers.length}/${Object.keys(servers).length} server sockets`
     );
     const serverStatuses = await Promise.all(connectedServers.map(createServer));
     info('initServers', `Created ${serverStatuses.length} live servers`);

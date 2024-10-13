@@ -112,7 +112,7 @@ async function hasMatchPlayers(address: string, match: MatchesJoined, live: Live
   return isActiveMatchServer(
     playerKeyhashes.filter((keyhash) => live.players.some((sp) => sp.keyhash === keyhash))
       .length,
-    playerKeyhashes.length
+    match.config.size
   );
 }
 
