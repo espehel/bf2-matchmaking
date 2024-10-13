@@ -1,5 +1,7 @@
 import { getConnections, hello } from '@bf2-matchmaking/redis/generic';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPage() {
   const redis = await hello();
   const connections = await getConnections();
