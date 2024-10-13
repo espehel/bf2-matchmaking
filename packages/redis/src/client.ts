@@ -10,5 +10,19 @@ export async function getClient() {
   if (client && client.isReady) {
     return client;
   }
+
+  if (client.isOpen) {
+    const promise = new Promise<typeof client>((resolve, reject) => {
+      client
+        .on('ready', () => {
+          resolve(client);
+        })
+        .on('error', (err) => {
+          reject(err);
+        });
+    });
+    return promise;
+  }
+
   return client.connect();
 }

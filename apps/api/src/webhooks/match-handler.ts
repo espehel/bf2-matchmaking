@@ -50,6 +50,12 @@ export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
 }
 
 export async function handleMatchStatusUpdate(match: MatchesRow, oldMatch: MatchesRow) {
+  if (isClosedMatch(match)) {
+    await removeMatch(oldMatch);
+    await cleanUpPubobotMatch(match.id);
+    return;
+  }
+
   try {
     const isOk = await updateMatchSets(match, oldMatch);
     logMessage(`Match ${match.id} status updated to ${match.status} (${isOk})`);
@@ -57,10 +63,6 @@ export async function handleMatchStatusUpdate(match: MatchesRow, oldMatch: Match
       return;
     }
 
-    if (isClosedMatch(match)) {
-      await removeMatch(match);
-      await cleanUpPubobotMatch(match.id);
-    }
     if (match.status === MatchStatus.Ongoing) {
       await handleMatchOngoing(match);
     }

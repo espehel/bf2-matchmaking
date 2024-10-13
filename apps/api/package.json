@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "concurrently \"npm:dev-*\"",
+    "dev-nodemon": "nodemon",
+    "dev-tunnel": "lt --port 5004 --subdomain bf2gg",
     "build": "rimraf ./build && esbuild --define:process.env.NODE_ENV=\\\"production\\\" src/app.ts --bundle --platform=node --outfile=build/app.js",
     "start": "node build/app.js",
     "verify": "tsc --noEmit"
@@ -22,8 +24,10 @@
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa-logger": "^3.1.5",
     "@types/node": "^22.5.4",
+    "concurrently": "^9.0.1",
     "esbuild": "^0.19.4",
     "koa-logger": "^3.2.1",
+    "localtunnel": "^2.0.2",
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
