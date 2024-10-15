@@ -12,22 +12,19 @@ import {
   buildMatchMaps,
   buildMatchPlayersFromDraftingEmbed,
   buildMatchPlayersFromStartingEmbed,
-  createMatch,
-  createMatchMaps,
-  createMatchTeams,
-  updateMatch,
 } from './match-service';
 import { getConfigCached } from './supabase-service';
 import { DateTime } from 'luxon';
 import { getTextChannelFromConfig } from '../discord-utils';
 import { hash } from '@bf2-matchmaking/redis/hash';
+import { Match } from '@bf2-matchmaking/services/matches/Match';
 
 export async function createPubobotMatch(
   message: Message,
   id: number
 ): Promise<PubobotMatch> {
   const config = await getConfigCached(message.channelId);
-  const match = await createMatch(config, MatchStatus.Open);
+  const match = await Match.create(config, MatchStatus.Open);
   const pubobotMatch: PubobotMatch = {
     id,
     matchId: match.id,
@@ -47,14 +44,15 @@ export async function startPubobotMatch(message: Message, pubobotMatch: PubobotM
     pubobotMatch.matchId,
     config.id
   );
-  await createMatchTeams(pubobotMatch.matchId, config.id, teams);
   const maps = await buildMatchMaps(embed);
-  await createMatchMaps(pubobotMatch.matchId, maps);
 
-  const updatedMatch = await updateMatch(pubobotMatch.matchId, {
-    status: MatchStatus.Ongoing,
-    started_at: DateTime.now().toISO(),
-  });
+  const updatedMatch = await Match.update(pubobotMatch.matchId)
+    .setTeams(teams)
+    .setMaps(maps)
+    .commit({
+      status: MatchStatus.Ongoing,
+      started_at: DateTime.now().toISO(),
+    });
 
   await replyMessage(message, {
     embeds: [getMatchStartedEmbed(updatedMatch), getRulesEmbedByConfig(config)],
@@ -64,17 +62,15 @@ export async function startPubobotMatch(message: Message, pubobotMatch: PubobotM
 }
 
 export async function draftPubobotMatch(message: Message, pubobotMatch: PubobotMatch) {
-  const config = await getConfigCached(pubobotMatch.channelId);
   const [embed] = message.embeds;
 
   const maps = await buildMatchMaps(embed);
-  await createMatchMaps(pubobotMatch.matchId, maps);
   const teams = await buildMatchPlayersFromDraftingEmbed(embed, pubobotMatch.matchId);
-  await createMatchTeams(pubobotMatch.matchId, config.id, teams);
 
-  const updatedMatch = await updateMatch(pubobotMatch.matchId, {
-    status: MatchStatus.Drafting,
-  });
+  const updatedMatch = await Match.update(pubobotMatch.matchId)
+    .setTeams(teams)
+    .setMaps(maps)
+    .commit({ status: MatchStatus.Drafting });
 
   const channel = await getTextChannelFromConfig(updatedMatch.config);
 

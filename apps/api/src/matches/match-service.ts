@@ -1,10 +1,6 @@
 import { LiveMatch, MatchesJoined, MatchesRow } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
-import {
-  addMatchesLive,
-  getMatchLive,
-  setMatchLive,
-} from '@bf2-matchmaking/redis/matches';
+import { getMatchLive, setMatchLive } from '@bf2-matchmaking/redis/matches';
 import { getLiveServerByMatchId } from '../servers/server-service';
 
 export async function createPendingMatch(match: MatchesRow | MatchesJoined) {
@@ -13,7 +9,6 @@ export async function createPendingMatch(match: MatchesRow | MatchesJoined) {
     roundsPlayed: '0',
     pendingSince: DateTime.now().toISO(),
   });
-  await addMatchesLive(match.id.toString());
   return getMatch(match.id.toString());
 }
 

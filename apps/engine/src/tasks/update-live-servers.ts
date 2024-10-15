@@ -1,6 +1,6 @@
-import { error, info, logChangeMatchStatus, verbose } from '@bf2-matchmaking/logging';
+import { error, info, verbose } from '@bf2-matchmaking/logging';
 import { updateMatch, updateMatchPlayers } from '../match/active-match';
-import { LiveInfo, MatchStatus } from '@bf2-matchmaking/types';
+import { LiveInfo } from '@bf2-matchmaking/types';
 import { resetLiveServer } from '../server/server-manager';
 import { getActiveMatchServers, getServer } from '@bf2-matchmaking/redis/servers';
 import { removeLiveMatch } from '@bf2-matchmaking/redis/matches';
@@ -39,7 +39,6 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
     }
 
     if (match.state === 'finished') {
-      logChangeMatchStatus(MatchStatus.Finished, matchId, { match, live, cachedMatch });
       await finishMatch(matchId);
       await removeLiveMatch(matchId);
       await resetLiveServer(address);
@@ -52,6 +51,7 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
       ) {
         await saveDemosSince(address, cachedMatch.started_at, server.demos_path);
       }
+      return;
     }
 
     await json<AppEngineState>('app:engine:state').setProperty(address.replace('.', ''), {

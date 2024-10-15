@@ -1,15 +1,8 @@
-import { LiveMatch, MatchesRow, MatchStatus } from '@bf2-matchmaking/types';
-import { isClosedMatch, isOpenMatch, retry, wait } from '@bf2-matchmaking/utils';
+import { MatchesRow } from '@bf2-matchmaking/types';
+import { retry, wait } from '@bf2-matchmaking/utils';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import {
-  cleanUpPubobotMatch,
-  putMatch,
-  removeMatch,
-  updateMatchSets,
-} from '@bf2-matchmaking/redis/matches';
 import { Instance } from '@bf2-matchmaking/types/platform';
-import { createPendingMatch } from '../matches/match-service';
 import {
   deleteInstance,
   getDnsRecord,
@@ -17,21 +10,6 @@ import {
 } from '../platform/platform-service';
 import { deleteServer } from '../servers/server-service';
 import { patchGuildScheduledEvent } from '@bf2-matchmaking/discord';
-
-export async function handleMatchInserted(match: MatchesRow) {
-  try {
-    if (isOpenMatch(match)) {
-      const joinedMatch = await client().getMatch(match.id).then(verifySingleResult);
-      await putMatch(joinedMatch);
-    }
-
-    if (match.status === MatchStatus.Ongoing) {
-      await handleMatchOngoing(match);
-    }
-  } catch (e) {
-    logErrorMessage(`Match ${match.id} failed to handle insertion`, e, { match });
-  }
-}
 
 export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
   try {
@@ -49,41 +27,7 @@ export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
   }
 }
 
-export async function handleMatchStatusUpdate(match: MatchesRow, oldMatch: MatchesRow) {
-  if (isClosedMatch(match)) {
-    await removeMatch(oldMatch);
-    await cleanUpPubobotMatch(match.id);
-    return;
-  }
-
-  try {
-    const isOk = await updateMatchSets(match, oldMatch);
-    logMessage(`Match ${match.id} status updated to ${match.status} (${isOk})`);
-    if (!isOk) {
-      return;
-    }
-
-    if (match.status === MatchStatus.Ongoing) {
-      await handleMatchOngoing(match);
-    }
-    if (match.status === MatchStatus.Finished) {
-      await handleMatchFinished(match);
-    }
-  } catch (e) {
-    logErrorMessage(`Match ${match.id} failed to handle update`, e, { match });
-  }
-}
-
-async function handleMatchOngoing(match: MatchesRow) {
-  const liveMatch = await startLiveMatch(match);
-  if (liveMatch) {
-    logMessage(`Match ${match.id} live tracking started`, {
-      match,
-      liveMatch,
-    });
-  }
-}
-async function handleMatchFinished(match: MatchesRow) {
+export async function handleMatchClosed(match: MatchesRow) {
   const instances = await getInstancesByMatchId(match.id);
   if (instances.length > 0) {
     await Promise.all(
@@ -121,10 +65,6 @@ async function deleteServerInstance(match: MatchesRow, instance: Instance) {
     });
     throw e;
   }
-}
-
-async function startLiveMatch(match: MatchesRow): Promise<LiveMatch | null> {
-  return createPendingMatch(match);
 }
 
 async function getAddress(ip: string) {

@@ -5,7 +5,6 @@ import {
   removeServerWithStatus,
 } from '@bf2-matchmaking/redis/servers';
 import { createServer } from '@bf2-matchmaking/services/server';
-import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { createSockets } from '@bf2-matchmaking/services/rcon';
 import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';

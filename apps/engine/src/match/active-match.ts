@@ -21,15 +21,14 @@ import { insertRound } from './rounds-manager';
 import { isActiveMatchServer } from '../server/server-manager';
 import { DateTime } from 'luxon';
 import {
-  getMatch,
   getMatchLive,
   getPlayers,
   incMatchRoundsPlayed,
   setMatchLive,
   updatePlayers,
 } from '@bf2-matchmaking/redis/matches';
-import { syncMatchCache } from './match-manager';
 import { MatchLive } from '@bf2-matchmaking/types/engine';
+import { Match } from '@bf2-matchmaking/services/matches/Match';
 
 export async function updateMatch(
   cachedMatch: MatchesJoined,
@@ -108,6 +107,7 @@ async function addRound(cachedMatch: MatchesJoined, live: LiveInfo, address: str
   const round = await insertRound(cachedMatch, live, address);
   logAddMatchRound(round, cachedMatch, live);
   info('onLiveServerUpdate', `Created round ${round.id}`);
+  await Match.sync(cachedMatch.id);
   return incMatchRoundsPlayed(cachedMatch.id);
 }
 
@@ -149,7 +149,7 @@ export async function updateMatchPlayers(
   matchId: string,
   live: LiveInfo
 ): Promise<MatchesJoined> {
-  let cachedMatch = await getMatch(matchId);
+  let cachedMatch = await Match.get(matchId);
   assertObj(cachedMatch, `Match ${matchId} not cached`);
 
   let isDirty = false;
@@ -188,7 +188,7 @@ export async function updateMatchPlayers(
   }
 
   if (isDirty) {
-    cachedMatch = await syncMatchCache(matchId);
+    cachedMatch = await Match.sync(matchId);
   }
   return cachedMatch;
 }

@@ -103,11 +103,3 @@ export const logWarnMessage = (msg: string, context?: LogContext) => {
     .catch((e) => error('logtail', e))
     .finally(flush);
 };
-
-export const logChangeMatchStatus = (
-  status: MatchStatus,
-  matchId: string | number,
-  context?: LogContext
-) => {
-  logMessage(`Changing status for Match ${matchId} to ${status}"`, context);
-};

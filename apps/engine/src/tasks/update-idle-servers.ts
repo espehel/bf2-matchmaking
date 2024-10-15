@@ -1,6 +1,6 @@
-import { assertObj, parseError } from '@bf2-matchmaking/utils';
-import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
-import { LiveInfo, MatchesJoined } from '@bf2-matchmaking/types';
+import { parseError } from '@bf2-matchmaking/utils';
+import { error, info, verbose } from '@bf2-matchmaking/logging';
+import { LiveInfo, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { isActiveMatchServer, resetLiveServer } from '../server/server-manager';
 import {
   addActiveMatchServer,
@@ -9,9 +9,8 @@ import {
   removeServerWithStatus,
 } from '@bf2-matchmaking/redis/servers';
 import {
-  getMatch,
-  getMatchesLive,
-  getMatchLive,
+  getMatchLiveSafe,
+  getWithStatus,
   isMatchServer,
 } from '@bf2-matchmaking/redis/matches';
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
@@ -19,6 +18,8 @@ import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
 import cron from 'node-cron';
+import { createPendingLiveMatch } from '@bf2-matchmaking/services/matches';
+import { Match } from '@bf2-matchmaking/redis/types';
 
 async function updateIdleServers() {
   verbose('updateIdleServers', 'Updating idle servers');
@@ -32,7 +33,7 @@ async function updateIdleServers() {
         continue;
       }
       updatedServers++;
-      await handlePendingMatch(address, liveState);
+      await handleActiveMatchServer(address, liveState);
     }
     verbose(
       'updateIdleServers',
@@ -55,54 +56,49 @@ async function updateIdleServers() {
   }
 }
 
-async function handlePendingMatch(address: string, liveState: LiveInfo) {
+async function handleActiveMatchServer(address: string, liveState: LiveInfo) {
   if (liveState.players.length === 0) {
     return;
   }
 
-  const matchId = await findPendingMatch(address, liveState);
-  if (!matchId) {
+  let [match, liveMatch] = await findOngoingMatch(address, liveState);
+  if (!match) {
     return;
   }
+  if (!liveMatch) {
+    await createPendingLiveMatch(match);
+  }
 
-  const currentServer = await getActiveMatchServer(matchId);
+  const currentServer = await getActiveMatchServer(match.id.toString());
   if (currentServer) {
     await resetLiveServer(currentServer);
   }
-  info('handlePendingMatch', `Server ${address} assigning to match ${matchId}`);
-  await addActiveMatchServer(address, matchId);
+  info('handleActiveMatchServer', `Server ${address} assigning to match ${match.id}`);
+  await addActiveMatchServer(address, match.id.toString());
   await removeServerWithStatus(address, 'idle');
 }
 
-async function findPendingMatch(address: string, live: LiveInfo) {
-  const matchList = await getMatchesLive();
-  for (const matchId of matchList) {
-    try {
-      const match = await getMatchLive(matchId);
-      assertObj(match, 'Invalid state, match in matches set but not as a hash table');
-      if (match.state !== 'pending') {
-        continue;
-      }
+async function findOngoingMatch(
+  address: string,
+  live: LiveInfo
+): Promise<[MatchesJoined | null, Match | null]> {
+  const matches = await getWithStatus(MatchStatus.Ongoing);
+  for (const match of matches) {
+    const liveMatch = await getMatchLiveSafe(match.id);
+    if (liveMatch && liveMatch.state !== 'pending') {
+      continue;
+    }
 
-      const cachedMatch = await getMatch(matchId);
-      if (!cachedMatch) {
-        warn('findPendingMatch', `Match ${matchId} not found in cache`);
-        continue;
-      }
-      if (!(await hasMatchPlayers(address, cachedMatch, live))) {
-        continue;
-      }
-      return matchId;
-    } catch (e) {
-      error('findPendingMatch', e);
+    if (await hasMatchPlayers(address, match, live)) {
+      return [match, liveMatch];
     }
   }
-  return null;
+
+  return [null, null];
 }
 
 async function hasMatchPlayers(address: string, match: MatchesJoined, live: LiveInfo) {
   const playerKeyhashes = match.players.map((p) => p.keyhash);
-
   if (await isMatchServer(match.id, address)) {
     playerKeyhashes
       .concat(match.home_team.players.map((p) => p.player.keyhash))

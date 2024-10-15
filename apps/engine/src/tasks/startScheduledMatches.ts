@@ -2,8 +2,9 @@ import { MatchStatus, ScheduledMatch } from '@bf2-matchmaking/types';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
-import { getScheduled } from '@bf2-matchmaking/redis/matches';
+import { addMatchServer, getScheduled } from '@bf2-matchmaking/redis/matches';
 import cron from 'node-cron';
+import { Match } from '@bf2-matchmaking/services/matches/Match';
 
 async function startScheduledMatches() {
   const scheduled = await getScheduled();
@@ -21,19 +22,19 @@ function isScheduledToStart(match: ScheduledMatch) {
 
 async function startMatch(match: ScheduledMatch) {
   try {
-    const updatedMatch = await client()
-      .updateMatch(match.id, {
-        status: MatchStatus.Ongoing,
-        started_at: DateTime.now().toISO(),
-      })
-      .then(verifySingleResult);
-
-    //const server = await setActiveServer(updatedMatch);
+    const updatedMatch = await Match.update(match.id).commit({
+      status: MatchStatus.Ongoing,
+      started_at: DateTime.now().toISO(),
+    });
+    const { data: matchServers } = await client().getMatchServers(match.id);
+    if (matchServers && matchServers.servers.length) {
+      await addMatchServer(match.id, ...matchServers.servers.map((s) => s.ip));
+    }
 
     logMessage(`Match ${updatedMatch.id} is now ${updatedMatch.status}`, {
       match,
       updatedMatch,
-      //server,
+      matchServers,
     });
   } catch (e) {
     logErrorMessage(`Match ${match.id} failed start`, e, {

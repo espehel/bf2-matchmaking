@@ -4,11 +4,7 @@ import { client } from '@bf2-matchmaking/supabase';
 import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
 import { addActiveMatchServer } from '@bf2-matchmaking/redis/servers';
-import {
-  getMatchesLive,
-  getMatchLive,
-  getMatchLiveSafe,
-} from '@bf2-matchmaking/redis/matches';
+import { getMatchLive, getMatchLiveSafe } from '@bf2-matchmaking/redis/matches';
 import {
   getLiveServer,
   getLiveServerByMatchId,
@@ -17,9 +13,24 @@ import {
 import { createPendingMatch, getMatch } from './match-service';
 import { closeMatch } from '@bf2-matchmaking/services/matches';
 import { Context } from 'koa';
+import { matchKeys } from '@bf2-matchmaking/redis/generic';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
+});
+
+matchesRouter.post('/close', async (ctx) => {
+  const { data: openMatches } = await client().getMatchesWithStatus(MatchStatus.Open);
+  if (openMatches && openMatches.length > 0) {
+    await client().updateMatches(
+      openMatches.map((match) => match.id),
+      {
+        status: MatchStatus.Deleted,
+      }
+    );
+    info('POST /matches/close', `Soft deleted ${openMatches.length} matches`);
+  }
+  ctx.body = openMatches;
 });
 
 matchesRouter.get('/:id/users.xml', async (ctx: Context) => {
@@ -105,6 +116,6 @@ matchesRouter.get('/:matchid', async (ctx: Context) => {
 });
 
 matchesRouter.get('/', async (ctx) => {
-  const matches = await getMatchesLive();
-  ctx.body = matches.map(getMatchLive).filter(isNotNull);
+  const keys = await matchKeys('matches:live:*');
+  ctx.body = keys.map(getMatchLive).filter(isNotNull);
 });

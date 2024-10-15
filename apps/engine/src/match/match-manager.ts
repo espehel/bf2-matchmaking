@@ -9,7 +9,6 @@ import {
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getWarmUpStartedEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
 import { DateTime } from 'luxon';
-import { putMatch } from '@bf2-matchmaking/redis/matches';
 import { getServer } from '@bf2-matchmaking/redis/servers';
 import { MatchLive } from '@bf2-matchmaking/types/engine';
 
@@ -67,12 +66,6 @@ export async function setMatchLiveNow(matchId: number) {
   const live_at = DateTime.utc().toISO();
   verbose('setMatchLiveAt', `Match ${matchId}: Live at ${live_at}`);
   await client().updateMatch(matchId, { live_at }).then(verifySingleResult);
-}
-
-export async function syncMatchCache(matchId: number | string) {
-  const updatedMatch = await client().getMatch(Number(matchId)).then(verifySingleResult);
-  await putMatch(updatedMatch);
-  return updatedMatch;
 }
 
 export async function broadcastWarmUpStarted(match: MatchesJoined, address: string) {

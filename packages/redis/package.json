@@ -9,7 +9,8 @@
     "./set": "./src/core/set.ts",
     "./stream": "./src/core/stream.ts",
     "./matches": "./src/domain/matches.ts",
-    "./servers": "./src/domain/servers.ts"
+    "./servers": "./src/domain/servers.ts",
+    "./types": "./src/types.ts"
   },
   "version": "1.0.0",
   "engines": {

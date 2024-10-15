@@ -1,26 +1,16 @@
 import Router from '@koa/router';
-import { info, logMessage } from '@bf2-matchmaking/logging';
-import {
-  handleMatchInserted,
-  handleMatchScheduledAtUpdate,
-  handleMatchStatusUpdate,
-} from './match-handler';
+import { info } from '@bf2-matchmaking/logging';
+import { handleMatchClosed, handleMatchScheduledAtUpdate } from './match-handler';
 import {
   isDiscordConfigsDelete,
   isDiscordConfigsInsert,
   isDiscordConfigsUpdate,
-  isMatchesInsert,
   isMatchesUpdate,
   isMatchServersDelete,
   isMatchServersInsert,
 } from './webhook-utils';
-import {
-  addMatchServer,
-  removeMatchServer,
-  updateMatchProperties,
-} from '@bf2-matchmaking/redis/matches';
-import { json } from '@bf2-matchmaking/redis/json';
-import { MatchesJoined } from '@bf2-matchmaking/types';
+import { addMatchServer, removeMatchServer } from '@bf2-matchmaking/redis/matches';
+import { MatchStatus } from '@bf2-matchmaking/types';
 
 export const webhooksRouter = new Router({
   prefix: '/webhooks',
@@ -28,33 +18,13 @@ export const webhooksRouter = new Router({
 
 webhooksRouter.post('/matches', async (ctx) => {
   const { body } = ctx.request;
-  if (isMatchesInsert(body)) {
-    // TODO this is not working for scheduled matches
-    info('webhooks/matches/insert', `Match ${body.record.id} ${body.record.status}`);
-    await handleMatchInserted(body.record);
-    ctx.status = 204;
-    return;
-  }
 
   if (isMatchesUpdate(body)) {
     const { old_record, record } = body;
     info('webhooks/matches/update', `Match ${record.id} ${record.status}`);
 
-    const exists = await json<MatchesJoined>(`matches:${record.id}`).exists();
-    if (!exists) {
-      await handleMatchInserted(body.record);
-      ctx.status = 204;
-      return;
-    }
-
-    await updateMatchProperties(record);
-    logMessage(`Match ${record.id} with status ${record.status} updated properties`, {
-      record,
-      old_record,
-    });
-
-    if (old_record.status !== record.status) {
-      await handleMatchStatusUpdate(record, old_record);
+    if (record.status === MatchStatus.Closed || record.status === MatchStatus.Deleted) {
+      await handleMatchClosed(record);
     }
     if (old_record.scheduled_at !== record.scheduled_at) {
       await handleMatchScheduledAtUpdate(record);

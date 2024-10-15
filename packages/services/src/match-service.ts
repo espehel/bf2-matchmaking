@@ -1,16 +1,13 @@
-import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import {
   isDiscordMatch,
   MatchesJoined,
+  MatchesRow,
   MatchProcessError,
   MatchResultsInsert,
   MatchStatus,
 } from '@bf2-matchmaking/types';
-import {
-  logChangeMatchStatus,
-  logErrorMessage,
-  logMessage,
-} from '@bf2-matchmaking/logging';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
 import {
@@ -26,39 +23,33 @@ import {
   sendChannelMessage,
 } from '@bf2-matchmaking/discord';
 import { fixMissingMatchPlayers, updatePlayerRatings } from './player-service';
+import { setMatchLive } from '@bf2-matchmaking/redis/matches';
+import { Match } from './Match';
 
 export const finishMatch = async (matchId: string | number) => {
-  const { data: updatedMatch, error } = await client().updateMatch(matchId, {
-    status: MatchStatus.Finished,
-  });
-  if (error) {
-    logErrorMessage(`Match ${matchId}:  Failed to finish`, error);
-    return;
-  }
-
   try {
-    if (updatedMatch.rounds.length === 0) {
-      await client()
-        .updateMatch(updatedMatch.id, {
-          status: MatchStatus.Closed,
-          closed_at: DateTime.now().toISO(),
-        })
-        .then(verifySingleResult);
+    const match = await Match.get(matchId);
+    if (match.rounds.length === 0) {
+      const removedMatch = await Match.remove(matchId, MatchStatus.Closed);
       logMessage(
-        `Match ${updatedMatch.id} has no rounds, closing match without creating results.`,
+        `Match ${match.id} has no rounds, closing match without creating results.`,
         {
-          match: updatedMatch,
+          removedMatch,
         }
       );
       return;
     }
 
+    const updatedMatch = await Match.update(matchId).commit({
+      status: MatchStatus.Finished,
+    });
+
     await closeMatch(updatedMatch);
   } catch (e) {
-    logErrorMessage(`Match ${updatedMatch.id} failed to close`, e);
+    logErrorMessage(`Match ${matchId} failed to finish`, e);
   }
 };
-export const closeMatch = async (match: MatchesJoined) => {
+export async function closeMatch(match: MatchesJoined) {
   let errors = validateMatch(match);
 
   let fixedMatch;
@@ -79,15 +70,10 @@ export const closeMatch = async (match: MatchesJoined) => {
 
   const results = await processResults(fixedMatch || match);
 
-  await client()
-    .updateMatch(match.id, {
-      status: MatchStatus.Closed,
-      closed_at: DateTime.now().toISO(),
-    })
-    .then(verifySingleResult);
-  logChangeMatchStatus(MatchStatus.Closed, match.id, { match, results });
+  const removedMatch = await Match.remove(match.id, MatchStatus.Closed);
+  logMessage(`Match ${match.id} closed with results`, { removedMatch, results });
   return { results, errors: null };
-};
+}
 
 function validateMatch(match: MatchesJoined): Array<MatchProcessError> {
   const errors: Array<MatchProcessError> = [];
@@ -174,4 +160,14 @@ export async function updateMatchRating(matchResult: MatchResultsInsert, config:
     return res.error;
   }
   return res.data;
+}
+
+export async function createPendingLiveMatch(match: MatchesRow | MatchesJoined) {
+  const liveMatch = {
+    state: 'pending',
+    roundsPlayed: '0',
+    pendingSince: DateTime.now().toISO(),
+  } as const;
+  await setMatchLive(match.id, liveMatch);
+  return liveMatch;
 }
