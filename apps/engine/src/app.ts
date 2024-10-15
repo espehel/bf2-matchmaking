@@ -32,8 +32,6 @@ discordClient
     await getClient(); // TODO fix connect race without exposing client?
     if (isDevelopment()) {
       warn('app', 'Starting in development mode');
-      updateLiveServersTask.start();
-      updateIdleServersTask.start();
       return;
     }
 
