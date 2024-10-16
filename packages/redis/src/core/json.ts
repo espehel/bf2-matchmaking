@@ -64,6 +64,10 @@ export async function setMultiple(objects: Array<[string, unknown]>): Promise<st
 }
 
 export async function getMultiple<T = unknown>(keys: Array<string>): Promise<Array<T>> {
+  if (keys.length === 0) {
+    return [];
+  }
+
   const client = await getClient();
   const result = await client.json.MGET(keys, '$');
   return result.flat().filter(isDefined) as Array<T>;
