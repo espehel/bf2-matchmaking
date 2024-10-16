@@ -123,7 +123,7 @@ serversRouter.delete('/:address', async (ctx) => {
   const rcon = await client().deleteServerRcon(address);
   const instance = await deleteInstance(address).catch((e) => e);
   const redis = await deleteServer(address).catch((e) => e);
-  ctx.status = 204;
+  ctx.status = 200;
   ctx.body = { server, rcon, instance, redis };
 });
 
