@@ -92,18 +92,6 @@ const live = () => {
   };
 };
 
-const engine = () => {
-  const basePath = 'https://api.bf2.gg';
-  const paths = {
-    matchUsersXml: (matchId: number | string) => `/matches/${matchId}/users.xml`,
-  };
-  return {
-    paths,
-    getMatchUsersXml: (matchId: number | string) =>
-      getJSON<string>(basePath.concat(paths.matchUsersXml(matchId))),
-  };
-};
-
 const platform = () => {
   const basePath = 'https://api.bf2.gg/platform';
   const paths = {
@@ -144,16 +132,22 @@ const platform = () => {
   };
 };
 
-const basePath = 'https://api.bf2.gg/';
-const servers = `${basePath}servers`;
+const basePath = 'https://api.bf2.gg';
+const servers = `${basePath}/servers`;
+const admin = `${basePath}/admin`;
 const v2 = {
+  getHealth: () => getJSON(`${basePath}/health`),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
+  adminReset: () => postJSON(`${admin}/reset`, {}),
 };
 
 export const api = {
   live,
   web,
   platform,
-  engine,
   v2,
+};
+
+export const engine = {
+  getHealth: () => getJSON<string>(`https://engine.bf2.gg/health`),
 };
