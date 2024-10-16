@@ -138,7 +138,6 @@ const platform = () => {
         }
       ),
     getServer: (ip: string) => getJSON<Instance>(basePath.concat(paths.server(ip))),
-    deleteServer: (id: string) => deleteJSON<Instance>(basePath.concat(paths.server(id))),
     getServerDns: (ip: string) =>
       getJSON<DnsRecordWithoutPriority>(basePath.concat(paths.serverDns(ip))),
     getRegions: () => getJSON<Array<Region>>(basePath.concat(paths.regions())),

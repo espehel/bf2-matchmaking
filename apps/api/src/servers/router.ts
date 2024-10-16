@@ -25,6 +25,8 @@ import { createServer, updateLiveServer } from '@bf2-matchmaking/services/server
 import { Context } from 'koa';
 import { protect } from '../auth';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
+import { deleteInstance } from '../platform/platform-service';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -115,9 +117,14 @@ serversRouter.get('/:ip/si', async (ctx: Context) => {
   ctx.body = await getServerInfo(ctx.params.ip).then(verifyRconResult);
 });
 
-serversRouter.delete('/:ip', async (ctx) => {
-  await deleteServer(ctx.params.ip);
+serversRouter.delete('/:address', async (ctx) => {
+  const { address } = ctx.params;
+  const server = await client().deleteServer(address);
+  const rcon = await client().deleteServerRcon(address);
+  const instance = await deleteInstance(address).catch((e) => e);
+  const redis = await deleteServer(address).catch((e) => e);
   ctx.status = 204;
+  ctx.body = { server, rcon, instance, redis };
 });
 
 serversRouter.post('/', async (ctx: Context) => {

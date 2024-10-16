@@ -71,10 +71,6 @@ platformRouter.get('/servers/:ip', async (ctx: Context) => {
   ctx.body = instance;
 });
 
-platformRouter.delete('/servers/:ip', async (ctx: Context) => {
-  ctx.body = await deleteServer(ctx.params.ip);
-});
-
 platformRouter.post('/servers/:ip/dns', async (ctx: Context) => {
   ctx.body = await createServerDns(ctx.params.ip);
 });

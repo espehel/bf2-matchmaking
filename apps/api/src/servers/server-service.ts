@@ -91,9 +91,10 @@ export async function deleteServer(address: string) {
   await removeServerWithStatus(address, 'offline');
   await removeServerWithStatus(address, 'active');
   await removeServerWithStatus(address, 'lacking');
-  await del([`server:${address}`, `server:${address}:info`]);
+  await del([`servers:${address}`, `servers:info:${address}`, `servers:live:${address}`]);
   await hash('cache:rcons').delEntry(address);
   disconnect(address);
+  return 'ok';
 }
 
 export async function getAddress(ip: string) {

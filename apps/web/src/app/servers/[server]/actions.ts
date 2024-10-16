@@ -115,19 +115,11 @@ export async function deleteServer(ip: string) {
     return serverResult;
   }
 
-  const [platformResult, rconResult, liveResult] = await Promise.all([
-    api.platform().deleteServer(ip),
+  const [rconResult, liveResult] = await Promise.all([
     supabase(cookies).deleteServerRcon(ip),
     api.live().deleteServer(ip),
   ]);
 
-  if (platformResult.error && platformResult.status !== 404) {
-    logErrorMessage(
-      `Server ${ip}: Failed to delete from platform`,
-      platformResult.error,
-      { status: platformResult.status }
-    );
-  }
   if (rconResult.error) {
     logErrorMessage(
       `Server ${ip}: Failed to delete rcon from database`,
@@ -141,7 +133,6 @@ export async function deleteServer(ip: string) {
   }
 
   logMessage(`Server ${ip}: Deleted successfully`, {
-    platformResult,
     rconResult,
     serverResult,
     liveResult,
