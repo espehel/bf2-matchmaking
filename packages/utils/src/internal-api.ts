@@ -144,9 +144,16 @@ const platform = () => {
   };
 };
 
+const basePath = 'https://api.bf2.gg/';
+const servers = `${basePath}servers`;
+const v2 = {
+  deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
+};
+
 export const api = {
   live,
   web,
   platform,
   engine,
+  v2,
 };

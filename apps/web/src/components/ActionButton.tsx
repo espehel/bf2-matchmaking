@@ -59,7 +59,7 @@ export default function ActionButton({
 
   return (
     <button
-      className={`btn ${kind} ${size} ${fit}`}
+      className={`btn ${kind} ${size} ${fit} ${disabled || pending ? 'btn-outline' : ''}`}
       onClick={handleAction}
       disabled={disabled || pending}
     >

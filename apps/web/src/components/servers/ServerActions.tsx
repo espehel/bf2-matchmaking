@@ -29,9 +29,7 @@ export default async function ServerActions({ server, hasAdmin }: Props) {
 
   return (
     <section className="section">
-      <div className="grid grid-cols-2 gap-4">
-        <Heading server={server} />
-      </div>
+      <Heading server={server} />
       <div className="divider" />
       <div className="flex gap-2">
         <GuardedActionButton
@@ -72,8 +70,8 @@ function Heading({ server }: { server: LiveServer }) {
         <>
           <p>{`Game status: ${getKeyName(live.currentGameStatus)}`}</p>
           <p>{`Map: ${fromSnakeToCapitalized(live.currentMapName)}`}</p>
-          <p>{`Next Map: ${fromSnakeToCapitalized(live.nextMapName)}`}</p>;
-          <p>{`Time left: ${formatSecToMin(live.timeLeft)}`}</p>;
+          <p>{`Next Map: ${fromSnakeToCapitalized(live.nextMapName)}`}</p>
+          <p>{`Time left: ${formatSecToMin(live.timeLeft)}`}</p>
           <p>{`No Vehicles: ${server.noVehicles ? 'Yes' : 'No'}`}</p>
         </>
       )}
