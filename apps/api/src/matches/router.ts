@@ -1,7 +1,9 @@
 import Router from '@koa/router';
 import { generateMatchUsersXml } from './users-generator';
 import { client } from '@bf2-matchmaking/supabase';
-import { isNotNull, MatchStatus } from '@bf2-matchmaking/types';
+import { isNotNull } from '@bf2-matchmaking/types/guards';
+import { MatchStatus } from '@bf2-matchmaking/types/supabase';
+import { PostMatchRequestBody } from '@bf2-matchmaking/types/api';
 import { info } from '@bf2-matchmaking/logging';
 import { addActiveMatchServer } from '@bf2-matchmaking/redis/servers';
 import { getMatchLive, getMatchLiveSafe } from '@bf2-matchmaking/redis/matches';
@@ -14,6 +16,7 @@ import { createPendingMatch, getMatch } from './match-service';
 import { closeMatch } from '@bf2-matchmaking/services/matches';
 import { Context } from 'koa';
 import { matchKeys } from '@bf2-matchmaking/redis/generic';
+import { Match } from '@bf2-matchmaking/services/matches/Match';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -118,4 +121,14 @@ matchesRouter.get('/:matchid', async (ctx: Context) => {
 matchesRouter.get('/', async (ctx) => {
   const keys = await matchKeys('matches:live:*');
   ctx.body = keys.map(getMatchLive).filter(isNotNull);
+});
+
+matchesRouter.post('/', async (ctx: Context) => {
+  const { matchValues, matchMaps, matchTeams } = ctx.request.body as PostMatchRequestBody;
+  const match = await Match.create(matchValues);
+  ctx.body = await Match.update(match.id)
+    .setMaps(matchMaps)
+    .setTeams(matchTeams)
+    .commit();
+  ctx.status = 201;
 });

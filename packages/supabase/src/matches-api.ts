@@ -23,6 +23,12 @@ import {
 const MATCHES_JOINED_QUERY =
   '*, players!match_players(*), maps(*), config!inner(*), teams:match_players(*), rounds(*, map(*), team1(*), team2(*)), home_team(*, players:team_players(*, player:players(*))), away_team(*, players:team_players(*, player:players(*)))';
 export default (client: SupabaseClient<Database>) => ({
+  createMatch: (values: MatchesInsert) =>
+    client
+      .from('matches')
+      .insert(values)
+      .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
+      .single(),
   createMatchFromConfig: (config: number, values?: Omit<MatchesInsert, 'config'>) =>
     client
       .from('matches')

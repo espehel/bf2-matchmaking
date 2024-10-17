@@ -4,7 +4,10 @@
     ".": "./src/index.ts",
     "./engine": "./src/engine.ts",
     "./platform": "./src/platform.ts",
-    "./rcon": "./src/rcon.ts"
+    "./rcon": "./src/rcon.ts",
+    "./api": "./src/api-types.ts",
+    "./supabase": "./src/database-types.ts",
+    "./guards": "./src/type-guards.ts"
   },
   "version": "1.0.0",
   "scripts": {

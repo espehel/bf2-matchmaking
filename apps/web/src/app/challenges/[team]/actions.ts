@@ -7,11 +7,16 @@ import {
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { assertNumber, assertString } from '@bf2-matchmaking/utils';
+import { api, assertNumber, assertString, verify } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
-import { ChallengesRow, ChallengesUpdate, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  ChallengesRow,
+  ChallengesUpdate,
+  MatchesInsert,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
-import { createMatch, createMatchMaps, createMatchServers } from '@/app/matches/actions';
+import { createMatchServers } from '@/app/matches/actions';
 
 export async function createChallenge(formData: FormData) {
   const { configSelect, homeTeam, homeMap, homeServer, scheduledInput, timezone } =
@@ -107,18 +112,26 @@ export async function createMatchFromChallenge(challenge: ChallengesRow) {
   assertNumber(challenge.away_map);
   assertString(challenge.away_server);
 
-  const match = await createMatch(challenge.config, {
+  const matchValues: MatchesInsert = {
+    config: challenge.config,
     status: MatchStatus.Scheduled,
     scheduled_at: challenge.scheduled_at,
     home_team: challenge.home_team,
     away_team: challenge.away_team,
-  }).then(verifySingleResult);
+  };
+
+  const match = await api.v2
+    .postMatch({
+      matchValues,
+      matchMaps: [challenge.home_map, challenge.away_map],
+      matchTeams: null,
+    })
+    .then(verify);
 
   const servers =
     challenge.home_server === challenge.away_server
       ? [challenge.home_server]
       : [challenge.home_server, challenge.away_server];
   await createMatchServers(match.id, servers);
-  await createMatchMaps(match.id, [challenge.home_map, challenge.away_map]);
   return match;
 }

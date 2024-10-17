@@ -9,6 +9,8 @@ import {
   PostServersRequestBody,
   PostRestartServerRequestBody,
   ServersRow,
+  MatchesJoined,
+  PostMatchRequestBody,
 } from '@bf2-matchmaking/types';
 import { deleteJSON, getJSON, postJSON } from './fetcher';
 import {
@@ -133,10 +135,12 @@ const platform = () => {
 };
 
 const basePath = 'https://api.bf2.gg';
+const matches = `${basePath}/matches`;
 const servers = `${basePath}/servers`;
 const admin = `${basePath}/admin`;
 const v2 = {
   getHealth: () => getJSON(`${basePath}/health`),
+  postMatch: (body: PostMatchRequestBody) => postJSON<MatchesJoined>(`${matches}`, body),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
   adminReset: () => postJSON(`${admin}/reset`, {}),
 };

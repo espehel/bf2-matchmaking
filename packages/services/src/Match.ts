@@ -1,5 +1,6 @@
 import {
   DiscordConfig,
+  MatchesInsert,
   MatchesUpdate,
   MatchPlayersInsert,
   MatchStatus,
@@ -12,22 +13,17 @@ import {
   putMatch,
   removeMatch,
 } from '@bf2-matchmaking/redis/matches';
-import { json } from '@bf2-matchmaking/redis/json';
 import { DateTime } from 'luxon';
 import { getDiff } from 'recursive-diff';
 
 export const Match = {
-  create: async function (config: DiscordConfig, status: MatchStatus) {
-    const match = await client()
-      .createMatchFromConfig(config.id, {
-        status,
-      })
-      .then(verifySingleResult);
+  create: async function (values: MatchesInsert) {
+    const match = await client().createMatch(values).then(verifySingleResult);
     const redisResult = await putMatch(match);
 
     logMessage(`Match ${match.id}: Created with status ${match.status}`, {
       match,
-      config,
+      values,
       redisResult,
     });
 
@@ -80,11 +76,11 @@ class MatchUpdater {
   constructor(matchId: number | string) {
     this.matchId = typeof matchId === 'string' ? Number(matchId) : matchId;
   }
-  setMaps(maps: Array<number>) {
+  setMaps(maps: Array<number> | null) {
     this.maps = maps;
     return this;
   }
-  setTeams(players: Array<MatchPlayersInsert>) {
+  setTeams(players: Array<MatchPlayersInsert> | null) {
     this.teams = players;
     return this;
   }
@@ -110,7 +106,7 @@ class MatchUpdater {
   }
 
   async createMatchPlayers() {
-    if (!this.teams) {
+    if (!this.teams || this.teams.length === 0) {
       return null;
     }
     info('createMatchPlayers', `Creating match players`);
@@ -119,7 +115,7 @@ class MatchUpdater {
   }
 
   async createMatchMaps() {
-    if (!this.maps) {
+    if (!this.maps || this.maps.length === 0) {
       return null;
     }
     info('createMatchMaps', `Creating match maps`);

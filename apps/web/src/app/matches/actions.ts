@@ -1,9 +1,9 @@
 'use server';
-import { assertString } from '@bf2-matchmaking/utils';
+import { api, assertString, toFetchError } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { isScheduledMatch, isString, MatchesInsert } from '@bf2-matchmaking/types';
+import { isScheduledMatch, MatchesInsert, MatchStatus } from '@bf2-matchmaking/types';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { postGuildScheduledEvent } from '@bf2-matchmaking/discord';
 import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
@@ -31,12 +31,15 @@ export async function createScheduledMatch(formData: FormData) {
     }
 
     const { data: player } = await supabase(cookies).getSessionPlayer();
-    const result = await supabase(cookies).createScheduledMatch(
-      Number(configSelect),
-      Number(homeSelect),
-      Number(awaySelect),
-      scheduled_at
-    );
+    const matchValues: MatchesInsert = {
+      config: Number(configSelect),
+      status: MatchStatus.Scheduled,
+      scheduled_at,
+      home_team: Number(homeSelect),
+      away_team: Number(awaySelect),
+    };
+    const matchMaps = mapSelect.map(Number);
+    const result = await api.v2.postMatch({ matchValues, matchMaps, matchTeams: null });
 
     if (result.error) {
       logErrorMessage('Failed to schedule match', result.error, {
@@ -53,16 +56,12 @@ export async function createScheduledMatch(formData: FormData) {
 
     const { data: servers } = await createMatchServers(match.id, serverSelect);
 
-    await createMatchMaps(match.id, mapSelect.map(Number));
-
+    // TODO: consider handling in webhook
     if (match.config.guild && isScheduledMatch(match)) {
-      const { data } = await supabase(cookies).getMatch(match.id);
-      const updatedMatch = data && isScheduledMatch(data) ? data : match;
-
       const { data: event, error: discordError } = await postGuildScheduledEvent(
         match.config.guild,
         createScheduledMatchEvent(
-          updatedMatch,
+          match,
           servers?.map(({ server }) => server)
         )
       );
@@ -87,24 +86,10 @@ export async function createScheduledMatch(formData: FormData) {
     revalidatePath('/matches');
     return result;
   } catch (e) {
-    console.error(e);
-    if (isString(e)) {
-      return { data: null, error: { message: e } };
-    }
-    if (e instanceof Error) {
-      return { data: null, error: { message: e.message } };
-    }
-    return { data: null, error: { message: JSON.stringify(e) } };
+    return { data: null, error: toFetchError(e) };
   }
 }
 
-export async function createMatch(config: number, values: Omit<MatchesInsert, 'config'>) {
-  const res = await supabase(cookies).createMatchFromConfig(config, values);
-  if (!res.error) {
-    revalidatePath('/matches');
-  }
-  return res;
-}
 export async function createMatchServers(matchId: number, servers: string[]) {
   const res = await supabase(cookies).createMatchServers(
     matchId,
@@ -114,17 +99,6 @@ export async function createMatchServers(matchId: number, servers: string[]) {
     logErrorMessage('Failed to set servers', res.error, {
       matchId,
       servers,
-    });
-  }
-  return res;
-}
-
-export async function createMatchMaps(matchId: number, maps: number[]) {
-  const res = await supabase(cookies).createMatchMaps(matchId, ...maps);
-  if (res.error) {
-    logErrorMessage('Failed to set maps', res.error, {
-      matchId,
-      maps,
     });
   }
   return res;

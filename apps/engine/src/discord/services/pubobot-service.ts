@@ -24,7 +24,7 @@ export async function createPubobotMatch(
   id: number
 ): Promise<PubobotMatch> {
   const config = await getConfigCached(message.channelId);
-  const match = await Match.create(config, MatchStatus.Open);
+  const match = await Match.create({ config: config.id, status: MatchStatus.Open });
   const pubobotMatch: PubobotMatch = {
     id,
     matchId: match.id,

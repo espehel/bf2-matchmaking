@@ -1,4 +1,10 @@
-import { MatchesJoined, ServerRconsRow, ServersRow } from './database-types';
+import {
+  MatchesInsert,
+  MatchesJoined,
+  MatchPlayersInsert,
+  ServerRconsRow,
+  ServersRow,
+} from './database-types';
 import { LiveServerState, PlayerListItem, ServerInfo, User } from './index';
 
 export enum MatchEvent {
@@ -107,4 +113,10 @@ export interface PostDemosRequestBody {
 export interface PostDemosResponseBody {
   channel: string;
   message: string;
+}
+
+export interface PostMatchRequestBody {
+  matchValues: MatchesInsert;
+  matchMaps: Array<number> | null;
+  matchTeams: Array<MatchPlayersInsert> | null;
 }
