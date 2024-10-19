@@ -1,5 +1,5 @@
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { connectServer } from './server-service';
+import { connectServer, getJoinmeDirect, getJoinmeHref } from './server-service';
 import {
   addActiveMatchServer,
   addServer,
@@ -10,7 +10,6 @@ import {
   setServer,
   setServerData,
 } from '@bf2-matchmaking/redis/servers';
-import { getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
 import { disconnect, hasNoVehicles } from './rcon/bf2-rcon-api';
 import { getServerLocation } from './external-service';
 import { ServersRow } from '@bf2-matchmaking/types';
