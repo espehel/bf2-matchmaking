@@ -66,6 +66,7 @@ export const Server = {
       updatedAt: DateTime.now().toISO(),
       errorAt: undefined,
     });
+    await del([`servers:${address}:info`, `servers:${address}:data`]);
     return getServer(address);
   },
   delete: async (address: string) => {
@@ -75,8 +76,8 @@ export const Server = {
     await removeServerWithStatus(address, ServerStatus.LACKING);
     await del([
       `servers:${address}`,
-      `servers:info:${address}`,
-      `servers:live:${address}`,
+      `servers:${address}:info`,
+      `servers:${address}:data`,
     ]);
     await hash('cache:rcons').delEntry(address);
     disconnect(address);
