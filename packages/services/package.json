@@ -5,7 +5,8 @@
     "./matches": "./src/match-service.ts",
     "./matches/Match": "./src/Match.ts",
     "./rcon": "./src/rcon/bf2-rcon-api.ts",
-    "./server": "./src/server-service.ts"
+    "./server": "./src/server-service.ts",
+    "./server/Server": "./src/Server.ts"
   },
   "version": "1.0.0",
   "scripts": {

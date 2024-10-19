@@ -2,7 +2,7 @@
 
 import ActionButton from '@/components/ActionButton';
 import { useServerRestart } from '@/state/server-hooks';
-import { MatchServers, LiveServer } from '@bf2-matchmaking/types';
+import { LiveServer } from '@bf2-matchmaking/types/server';
 
 interface Props {
   matchId: number;

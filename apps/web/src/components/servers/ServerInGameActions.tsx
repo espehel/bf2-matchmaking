@@ -1,8 +1,9 @@
-import { ConnectedLiveServer, GameStatus, LiveInfo } from '@bf2-matchmaking/types';
+import { GameStatus, LiveInfo } from '@bf2-matchmaking/types';
 import JoinMeButton from '@/components/servers/JoinMeButton';
 import { pauseRound, restartRound, unpauseRound } from '@/app/servers/[server]/actions';
 import ActionButton from '@/components/ActionButton';
 import ChangeMapForm from '@/components/matches/ChangeMapForm';
+import { ConnectedLiveServer } from '@bf2-matchmaking/types/server';
 
 interface Props {
   server: ConnectedLiveServer;

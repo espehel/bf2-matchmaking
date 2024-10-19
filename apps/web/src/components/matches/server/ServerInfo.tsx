@@ -11,6 +11,7 @@ interface Props {
 export default async function ServerInfo({ server, match }: Props) {
   const { data } = await api.live().getServer(server.ip);
   const serverInfo = data?.live;
+  const serverData = data?.data;
 
   return (
     <>
@@ -32,10 +33,10 @@ export default async function ServerInfo({ server, match }: Props) {
           </div>
         )}
       </div>
-      {data && (
+      {serverData && (
         <Link
           className="btn btn-primary btn-lg btn-wide m-auto"
-          href={data.joinmeDirect}
+          href={serverData.joinmeDirect}
           target="_blank"
         >
           Join match

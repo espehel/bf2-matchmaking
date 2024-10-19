@@ -1,16 +1,13 @@
-import { GameStatus, LiveInfo, LiveServer } from '@bf2-matchmaking/types';
+import { GameStatus, isConnectedLiveServer } from '@bf2-matchmaking/types';
 import { formatSecToMin, fromSnakeToCapitalized } from '@bf2-matchmaking/utils';
-import JoinMeButton from '@/components/servers/JoinMeButton';
 import { DateTime } from 'luxon';
-import ActionButton from '@/components/ActionButton';
 import {
   restartServerInfantry,
   restartServerVehicles,
 } from '@/app/servers/[server]/actions';
 import GuardedActionButton from '@/components/commons/GuardedActionButton';
-import { supabase } from '@/lib/supabase/supabase';
-import { cookies } from 'next/headers';
 import RevalidateForm from '@/components/RevalidateForm';
+import { LiveServer } from '@bf2-matchmaking/types/server';
 
 interface Props {
   server: LiveServer;
@@ -56,7 +53,6 @@ export default async function ServerActions({ server, hasAdmin }: Props) {
 }
 
 function Heading({ server }: { server: LiveServer }) {
-  const { live } = server;
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-1 items-center">
@@ -66,13 +62,13 @@ function Heading({ server }: { server: LiveServer }) {
       <p>{`Updated: ${
         server.updatedAt ? DateTime.fromISO(server.updatedAt).toFormat('TTT') : '-'
       }`}</p>
-      {live && (
+      {isConnectedLiveServer(server) && (
         <>
-          <p>{`Game status: ${getKeyName(live.currentGameStatus)}`}</p>
-          <p>{`Map: ${fromSnakeToCapitalized(live.currentMapName)}`}</p>
-          <p>{`Next Map: ${fromSnakeToCapitalized(live.nextMapName)}`}</p>
-          <p>{`Time left: ${formatSecToMin(live.timeLeft)}`}</p>
-          <p>{`No Vehicles: ${server.noVehicles ? 'Yes' : 'No'}`}</p>
+          <p>{`Game status: ${getKeyName(server.live.currentGameStatus)}`}</p>
+          <p>{`Map: ${fromSnakeToCapitalized(server.live.currentMapName)}`}</p>
+          <p>{`Next Map: ${fromSnakeToCapitalized(server.live.nextMapName)}`}</p>
+          <p>{`Time left: ${formatSecToMin(server.live.timeLeft)}`}</p>
+          <p>{`No Vehicles: ${server.data.noVehicles ? 'Yes' : 'No'}`}</p>
         </>
       )}
     </div>

@@ -2,12 +2,13 @@
   "name": "@bf2-matchmaking/types",
   "exports": {
     ".": "./src/index.ts",
+    "./api": "./src/api-types.ts",
     "./engine": "./src/engine.ts",
+    "./guards": "./src/type-guards.ts",
     "./platform": "./src/platform.ts",
     "./rcon": "./src/rcon.ts",
-    "./api": "./src/api-types.ts",
-    "./supabase": "./src/database-types.ts",
-    "./guards": "./src/type-guards.ts"
+    "./server": "./src/server.ts",
+    "./supabase": "./src/database-types.ts"
   },
   "version": "1.0.0",
   "scripts": {

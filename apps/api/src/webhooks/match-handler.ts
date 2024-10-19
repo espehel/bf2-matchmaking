@@ -8,8 +8,8 @@ import {
   getDnsRecord,
   getInstancesByMatchId,
 } from '../platform/platform-service';
-import { deleteServer } from '../servers/server-service';
 import { patchGuildScheduledEvent } from '@bf2-matchmaking/discord';
+import { Server } from '@bf2-matchmaking/services/server/Server';
 
 export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
   try {
@@ -48,7 +48,7 @@ async function deleteServerInstance(match: MatchesRow, instance: Instance) {
   const address = await getAddress(instance.main_ip);
   try {
     await deleteInstance(address);
-    await deleteServer(address);
+    await Server.delete(address);
     const { data: server } = await client().deleteServer(address);
     const { data: rcon } = await client().deleteServerRcon(address);
     logMessage(`Match ${match.id} deleted server instance ${address}`, {

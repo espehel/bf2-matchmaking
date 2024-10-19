@@ -1,5 +1,7 @@
 'use-client';
-import { FetchResult, LiveServer } from '@bf2-matchmaking/types';
+
+import { LiveServer } from '@bf2-matchmaking/types/server';
+import { FetchResult } from '@bf2-matchmaking/types';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { restartServer } from '@/app/matches/[match]/actions';

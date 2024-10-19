@@ -1,11 +1,16 @@
-import { Challenge, MapsRow, PendingChallenge } from '@bf2-matchmaking/types';
+import {
+  Challenge,
+  isConnectedLiveServer,
+  MapsRow,
+  PendingChallenge,
+} from '@bf2-matchmaking/types';
 import ActionFormModal from '@/components/commons/ActionFormModal';
 import Select from '@/components/commons/Select';
 import React from 'react';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { api, sortByName, verify } from '@bf2-matchmaking/utils';
+import { api, sortByName, sortLiveServerByName, verify } from '@bf2-matchmaking/utils';
 import DatetimeInput from '@/components/commons/DatetimeInput';
 import { DateTime } from 'luxon';
 import { acceptChallenge } from '@/app/challenges/[team]/actions';
@@ -15,7 +20,7 @@ interface Props {
 }
 
 export default async function AcceptPendingChallengeModal({ challenge }: Props) {
-  const servers = await api.live().getServers().then(verify).then(sortByName);
+  const servers = await api.live().getServers().then(verify).then(sortLiveServerByName);
   const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
   const availableMaps = maps.filter(isNotHomeMap(challenge));
 
@@ -53,7 +58,9 @@ export default async function AcceptPendingChallengeModal({ challenge }: Props) 
         readonly={Boolean(challenge.away_map)}
       />
       <Select
-        options={servers.map(({ address, name }) => [address, name])}
+        options={servers
+          .filter(isConnectedLiveServer)
+          .map(({ address, data }) => [address, data.name])}
         label="Away server"
         name="awayServer"
         defaultValue={challenge.away_server?.ip || challenge.home_server.ip}

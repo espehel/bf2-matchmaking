@@ -77,8 +77,7 @@ export async function putMatch(match: MatchesJoined) {
 }
 
 export async function removeMatch(matchId: string | number) {
-  const matchJson = json<MatchesJoined>(`matches:${matchId}`);
-  const oldMatch = await matchJson.get();
+  const oldMatch = await json<MatchesJoined>(`matches:${matchId}`).get();
 
   if (!oldMatch) {
     warn('removeMatch', `Match ${matchId} not found`);
@@ -86,13 +85,17 @@ export async function removeMatch(matchId: string | number) {
   }
 
   const setRemoveRes = await set(`matches:${oldMatch.status}`).remove(matchId.toString());
-  const jsonDelRes = await matchJson.del();
+  const jsonDelRes = await del([
+    `matches:${matchId}`,
+    `matches:${matchId}:servers`,
+    `matches:${matchId}:players`,
+  ]);
   info('removeMatch', `Match ${matchId} removed with status ${oldMatch.status}`);
   return { setRemoveRes, jsonDelRes };
 }
 
 export async function getMatchLive(matchId: string | number) {
-  return hash(`matches:live:${matchId}`).getAll().then(matchSchema.parse);
+  return hash(`matches:${matchId}:live`).getAll().then(matchSchema.parse);
 }
 export async function getMatchLiveSafe(matchId: string | number) {
   try {
@@ -102,15 +105,15 @@ export async function getMatchLiveSafe(matchId: string | number) {
   }
 }
 export async function setMatchLive(matchId: string | number, values: Partial<Match>) {
-  return hash(`matches:live:${matchId}`).set(values);
+  return hash(`matches:${matchId}:live`).set(values);
 }
 
 export async function incMatchRoundsPlayed(matchId: string | number): Promise<number> {
-  return hash(`matches:live:${matchId}`).inc('roundsPlayed', 1);
+  return hash(`matches:${matchId}:live`).inc('roundsPlayed', 1);
 }
 
 export async function removeLiveMatch(matchId: string) {
-  await del(`matches:live:${matchId}`);
+  await del(`matches:${matchId}:live`);
 }
 
 export function addMatchServer(matchId: string | number, ...address: Array<string>) {

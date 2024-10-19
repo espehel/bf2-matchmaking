@@ -45,7 +45,7 @@ export default async function LiveSection({ match }: Props) {
       <h2>Live</h2>
       <div className="text-left">
         <p>{`State: ${liveMatch?.state || 'offline'}`}</p>
-        <p>{`Server: ${liveMatch?.server?.name || 'offline'}`}</p>
+        <p>{`Server: ${liveMatch?.server?.data?.name || 'offline'}`}</p>
       </div>
       {liveMatch?.server?.live ? (
         <RoundTable liveInfo={liveMatch.server.live} />
@@ -64,7 +64,7 @@ export default async function LiveSection({ match }: Props) {
               Start live match
             </ActionButton>
           )}
-          {server && server.name != liveMatch?.server?.name && isMatchOfficer && (
+          {server && server.name != liveMatch?.server?.data?.name && isMatchOfficer && (
             <ActionButton
               action={setLiveMatchServer}
               successMessage={`Server ${server.name} is now tracking live match`}

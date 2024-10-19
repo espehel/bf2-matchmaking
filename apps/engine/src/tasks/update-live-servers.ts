@@ -1,8 +1,7 @@
 import { error, info, verbose } from '@bf2-matchmaking/logging';
 import { updateMatch, updateMatchPlayers } from '../match/active-match';
 import { LiveInfo } from '@bf2-matchmaking/types';
-import { resetLiveServer } from '../server/server-manager';
-import { getActiveMatchServers, getServer } from '@bf2-matchmaking/redis/servers';
+import { getActiveMatchServers } from '@bf2-matchmaking/redis/servers';
 import { removeLiveMatch } from '@bf2-matchmaking/redis/matches';
 import { saveDemosSince } from '../services/demo-service';
 import { finishMatch } from '@bf2-matchmaking/services/matches';
@@ -12,6 +11,7 @@ import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
 import { parseError } from '@bf2-matchmaking/utils';
 import cron from 'node-cron';
+import { Server } from '@bf2-matchmaking/services/server/Server';
 
 async function updateLiveServers() {
   const servers = await getActiveMatchServers().then(Object.entries<string>);
@@ -35,15 +35,15 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
 
     if (match.state === 'stale') {
       info('updateLiveMatch', `No players connected, resetting ${address}`);
-      await resetLiveServer(address);
+      await Server.reset(address);
     }
 
     if (match.state === 'finished') {
       await finishMatch(matchId);
       await removeLiveMatch(matchId);
-      await resetLiveServer(address);
+      await Server.reset(address);
 
-      const server = await getServer(address);
+      const server = await Server.getData(address);
       if (
         Number(match.roundsPlayed) > 0 &&
         server?.demos_path &&

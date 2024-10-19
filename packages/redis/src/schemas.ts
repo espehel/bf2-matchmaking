@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ServerStatus } from '@bf2-matchmaking/types/server';
 
 export const matchSchema = z.object({
   state: z.enum([
@@ -14,25 +15,23 @@ export const matchSchema = z.object({
   pendingSince: z.string().datetime({ offset: true }).optional(),
 });
 
-export const serverInfoSchema = z.object({
+export const serverDataSchema = z.object({
   port: z.string(),
   name: z.string(),
   joinmeHref: z.string().url(),
   joinmeDirect: z.string().url(),
   country: z.string(),
   city: z.string(),
-  noVehicles: z.boolean().nullable(),
+  noVehicles: z.boolean(),
   demos_path: z.string().nullable(),
 });
-export const serverSchema = z
-  .object({
-    status: z.string(),
-    matchId: z.string(),
-    liveAt: z.string().datetime({ offset: true }),
-    updatedAt: z.string().datetime({ offset: true }),
-    errorAt: z.string().datetime({ offset: true }),
-  })
-  .partial();
+export const serverSchema = z.object({
+  status: z.nativeEnum(ServerStatus),
+  matchId: z.number().optional(),
+  liveAt: z.string().datetime({ offset: true }).optional(),
+  updatedAt: z.string().datetime({ offset: true }).optional(),
+  errorAt: z.string().datetime({ offset: true }).optional(),
+});
 
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 type Literal = z.infer<typeof literalSchema>;

@@ -7,16 +7,13 @@ import { PostMatchRequestBody } from '@bf2-matchmaking/types/api';
 import { info } from '@bf2-matchmaking/logging';
 import { addActiveMatchServer } from '@bf2-matchmaking/redis/servers';
 import { getMatchLive, getMatchLiveSafe } from '@bf2-matchmaking/redis/matches';
-import {
-  getLiveServer,
-  getLiveServerByMatchId,
-  resetLiveServer,
-} from '../servers/server-service';
+import { getLiveServer, getLiveServerByMatchId } from '../servers/server-service';
 import { createPendingMatch, getMatch } from './match-service';
 import { closeMatch } from '@bf2-matchmaking/services/matches';
 import { Context } from 'koa';
 import { matchKeys } from '@bf2-matchmaking/redis/generic';
 import { Match } from '@bf2-matchmaking/services/matches/Match';
+import { Server } from '@bf2-matchmaking/services/server/Server';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -87,7 +84,7 @@ matchesRouter.post('/:matchid/server', async (ctx: Context) => {
   }
 
   if (match.server) {
-    await resetLiveServer(match.server.address);
+    await Server.reset(match.server.address);
   }
   await addActiveMatchServer(ctx.request.body.address, ctx.params.matchid);
   ctx.status = 204;

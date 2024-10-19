@@ -1,6 +1,5 @@
 import {
   PlayerListItem,
-  LiveServer,
   ServerInfo,
   PostServerExecRequestBody,
   PostServerExecResponseBody,
@@ -18,6 +17,7 @@ import {
   DnsRecordWithoutPriority,
   Region,
 } from '@bf2-matchmaking/types/platform';
+import { LiveServer } from '@bf2-matchmaking/types/server';
 
 const web = () => {
   const basePath = 'https://bf2.gg';

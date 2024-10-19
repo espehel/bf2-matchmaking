@@ -6,7 +6,6 @@ import { Instance } from '@bf2-matchmaking/types/platform';
 import { Context } from 'koa';
 import { DEFAULTS } from './constants';
 import { createServerDns, getDnsRecord, getInstancesByMatchId } from './platform-service';
-import { deleteServer } from '../servers/server-service';
 
 export const platformRouter = new Router({
   prefix: '/platform',

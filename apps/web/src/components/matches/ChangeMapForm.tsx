@@ -1,9 +1,9 @@
-import { LiveServer } from '@bf2-matchmaking/types';
 import SelectActionForm from '@/components/SelectActionForm';
 import { changeServerMap } from '@/app/matches/[match]/actions';
 import { assertNumber } from '@bf2-matchmaking/utils';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import { LiveServer } from '@bf2-matchmaking/types/server';
 
 interface Props {
   server: LiveServer;

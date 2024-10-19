@@ -19,13 +19,12 @@ import {
 } from './database-types';
 import {
   ActiveLiveMatch,
-  ConnectedLiveServer,
   LiveMatch,
-  LiveServer,
   PostgrestError,
   PubobotMatch,
   TeamPlayer,
 } from './index';
+import { ConnectedLiveServer, LiveServer, OfflineServer, ServerStatus } from './server';
 
 export const isMatchesRow = (row: unknown): row is MatchesRow => {
   const casted = row as MatchesRow;
@@ -95,7 +94,20 @@ export function isAcceptedChallenge(
 }
 
 export function isConnectedLiveServer(server: LiveServer): server is ConnectedLiveServer {
-  return (server.status === 'active' || server.status === 'idle') && server.live !== null;
+  return (
+    (server.status === ServerStatus.ACTIVE || server.status === ServerStatus.IDLE) &&
+    server.live !== null &&
+    server.data !== null
+  );
+}
+
+export function isOfflineLiveServer(server: LiveServer): server is OfflineServer {
+  return (
+    (server.status === ServerStatus.OFFLINE ||
+      server.status === ServerStatus.RESTARTING) &&
+    !server.live &&
+    !server.data
+  );
 }
 
 export function isActiveLiveMatch(match: LiveMatch): match is ActiveLiveMatch {

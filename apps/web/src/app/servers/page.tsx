@@ -1,13 +1,14 @@
-import { LiveServer } from '@bf2-matchmaking/types';
+import { isConnectedLiveServer, isOfflineLiveServer } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { api, verify } from '@bf2-matchmaking/utils';
+import { api, sortLiveServerByName, verify } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
 import CreateServerSection from '@/components/servers/CreateServerSection';
 import { CheckCircleIcon } from '@heroicons/react/16/solid';
+import { LiveServer } from '@bf2-matchmaking/types/server';
 
 export default async function Page() {
-  const servers = await api.live().getServers().then(verify);
+  const servers = await api.live().getServers().then(verify).then(sortLiveServerByName);
 
   return (
     <main className="main">
@@ -26,14 +27,14 @@ export default async function Page() {
             </tr>
           </thead>
           <tbody>
-            {servers.map((server) => (
+            {servers.filter(isConnectedLiveServer).map((server) => (
               <tr key={server.address} className="hover">
-                <td className="truncate">{server.name}</td>
+                <td className="truncate">{server.data.name}</td>
                 <td>{server.address}</td>
-                <td>{server.port}</td>
-                <td className="truncate">{`${server.city}, ${server.country}`}</td>
+                <td>{server.data.port}</td>
+                <td className="truncate">{`${server.data.city}, ${server.data.country}`}</td>
                 <td>
-                  {server.noVehicles ? <CheckCircleIcon className="size-5" /> : null}
+                  {server.data.noVehicles ? <CheckCircleIcon className="size-5" /> : null}
                 </td>
                 <td>
                   <ServerStatus server={server} />
@@ -41,6 +42,27 @@ export default async function Page() {
                 <td>{`${server.live?.players.length || 0}/${
                   server.live?.maxPlayers || 0
                 }`}</td>
+                <td>
+                  <Link
+                    className="link link-secondary"
+                    href={`/servers/${server.address}`}
+                  >
+                    <DocumentMagnifyingGlassIcon className="h-6" />
+                  </Link>
+                </td>
+              </tr>
+            ))}
+            {servers.filter(isOfflineLiveServer).map((server) => (
+              <tr key={server.address} className="hover">
+                <td className="truncate">-</td>
+                <td>{server.address}</td>
+                <td>-</td>
+                <td className="truncate">-</td>
+                <td>-</td>
+                <td>
+                  <ServerStatus server={server} />
+                </td>
+                <td>-</td>
                 <td>
                   <Link
                     className="link link-secondary"

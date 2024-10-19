@@ -15,18 +15,18 @@ import { restartWithInfantryMode, restartWithVehicleMode } from './http-api';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import {
   createPendingServer,
-  deleteServer,
   getAddress,
   getLiveServer,
   getLiveServers,
   upsertServer,
 } from './server-service';
-import { createServer, updateLiveServer } from '@bf2-matchmaking/services/server';
+import { updateLiveServer } from '@bf2-matchmaking/services/server';
 import { Context } from 'koa';
 import { protect } from '../auth';
 import { ServerRconsRow } from '@bf2-matchmaking/types';
 import { deleteInstance } from '../platform/platform-service';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client } from '@bf2-matchmaking/supabase';
+import { Server } from '@bf2-matchmaking/services/server/Server';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -66,8 +66,8 @@ serversRouter.post('/:ip/restart', async (ctx: Context) => {
       ctx.throw(502, 'Could not restart server with default mode', { result });
     }
   }
-
-  ctx.status = 204;
+  ctx.body = await Server.restart(ctx.params.ip);
+  ctx.status = 202;
 });
 
 serversRouter.post('/:ip/players/switch', async (ctx) => {
@@ -122,7 +122,7 @@ serversRouter.delete('/:address', async (ctx) => {
   const server = await client().deleteServer(address);
   const rcon = await client().deleteServerRcon(address);
   const instance = await deleteInstance(address).catch((e) => e);
-  const redis = await deleteServer(address).catch((e) => e);
+  const redis = await Server.delete(address).catch((e) => e);
   ctx.status = 200;
   ctx.body = { server, rcon, instance, redis };
 });
@@ -161,8 +161,7 @@ serversRouter.post('/', async (ctx: Context) => {
   await upsertServer(address, port, rcon_port, rcon_pw, serverInfo, demo_path);
   info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
 
-  await createServer(address);
-  const liveServer = await getLiveServer(address);
+  const liveServer = Server.init(address);
   ctx.assert(liveServer, 502, 'Failed to create live server');
 
   ctx.body = liveServer;

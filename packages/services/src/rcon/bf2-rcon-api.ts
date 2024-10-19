@@ -83,11 +83,13 @@ export function exec(address: string, command: string) {
 }
 
 export async function hasNoVehicles(address: string) {
-  const res = await exec(address, 'sv.noVehicles');
-  if (res.error) {
-    return res;
+  const response = await exec(address, 'sv.noVehicles').then(verifyRconResult);
+
+  if (!(response.trim() === '1' || response.trim() === '0')) {
+    throw ServiceError.BadGateway('Unexpected response from "exec sv.noVehicles"');
   }
-  return { data: res.data?.trim() === '1', error: null };
+
+  return response.trim() === '1';
 }
 
 async function sendMessage(address: string, message: string): Promise<RconResult> {

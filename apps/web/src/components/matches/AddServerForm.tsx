@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { api, assertString } from '@bf2-matchmaking/utils';
-import { MatchesJoined } from '@bf2-matchmaking/types';
+import { isConnectedLiveServer, MatchesJoined } from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase';
 import SelectActionForm from '@/components/SelectActionForm';
 import { addServer } from '@/app/matches/[match]/actions';
@@ -28,7 +28,9 @@ export default async function AddServerForm({ match, defaultAddress }: Props) {
   return (
     <SelectActionForm
       label="Add match server"
-      options={servers.map(({ address, name }) => [address, name])}
+      options={servers
+        .filter(isConnectedLiveServer)
+        .map(({ address, data }) => [address, data.name])}
       defaultValue={defaultAddress}
       placeholder={!defaultAddress ? 'Add Server' : undefined}
       action={addMatchServerSA}

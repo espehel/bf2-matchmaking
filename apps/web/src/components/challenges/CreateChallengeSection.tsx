@@ -7,8 +7,13 @@ import React from 'react';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { api, sortByName, verify } from '@bf2-matchmaking/utils';
-import { MatchConfigsRow, TeamsJoined, VisibleTeam } from '@bf2-matchmaking/types';
+import { api, sortByName, sortLiveServerByName, verify } from '@bf2-matchmaking/utils';
+import {
+  isConnectedLiveServer,
+  MatchConfigsRow,
+  TeamsJoined,
+  VisibleTeam,
+} from '@bf2-matchmaking/types';
 import { createChallenge } from '@/app/challenges/[team]/actions';
 
 interface Props {
@@ -35,7 +40,7 @@ export default async function CreateChallengeSection({ selectedTeam }: Props) {
     .then(filterNotSelectedTeam(selectedTeam))
     .then(filterAvailableTeams(configs));
 
-  const servers = await api.live().getServers().then(verify).then(sortByName);
+  const servers = await api.live().getServers().then(verify).then(sortLiveServerByName);
   const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
   return (
     <section className="section min-w-[600px] w-fit h-fit">
@@ -88,7 +93,9 @@ export default async function CreateChallengeSection({ selectedTeam }: Props) {
             name="homeMap"
           />
           <Select
-            options={servers.map(({ address, name }) => [address, name])}
+            options={servers
+              .filter(isConnectedLiveServer)
+              .map(({ address, data }) => [address, data.name])}
             label="Home server"
             name="homeServer"
           />

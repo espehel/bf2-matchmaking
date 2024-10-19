@@ -1,11 +1,9 @@
 import {
-  addServerWithStatus,
   getActiveMatchServer,
   getServer,
-  getServerLive,
+  getServerDataSafe,
   getServerLiveInfo,
   getServersWithStatus,
-  removeServerWithStatus,
 } from '@bf2-matchmaking/redis/servers';
 import {
   error,
@@ -14,22 +12,15 @@ import {
   logMessage,
   verbose,
 } from '@bf2-matchmaking/logging';
-import {
-  DbServer,
-  isNotNull,
-  LiveServer,
-  LiveServerStatus,
-  PendingServer,
-  ServerInfo,
-} from '@bf2-matchmaking/types';
-import { createSocket, disconnect, getServerInfo } from '@bf2-matchmaking/services/rcon';
-import { del } from '@bf2-matchmaking/redis/generic';
+import { DbServer, isNotNull, PendingServer, ServerInfo } from '@bf2-matchmaking/types';
+import { createSocket, getServerInfo } from '@bf2-matchmaking/services/rcon';
 import { assertObj, wait } from '@bf2-matchmaking/utils';
 import { getDnsByIp } from '../platform/cloudflare';
 import { client } from '@bf2-matchmaking/supabase';
-import { createServer } from '@bf2-matchmaking/services/server';
 import { ServiceError } from '@bf2-matchmaking/services/error';
 import { hash } from '@bf2-matchmaking/redis/hash';
+import { Server } from '@bf2-matchmaking/services/server/Server';
+import { LiveServer, ServerStatus } from '@bf2-matchmaking/types/server';
 
 export async function getLiveServerByMatchId(matchId: string) {
   const address = await getActiveMatchServer(matchId);
@@ -45,20 +36,15 @@ export async function getLiveServerByMatchId(matchId: string) {
 
 export async function getLiveServer(address: string): Promise<LiveServer | null> {
   try {
-    const info = await getServer(address);
-    const values = await getServerLive(address);
+    const data = await getServerDataSafe(address);
+    const values = await getServer(address);
     const live = await getServerLiveInfo(address);
 
     return {
       address,
-      ...info,
+      ...values,
+      data,
       live,
-      errorAt: values?.errorAt,
-      updatedAt: values?.updatedAt,
-      port: Number(info.port),
-      status: values?.status as LiveServerStatus,
-      noVehicles: info.noVehicles,
-      matchId: null,
     };
   } catch (e) {
     error(`getLiveServer:${address}`, e);
@@ -67,10 +53,10 @@ export async function getLiveServer(address: string): Promise<LiveServer | null>
 }
 
 export async function getLiveServers(): Promise<LiveServer[]> {
-  const idleServers = await getServersWithStatus('idle');
-  const offlineServers = await getServersWithStatus('offline');
-  const liveServers = await getServersWithStatus('active');
-  const lackingServers = await getServersWithStatus('lacking');
+  const idleServers = await getServersWithStatus(ServerStatus.IDLE);
+  const offlineServers = await getServersWithStatus(ServerStatus.OFFLINE);
+  const liveServers = await getServersWithStatus(ServerStatus.ACTIVE);
+  const lackingServers = await getServersWithStatus(ServerStatus.LACKING);
   return (
     await Promise.all(
       [...idleServers, ...offlineServers, ...liveServers, ...lackingServers].map(
@@ -78,23 +64,6 @@ export async function getLiveServers(): Promise<LiveServer[]> {
       )
     )
   ).filter(isNotNull);
-}
-
-export async function resetLiveServer(address: string) {
-  verbose('resetLiveServer', `Server ${address}: Resetting...`);
-  await removeServerWithStatus(address, 'active');
-  await addServerWithStatus(address, 'idle');
-}
-
-export async function deleteServer(address: string) {
-  await removeServerWithStatus(address, 'idle');
-  await removeServerWithStatus(address, 'offline');
-  await removeServerWithStatus(address, 'active');
-  await removeServerWithStatus(address, 'lacking');
-  await del([`servers:${address}`, `servers:info:${address}`, `servers:live:${address}`]);
-  await hash('cache:rcons').delEntry(address);
-  disconnect(address);
-  return 'ok';
 }
 
 export async function getAddress(ip: string) {
@@ -134,7 +103,7 @@ export async function connectPendingServer(server: PendingServer) {
     'connectPendingServer',
     `Upserted server ${address} with name ${serverInfo.serverName}`
   );
-  await createServer(address);
+  await Server.init(address);
 }
 
 export async function upsertServer(

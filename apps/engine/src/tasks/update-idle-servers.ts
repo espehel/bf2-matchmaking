@@ -1,13 +1,8 @@
 import { parseError } from '@bf2-matchmaking/utils';
-import { error, info, verbose } from '@bf2-matchmaking/logging';
+import { error, verbose } from '@bf2-matchmaking/logging';
 import { LiveInfo, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { isActiveMatchServer, resetLiveServer } from '../server/server-manager';
-import {
-  addActiveMatchServer,
-  getActiveMatchServer,
-  getServersWithStatus,
-  removeServerWithStatus,
-} from '@bf2-matchmaking/redis/servers';
+import { isActiveMatchServer } from '../server/server-manager';
+import { getServersWithStatus } from '@bf2-matchmaking/redis/servers';
 import {
   getMatchLiveSafe,
   getWithStatus,
@@ -20,13 +15,15 @@ import { DateTime } from 'luxon';
 import cron from 'node-cron';
 import { createPendingLiveMatch } from '@bf2-matchmaking/services/matches';
 import { Match } from '@bf2-matchmaking/redis/types';
+import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerStatus } from '@bf2-matchmaking/types/server';
 
 async function updateIdleServers() {
   verbose('updateIdleServers', 'Updating idle servers');
   try {
     let updatedServers = 0;
 
-    const servers = await getServersWithStatus('idle');
+    const servers = await getServersWithStatus(ServerStatus.IDLE);
     for (const address of servers) {
       const liveState = await updateLiveServer(address);
       if (!liveState) {
@@ -69,13 +66,11 @@ async function handleActiveMatchServer(address: string, liveState: LiveInfo) {
     await createPendingLiveMatch(match);
   }
 
-  const currentServer = await getActiveMatchServer(match.id.toString());
+  const currentServer = await Server.findByMatch(match.id);
   if (currentServer) {
-    await resetLiveServer(currentServer);
+    await Server.reset(currentServer);
   }
-  info('handleActiveMatchServer', `Server ${address} assigning to match ${match.id}`);
-  await addActiveMatchServer(address, match.id.toString());
-  await removeServerWithStatus(address, 'idle');
+  await Server.setMatch(address, match.id);
 }
 
 async function findOngoingMatch(

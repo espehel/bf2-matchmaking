@@ -3,6 +3,7 @@ import {
   MatchesJoined,
   MatchServers,
   ServersRow,
+  isConnectedLiveServer,
 } from '@bf2-matchmaking/types';
 import { supabaseRealtime } from '@/lib/supabase/supabase-client';
 import { usePlayer } from '@/state/PlayerContext';
@@ -28,8 +29,8 @@ export function useMatchRoom(
         .live()
         .getServer(server.ip)
         .then(({ data }) => {
-          if (data) {
-            window.open(data.joinmeDirect, '_blank');
+          if (data && isConnectedLiveServer(data)) {
+            window.open(data.data.joinmeDirect, '_blank');
           }
         });
     }

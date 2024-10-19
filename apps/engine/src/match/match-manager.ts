@@ -9,7 +9,7 @@ import {
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getWarmUpStartedEmbed, sendChannelMessage } from '@bf2-matchmaking/discord';
 import { DateTime } from 'luxon';
-import { getServer } from '@bf2-matchmaking/redis/servers';
+import { getServerData } from '@bf2-matchmaking/redis/servers';
 import { MatchLive } from '@bf2-matchmaking/types/engine';
 
 export function hasPlayedAllRounds(config: MatchConfigsRow, roundsPlayed: number) {
@@ -69,7 +69,7 @@ export async function setMatchLiveNow(matchId: number) {
 }
 
 export async function broadcastWarmUpStarted(match: MatchesJoined, address: string) {
-  const serverInfo = await getServer(address);
+  const serverInfo = await getServerData(address);
   if (isDiscordMatch(match)) {
     await sendChannelMessage(match.config.channel, {
       embeds: [getWarmUpStartedEmbed(match.id, address, serverInfo)],

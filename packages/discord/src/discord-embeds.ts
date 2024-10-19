@@ -3,14 +3,12 @@ import {
   MatchConfigsRow,
   MatchesJoined,
   MatchResultsJoined,
-  LiveServer,
   ServersRow,
   PlayersRow,
   MatchPlayersInsert,
   PickedMatchPlayer,
   PollResult,
   MatchPlayerResultsInsert,
-  ConnectedLiveServer,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -31,6 +29,7 @@ import {
 } from './embed-utils';
 import { DateTime } from 'luxon';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
+import { ConnectedLiveServer, LiveServer } from '@bf2-matchmaking/types/server';
 
 export function buildTeamspeakMatchStartedEmbed(match: MatchesJoined): APIEmbed {
   return {
@@ -89,10 +88,12 @@ export const getServerPollEmbed = (
   fields: createServerPollFields(servers),
 });
 export const getServerEmbed = (server: ConnectedLiveServer) => ({
-  description: `Join [${replaceDiscordGG(server.live.serverName)}](${server.joinmeHref})`,
+  description: `Join [${replaceDiscordGG(server.live.serverName)}](${
+    server.data.joinmeHref
+  })`,
   fields: [
     { name: 'address', value: server.address, inline: true },
-    { name: 'port', value: server.port, inline: true },
+    { name: 'port', value: server.data.port, inline: true },
   ],
 });
 
@@ -196,7 +197,7 @@ export const getMatchStartedEmbed = (
   server
     ? {
         description: `**JOIN** [${replaceDiscordGG(server.live.serverName)}](${
-          server.joinmeHref
+          server.data.joinmeHref
         })`,
         fields: [...getServerInfoFields(server), getLiveMatchField(match.id)],
       }
@@ -373,7 +374,7 @@ export function createServerLocationPollResultField(location: string) {
   };
 }
 
-const getServerInfoFields = (server: LiveServer) => [
+const getServerInfoFields = (server: ConnectedLiveServer) => [
   {
     name: 'address:',
     value: `\`\`\`${server.address}\`\`\``,
@@ -381,7 +382,7 @@ const getServerInfoFields = (server: LiveServer) => [
   },
   {
     name: 'port',
-    value: `\`\`\`${server.port}\`\`\``,
+    value: `\`\`\`${server.data.port}\`\`\``,
     inline: true,
   },
 ];
@@ -410,6 +411,6 @@ export function getServerFields(servers: Array<ConnectedLiveServer>) {
           ? ` (${server.live.connectedPlayers}/${server.live.maxPlayers})`
           : ' (offline)'
       ),
-      value: `[${server.address}:${server.port}](${server.joinmeHref})`,
+      value: `[${server.address}:${server.data.port}](${server.data.joinmeHref})`,
     }));
 }

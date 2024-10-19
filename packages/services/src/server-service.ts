@@ -1,64 +1,29 @@
-import { LiveInfo, LiveServerStatus } from '@bf2-matchmaking/types';
+import { LiveInfo } from '@bf2-matchmaking/types';
 import { error, info, logMessage } from '@bf2-matchmaking/logging';
-import { externalApi, getJoinmeDirect, getJoinmeHref } from '@bf2-matchmaking/utils';
-import { getPlayerList, getServerInfo, hasNoVehicles } from './rcon/bf2-rcon-api';
+import { getPlayerList, getServerInfo } from './rcon/bf2-rcon-api';
 import {
   addServerWithStatus,
-  getServerLive,
+  getServer,
   removeServerWithStatus,
-  setServer,
-  setServerLive,
   setServerLiveInfo,
 } from '@bf2-matchmaking/redis/servers';
 import { DateTime } from 'luxon';
-import { client } from '@bf2-matchmaking/supabase';
+import { ServerStatus } from '@bf2-matchmaking/types/server';
+import { Server } from './Server';
 
-export async function createServer(address: string): Promise<LiveServerStatus> {
-  const { data: server } = await client().getServer(address);
-  const status = server ? await connectServer(address) : 'lacking';
-  await setServerLive(address, { status });
-  await addServerWithStatus(address, status);
-
-  if (!server) {
-    return status;
-  }
-
-  const { port, demos_path, name } = server;
-  const joinmeHref = await getJoinmeHref(address, port);
-  const joinmeDirect = await getJoinmeDirect(address, port);
-  const { data: location } = await externalApi.ip().getIpLocation(address);
-  const noVehicles = isConnectedStatus(status)
-    ? (await hasNoVehicles(address)).data
-    : null; // TODO change this value after server restart
-  const country = location?.country || '';
-  const city = location?.city || '';
-
-  await setServer(address, {
-    port,
-    name,
-    joinmeHref,
-    joinmeDirect,
-    country,
-    city,
-    noVehicles,
-    demos_path,
-  });
-  return status;
-}
-
-export async function connectServer(address: string): Promise<'offline' | 'idle'> {
+export async function connectServer(address: string) {
   try {
     const liveInfo = await buildLiveState(address);
-    let status: LiveServerStatus = 'offline';
+    let status = ServerStatus.OFFLINE;
     if (liveInfo) {
       await setServerLiveInfo(address, liveInfo);
-      status = 'idle';
+      status = ServerStatus.IDLE;
     }
     info('connectServer', `${address} Initialized with status ${status}`);
     return status;
   } catch (e) {
     error('connectServer', e);
-    return 'offline';
+    return ServerStatus.OFFLINE;
   }
 }
 
@@ -81,29 +46,31 @@ export async function buildLiveState(address: string): Promise<LiveInfo> {
   return { ...info, players };
 }
 
-function isConnectedStatus(status: LiveServerStatus) {
-  return status === 'idle' || status === 'active';
-}
-
 export async function updateLiveServer(address: string): Promise<LiveInfo | null> {
   const now = DateTime.now().toISO();
 
-  const server = await getServerLive(address);
+  const server = await getServer(address);
   try {
     const live = await buildLiveState(address);
-    await setServerLive(address, { errorAt: undefined, updatedAt: now });
+
+    if (server.status === ServerStatus.RESTARTING) {
+      await Server.init(address);
+      return live;
+    }
+
+    await Server.update(address, { errorAt: undefined, updatedAt: now });
     await setServerLiveInfo(address, live);
     return live;
   } catch (e) {
     if (!server.errorAt) {
       error('updateLiveServer', e);
-      await setServerLive(address, { errorAt: now });
+      await Server.update(address, { errorAt: now });
       return null;
     }
     if (DateTime.fromISO(server.errorAt).diffNow('hours').minutes < -30) {
       logMessage(`Server ${address} is offline`, { server });
-      await removeServerWithStatus(address, 'idle');
-      await addServerWithStatus(address, 'offline');
+      await removeServerWithStatus(address, ServerStatus.IDLE);
+      await addServerWithStatus(address, ServerStatus.OFFLINE);
     }
     return null;
   }
