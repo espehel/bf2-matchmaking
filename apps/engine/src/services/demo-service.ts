@@ -1,4 +1,4 @@
-import { error, info, logMessage } from '@bf2-matchmaking/logging';
+import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { getDemoChannel } from '../discord/services/message-service';
 import { getText } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
@@ -27,8 +27,8 @@ async function saveDemosInDiscord(server: string, demos: Array<string>) {
       messages: responses.map((response) => response.id).join(', '),
     };
   } catch (e) {
-    error('POST /demos', e);
-    return { message: 'Failed to save demos in discord', demos: demos };
+    logErrorMessage(`Server ${server}: Failed to save demos in discord`, e, { demos });
+    return null;
   }
 }
 

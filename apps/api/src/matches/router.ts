@@ -1,12 +1,10 @@
 import Router from '@koa/router';
 import { generateMatchUsersXml } from './users-generator';
 import { client } from '@bf2-matchmaking/supabase';
-import { isNotNull } from '@bf2-matchmaking/types/guards';
+import { isConnectedLiveServer, isNotNull } from '@bf2-matchmaking/types/guards';
 import { MatchStatus } from '@bf2-matchmaking/types/supabase';
 import { PostMatchRequestBody } from '@bf2-matchmaking/types/api';
 import { info } from '@bf2-matchmaking/logging';
-import { addActiveMatchServer } from '@bf2-matchmaking/redis/servers';
-import { getMatchLive, getMatchLiveSafe } from '@bf2-matchmaking/redis/matches';
 import { getLiveServer, getLiveServerByMatchId } from '../servers/server-service';
 import { createPendingMatch, getMatch } from './match-service';
 import { closeMatch } from '@bf2-matchmaking/services/matches';
@@ -86,7 +84,7 @@ matchesRouter.post('/:matchid/server', async (ctx: Context) => {
   if (match.server) {
     await Server.reset(match.server.address);
   }
-  await addActiveMatchServer(ctx.request.body.address, ctx.params.matchid);
+  await Server.setMatch(ctx.request.body.address, ctx.params.matchid);
   ctx.status = 204;
 });
 
@@ -106,18 +104,23 @@ matchesRouter.post('/:matchid', async (ctx: Context) => {
 matchesRouter.get('/:matchid/server', async (ctx: Context) => {
   const server = await getLiveServerByMatchId(ctx.params.matchid);
   ctx.assert(server, 404, 'Live match server not found.');
+
+  if (!isConnectedLiveServer(server)) {
+    ctx.throw('Match server is not connected.', 500);
+  }
+
   ctx.body = server;
 });
 
 matchesRouter.get('/:matchid', async (ctx: Context) => {
-  const match = await getMatchLiveSafe(ctx.params.matchid);
+  const match = await getMatch(ctx.params.matchid);
   ctx.assert(match, 404, 'Live match not found.');
   ctx.body = match;
 });
 
 matchesRouter.get('/', async (ctx) => {
   const keys = await matchKeys('matches:live:*');
-  ctx.body = keys.map(getMatchLive).filter(isNotNull);
+  ctx.body = keys.map(getMatch).filter(isNotNull);
 });
 
 matchesRouter.post('/', async (ctx: Context) => {

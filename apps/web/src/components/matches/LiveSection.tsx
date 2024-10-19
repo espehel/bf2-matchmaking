@@ -10,7 +10,7 @@ interface Props {
   match: MatchesJoined;
 }
 export default async function LiveSection({ match }: Props) {
-  const { data: liveMatch } = await api.live().getMatch(match.id);
+  const { data: liveMatch } = await api.v2.getMatch(match.id);
   const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 

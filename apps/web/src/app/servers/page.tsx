@@ -8,7 +8,7 @@ import { CheckCircleIcon } from '@heroicons/react/16/solid';
 import { LiveServer } from '@bf2-matchmaking/types/server';
 
 export default async function Page() {
-  const servers = await api.live().getServers().then(verify).then(sortLiveServerByName);
+  const servers = await api.v2.getServers().then(verify).then(sortLiveServerByName);
 
   return (
     <main className="main">

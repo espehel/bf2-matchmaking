@@ -14,7 +14,7 @@ interface Props {
 
 export default async function MatchServerSection({ match }: Props) {
   const { data: matchServers } = await supabase(cookies).getMatchServers(match.id);
-  const { data: server } = await api.live().getMatchServer(match.id);
+  const { data: server } = await api.v2.getMatchServer(match.id);
 
   return (
     <section className="section max-w-md text-left h-fit">

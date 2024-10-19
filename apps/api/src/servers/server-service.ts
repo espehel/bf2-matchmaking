@@ -1,17 +1,10 @@
 import {
-  getActiveMatchServer,
   getServer,
   getServerDataSafe,
   getServerLiveInfo,
   getServersWithStatus,
 } from '@bf2-matchmaking/redis/servers';
-import {
-  error,
-  info,
-  logErrorMessage,
-  logMessage,
-  verbose,
-} from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage, logMessage, warn } from '@bf2-matchmaking/logging';
 import { DbServer, isNotNull, PendingServer, ServerInfo } from '@bf2-matchmaking/types';
 import { createSocket, getServerInfo } from '@bf2-matchmaking/services/rcon';
 import { assertObj, wait } from '@bf2-matchmaking/utils';
@@ -23,14 +16,11 @@ import { Server } from '@bf2-matchmaking/services/server/Server';
 import { LiveServer, ServerStatus } from '@bf2-matchmaking/types/server';
 
 export async function getLiveServerByMatchId(matchId: string) {
-  const address = await getActiveMatchServer(matchId);
-  verbose(
-    'getLiveServerByMatchId',
-    `No active match server found for matchId=${matchId}`
-  );
+  const address = await Server.findByMatch(matchId);
   if (address) {
     return getLiveServer(address);
   }
+  warn('getLiveServerByMatchId', `No active match server found for matchId=${matchId}`);
   return null;
 }
 

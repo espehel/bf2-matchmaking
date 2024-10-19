@@ -4,6 +4,7 @@ import {
   addActiveMatchServer,
   addServer,
   addServerWithStatus,
+  getActiveMatchServer,
   getServer,
   getServerData,
   removeServerWithStatus,
@@ -48,14 +49,16 @@ export const Server = {
   },
   setMatch: async (address: string, matchId: string | number) => {
     info('Server.setMatch', `Server ${address} assigning to match ${matchId}`);
+    await setServer(address, { status: ServerStatus.ACTIVE, matchId: Number(matchId) });
     await addActiveMatchServer(address, matchId.toString());
     await removeServerWithStatus(address, ServerStatus.IDLE);
   },
   findByMatch: async (matchId: string | number) => {
-    return hash<Record<string, string>>('servers:active').get(matchId.toString());
+    return getActiveMatchServer(matchId.toString());
   },
   reset: async (address: string) => {
     verbose('Server.reset', `Server ${address}: Resetting...`);
+    await setServer(address, { status: ServerStatus.IDLE, matchId: undefined });
     await removeServerWithStatus(address, ServerStatus.ACTIVE);
     await addServerWithStatus(address, ServerStatus.IDLE);
     await json<AppEngineState>('app:engine:state').delProperty(address.replace('.', ''));

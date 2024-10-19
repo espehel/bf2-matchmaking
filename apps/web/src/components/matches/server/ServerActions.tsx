@@ -1,59 +1,43 @@
-import {
-  GameStatus,
-  MatchesJoined,
-  MatchStatus,
-  ServersRow,
-} from '@bf2-matchmaking/types';
+import { GameStatus, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
 import ChangeMapForm from '@/components/matches/ChangeMapForm';
 import { RestartServerButton } from '@/components/matches/server/RestartServerButton';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import { api } from '@bf2-matchmaking/utils';
+import { ConnectedLiveServer } from '@bf2-matchmaking/types/server';
 
 interface Props {
-  server: ServersRow;
+  server: ConnectedLiveServer;
   match: MatchesJoined;
 }
 
 export default async function ServerActions({ server, match }: Props) {
-  const { data } = await api.live().getServer(server.ip);
-  const serverInfo = data?.live;
   const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
 
   if (!isMatchOfficer || match.status !== MatchStatus.Ongoing) {
     return null;
   }
 
-  if (!data || !serverInfo) {
-    return (
-      <div>
-        <div className="divider mt-0" />
-        <p className="font-bold text-error">Server connection failed...</p>
-      </div>
-    );
-  }
-
   const restartRoundSA = async () => {
     'use server';
-    return restartRound(match.id, server.ip);
+    return restartRound(match.id, server.address);
   };
   const pauseRoundSA = async () => {
     'use server';
-    return pauseRound(match.id, server.ip);
+    return pauseRound(match.id, server.address);
   };
 
   const unpauseRoundSA = async () => {
     'use server';
-    return unpauseRound(match.id, server.ip);
+    return unpauseRound(match.id, server.address);
   };
 
   return (
     <div>
       <div className="divider mt-0" />
       <div className="flex flex-wrap gap-2 mt-4">
-        <RestartServerButton server={data} matchId={match.id} />
+        <RestartServerButton server={server} matchId={match.id} />
         <ActionButton
           action={restartRoundSA}
           errorMessage="Failed to restart round"
@@ -61,7 +45,7 @@ export default async function ServerActions({ server, match }: Props) {
         >
           Restart round
         </ActionButton>
-        {serverInfo.currentGameStatus === GameStatus.Playing && (
+        {server.live.currentGameStatus === GameStatus.Playing && (
           <ActionButton
             action={pauseRoundSA}
             errorMessage="Failed to pause round"
@@ -70,7 +54,7 @@ export default async function ServerActions({ server, match }: Props) {
             Pause
           </ActionButton>
         )}
-        {serverInfo.currentGameStatus === GameStatus.Paused && (
+        {server.live.currentGameStatus === GameStatus.Paused && (
           <ActionButton
             action={unpauseRoundSA}
             errorMessage="Failed to unpause round"
@@ -87,7 +71,7 @@ export default async function ServerActions({ server, match }: Props) {
           Set teams
         </AsyncActionButton>*/}
       </div>
-      <ChangeMapForm server={data} />
+      <ChangeMapForm server={server} />
     </div>
   );
 }

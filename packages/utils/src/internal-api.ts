@@ -17,7 +17,7 @@ import {
   DnsRecordWithoutPriority,
   Region,
 } from '@bf2-matchmaking/types/platform';
-import { LiveServer } from '@bf2-matchmaking/types/server';
+import { ConnectedLiveServer, LiveServer } from '@bf2-matchmaking/types/server';
 
 const web = () => {
   const basePath = 'https://bf2.gg';
@@ -141,6 +141,18 @@ const admin = `${basePath}/admin`;
 const v2 = {
   getHealth: () => getJSON(`${basePath}/health`, { signal: AbortSignal.timeout(5000) }),
   postMatch: (body: PostMatchRequestBody) => postJSON<MatchesJoined>(`${matches}`, body),
+  getMatches: () => getJSON<Array<LiveMatch>>(`${matches}`),
+  getMatch: (matchId: number) => getJSON<LiveMatch>(`${matches}/${matchId}`),
+  getMatchServer: (matchId: number) =>
+    getJSON<ConnectedLiveServer>(`${matches}/${matchId}/server`),
+  getServers: () =>
+    getJSON<Array<LiveServer>>(`${servers}`, {
+      next: { revalidate: 600 },
+    }),
+  getServer: (address: string) =>
+    getJSON<LiveServer>(`${servers}/${address}`, {
+      cache: 'no-store',
+    }),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
   adminReset: () => postJSON(`${admin}/reset`, {}),
 };

@@ -11,7 +11,7 @@ interface Props {
   params: { server: string };
 }
 export default async function ServerPage({ params }: Props) {
-  const liveServer = await api.live().getServer(params.server).then(verify);
+  const liveServer = await api.v2.getServer(params.server).then(verify);
 
   const { data: adminRoles } = await supabase(cookies).getAdminRoles();
   const hasAdmin = Boolean(adminRoles?.server_admin);
