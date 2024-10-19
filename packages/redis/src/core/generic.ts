@@ -27,9 +27,9 @@ export async function flush() {
   return client.flushDb(RedisFlushModes.ASYNC);
 }
 
-export async function shutdown() {
+export async function save() {
   const client = await getClient();
-  return client.shutdown('SAVE');
+  return client.save();
 }
 
 export async function matchKeys(pattern: string) {

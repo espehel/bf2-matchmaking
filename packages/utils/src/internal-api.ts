@@ -139,7 +139,7 @@ const matches = `${basePath}/matches`;
 const servers = `${basePath}/servers`;
 const admin = `${basePath}/admin`;
 const v2 = {
-  getHealth: () => getJSON(`${basePath}/health`),
+  getHealth: () => getJSON(`${basePath}/health`, { signal: AbortSignal.timeout(5000) }),
   postMatch: (body: PostMatchRequestBody) => postJSON<MatchesJoined>(`${matches}`, body),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
   adminReset: () => postJSON(`${admin}/reset`, {}),
@@ -153,5 +153,8 @@ export const api = {
 };
 
 export const engine = {
-  getHealth: () => getJSON<string>(`https://engine.bf2.gg/health`),
+  getHealth: () =>
+    getJSON<string>(`https://engine.bf2.gg/health`, {
+      signal: AbortSignal.timeout(5000),
+    }),
 };

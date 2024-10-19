@@ -6,7 +6,7 @@ import {
   buildMatchesCache,
   buildRconsCache,
 } from '../cache/cache-service';
-import { flush, shutdown } from '@bf2-matchmaking/redis/generic';
+import { flush, save } from '@bf2-matchmaking/redis/generic';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
 import { logMessage } from '@bf2-matchmaking/logging';
@@ -36,7 +36,7 @@ adminRouter.post('/reset', async (ctx) => {
   await hash('system').set({ resetAt: DateTime.now().toISO() });
 
   setTimeout(async () => {
-    await shutdown();
+    await save();
     const { deploymentInstanceExecutionCreate } = await runService(
       RESTART_TOOL_SERVICE_ID
     );
