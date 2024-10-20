@@ -81,10 +81,9 @@ export async function finishMatch(matchId: number) {
 }
 
 export async function startMatch(matchId: number) {
-  const result = await supabase(cookies).updateMatch(matchId, {
-    status: MatchStatus.Ongoing,
-    started_at: DateTime.now().toISO(),
-  });
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const result = await api.v2.postMatchStart(matchId);
+  logMessage(`Match ${matchId} started by ${player?.nick}`, { matchId, player, result });
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);

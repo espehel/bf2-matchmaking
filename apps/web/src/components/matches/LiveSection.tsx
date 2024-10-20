@@ -23,7 +23,7 @@ export default async function LiveSection({ match }: Props) {
 
   async function startLiveMatch() {
     'use server';
-    const result = await api.live().postMatch(match.id);
+    const result = await api.v2.postMatchStart(match.id);
     if (result.data) {
       revalidatePath(`/matches/${match.id}`);
     }

@@ -81,7 +81,6 @@ const live = () => {
       }),
     deleteServer: (ip: string) =>
       deleteJSON<LiveServer>(basePath.concat(paths.server(ip))),
-    postMatch: (matchId: number) => postJSON(`${basePath}${paths.match(matchId)}`, {}),
     postMatchServer: (matchId: number, address: string, force: boolean) =>
       postJSON(`${basePath}${paths.matchServer(matchId)}?force=${force}`, { address }),
     getMatches: () => getJSON<Array<LiveMatch>>(basePath.concat(paths.matches())),
@@ -143,6 +142,8 @@ const v2 = {
   postMatch: (body: PostMatchRequestBody) => postJSON<MatchesJoined>(`${matches}`, body),
   getMatches: () => getJSON<Array<LiveMatch>>(`${matches}`),
   getMatch: (matchId: number) => getJSON<LiveMatch>(`${matches}/${matchId}`),
+  postMatchStart: (matchId: number) =>
+    postJSON<LiveMatch>(`${matches}/${matchId}/start`, {}),
   getMatchServer: (matchId: number) =>
     getJSON<ConnectedLiveServer>(`${matches}/${matchId}/server`),
   getServers: () =>

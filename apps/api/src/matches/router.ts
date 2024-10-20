@@ -12,6 +12,7 @@ import { Context } from 'koa';
 import { matchKeys } from '@bf2-matchmaking/redis/generic';
 import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { Server } from '@bf2-matchmaking/services/server/Server';
+import { DateTime } from 'luxon';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -88,17 +89,21 @@ matchesRouter.post('/:matchid/server', async (ctx: Context) => {
   ctx.status = 204;
 });
 
-matchesRouter.post('/:matchid', async (ctx: Context) => {
-  const { data } = await client().getMatch(parseInt(ctx.params.matchid));
+matchesRouter.post('/:matchid/start', async (ctx: Context) => {
+  const { matchid } = ctx.params;
+  const { data } = await client().getMatch(parseInt(matchid));
   ctx.assert(data, 404, 'Match does not exist.');
 
   if (data.status !== MatchStatus.Ongoing) {
-    ctx.throw(400, `Match ${data.id} is not ongoing.`);
+    await Match.update(matchid).commit({
+      status: MatchStatus.Ongoing,
+      started_at: DateTime.now().toISO(),
+    });
   }
 
-  const liveMatch = await createPendingMatch(data);
+  await createPendingMatch(data);
   ctx.status = 201;
-  ctx.body = liveMatch;
+  ctx.body = await getMatch(matchid);
 });
 
 matchesRouter.get('/:matchid/server', async (ctx: Context) => {
