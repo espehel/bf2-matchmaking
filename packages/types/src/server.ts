@@ -21,6 +21,7 @@ export interface ServerData {
 
 export interface LiveServer {
   address: string;
+  name: string;
   status: ServerStatus;
   matchId?: number;
   liveAt?: string;

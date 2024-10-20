@@ -33,6 +33,7 @@ export async function getLiveServer(address: string): Promise<LiveServer | null>
     return {
       address,
       ...values,
+      name: data?.name || 'offline',
       data,
       live,
     };
