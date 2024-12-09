@@ -20,7 +20,7 @@ import {
 import { ConnectedLiveServer, LiveServer } from '@bf2-matchmaking/types/server';
 
 const web = () => {
-  const basePath = 'https://bf2.gg';
+  const basePath = 'https://bf2.top';
   return {
     basePath,
     matchPage: (matchId: number | string, playerId?: string) =>
@@ -30,7 +30,7 @@ const web = () => {
   };
 };
 const live = () => {
-  const basePath = 'https://api.bf2.gg';
+  const basePath = 'https://api.bf2.top';
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
@@ -94,7 +94,7 @@ const live = () => {
 };
 
 const platform = () => {
-  const basePath = 'https://api.bf2.gg/platform';
+  const basePath = 'https://api.bf2.top/platform';
   const paths = {
     servers: () => '/servers',
     server: (ip: string) => `/servers/${ip}`,
@@ -133,7 +133,7 @@ const platform = () => {
   };
 };
 
-const basePath = 'https://api.bf2.gg';
+const basePath = 'https://api.bf2.top';
 const matches = `${basePath}/matches`;
 const servers = `${basePath}/servers`;
 const admin = `${basePath}/admin`;
@@ -167,7 +167,7 @@ export const api = {
 
 export const engine = {
   getHealth: () =>
-    getJSON<string>(`https://engine.bf2.gg/health`, {
+    getJSON<string>(`https://engine.bf2.top/health`, {
       signal: AbortSignal.timeout(5000),
     }),
 };

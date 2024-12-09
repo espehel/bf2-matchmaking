@@ -8,7 +8,7 @@ export const VULTR = {
 
 export const CLOUDFLARE = {
   zone_id: 'e54e35b922c0dc1f32ed384e980695a4',
-  zone_name: 'bf2.gg',
+  zone_name: 'bf2.top',
 };
 
 export const DEFAULTS = {
