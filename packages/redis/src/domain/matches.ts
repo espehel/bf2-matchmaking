@@ -43,7 +43,9 @@ export async function updatePlayers(matchId: string | number, liveInfo: LiveInfo
   const entries: Array<[string, string]> = liveInfo.players
     .filter((player) => !player.getName.includes('STREAM'))
     .map((player) => [player.keyhash, now]);
-  return hash(`matches:${matchId}:players`).setEntries(entries);
+  if (entries.length) {
+    hash(`matches:${matchId}:players`).setEntries(entries);
+  }
 }
 
 export async function putMatch(match: MatchesJoined) {
