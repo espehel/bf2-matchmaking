@@ -127,7 +127,7 @@ serversRouter.delete('/:address', async (ctx) => {
   ctx.body = { server, rcon, instance, redis };
 });
 
-serversRouter.post('/', async (ctx: Context) => {
+serversRouter.post('/', async (ctx: Context): Promise<void> => {
   const { ip, port, rcon_pw, demo_path } = ctx.request.body;
   const rcon_port = Number(ctx.request.body.rcon_port);
   ctx.assert(rcon_port, 400, 'Missing rcon_port');
@@ -147,7 +147,7 @@ serversRouter.post('/', async (ctx: Context) => {
         port,
         rcon_port,
         rcon_pw,
-        demo_path,
+        demo_path: demo_path || `http://${address}/demos`,
       },
       0
     );

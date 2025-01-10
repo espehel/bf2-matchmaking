@@ -2,8 +2,16 @@ import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { getDemoChannel } from '../discord/services/message-service';
 import { getText } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
+import { StartedMatch } from '@bf2-matchmaking/types';
+import { ServerData } from '@bf2-matchmaking/redis/types';
+import { buildMatchDemoContent } from '@bf2-matchmaking/discord';
 
-async function saveDemosInDiscord(server: string, demos: Array<string>) {
+async function saveDemosInDiscord(
+  server: string,
+  demos: Array<string>,
+  serverData: ServerData,
+  match?: StartedMatch
+) {
   try {
     const channel = await getDemoChannel();
 
@@ -17,47 +25,51 @@ async function saveDemosInDiscord(server: string, demos: Array<string>) {
     const responses = await Promise.all(
       demoBatches.map((demoBatch) =>
         channel.send({
-          content: server,
+          content: match ? buildMatchDemoContent(server, match, serverData) : server,
           files: demoBatch,
         })
       )
     );
-    return {
+    const result = {
       channel: channel.id,
       messages: responses.map((response) => response.id).join(', '),
     };
+    logMessage(`Server ${server}: Saved ${demos.length} demos`, { ...result });
+    return result;
   } catch (e) {
     logErrorMessage(`Server ${server}: Failed to save demos in discord`, e, { demos });
     return null;
   }
 }
 
-export async function saveDemosAll(server: string, demoPath?: string) {
-  const path = demoPath || `http://${server}/demos`;
-  const demos = await fetchDemos(path);
-  info('saveDemosAll', `Server ${server}: Found ${demos.length} demos at ${path}`);
+export async function saveDemosAll(server: string, serverData: ServerData) {
+  const demos = await fetchDemos(serverData.demos_path);
+  info(
+    'saveDemosAll',
+    `Server ${server}: Found ${demos.length} demos at ${serverData.demos_path}`
+  );
   if (demos.length === 0) {
     return null;
   }
-  return postDemos(server, demos);
+  return saveDemosInDiscord(server, demos, serverData);
 }
 
-export async function saveDemosSince(server: string, isoDate: string, demoPath?: string) {
-  const path = demoPath || `http://${server}/demos`;
-  const demos = await fetchDemos(path, isoDate);
-  info('saveDemosSince', `Server ${server}: Found ${demos.length} demos at ${path}`);
+export async function saveMatchDemos(
+  server: string,
+  match: StartedMatch,
+  serverData: ServerData
+) {
+  const demos = await fetchDemos(serverData.demos_path, match.started_at);
+  info(
+    'saveDemosSince',
+    `Server ${server}: Found ${demos.length} demos at ${serverData.demos_path}`
+  );
   if (demos.length === 0) {
     return null;
   }
-  return postDemos(server, demos);
+  return saveDemosInDiscord(server, demos, serverData, match);
 }
-async function postDemos(server: string, demos: Array<string>) {
-  const data = await saveDemosInDiscord(server, demos);
-  if (data) {
-    logMessage(`Server ${server}: Saved ${demos.length} demos`, { ...data });
-  }
-  return data;
-}
+
 async function fetchDemos(location: string, fromDate?: string) {
   const { data } = await getText(location);
 

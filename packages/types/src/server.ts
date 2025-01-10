@@ -1,7 +1,6 @@
 import { LiveInfo } from './api-types';
 
 export enum ServerStatus {
-  LACKING = 'lacking',
   ACTIVE = 'active',
   OFFLINE = 'offline',
   IDLE = 'idle',
@@ -16,7 +15,7 @@ export interface ServerData {
   country: string;
   city: string;
   noVehicles: boolean;
-  demos_path: string | null;
+  demos_path: string;
 }
 
 export interface LiveServer {

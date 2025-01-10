@@ -3,6 +3,7 @@ import { isNotNull } from '@bf2-matchmaking/types';
 import { createSockets } from '@bf2-matchmaking/services/rcon';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { Server } from '@bf2-matchmaking/services/server/Server';
+import { set } from '@bf2-matchmaking/redis/set';
 
 export const ACTIVE_SERVER_RATIO = 0.3;
 
@@ -12,20 +13,25 @@ export function isActiveMatchServer(serverPlayers: number, matchSize: number) {
 
 export async function initServers() {
   try {
-    const servers = await hash<Record<string, string>>('cache:rcons').getAll();
-    const connectedServers = (await createSockets(Object.entries(servers))).filter(
-      isNotNull
-    );
+    const servers = await hash<Record<string, string>>('cache:rcons').keys();
+    await Promise.all([
+      set('servers:idle').del(),
+      set('servers:offline').del(),
+      set('servers:restarting').del(),
+      hash('servers:active').del(),
+    ]);
+
+    let initializedServers = 0;
+    for (const server of servers) {
+      const initializedServer = await initServer(server);
+      if (initializedServer) {
+        initializedServers++;
+      }
+    }
+
     info(
       'initServers',
-      `Connected ${connectedServers.length}/${Object.keys(servers).length} server sockets`
-    );
-    const serverStatuses = await Promise.all(connectedServers.map(initServer));
-    info(
-      'initServers',
-      `Initialized ${serverStatuses.filter(isNotNull).length}/${
-        serverStatuses.length
-      } live servers`
+      `Initialized ${initializedServers}/${servers.length} live servers`
     );
   } catch (e) {
     logErrorMessage('Failed to init live servers', e);

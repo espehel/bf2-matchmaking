@@ -15,7 +15,7 @@ import { disconnect, hasNoVehicles } from './rcon/bf2-rcon-api';
 import { getServerLocation } from './external-service';
 import { ServersRow } from '@bf2-matchmaking/types';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
-import { error, info, verbose } from '@bf2-matchmaking/logging';
+import { info, logErrorMessage, verbose } from '@bf2-matchmaking/logging';
 import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { hash } from '@bf2-matchmaking/redis/hash';
@@ -33,7 +33,10 @@ export const Server = {
         const data = await buildServerData(server);
         await setServerData(address, data);
       } catch (e) {
-        error('Server.init', e);
+        logErrorMessage(`Server ${address}: Error building server data`, e, {
+          server,
+          status,
+        });
       }
     }
 
@@ -76,7 +79,6 @@ export const Server = {
     await removeServerWithStatus(address, ServerStatus.IDLE);
     await removeServerWithStatus(address, ServerStatus.OFFLINE);
     await removeServerWithStatus(address, ServerStatus.ACTIVE);
-    await removeServerWithStatus(address, ServerStatus.LACKING);
     await del([
       `servers:${address}`,
       `servers:${address}:info`,

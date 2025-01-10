@@ -73,7 +73,7 @@ const live = () => {
       }),
     getServers: () =>
       getJSON<Array<LiveServer>>(basePath.concat(paths.servers()), {
-        next: { revalidate: 600 },
+        next: { revalidate: 60 },
       }),
     getServer: (ip: string) =>
       getJSON<LiveServer>(basePath.concat(paths.server(ip)), {

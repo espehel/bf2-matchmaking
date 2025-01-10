@@ -117,7 +117,7 @@ export interface PendingServer {
   port: string;
   rcon_port: number;
   rcon_pw: string;
-  demo_path?: string;
+  demo_path: string;
 }
 
 export type MatchProcessError = 'MISSING_PLAYERS' | 'MISSING_ROUNDS' | 'EXTRA_ROUNDS';

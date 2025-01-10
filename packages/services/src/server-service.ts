@@ -1,5 +1,5 @@
 import { LiveInfo } from '@bf2-matchmaking/types';
-import { error, info, logMessage } from '@bf2-matchmaking/logging';
+import { error, logMessage } from '@bf2-matchmaking/logging';
 import { getPlayerList, getServerInfo } from './rcon/bf2-rcon-api';
 import {
   addServerWithStatus,
@@ -15,13 +15,8 @@ import dns from 'dns';
 export async function connectServer(address: string) {
   try {
     const liveInfo = await buildLiveState(address);
-    let status = ServerStatus.OFFLINE;
-    if (liveInfo) {
-      await setServerLiveInfo(address, liveInfo);
-      status = ServerStatus.IDLE;
-    }
-    info('connectServer', `${address} Initialized with status ${status}`);
-    return status;
+    await setServerLiveInfo(address, liveInfo);
+    return ServerStatus.IDLE;
   } catch (e) {
     error('connectServer', e);
     return ServerStatus.OFFLINE;

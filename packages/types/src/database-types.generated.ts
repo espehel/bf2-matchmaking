@@ -960,7 +960,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id: string
-          rcon_port: number
+          rcon_port?: number
           rcon_pw: string
         }
         Update: {
@@ -982,7 +982,7 @@ export type Database = {
       servers: {
         Row: {
           created_at: string
-          demos_path: string | null
+          demos_path: string
           ip: string
           name: string
           port: string
@@ -990,7 +990,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          demos_path?: string | null
+          demos_path: string
           ip: string
           name: string
           port?: string
@@ -998,7 +998,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          demos_path?: string | null
+          demos_path?: string
           ip?: string
           name?: string
           port?: string

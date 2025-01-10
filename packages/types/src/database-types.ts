@@ -131,6 +131,10 @@ export interface ScheduledMatch extends MatchesJoined {
   scheduled_at: string;
 }
 
+export interface StartedMatch extends MatchesJoined {
+  started_at: string;
+}
+
 export interface MatchResultsJoined extends Omit<MatchResultsRow, 'team'> {
   team: TeamsRow;
 }

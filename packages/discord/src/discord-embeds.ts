@@ -9,6 +9,7 @@ import {
   PickedMatchPlayer,
   PollResult,
   MatchPlayerResultsInsert,
+  StartedMatch,
 } from '@bf2-matchmaking/types';
 import { APIEmbed } from 'discord-api-types/v10';
 import {
@@ -29,7 +30,24 @@ import {
 } from './embed-utils';
 import { DateTime } from 'luxon';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
-import { ConnectedLiveServer, LiveServer } from '@bf2-matchmaking/types/server';
+import {
+  ConnectedLiveServer,
+  LiveServer,
+  ServerData,
+} from '@bf2-matchmaking/types/server';
+
+export function buildMatchDemoContent(
+  server: string,
+  match: StartedMatch,
+  serverData: ServerData
+) {
+  return `**Match ${match.id} @ ${server}**\n
+  Server: ${serverData.name}\n
+  Maps: ${match.maps.map((m) => m.name).join(', ')}\n
+  Players: ${match.players.map((p) => p.nick).join(', ')}\n
+  [bf2.top](${api.web().basePath}/matches/${match.id})
+  `;
+}
 
 export function buildTeamspeakMatchStartedEmbed(match: MatchesJoined): APIEmbed {
   return {

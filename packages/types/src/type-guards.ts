@@ -14,6 +14,7 @@ import {
   PlayersRow,
   RatedMatchPlayer,
   ScheduledMatch,
+  StartedMatch,
   TeamsJoined,
   TeamspeakPlayer,
 } from './database-types';
@@ -42,6 +43,9 @@ export const isDiscordMatch = (match: MatchesJoined): match is DiscordMatch =>
 
 export const isScheduledMatch = (match: MatchesJoined): match is ScheduledMatch =>
   Boolean(match.status === MatchStatus.Scheduled && match.scheduled_at);
+
+export const isStartedMatch = (match: MatchesJoined): match is StartedMatch =>
+  Boolean(match.started_at);
 
 export const isTeamPlayer = (mp: MatchPlayersInsert): mp is TeamPlayer =>
   Boolean((mp as TeamPlayer).player);

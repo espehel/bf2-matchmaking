@@ -47,12 +47,9 @@ export async function getLiveServers(): Promise<LiveServer[]> {
   const idleServers = await getServersWithStatus(ServerStatus.IDLE);
   const offlineServers = await getServersWithStatus(ServerStatus.OFFLINE);
   const liveServers = await getServersWithStatus(ServerStatus.ACTIVE);
-  const lackingServers = await getServersWithStatus(ServerStatus.LACKING);
   return (
     await Promise.all(
-      [...idleServers, ...offlineServers, ...liveServers, ...lackingServers].map(
-        getLiveServer
-      )
+      [...idleServers, ...offlineServers, ...liveServers].map(getLiveServer)
     )
   ).filter(isNotNull);
 }
@@ -103,13 +100,13 @@ export async function upsertServer(
   rcon_port: number,
   rcon_pw: string,
   serverInfo: ServerInfo,
-  demo_path?: string
+  demos_path: string
 ): Promise<DbServer> {
   const { data: server, error: serverError } = await client().upsertServer({
     ip: address,
     port,
     name: serverInfo.serverName,
-    demos_path: demo_path,
+    demos_path,
   });
   if (serverError) {
     error('upsertServer', serverError);

@@ -1,9 +1,9 @@
 import { error, info, verbose } from '@bf2-matchmaking/logging';
 import { updateMatch, updateMatchPlayers } from '../match/active-match';
-import { LiveInfo } from '@bf2-matchmaking/types';
+import { isStartedMatch, LiveInfo } from '@bf2-matchmaking/types';
 import { getActiveMatchServers } from '@bf2-matchmaking/redis/servers';
 import { removeLiveMatch } from '@bf2-matchmaking/redis/matches';
-import { saveDemosSince } from '../services/demo-service';
+import { saveMatchDemos } from '../services/demo-service';
 import { finishMatch } from '@bf2-matchmaking/services/matches';
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
 import { json } from '@bf2-matchmaking/redis/json';
@@ -44,12 +44,8 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
       await Server.reset(address);
 
       const server = await Server.getData(address);
-      if (
-        Number(match.roundsPlayed) > 0 &&
-        server?.demos_path &&
-        cachedMatch.started_at
-      ) {
-        await saveDemosSince(address, cachedMatch.started_at, server.demos_path);
+      if (Number(match.roundsPlayed) > 0 && isStartedMatch(cachedMatch)) {
+        await saveMatchDemos(address, cachedMatch, server);
       }
       return;
     }

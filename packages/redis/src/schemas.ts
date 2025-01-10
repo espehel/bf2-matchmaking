@@ -23,7 +23,7 @@ export const serverDataSchema = z.object({
   country: z.string(),
   city: z.string(),
   noVehicles: z.boolean(),
-  demos_path: z.string().nullable(),
+  demos_path: z.string(),
 });
 export const serverSchema = z.object({
   status: z.nativeEnum(ServerStatus),
