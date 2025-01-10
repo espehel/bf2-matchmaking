@@ -17,7 +17,11 @@ import {
   DnsRecordWithoutPriority,
   Region,
 } from '@bf2-matchmaking/types/platform';
-import { ConnectedLiveServer, LiveServer } from '@bf2-matchmaking/types/server';
+import {
+  ConnectedLiveServer,
+  LiveServer,
+  ServerLogEntry,
+} from '@bf2-matchmaking/types/server';
 
 const web = () => {
   const basePath = 'https://bf2.top';
@@ -152,6 +156,10 @@ const v2 = {
     }),
   getServer: (address: string) =>
     getJSON<LiveServer>(`${servers}/${address}`, {
+      cache: 'no-store',
+    }),
+  getServerLog: (address: string) =>
+    getJSON<Array<ServerLogEntry>>(`${servers}/${address}/log`, {
       cache: 'no-store',
     }),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),

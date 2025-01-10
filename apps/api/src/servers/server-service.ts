@@ -5,7 +5,7 @@ import {
   getServersWithStatus,
 } from '@bf2-matchmaking/redis/servers';
 import { error, info, logErrorMessage, logMessage, warn } from '@bf2-matchmaking/logging';
-import { DbServer, isNotNull, PendingServer, ServerInfo } from '@bf2-matchmaking/types';
+import { isNotNull, PendingServer, ServerInfo, ServersRow } from '@bf2-matchmaking/types';
 import { createSocket, getServerInfo } from '@bf2-matchmaking/services/rcon';
 import { assertObj, wait } from '@bf2-matchmaking/utils';
 import { getDnsByIp } from '../platform/cloudflare';
@@ -75,8 +75,8 @@ export function createPendingServer(server: PendingServer, retries: number) {
       }
     });
 }
-export async function connectPendingServer(server: PendingServer) {
-  const { address, port, rcon_port, rcon_pw, demo_path } = server;
+export async function connectPendingServer(pendingServer: PendingServer) {
+  const { address, port, rcon_port, rcon_pw, demo_path } = pendingServer;
 
   await hash('cache:rcons').setEntries([[address, rcon_pw]]);
 
@@ -86,12 +86,19 @@ export async function connectPendingServer(server: PendingServer) {
   const { data: serverInfo } = await getServerInfo(address);
   assertObj(serverInfo, 'Failed to get server info');
 
-  await upsertServer(address, port, rcon_port, rcon_pw, serverInfo, demo_path);
+  const server = await upsertServer(
+    address,
+    port,
+    rcon_port,
+    rcon_pw,
+    serverInfo,
+    demo_path
+  );
   info(
     'connectPendingServer',
     `Upserted server ${address} with name ${serverInfo.serverName}`
   );
-  await Server.init(address);
+  await Server.init(server);
 }
 
 export async function upsertServer(
@@ -101,7 +108,7 @@ export async function upsertServer(
   rcon_pw: string,
   serverInfo: ServerInfo,
   demos_path: string
-): Promise<DbServer> {
+): Promise<ServersRow> {
   const { data: server, error: serverError } = await client().upsertServer({
     ip: address,
     port,
@@ -113,7 +120,7 @@ export async function upsertServer(
     throw ServiceError.BadGateway('Failed to add server to database');
   }
 
-  const { data: serverRcon, error: serverRconError } = await client().upsertServerRcon({
+  const { error: serverRconError } = await client().upsertServerRcon({
     id: address,
     rcon_port,
     rcon_pw,
@@ -123,5 +130,5 @@ export async function upsertServer(
     throw ServiceError.BadGateway('Failed to add server rcon to database');
   }
 
-  return { ...server, rcon: serverRcon };
+  return server;
 }

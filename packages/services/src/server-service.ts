@@ -1,5 +1,5 @@
 import { LiveInfo } from '@bf2-matchmaking/types';
-import { error, logMessage } from '@bf2-matchmaking/logging';
+import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { getPlayerList, getServerInfo } from './rcon/bf2-rcon-api';
 import {
   addServerWithStatus,
@@ -11,35 +11,38 @@ import { DateTime } from 'luxon';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 import { Server } from './Server';
 import dns from 'dns';
+import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 
-export async function connectServer(address: string) {
-  try {
-    const liveInfo = await buildLiveState(address);
-    await setServerLiveInfo(address, liveInfo);
-    return ServerStatus.IDLE;
-  } catch (e) {
-    error('connectServer', e);
-    return ServerStatus.OFFLINE;
-  }
-}
-
-export async function buildLiveState(address: string): Promise<LiveInfo> {
-  const { data: info, error, readyState } = await getServerInfo(address);
+export async function createLiveInfo(
+  address: string,
+  shouldLog: boolean
+): Promise<LiveInfo> {
+  const { data: serverInfo, error, readyState } = await getServerInfo(address);
   if (error) {
     throw new Error(`${address}[${readyState}]: ${error.message}`);
   }
 
-  if (info.connectedPlayers === '0') {
-    return { ...info, players: [] };
+  if (serverInfo.connectedPlayers === '0') {
+    return { ...serverInfo, players: [] };
   }
 
   const { data: players } = await getPlayerList(address);
 
-  if (!players || players.length !== Number(info.connectedPlayers)) {
+  if (!players || players.length !== Number(serverInfo.connectedPlayers)) {
     throw new Error(`${address}[${readyState}]: Invalid live state`);
   }
 
-  return { ...info, players };
+  const liveInfo = { ...serverInfo, players };
+  const res = await setServerLiveInfo(address, liveInfo);
+
+  if (shouldLog) {
+    info(
+      'createLiveInfo',
+      `Server ${address}: Server live info created. [result=${res}]`
+    );
+  }
+
+  return liveInfo;
 }
 
 export async function updateLiveServer(address: string): Promise<LiveInfo | null> {
@@ -47,15 +50,14 @@ export async function updateLiveServer(address: string): Promise<LiveInfo | null
 
   const server = await getServer(address);
   try {
-    const live = await buildLiveState(address);
+    const live = await createLiveInfo(address, false);
 
     if (server.status === ServerStatus.RESTARTING) {
-      await Server.init(address);
+      await client().getServer(address).then(verifySingleResult).then(Server.init);
       return live;
     }
 
     await Server.update(address, { errorAt: undefined, updatedAt: now });
-    await setServerLiveInfo(address, live);
     return live;
   } catch (e) {
     if (!server.errorAt) {

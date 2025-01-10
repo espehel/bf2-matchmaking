@@ -27,6 +27,7 @@ import { ServerRconsRow } from '@bf2-matchmaking/types';
 import { deleteInstance } from '../platform/platform-service';
 import { client } from '@bf2-matchmaking/supabase';
 import { Server } from '@bf2-matchmaking/services/server/Server';
+import { stream } from '@bf2-matchmaking/redis/stream';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -41,6 +42,11 @@ serversRouter.get('/rcons', protect(), async (ctx) => {
     rcon_port: 4711,
     created_at: '',
   }));
+});
+
+serversRouter.get('/:address/log', async (ctx: Context) => {
+  const streamMessages = await stream(`servers:${ctx.params.address}:log`).readAll();
+  ctx.body = streamMessages.map(({ message }) => message);
 });
 
 serversRouter.post('/:ip/restart', async (ctx: Context) => {
@@ -158,10 +164,17 @@ serversRouter.post('/', async (ctx: Context): Promise<void> => {
   const { data: serverInfo } = await getServerInfo(address);
   ctx.assert(serverInfo, 502, 'Failed to connect to server.');
 
-  await upsertServer(address, port, rcon_port, rcon_pw, serverInfo, demo_path);
+  const server = await upsertServer(
+    address,
+    port,
+    rcon_port,
+    rcon_pw,
+    serverInfo,
+    demo_path
+  );
   info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
 
-  const liveServer = Server.init(address);
+  const liveServer = Server.init(server);
   ctx.assert(liveServer, 502, 'Failed to create live server');
 
   ctx.body = liveServer;

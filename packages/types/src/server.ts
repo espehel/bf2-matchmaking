@@ -58,3 +58,9 @@ export interface ServerLocation {
   org: string;
   as: string;
 }
+
+export interface ServerLogEntry {
+  message: string;
+  timestamp: string;
+  level: 'info' | 'warn' | 'error';
+}
