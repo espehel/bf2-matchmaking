@@ -21,6 +21,7 @@ import {
   ConnectedLiveServer,
   LiveServer,
   ServerLogEntry,
+  ServersLogs,
 } from '@bf2-matchmaking/types/server';
 
 const web = () => {
@@ -152,7 +153,11 @@ const v2 = {
     getJSON<ConnectedLiveServer>(`${matches}/${matchId}/server`),
   getServers: () =>
     getJSON<Array<LiveServer>>(`${servers}`, {
-      next: { revalidate: 600 },
+      next: { revalidate: 60 },
+    }),
+  getServersLogs: () =>
+    getJSON<ServersLogs>(`${servers}/logs`, {
+      next: { revalidate: 60 },
     }),
   getServer: (address: string) =>
     getJSON<LiveServer>(`${servers}/${address}`, {

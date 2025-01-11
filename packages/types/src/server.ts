@@ -38,7 +38,6 @@ export interface ConnectedLiveServer extends LiveServer {
 
 export interface OfflineServer extends LiveServer {
   status: ServerStatus.RESTARTING | ServerStatus.OFFLINE;
-  data: null;
   live: null;
 }
 
@@ -64,3 +63,5 @@ export interface ServerLogEntry {
   timestamp: string;
   level: 'info' | 'warn' | 'error';
 }
+
+export type ServersLogs = Array<[string, Array<ServerLogEntry>]>;

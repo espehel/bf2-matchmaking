@@ -22,7 +22,7 @@ export default async function ServerManageActions({ address }: Props) {
   }
 
   return (
-    <section className="section">
+    <section className="section grow">
       <h2>Manage server</h2>
       <div>
         <ActionButton

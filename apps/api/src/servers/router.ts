@@ -28,6 +28,8 @@ import { deleteInstance } from '../platform/platform-service';
 import { client } from '@bf2-matchmaking/supabase';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { stream } from '@bf2-matchmaking/redis/stream';
+import { getAllServers } from '@bf2-matchmaking/redis/servers';
+import { ServerLogEntry } from '@bf2-matchmaking/types/server';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -42,6 +44,19 @@ serversRouter.get('/rcons', protect(), async (ctx) => {
     rcon_port: 4711,
     created_at: '',
   }));
+});
+
+serversRouter.get('/logs', async (ctx: Context) => {
+  const servers = await getAllServers();
+  ctx.body = await Promise.all(
+    servers.map(async (server) => {
+      const streamMessages = await stream(`servers:${server}:log`).readAll();
+      return [
+        server,
+        streamMessages.map(({ message }) => message as unknown as ServerLogEntry),
+      ];
+    })
+  );
 });
 
 serversRouter.get('/:address/log', async (ctx: Context) => {

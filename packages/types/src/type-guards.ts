@@ -107,10 +107,7 @@ export function isConnectedLiveServer(server: LiveServer): server is ConnectedLi
 
 export function isOfflineLiveServer(server: LiveServer): server is OfflineServer {
   return (
-    (server.status === ServerStatus.OFFLINE ||
-      server.status === ServerStatus.RESTARTING) &&
-    !server.live &&
-    !server.data
+    server.status === ServerStatus.OFFLINE || server.status === ServerStatus.RESTARTING
   );
 }
 

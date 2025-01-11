@@ -6,6 +6,7 @@ import ServerInGameActions from '@/components/servers/ServerInGameActions';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { isConnectedLiveServer } from '@bf2-matchmaking/types';
+import ServerLog from '@/components/servers/ServerLog';
 
 interface Props {
   params: { server: string };
@@ -35,7 +36,10 @@ export default async function ServerPage({ params }: Props) {
           />
         )}
       </div>
-      <ManageServerActions address={params.server} />
+      <div className="flex gap-6">
+        <ManageServerActions address={params.server} />
+        <ServerLog address={params.server} />
+      </div>
     </main>
   );
 }

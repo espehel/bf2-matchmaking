@@ -5,7 +5,11 @@ import { api, sortLiveServerByName, verify } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
 import CreateServerSection from '@/components/servers/CreateServerSection';
 import { CheckCircleIcon } from '@heroicons/react/16/solid';
-import { LiveServer } from '@bf2-matchmaking/types/server';
+import {
+  LiveServer,
+  ServerStatus as ServerStatusEnum,
+} from '@bf2-matchmaking/types/server';
+import ServerLogs from '@/components/servers/ServerLogs';
 
 export default async function Page() {
   const servers = await api.v2.getServers().then(verify).then(sortLiveServerByName);
@@ -54,10 +58,12 @@ export default async function Page() {
             ))}
             {servers.filter(isOfflineLiveServer).map((server) => (
               <tr key={server.address} className="hover">
-                <td className="truncate">-</td>
+                <td className="truncate">{server.data?.name || '-'}</td>
                 <td>{server.address}</td>
-                <td>-</td>
-                <td className="truncate">-</td>
+                <td>{server.data?.port || ''}</td>
+                <td className="truncate">
+                  {server.data ? `${server.data.city}, ${server.data.country}` : '-'}
+                </td>
                 <td>-</td>
                 <td>
                   <ServerStatus server={server} />
@@ -77,6 +83,9 @@ export default async function Page() {
         </table>
       </div>
       <Suspense fallback={null}>
+        <ServerLogs />
+      </Suspense>
+      <Suspense fallback={null}>
         <CreateServerSection />
       </Suspense>
     </main>
@@ -90,9 +99,11 @@ function ServerStatus({ server }: { server: LiveServer }) {
         {server.matchId}
       </Link>
     );
-  } else if (server.live) {
+  } else if (server.status === ServerStatusEnum.IDLE) {
     return 'Idle';
-  } else {
+  } else if (server.status === ServerStatusEnum.OFFLINE) {
     return 'Offline';
+  } else {
+    return '-';
   }
 }

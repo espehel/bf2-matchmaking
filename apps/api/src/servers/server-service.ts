@@ -1,4 +1,5 @@
 import {
+  getAllServers,
   getServer,
   getServerDataSafe,
   getServerLiveInfo,
@@ -44,14 +45,8 @@ export async function getLiveServer(address: string): Promise<LiveServer | null>
 }
 
 export async function getLiveServers(): Promise<LiveServer[]> {
-  const idleServers = await getServersWithStatus(ServerStatus.IDLE);
-  const offlineServers = await getServersWithStatus(ServerStatus.OFFLINE);
-  const liveServers = await getServersWithStatus(ServerStatus.ACTIVE);
-  return (
-    await Promise.all(
-      [...idleServers, ...offlineServers, ...liveServers].map(getLiveServer)
-    )
-  ).filter(isNotNull);
+  const servers = await getAllServers();
+  return (await Promise.all(servers.map(getLiveServer))).filter(isNotNull);
 }
 
 export async function getAddress(ip: string) {

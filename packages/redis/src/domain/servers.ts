@@ -7,6 +7,17 @@ import { Server, ServerData } from '../types';
 import { serverDataSchema } from '../schemas';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 
+export async function getAllServers() {
+  return (
+    await Promise.all([
+      getServersWithStatus(ServerStatus.ACTIVE),
+      getServersWithStatus(ServerStatus.IDLE),
+      getServersWithStatus(ServerStatus.OFFLINE),
+      getServersWithStatus(ServerStatus.RESTARTING),
+    ])
+  ).flat();
+}
+
 export function getServersWithStatus(status: ServerStatus) {
   if (status === ServerStatus.ACTIVE) {
     return hash(`servers:active`).values();
