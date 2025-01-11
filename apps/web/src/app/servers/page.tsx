@@ -1,6 +1,9 @@
 import { isConnectedLiveServer, isOfflineLiveServer } from '@bf2-matchmaking/types';
 import Link from 'next/link';
-import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import {
+  DocumentMagnifyingGlassIcon,
+  DocumentTextIcon,
+} from '@heroicons/react/24/outline';
 import { api, sortLiveServerByName, verify } from '@bf2-matchmaking/utils';
 import { Suspense } from 'react';
 import CreateServerSection from '@/components/servers/CreateServerSection';
@@ -9,7 +12,6 @@ import {
   LiveServer,
   ServerStatus as ServerStatusEnum,
 } from '@bf2-matchmaking/types/server';
-import ServerLogs from '@/components/servers/ServerLogs';
 
 export default async function Page() {
   const servers = await api.v2.getServers().then(verify).then(sortLiveServerByName);
@@ -47,10 +49,7 @@ export default async function Page() {
                   server.live?.maxPlayers || 0
                 }`}</td>
                 <td>
-                  <Link
-                    className="link link-secondary"
-                    href={`/servers/${server.address}`}
-                  >
+                  <Link className="link link-accent" href={`/servers/${server.address}`}>
                     <DocumentMagnifyingGlassIcon className="h-6" />
                   </Link>
                 </td>
@@ -70,10 +69,7 @@ export default async function Page() {
                 </td>
                 <td>-</td>
                 <td>
-                  <Link
-                    className="link link-secondary"
-                    href={`/servers/${server.address}`}
-                  >
+                  <Link className="link link-accent" href={`/servers/${server.address}`}>
                     <DocumentMagnifyingGlassIcon className="h-6" />
                   </Link>
                 </td>
@@ -81,10 +77,13 @@ export default async function Page() {
             ))}
           </tbody>
         </table>
+        <div className="text-right mt-4">
+          <Link className="btn btn-accent btn-sm btn-outline ml-auto" href="servers/logs">
+            Logs
+            <DocumentTextIcon className="size-4" />
+          </Link>
+        </div>
       </div>
-      <Suspense fallback={null}>
-        <ServerLogs />
-      </Suspense>
       <Suspense fallback={null}>
         <CreateServerSection />
       </Suspense>
