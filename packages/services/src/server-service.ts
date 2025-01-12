@@ -49,7 +49,11 @@ export async function updateLiveServer(address: string): Promise<LiveInfo | null
       return live;
     }
 
-    await Server.update(address, { errorAt: undefined, updatedAt: now });
+    await Server.update(address, {
+      errorAt: undefined,
+      updatedAt: now,
+      status: server.status === ServerStatus.OFFLINE ? ServerStatus.IDLE : server.status,
+    });
     return live;
   } catch (e) {
     if (!server.errorAt) {
