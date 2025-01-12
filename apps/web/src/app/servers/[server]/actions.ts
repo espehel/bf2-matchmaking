@@ -42,7 +42,7 @@ export async function restartRound(address: string) {
 }
 
 export async function restartServerInfantry(ip: string) {
-  const result = await api.live().postServerRestart(ip, { mode: 'infantry' });
+  const result = await api.v2.postServerRestart(ip, { mode: 'infantry', admins: 'all' });
   if (!result.error) {
     revalidatePath(`/servers/${ip}`);
   }
@@ -50,7 +50,7 @@ export async function restartServerInfantry(ip: string) {
 }
 
 export async function restartServerVehicles(ip: string) {
-  const result = await api.live().postServerRestart(ip, { mode: 'vehicles' });
+  const result = await api.v2.postServerRestart(ip, { mode: 'vehicles', admins: 'all' });
   if (!result.error) {
     revalidatePath(`/servers/${ip}`);
   }

@@ -16,6 +16,7 @@ import { hash } from '@bf2-matchmaking/redis/hash';
 import {
   createPendingServer,
   getAddress,
+  getAdmins,
   getLiveServer,
   getLiveServers,
   upsertServer,
@@ -23,7 +24,7 @@ import {
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
 import { Context } from 'koa';
 import { protect } from '../auth';
-import { ServerRconsRow } from '@bf2-matchmaking/types';
+import { PostRestartServerRequestBody, ServerRconsRow } from '@bf2-matchmaking/types';
 import { deleteInstance } from '../platform/platform-service';
 import { client } from '@bf2-matchmaking/supabase';
 import { Server } from '@bf2-matchmaking/services/server/Server';
@@ -64,17 +65,31 @@ serversRouter.get('/:address/log', async (ctx: Context) => {
   ctx.body = streamMessages.map(({ message }) => message);
 });
 
-serversRouter.post('/:ip/restart', async (ctx: Context) => {
-  const { mode, map } = ctx.request.body;
+serversRouter.post('/:ip/restart', protect(), async (ctx: Context) => {
+  const { mode, mapName, serverName, admins } = ctx.request
+    .body as PostRestartServerRequestBody;
+
+  const usersxml = await getAdmins(admins);
+
   if (mode === 'infantry') {
-    const result = await restartWithInfantryMode(ctx.params.ip, map);
+    const result = await restartWithInfantryMode(
+      ctx.params.ip,
+      usersxml,
+      mapName,
+      serverName
+    );
     if (result.error && result.error.message !== 'Unexpected end of JSON input') {
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with infantry mode', { result });
     }
   }
   if (mode === 'vehicles') {
-    const result = await restartWithVehicleMode(ctx.params.ip, map);
+    const result = await restartWithVehicleMode(
+      ctx.params.ip,
+      usersxml,
+      mapName,
+      serverName
+    );
     if (result.error && result.error.message !== 'Unexpected end of JSON input') {
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with vehicles mode', { result });

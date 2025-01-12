@@ -3,18 +3,18 @@ import {
   getServer,
   getServerDataSafe,
   getServerLiveInfo,
-  getServersWithStatus,
 } from '@bf2-matchmaking/redis/servers';
 import { error, info, logErrorMessage, logMessage, warn } from '@bf2-matchmaking/logging';
 import { isNotNull, PendingServer, ServerInfo, ServersRow } from '@bf2-matchmaking/types';
 import { createSocket, getServerInfo } from '@bf2-matchmaking/services/rcon';
 import { assertObj, wait } from '@bf2-matchmaking/utils';
 import { getDnsByIp } from '../platform/cloudflare';
-import { client } from '@bf2-matchmaking/supabase';
+import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { ServiceError } from '@bf2-matchmaking/services/error';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { Server } from '@bf2-matchmaking/services/server/Server';
-import { LiveServer, ServerStatus } from '@bf2-matchmaking/types/server';
+import { LiveServer } from '@bf2-matchmaking/types/server';
+import { generateUsersXml } from '../players/users-generator';
 
 export async function getLiveServerByMatchId(matchId: string) {
   const address = await Server.findByMatch(matchId);
@@ -126,4 +126,15 @@ export async function upsertServer(
   }
 
   return server;
+}
+
+export async function getAdmins(admins: 'all' | 'none' | number) {
+  if (admins === 'all') {
+    const players = await client().getPlayers().then(verifyResult);
+    return Buffer.from(generateUsersXml(players)).toString('base64');
+  }
+  if (admins === 'none') {
+    return null;
+  }
+  return null;
 }
