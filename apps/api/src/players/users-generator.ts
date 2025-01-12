@@ -1,6 +1,10 @@
 import { MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
 import { info } from '@bf2-matchmaking/logging';
-import { isUniqueObject } from '@bf2-matchmaking/utils';
+import { assertString, isUniqueTupleValue } from '@bf2-matchmaking/utils';
+import { createHash } from 'node:crypto';
+
+assertString(process.env.BF2CC_PASSWORD, 'BF2CC_PASSWORD is undefined');
+const hashedPassword = createHash('md5').update(process.env.BF2CC_PASSWORD).digest('hex');
 
 export function generateMatchUsersXml(match: MatchesJoined) {
   info(
@@ -9,38 +13,43 @@ export function generateMatchUsersXml(match: MatchesJoined) {
   );
   const players = match.players
     .concat(match.home_team.players.map(({ player }) => player))
-    .concat(match.away_team.players.map(({ player }) => player))
-    .filter(isUniqueObject);
+    .concat(match.away_team.players.map(({ player }) => player));
+  return generateUsersXml(players);
+}
+
+export function generateUsersXml(players: Array<PlayersRow>) {
+  const uniquePlayers = players
+    .filter((p) => p.keyhash !== null && p.keyhash.length > 1)
+    .map<[string, string]>((p) => [p.nick, p.keyhash!])
+    .filter(isUniqueTupleValue);
+
   return `<?xml version="1.0" standalone="yes"?>
 <dsdUsers xmlns="http://bf2cc.com/dsdUsers.xsd">
   <Users>
     <Username>admin</Username>
-    <Password>21232F297A57A5A743894A0E4A801FC3</Password>
+    <Password>${hashedPassword}</Password>
     <IsEnabled>true</IsEnabled>
     <Notes>Administrator account</Notes>
     <GroupName>Administrators</GroupName>
   </Users>
-${players.map(getUserElement).join('\n')}
+${uniquePlayers.map(getUserElement).join('\n')}
 ${getGroupProperties()}
 </dsdUsers>
 `;
 }
 
-function getUserElement(player: PlayersRow) {
-  if (!player.keyhash) {
-    return '';
-  }
+function getUserElement([nick, keyhash]: [string, string]) {
   return `  <Users>
-    <Username>${player.nick}</Username>
-    <Password>2023</Password>
+    <Username>${nick}</Username>
+    <Password>${hashedPassword}</Password>
     <IsEnabled>true</IsEnabled>
-    <Notes>${player.nick}</Notes>
+    <Notes>${nick}</Notes>
     <GroupName>Administrators</GroupName>
   </Users>
   <UserProperties>
-    <Username>${player.nick}</Username>
+    <Username>${nick}</Username>
     <PropName>Hash</PropName>
-    <PropValue>${player.keyhash}</PropValue>
+    <PropValue>${keyhash}</PropValue>
   </UserProperties>`;
 }
 

@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import { generateMatchUsersXml } from './users-generator';
+import { generateMatchUsersXml } from '../players/users-generator';
 import { client } from '@bf2-matchmaking/supabase';
 import { isConnectedLiveServer, isNotNull } from '@bf2-matchmaking/types/guards';
 import { MatchStatus } from '@bf2-matchmaking/types/supabase';

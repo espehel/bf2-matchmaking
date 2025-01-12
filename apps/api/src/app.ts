@@ -13,6 +13,7 @@ import { adminRouter } from './admin/router';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { DateTime } from 'luxon';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
+import { playersRouter } from './players/router';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 
@@ -32,6 +33,8 @@ new Koa()
   .use(matchesRouter.allowedMethods())
   .use(platformRouter.routes())
   .use(platformRouter.allowedMethods())
+  .use(playersRouter.routes())
+  .use(playersRouter.allowedMethods())
   .use(serversRouter.routes())
   .use(serversRouter.allowedMethods())
   .use(webhooksRouter.routes())
