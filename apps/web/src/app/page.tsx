@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
+import { PaperAirplaneIcon } from '@heroicons/react/20/solid';
 
 export default function Home() {
   return (
@@ -16,16 +17,27 @@ export default function Home() {
               <Link className="btn btn-primary" href="/challenges">
                 Challenge a team
               </Link>
-              <Link className="btn btn-primary" href="/matches/scheduled">
-                Scheduled matches
-              </Link>
               <Link className="btn btn-primary" href="/matches">
-                Live matches
+                Schedule and see matches
+              </Link>
+              <Link className="btn btn-primary" href="/results">
+                Results
               </Link>
               <Link className="btn btn-primary" href="/leaderboards">
                 Leaderboards
               </Link>
             </div>
+            <p className="mt-8">
+              <span className="mr-1">All types of feedback is very welcome</span>
+              <Link
+                className="link link-primary whitespace-nowrap"
+                href="https://discord.com/channels/@me/1057027470655770654"
+                target="_blank"
+              >
+                Contact Artic@discord
+                <PaperAirplaneIcon className="size-4 inline ml-1" />
+              </Link>
+            </p>
           </div>
         </div>
       </div>
