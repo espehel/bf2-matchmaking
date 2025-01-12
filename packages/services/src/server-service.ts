@@ -1,17 +1,13 @@
 import { LiveInfo } from '@bf2-matchmaking/types';
-import { error, info, logMessage } from '@bf2-matchmaking/logging';
+import { info, warn } from '@bf2-matchmaking/logging';
 import { getPlayerList, getServerInfo } from './rcon/bf2-rcon-api';
-import {
-  addServerWithStatus,
-  getServer,
-  removeServerWithStatus,
-  setServerLiveInfo,
-} from '@bf2-matchmaking/redis/servers';
+import { getServer, setServerLiveInfo } from '@bf2-matchmaking/redis/servers';
 import { DateTime } from 'luxon';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 import { Server } from './Server';
 import dns from 'dns';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { parseError } from '@bf2-matchmaking/utils';
 
 export async function createLiveInfo(
   address: string,
@@ -22,11 +18,8 @@ export async function createLiveInfo(
     throw new Error(`${address}[${readyState}]: ${error.message}`);
   }
 
-  if (serverInfo.connectedPlayers === '0') {
-    return { ...serverInfo, players: [] };
-  }
-
-  const { data: players } = await getPlayerList(address);
+  const { data: players } =
+    serverInfo.connectedPlayers === '0' ? { data: [] } : await getPlayerList(address);
 
   if (!players || players.length !== Number(serverInfo.connectedPlayers)) {
     throw new Error(`${address}[${readyState}]: Invalid live state`);
@@ -50,8 +43,7 @@ export async function updateLiveServer(address: string): Promise<LiveInfo | null
 
   const server = await getServer(address);
   try {
-    const live = await createLiveInfo(address, false);
-
+    const live = await createLiveInfo(address, true);
     if (server.status === ServerStatus.RESTARTING) {
       await client().getServer(address).then(verifySingleResult).then(Server.init);
       return live;
@@ -61,15 +53,16 @@ export async function updateLiveServer(address: string): Promise<LiveInfo | null
     return live;
   } catch (e) {
     if (!server.errorAt) {
-      error('updateLiveServer', e);
-      await Server.update(address, { errorAt: now });
+      await Server.setError(address, e);
       return null;
     }
     if (DateTime.fromISO(server.errorAt).diffNow('hours').minutes < -30) {
-      logMessage(`Server ${address} is offline`, { server });
-      await removeServerWithStatus(address, ServerStatus.IDLE);
-      await addServerWithStatus(address, ServerStatus.OFFLINE);
+      await Server.setOffline(address, '30 minutes since last successful request');
     }
+    warn(
+      'updateLiveServer',
+      `Server ${address}: Failed to update server: ${parseError(e)}`
+    );
     return null;
   }
 }

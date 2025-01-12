@@ -111,6 +111,21 @@ export const Server = {
     logServerMessage(address, 'Server restarting');
     return getServer(address);
   },
+  setOffline: async (address: string, reason: string) => {
+    await removeServerWithStatus(address, ServerStatus.IDLE);
+    await addServerWithStatus(address, ServerStatus.OFFLINE);
+    await hash(`servers:${address}`).set({
+      status: ServerStatus.OFFLINE,
+      errorAt: undefined,
+      updatedAt: undefined,
+      matchId: undefined,
+    });
+    logServerMessage(address, `Server is offline: ${reason}`);
+  },
+  setError: async (address: string, e: unknown) => {
+    await hash(`servers:${address}`).set({ errorAt: DateTime.now().toISO() });
+    logServerError(address, 'Something failed', e);
+  },
   delete: async (address: string) => {
     await removeServerWithStatus(address, ServerStatus.IDLE);
     await removeServerWithStatus(address, ServerStatus.OFFLINE);
