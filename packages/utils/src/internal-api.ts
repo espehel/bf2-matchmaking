@@ -60,11 +60,6 @@ const live = () => {
       getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip)), { cache: 'no-store' }),
     postServerExec: (ip: string, body: PostServerExecRequestBody) =>
       postJSON<PostServerExecResponseBody>(basePath.concat(paths.serverExec(ip)), body),
-    postServerRestart: (ip: string, body: PostRestartServerRequestBody) =>
-      postJSON<PostServerExecResponseBody>(
-        basePath.concat(paths.serverRestart(ip)),
-        body
-      ),
     postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
     postServerUnpause: (ip: string) =>
       postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
@@ -168,6 +163,8 @@ const v2 = {
       cache: 'no-store',
     }),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
+  postServerRestart: (address: string, body: PostRestartServerRequestBody) =>
+    postJSON<PostServerExecResponseBody>(`${servers}/${address}/restart`, body),
   adminReset: () => postJSON(`${admin}/reset`, {}),
 };
 

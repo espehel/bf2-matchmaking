@@ -150,5 +150,8 @@ export type LogContext = Record<any, any>;
 
 export interface PostRestartServerRequestBody {
   mode: 'infantry' | 'vehicles' | null;
-  map?: string;
+  mapName?: string;
+  serverName?: string;
+  admins: 'all' | 'none' | number;
+  pubobotMatchId?: string;
 }
