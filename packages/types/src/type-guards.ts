@@ -1,5 +1,6 @@
 import {
   AcceptedChallenge,
+  AdminPlayer,
   Challenge,
   DiscordConfig,
   DiscordMatch,
@@ -117,4 +118,8 @@ export function isActiveLiveMatch(match: LiveMatch): match is ActiveLiveMatch {
 
 export function isPubobotMatch(value: unknown): value is PubobotMatch {
   return Boolean(value && (value as PubobotMatch).matchId);
+}
+
+export function isAdminPlayer(value: unknown): value is AdminPlayer {
+  return Boolean(value && (value as AdminPlayer).player);
 }

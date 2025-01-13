@@ -7,6 +7,7 @@ import { json } from '@bf2-matchmaking/redis/json';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,20 @@ export default async function AdminPage() {
 
   return (
     <main className="main">
+      <section className="section mb-8">
+        <h2>Manage</h2>
+        <div className="flex gap-4">
+          <Link href="/admin/roles" className="btn btn-outline btn-accent">
+            Admin roles
+          </Link>
+          <Link href="/admin/players" className="btn btn-outline btn-accent">
+            Players
+          </Link>
+          <Link href="/admin/configs" className="btn btn-outline btn-accent">
+            Configs
+          </Link>
+        </div>
+      </section>
       <section className="section mb-8">
         <h2>System</h2>
         <p>{`Last reset: ${systemState?.resetAt}`}</p>

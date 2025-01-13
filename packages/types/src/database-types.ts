@@ -267,3 +267,7 @@ export interface AcceptedChallenge extends Challenge {
   away_server: ServersRow;
   match: number;
 }
+
+export interface AdminPlayer extends AdminRolesRow {
+  player: PlayersRow;
+}

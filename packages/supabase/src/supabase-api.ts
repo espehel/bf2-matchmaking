@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import matches from './matches-api';
 import {
+  AdminPlayer,
   Challenge,
   ChallengesInsert,
   ChallengesUpdate,
@@ -169,6 +170,7 @@ export default (client: SupabaseClient<Database>) => ({
   upsertServerRcon: (values: ServerRconsInsert) =>
     client.from('server_rcons').upsert(values).select().single(),
   getMatchAdmins: () => client.from('admin_roles').select('*').eq('match_admin', true),
+  getAdmins: () => client.from('admin_roles').select('*, player:players(*)'),
   getAdminRoles: (userId: string) =>
     client.from('admin_roles').select('*').eq('user_id', userId).single(),
   createTeam: (team: TeamsInsert) => client.from('teams').insert(team).select().single(),
