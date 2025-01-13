@@ -5,6 +5,7 @@ import {
   FetchSuccessResponse,
   isDefined,
 } from '@bf2-matchmaking/types';
+import { assertString } from './assert';
 
 const parseError = (error: any): FetchError => {
   if (!error) {
@@ -116,16 +117,17 @@ export const postJSON = async <T>(
 ): Promise<FetchSuccessResponse<T> | FetchErrorResponse> => {
   const headers = {
     'Content-Type': 'application/json',
+    ...options.headers,
   };
   const bodyInit = isDefined(body) ? JSON.stringify(body) : undefined;
 
   try {
     const res = await fetch(url, {
+      ...options,
       headers,
       method: 'POST',
       body: bodyInit,
       cache: 'no-store',
-      ...options,
     });
 
     return parseResponse<T>(res);
@@ -133,6 +135,16 @@ export const postJSON = async <T>(
     return { data: null, error: parseError(error), status: -1, statusText: '' };
   }
 };
+
+export const postWithApiKeyJSON = async <T>(
+  url: string,
+  body: unknown,
+  options: Partial<RequestInit> = {}
+): Promise<FetchSuccessResponse<T> | FetchErrorResponse> =>
+  postJSON<T>(url, body, {
+    ...options,
+    headers: { ...options.headers, 'X-API-Key': process.env.API_KEY || '' },
+  });
 
 export const verify = <T>(result: FetchResult<T>): T => {
   if (result.error) {

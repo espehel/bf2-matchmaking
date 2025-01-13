@@ -104,7 +104,7 @@ export const Server = {
   restart: async (address: string) => {
     await setServer(address, {
       status: ServerStatus.RESTARTING,
-      updatedAt: DateTime.now().toISO(),
+      updatedAt: undefined,
       errorAt: undefined,
     });
     await del([`servers:${address}:info`, `servers:${address}:data`]);

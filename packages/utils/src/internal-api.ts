@@ -11,7 +11,7 @@ import {
   MatchesJoined,
   PostMatchRequestBody,
 } from '@bf2-matchmaking/types';
-import { deleteJSON, getJSON, postJSON } from './fetcher';
+import { deleteJSON, getJSON, postJSON, postWithApiKeyJSON } from './fetcher';
 import {
   Instance,
   DnsRecordWithoutPriority,
@@ -164,7 +164,7 @@ const v2 = {
     }),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
   postServerRestart: (address: string, body: PostRestartServerRequestBody) =>
-    postJSON<PostServerExecResponseBody>(`${servers}/${address}/restart`, body),
+    postWithApiKeyJSON<PostServerExecResponseBody>(`${servers}/${address}/restart`, body),
   adminReset: () => postJSON(`${admin}/reset`, {}),
 };
 
