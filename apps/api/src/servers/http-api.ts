@@ -31,7 +31,7 @@ export async function restartWithVehicleMode(
   const { data: info } = await getServerInfo(address);
   assertObj(info, `Connection to ${address} failed`);
   const apiKey = process.env.HTTP_API_KEY;
-  return postJSON(`http://${address}:1025/restart_vehicles`, {
+  return postJSON(`http://${address}:1025/restart`, {
     mapName: getMapName(info, mapName),
     serverName: serverName || info.serverName,
     apiKey,
