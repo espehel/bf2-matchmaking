@@ -1,6 +1,11 @@
 'use client';
 import { ChangeEvent, Fragment, useCallback, useState } from 'react';
-import { Combobox } from '@headlessui/react';
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from '@headlessui/react';
 import { PlayersRow } from '@bf2-matchmaking/types';
 import { supabaseClient } from '@/lib/supabase/supabase-client';
 import useSWR from 'swr/mutation';
@@ -16,7 +21,9 @@ interface Props {
 }
 
 const searchPlayers = (key: string, { arg }: { arg: string }) =>
-  supabaseClient().searchPlayers(arg).then(verifyResult) as Promise<PlayersRow[]>;
+  supabaseClient()
+    .searchPlayers(arg.replace(/_/g, '\\_').replace(/%/g, '\\%'))
+    .then(verifyResult) as Promise<PlayersRow[]>;
 
 export default function PlayerCombobox({
   onPlayerSelected,
@@ -60,24 +67,23 @@ export default function PlayerCombobox({
       <Combobox
         value={selectedPlayer}
         onChange={handlePlayerSelected}
-        nullable
         disabled={disabled}
         name="player"
       >
-        <Combobox.Input
+        <ComboboxInput
           className={`input input-bordered input-${size} w-full`}
           placeholder={placeholder}
           name="player-select"
           onChange={handleInputChange}
           displayValue={(player: PlayersRow) => player?.nick || ''}
         />
-        <Combobox.Options className="menu dropdown-content z-[1] shadow bg-base-100 rounded-box p-0 w-full">
+        <ComboboxOptions className="menu dropdown-content z-[1] shadow bg-base-100 rounded-box p-0 w-full">
           {players.map((player) => (
-            <Combobox.Option key={player.id} value={player} as={Fragment}>
-              {({ active, selected }) => (
+            <ComboboxOption key={player.id} value={player} as={Fragment}>
+              {({ focus, selected }) => (
                 <li
                   className={`rounded p-2 ${
-                    active
+                    focus
                       ? 'bg-secondary text-secondary-content'
                       : 'bg-base-100 text-base-content'
                   }`}
@@ -86,9 +92,9 @@ export default function PlayerCombobox({
                   {player.nick}
                 </li>
               )}
-            </Combobox.Option>
+            </ComboboxOption>
           ))}
-        </Combobox.Options>
+        </ComboboxOptions>
       </Combobox>
     </div>
   );
