@@ -70,11 +70,12 @@ export const createSummonedReactions = (channelId: string, message: APIMessage) 
 
 export function getMatchThumbnail(match: MatchesJoined) {
   switch (match.config.id) {
-    case 16:
-      return matchthumb;
     case 17:
       return match5v5thumb;
-    default:
+    case 18:
+    case 15:
       return pcwthumb;
+    default:
+      return matchthumb;
   }
 }
