@@ -38,7 +38,7 @@ export default async function ServerPage({ params }: Props) {
       </div>
       <div className="flex gap-6">
         <ManageServerActions address={params.server} />
-        <ServerLog address={params.server} />
+        {hasAdmin && <ServerLog address={params.server} />}
       </div>
     </main>
   );

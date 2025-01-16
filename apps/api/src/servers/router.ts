@@ -51,7 +51,7 @@ serversRouter.get('/logs', async (ctx: Context) => {
   const servers = await getAllServers();
   ctx.body = await Promise.all(
     servers.map(async (server) => {
-      const streamMessages = await stream(`servers:${server}:log`).readAll();
+      const streamMessages = await stream(`servers:${server}:log`).readAll(true);
       return [
         server,
         streamMessages.map(({ message }) => message as unknown as ServerLogEntry),

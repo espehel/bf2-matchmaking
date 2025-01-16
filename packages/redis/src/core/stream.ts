@@ -19,9 +19,10 @@ export function stream(key: string) {
     return client.XADD(key, '*', { message, timestamp: Date.now().toString(), level });
   };
 
-  const readAll = async (): Promise<Array<StreamMessageReply>> => {
+  const readAll = async (reverse = false): Promise<Array<StreamMessageReply>> => {
     const client = await getClient();
-    return client.XRANGE(key, '-', '+');
+
+    return reverse ? client.XREVRANGE(key, '+', '-') : client.XRANGE(key, '-', '+');
   };
 
   const del = async () => {

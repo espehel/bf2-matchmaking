@@ -13,9 +13,9 @@ export default async function ServerLog({ address }: Props) {
   }
 
   return (
-    <section className="section">
+    <section className="section h-96">
       <h2>Server log</h2>
-      <code className="bg-base-300 p-4 rounded">
+      <code className="bg-base-300 p-4 rounded overflow-y-scroll">
         <ul>
           {logs.map((entry) => (
             <li key={entry.timestamp}>

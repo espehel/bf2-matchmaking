@@ -12,9 +12,13 @@ import {
   LiveServer,
   ServerStatus as ServerStatusEnum,
 } from '@bf2-matchmaking/types/server';
+import { supabase } from '@/lib/supabase/supabase';
+import { cookies } from 'next/headers';
 
 export default async function Page() {
   const servers = await api.v2.getServers().then(verify).then(sortLiveServerByName);
+  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const hasAdmin = Boolean(adminRoles?.server_admin);
 
   return (
     <main className="main">
@@ -77,12 +81,17 @@ export default async function Page() {
             ))}
           </tbody>
         </table>
-        <div className="text-right mt-4">
-          <Link className="btn btn-accent btn-sm btn-outline ml-auto" href="servers/logs">
-            Logs
-            <DocumentTextIcon className="size-4" />
-          </Link>
-        </div>
+        {hasAdmin && (
+          <div className="text-right mt-4">
+            <Link
+              className="btn btn-accent btn-sm btn-outline ml-auto"
+              href="servers/logs"
+            >
+              Logs
+              <DocumentTextIcon className="size-4" />
+            </Link>
+          </div>
+        )}
       </div>
       <Suspense fallback={null}>
         <CreateServerSection />
