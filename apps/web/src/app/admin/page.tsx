@@ -36,7 +36,7 @@ export default async function AdminPage() {
             Players
           </Link>
           <Link href="/admin/configs" className="btn btn-outline btn-accent">
-            Configs
+            Configs and ratings
           </Link>
         </div>
       </section>
