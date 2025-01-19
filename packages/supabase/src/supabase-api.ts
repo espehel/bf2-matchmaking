@@ -2,6 +2,8 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import matches from './matches-api';
 import {
   AdminPlayer,
+  AdminRolesInsert,
+  AdminRolesUpdate,
   Challenge,
   ChallengesInsert,
   ChallengesUpdate,
@@ -173,6 +175,12 @@ export default (client: SupabaseClient<Database>) => ({
   getAdmins: () => client.from('admin_roles').select('*, player:players(*)'),
   getAdminRoles: (userId: string) =>
     client.from('admin_roles').select('*').eq('user_id', userId).single(),
+  insertAdminRole: (role: AdminRolesInsert) =>
+    client.from('admin_roles').insert(role).select('*').single(),
+  updateAdminRole: (userId: string, values: AdminRolesUpdate) =>
+    client.from('admin_roles').update(values).eq('user_id', userId).select('*').single(),
+  deleteAdminRole: (userId: string) =>
+    client.from('admin_roles').delete().eq('user_id', userId),
   createTeam: (team: TeamsInsert) => client.from('teams').insert(team).select().single(),
   getVisibleTeams: () =>
     client

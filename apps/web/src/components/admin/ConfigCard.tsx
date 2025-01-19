@@ -10,7 +10,7 @@ interface Props {
 export default async function ConfigCard({ config }: Props) {
   const { data: owner } = await supabase(cookies).getPlayer(config.owner);
   return (
-    <div className="card w-96 bg-primary text-primary-content">
+    <div className="card w-96 bg-accent text-accent-content">
       <div className="card-body">
         <div className="collapse collapse-plus">
           <input type="checkbox" />

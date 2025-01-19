@@ -42,6 +42,7 @@ export type GeneratedServersInsert =
 export type ChallengesInsert = Database['public']['Tables']['challenges']['Insert'];
 export type ChallengeTeamsInsert =
   Database['public']['Tables']['challenge_teams']['Insert'];
+export type AdminRolesInsert = Database['public']['Tables']['admin_roles']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
@@ -52,6 +53,7 @@ export type TeamPlayersUpdate = Database['public']['Tables']['team_players']['Up
 export type MatchServersUpdate = Database['public']['Tables']['match_servers']['Update'];
 export type EventMatchesUpdate = Database['public']['Tables']['event_matches']['Update'];
 export type ChallengesUpdate = Database['public']['Tables']['challenges']['Update'];
+export type AdminRolesUpdate = Database['public']['Tables']['admin_roles']['Update'];
 
 export enum MatchStatus {
   Open = 'Open',
