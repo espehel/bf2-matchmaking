@@ -131,15 +131,6 @@ async function findServer(serverName: string | null) {
   return null;
 }
 
-export async function getPlayerByTeamspeakId(clid: string): Promise<PlayersRow | null> {
-  const { data } = await client().getPlayerByTeamspeakId(clid);
-  return data;
-}
-
-export function get4v4BetaConfig() {
-  return client().getMatchConfig(20).then(verifySingleResult);
-}
-
 export async function getConfigCached(channelId: string) {
   const configCache = json<DiscordConfig>(`config:${channelId}`);
   const cachedConfig = await configCache.get();

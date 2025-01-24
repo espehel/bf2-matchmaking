@@ -225,6 +225,10 @@ export interface PickedMatchPlayer extends Omit<MatchPlayersInsert, 'team' | 'ca
 export interface TeamspeakPlayer extends Omit<PlayersRow, 'teamspeak_id'> {
   teamspeak_id: string;
 }
+export interface GatherPlayer extends Omit<PlayersRow, 'teamspeak_id' | 'keyhash'> {
+  teamspeak_id: string;
+  keyhash: string;
+}
 
 export interface PlayerRating extends PlayerRatingsRow {
   player: { nick: string };

@@ -5,7 +5,7 @@ import {
   getMatchStartedEmbed,
   getRulesEmbedByConfig,
 } from '@bf2-matchmaking/discord';
-import { logActualDraft } from './draft-service';
+import { logActualDraft } from '../../services/draft-service';
 import { createDraftPoll } from '../message-polls';
 import { isPubobotMatch, MatchStatus, PubobotMatch } from '@bf2-matchmaking/types';
 import {

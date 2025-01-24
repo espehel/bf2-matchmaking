@@ -7,10 +7,10 @@ import {
   RatedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { compareRating, shuffleArray } from '@bf2-matchmaking/utils';
-import { getUserIds, sumRating, withRating } from './utils';
+import { getUserIds, sumRating, withRating } from '../discord/services/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
-import { getLogChannel, sendMessage } from './message-service';
+import { getLogChannel, sendMessage } from '../discord/services/message-service';
 import {
   buildDebugActualDraftEmbed,
   buildDebugSuggestedDraftEmbed,

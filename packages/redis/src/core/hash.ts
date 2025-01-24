@@ -1,7 +1,7 @@
 import { getClient } from '../client';
 import { del } from './generic';
 
-export function hash<T extends Record<string, number | string>>(key: string) {
+export function hash<T extends Record<string, number | string | undefined>>(key: string) {
   const getAll = async (): Promise<T> => {
     const client = await getClient();
     return client.HGETALL(key) as Promise<T>;
@@ -12,12 +12,14 @@ export function hash<T extends Record<string, number | string>>(key: string) {
     return client.HGET(key, field) as Promise<T[keyof T] | undefined>;
   };
 
-  const setEntries = async (entries: Array<[keyof T & string, T[keyof T]]>) => {
+  const setEntries = async (
+    entries: Array<[keyof T & string, NonNullable<T[keyof T]>]>
+  ) => {
     const client = await getClient();
     return client.HSET(key, entries);
   };
 
-  const set = async (values: Partial<Record<keyof T, T[keyof T] | null>>) => {
+  const set = async (values: Record<keyof T, T[keyof T] | null>) => {
     const client = await getClient();
     const entries = Object.entries(values);
     const delValues = entries

@@ -4,6 +4,7 @@ import {
   Challenge,
   DiscordConfig,
   DiscordMatch,
+  GatherPlayer,
   MatchConfigsRow,
   MatchesJoined,
   MatchesRow,
@@ -80,6 +81,9 @@ export const isPickedMatchPlayer = (
 
 export function isTeamspeakPlayer(player: PlayersRow | null): player is TeamspeakPlayer {
   return Boolean(player && player.teamspeak_id);
+}
+export function isGatherPlayer(player: PlayersRow | null): player is GatherPlayer {
+  return Boolean(player && player.teamspeak_id && player.keyhash);
 }
 
 export function isPendingChallenge(challenge: Challenge): challenge is PendingChallenge {

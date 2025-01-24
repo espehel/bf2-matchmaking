@@ -1,13 +1,17 @@
 import {
+  DiscordConfig,
   isNotNull,
+  isTeamspeakPlayer,
   MatchesJoined,
   MatchPlayerResultsInsert,
+  TeamspeakPlayer,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import { toPlayerRatingUpdate } from '@bf2-matchmaking/utils/src/results-utils';
 import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
-import { hasNotKeyhash } from '@bf2-matchmaking/utils';
-import { logMessage } from '@bf2-matchmaking/logging';
+import { assertObj, hasNotKeyhash } from '@bf2-matchmaking/utils';
+import { logMessage, warn } from '@bf2-matchmaking/logging';
+import { json } from '@bf2-matchmaking/redis/json';
 
 export async function updatePlayerRatings(
   playerResults: Array<MatchPlayerResultsInsert>,
@@ -52,4 +56,15 @@ export async function fixMissingMatchPlayers(match: MatchesJoined) {
     return data;
   }
   return null;
+}
+
+export async function getTeamspeakPlayer(
+  identifier: string
+): Promise<TeamspeakPlayer | null> {
+  const { data } = await client().getPlayerByTeamspeakId(identifier);
+  if (!isTeamspeakPlayer(data)) {
+    warn('MatchQueue', `Player with ${identifier} not found`);
+    return null;
+  }
+  return data;
 }

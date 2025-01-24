@@ -22,7 +22,7 @@ import {
   buildPubotDraftWithConfig,
   getUnpickList,
   VALID_DRAFT_CONFIGS,
-} from '../../src/discord/services/draft-service';
+} from '../services/draft-service';
 
 let polls: Array<[number, MessagePoll]> = [];
 function addPoll(matchId: number, poll: MessagePoll) {
