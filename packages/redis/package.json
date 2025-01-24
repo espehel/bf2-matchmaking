@@ -6,8 +6,11 @@
     "./generic": "./src/core/generic.ts",
     "./hash": "./src/core/hash.ts",
     "./json": "./src/core/json.ts",
+    "./list": "./src/core/list.ts",
     "./set": "./src/core/set.ts",
+    "./topic": "./src/core/topic.ts",
     "./stream": "./src/core/stream.ts",
+    "./gather": "./src/domain/gather.ts",
     "./matches": "./src/domain/matches.ts",
     "./servers": "./src/domain/servers.ts",
     "./types": "./src/types.ts"
@@ -23,6 +26,7 @@
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
+    "msgpackr": "^1.11.2",
     "redis": "^4.7.0",
     "zod": "^3.23.4"
   },

@@ -12,7 +12,8 @@ import {
   logMessage,
   logWarnMessage,
 } from '@bf2-matchmaking/logging';
-import { getUserIds, toMatchPlayer, toMatchPlayerWithTeamAndRating } from './utils';
+import { getUserIds } from './utils';
+import { toMatchPlayer, toMatchPlayerWithTeamAndRating } from '../../utils/player-utils';
 import { findMapId } from './supabase-service';
 import { Embed } from 'discord.js';
 import { getPlayersByIdList } from './player-service';

@@ -84,7 +84,7 @@ export function exec(address: string, command: string) {
 
 export async function hasNoVehicles(address: string) {
   const response = await exec(address, 'sv.noVehicles').then(verifyRconResult);
-
+  console.log('no vehicles response', response);
   if (!(response.trim() === '1' || response.trim() === '0')) {
     throw ServiceError.BadGateway('Unexpected response from "exec sv.noVehicles"');
   }

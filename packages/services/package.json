@@ -1,9 +1,12 @@
 {
   "name": "@bf2-matchmaking/services",
   "exports": {
+    "./config": "./src/config-service.ts",
     "./error": "./src/error.ts",
+    "./gather": "./src/Gather.ts",
     "./matches": "./src/match-service.ts",
     "./matches/Match": "./src/Match.ts",
+    "./players": "./src/player-service.ts",
     "./rcon": "./src/rcon/bf2-rcon-api.ts",
     "./server": "./src/server-service.ts",
     "./server/Server": "./src/Server.ts"
