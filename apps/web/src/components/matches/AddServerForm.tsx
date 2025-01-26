@@ -12,7 +12,7 @@ interface Props {
 
 export default async function AddServerForm({ match, defaultAddress }: Props) {
   const { data: servers } = await api.live().getServers();
-  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
+  const isMatchPlayer = await supabase(cookies).isMatchPlayer(match);
 
   if (!servers) {
     return null;
@@ -36,7 +36,7 @@ export default async function AddServerForm({ match, defaultAddress }: Props) {
       action={addMatchServerSA}
       successMessage="Added server"
       errorMessage="Failed to add server"
-      disabled={!isMatchOfficer}
+      disabled={!isMatchPlayer}
     />
   );
 }

@@ -13,9 +13,9 @@ interface Props {
 }
 
 export default async function ServerActions({ server, match }: Props) {
-  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
+  const isMatchPlayer = await supabase(cookies).isMatchPlayer(match);
 
-  if (!isMatchOfficer || match.status !== MatchStatus.Ongoing) {
+  if (!isMatchPlayer || match.status !== MatchStatus.Ongoing) {
     return null;
   }
 
