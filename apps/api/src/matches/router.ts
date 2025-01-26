@@ -86,7 +86,8 @@ matchesRouter.post('/:matchid/server', async (ctx: Context) => {
     await Server.reset(match.server.address);
   }
   await Server.setMatch(ctx.request.body.address, ctx.params.matchid);
-  ctx.status = 204;
+  ctx.body = await getLiveServer(ctx.request.body.address);
+  ctx.status = 200;
 });
 
 matchesRouter.post('/:matchid/start', async (ctx: Context) => {

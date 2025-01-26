@@ -7,6 +7,7 @@ import IconBtn from '@/components/commons/IconBtn';
 import { ArrowRightCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import ActionWrapper from '@/components/commons/ActionWrapper';
 import { removeMatchServer } from '@/app/matches/[match]/actions';
+import { revalidatePath } from 'next/cache';
 
 interface Props {
   match: MatchesJoined;
@@ -27,7 +28,11 @@ export default async function MatchServerList({ match }: Props) {
   function setActiveServer(address: string) {
     return async () => {
       'use server';
-      return api.live().postMatchServer(match.id, address, true);
+      const res = await api.v2.postMatchServer(match.id, address, true);
+      if (!res.error) {
+        revalidatePath(`/matches/${match.id}`);
+      }
+      return res;
     };
   }
   return (

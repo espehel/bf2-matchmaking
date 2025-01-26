@@ -28,6 +28,7 @@ import { Server as RedisServer } from '@bf2-matchmaking/redis/types';
 import { DateTime } from 'luxon';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { parseError } from '@bf2-matchmaking/utils';
+import { client } from '@bf2-matchmaking/supabase';
 
 function logServerMessage(address: string, message: string, context?: LogContext) {
   logMessage(`Server ${address}: ${message}`, context);
@@ -88,6 +89,7 @@ export const Server = {
     await setServer(address, { status: ServerStatus.ACTIVE, matchId: Number(matchId) });
     await addActiveMatchServer(address, matchId.toString());
     await removeServerWithStatus(address, ServerStatus.IDLE);
+    await client().createMatchServers(Number(matchId), { server: address });
     logServerMessage(address, `Assigned to match ${matchId}`);
   },
   findByMatch: async (matchId: string | number) => {

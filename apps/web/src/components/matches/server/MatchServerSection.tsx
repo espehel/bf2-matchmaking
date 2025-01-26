@@ -13,16 +13,15 @@ interface Props {
 }
 
 export default async function MatchServerSection({ match }: Props) {
-  const { data: matchServers } = await supabase(cookies).getMatchServers(match.id);
-  const { data: server } = await api.v2.getMatchServer(match.id);
+  const { data: activeServer } = await api.v2.getMatchServer(match.id);
 
   return (
     <section className="section max-w-md text-left h-fit">
-      {!server && <NoServer match={match} matchServers={matchServers} />}
-      {server && (
+      {!activeServer && <NoServer match={match} />}
+      {activeServer && (
         <>
-          <ServerInfo match={match} server={server} />
-          <ServerActions match={match} server={server} />
+          <ServerInfo match={match} server={activeServer} />
+          <ServerActions match={match} server={activeServer} />
           <div className="divider" />
         </>
       )}
