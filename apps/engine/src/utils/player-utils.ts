@@ -26,7 +26,3 @@ export const withRating =
     ...mp,
     rating: ratings.find((r) => r.player_id === mp.player_id)?.rating || 1500,
   });
-
-export function hasEqualKeyhash(playerA: { keyhash: string }) {
-  return (playerB: { keyhash: string }) => playerA.keyhash === playerB.keyhash;
-}

@@ -1,6 +1,6 @@
 import { TeamspeakBot } from './TeamspeakBot';
 import { getMatchConfig } from '@bf2-matchmaking/services/config';
-import { info } from '@bf2-matchmaking/logging';
+import { info, logMessage } from '@bf2-matchmaking/logging';
 import { TeamSpeakClient } from 'ts3-nodejs-library';
 import * as queue from '@bf2-matchmaking/redis/gather';
 import { getTeamspeakPlayer } from '@bf2-matchmaking/services/players';
@@ -13,20 +13,18 @@ import {
   getGatherPlayerKeyhash,
   setGatherPlayer,
 } from '@bf2-matchmaking/redis/gather';
-import { assertObj } from '@bf2-matchmaking/utils';
+import { assertObj, hasEqualKeyhash } from '@bf2-matchmaking/utils';
 import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { buildDraftWithConfig } from '../services/draft-service';
-import { hasEqualKeyhash, toMatchPlayer } from '../utils/player-utils';
+import { toMatchPlayer } from '../utils/player-utils';
 import { Gather } from '@bf2-matchmaking/services/gather';
 import { GatherStatus } from '@bf2-matchmaking/types/gather';
+import { DateTime } from 'luxon';
 
-let state: 'queue' | 'ready' | 'match' = 'queue';
-
-export async function initGatherQueue() {
+export async function initGatherQueue(configId: number) {
   const ts = await TeamspeakBot.connect();
-  const config = await getMatchConfig(20);
 
-  await Gather(config.id).init();
+  await Gather(configId).init();
 
   ts.onClientJoined(handleClientJoin);
   ts.onClientLeft(handleClientLeft);
@@ -49,11 +47,9 @@ export async function initGatherQueue() {
       await ts.kickClient(client, 'Missing keyhash', 'Missing keyhash');
       return;
     }
-    await setGatherPlayer(player);
 
-    const length = await queue.addPlayer(client.uniqueIdentifier);
-
-    if (state === 'queue' && length === config.size) {
+    const isFull = await Gather(configId).addPlayer(player);
+    if (isFull) {
       await handleQueueFull();
     }
   }
@@ -77,19 +73,33 @@ export async function initGatherQueue() {
   }
 
   async function onLiveInfo(live: LiveInfo) {
-    const status = await Gather(config.id).getStatus();
+    const { status, summoningAt } = await Gather(config.id).getState();
     if (status !== GatherStatus.Summoning) {
       await topic('server:cphdock.bf2.top').unsubscribe();
       return;
     }
 
     const match = await Gather(config.id).getMatch();
-    const connectedHashes = match.players
+    const connectedPlayers = match.players
       .filter(isGatherPlayer)
       .filter((player) => live.players.some(hasEqualKeyhash(player)));
 
-    if (connectedHashes.length === config.size) {
+    if (connectedPlayers.length === config.size) {
       await Gather(config.id).play();
+      await ts.initiateMatchChannels(match, connectedPlayers);
+      logMessage(`Config ${config.name}: Match started`, {
+        match,
+        connectedPlayers,
+        queue,
+      });
+    }
+
+    if (
+      !summoningAt ||
+      DateTime.fromISO(summoningAt).plus({ minutes: 10 }) < DateTime.now()
+    ) {
+      const latePlayers = await Gather(config.id).reset(connectedPlayers);
+      await ts.kickLatePlayers(latePlayers.map((p) => p.teamspeak_id));
     }
   }
 

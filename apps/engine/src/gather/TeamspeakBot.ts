@@ -103,6 +103,12 @@ export class TeamspeakBot {
       getRegisterMessage(tsClient.uniqueIdentifier)
     );
   }
+  async kickLatePlayers(players: Array<string>) {
+    const kickMessage = 'You failed to join server in time and are removed from queue';
+    for (const player of players) {
+      await this.kickClient(player, kickMessage, kickMessage);
+    }
+  }
 
   movePlayer(channelId: string) {
     return async (player: TeamspeakPlayer) => {
@@ -137,10 +143,14 @@ export class TeamspeakBot {
         channelFlagSemiPermanent: true,
       });
 
-      await Promise.all([
-        players.filter(teamIncludes(match, 1)).map(this.movePlayer(channel1.cid)),
-        players.filter(teamIncludes(match, 2)).map(this.movePlayer(channel2.cid)),
-      ]);
+      for (const player of players) {
+        if (teamIncludes(match, 1)(player)) {
+          await this.movePlayer(channel1.cid)(player);
+        }
+        if (teamIncludes(match, 2)(player)) {
+          await this.movePlayer(channel2.cid)(player);
+        }
+      }
 
       await channel1.edit({
         channelFlagTemporary: true,
