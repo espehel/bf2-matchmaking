@@ -1,4 +1,3 @@
-import { api } from '@bf2-matchmaking/utils';
 import { get4v4BetaConfig } from '../services/supabase-service';
 import { info, logMessage } from '@bf2-matchmaking/logging';
 import { MatchQueue } from '../match/MatchQueue';

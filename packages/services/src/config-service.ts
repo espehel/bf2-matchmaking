@@ -17,3 +17,12 @@ export async function getMatchConfig(configId: number | string) {
   await json(`config:${config.id}`).set(config);
   return config;
 }
+
+export async function syncConfig(configId: number) {
+  const config = await client().getMatchConfig(configId).then(verifySingleResult);
+  if (!isDiscordConfig(config)) {
+    throw new Error('Config does not contain discord channel');
+  }
+  await json(`config:${config.id}`).set(config);
+  return config;
+}

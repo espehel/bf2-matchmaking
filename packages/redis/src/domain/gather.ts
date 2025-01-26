@@ -18,6 +18,10 @@ export function popMatchPlayers(matchSize: number) {
   return list('gather:queue').rpopBulk(matchSize);
 }
 
+export function returnPlayers(players: Array<string>) {
+  return list('gather:queue').rpush(...players);
+}
+
 export function onQueueFull() {}
 
 export function getGatherPlayer(identifier: string) {

@@ -109,3 +109,7 @@ export function compareMPRating(mpA: MatchPlayersInsert, mpB: MatchPlayersInsert
 export function isNotTestPlayer(player: PlayersRow) {
   return !player.nick.startsWith('Test');
 }
+
+export function hasEqualKeyhash(playerA: { keyhash: string }) {
+  return (playerB: { keyhash: string }) => playerA.keyhash === playerB.keyhash;
+}
