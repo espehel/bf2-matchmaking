@@ -1,6 +1,8 @@
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import {
   isDiscordMatch,
+  isNotNull,
+  MatchConfigsRow,
   MatchesJoined,
   MatchesRow,
   MatchProcessError,
@@ -25,6 +27,26 @@ import {
 import { fixMissingMatchPlayers, updatePlayerRatings } from './player-service';
 import { setMatchLive } from '@bf2-matchmaking/redis/matches';
 import { Match } from './Match';
+import { getGatherPlayer } from '@bf2-matchmaking/redis/gather';
+import { buildDraftWithConfig } from './draft-service';
+import { toMatchPlayer } from '@bf2-matchmaking/utils';
+
+export async function createMatch(queuePlayers: Array<string>, config: MatchConfigsRow) {
+  const summoningMatch = await Match.create({
+    config: config.id,
+    status: MatchStatus.Summoning,
+  });
+
+  const players = (await Promise.all(queuePlayers.map(getGatherPlayer))).filter(
+    isNotNull
+  );
+
+  const matchPlayers = await buildDraftWithConfig(
+    players.map(toMatchPlayer(summoningMatch.id)),
+    config
+  );
+  await Match.update(summoningMatch.id).setTeams(matchPlayers).commit();
+}
 
 export const finishMatch = async (matchId: string | number) => {
   try {

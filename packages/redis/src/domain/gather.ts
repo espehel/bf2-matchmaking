@@ -1,18 +1,6 @@
 import { list } from '../core/list';
 import { json } from '../core/json';
-import { GatherPlayer, TeamspeakPlayer } from '@bf2-matchmaking/types';
-
-export function hasPlayer(player: string) {
-  return list('gather:queue').has(player);
-}
-
-export function addPlayer(player: string) {
-  return list('gather:queue').push(player);
-}
-
-export function removePlayer(player: string) {
-  return list('gather:queue').remove(player);
-}
+import { GatherPlayer } from '@bf2-matchmaking/types';
 
 export function popMatchPlayers(matchSize: number) {
   return list('gather:queue').rpopBulk(matchSize);

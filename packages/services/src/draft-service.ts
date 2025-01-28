@@ -1,57 +1,14 @@
 import {
   MatchConfigsRow,
-  MatchesJoined,
   MatchPlayersInsert,
   PickedMatchPlayer,
   PlayerRatingsRow,
   RatedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { compareRating, shuffleArray } from '@bf2-matchmaking/utils';
-import { getUserIds } from '../discord/services/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
-import { getLogChannel, sendMessage } from '../discord/services/message-service';
-import {
-  buildDebugActualDraftEmbed,
-  buildDebugSuggestedDraftEmbed,
-} from '@bf2-matchmaking/discord';
-import { Message } from 'discord.js';
-import { sumRating, withRating } from '@bf2-matchmaking/services/players';
-
-export const VALID_DRAFT_CONFIGS = [2, 9];
-
-export async function buildPubotDraftWithConfig(
-  match: MatchesJoined,
-  config: MatchConfigsRow
-): Promise<Array<PickedMatchPlayer> | null> {
-  try {
-    const ratings = await client()
-      .getPlayerRatingsByIdList(
-        match.teams.map((mp) => mp.player_id),
-        config.id
-      )
-      .then(verifyResult);
-
-    const draft = buildMixTeams(match.teams, ratings);
-    const pickList = buildDraftOrder(draft);
-    if (match.teams.length === config.size && pickList.length === config.size) {
-      await logSuggestedDraft(match, draft, config);
-      return pickList;
-    }
-    logMessage(`Config ${config.name}: Draft conditions where not met`, {
-      pubMatch: match,
-      pickList,
-      config,
-    });
-    return null;
-  } catch (e) {
-    logErrorMessage(`Failed to create draft for ${config.name}`, e, {
-      config,
-      pubMatch: match,
-    });
-    return null;
-  }
-}
+import { sumRating, withRating } from './player-service';
 
 export async function buildDraftWithConfig(
   players: Array<MatchPlayersInsert>,
@@ -75,30 +32,6 @@ export async function buildDraftWithConfig(
     });
     throw e;
   }
-}
-
-async function logSuggestedDraft(
-  match: MatchesJoined,
-  draft: [Array<PickedMatchPlayer>, Array<PickedMatchPlayer>],
-  config: MatchConfigsRow
-) {
-  const channel = await getLogChannel();
-  return sendMessage(
-    channel,
-    {
-      embeds: [
-        buildDebugSuggestedDraftEmbed(match.id, config.name, match.players, draft),
-      ],
-    },
-    { draft, config }
-  );
-}
-
-export async function logActualDraft(match: MatchesJoined) {
-  const channel = await getLogChannel();
-  return sendMessage(channel, {
-    embeds: [buildDebugActualDraftEmbed(match.id, 'Actual', match.players, match.teams)],
-  });
 }
 
 export function buildMixTeams(
@@ -167,11 +100,4 @@ export function buildDraftOrder(
 ): Array<PickedMatchPlayer> {
   const [team1, team2] = teams;
   return [team1[0], team2[0], ...shuffleArray(team1.slice(1).concat(team2.slice(1)))];
-}
-
-export function getUnpickList(message: Message): Array<string> {
-  return [
-    ...getUserIds(message.embeds[0], 'USMC'),
-    ...getUserIds(message.embeds[0], 'MEC/PLA'),
-  ];
 }

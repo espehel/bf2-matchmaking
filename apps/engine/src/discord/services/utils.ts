@@ -3,7 +3,6 @@ import {
   MatchPlayersInsert,
   MatchPlayersRow,
   PlayersRow,
-  RatedMatchPlayer,
 } from '@bf2-matchmaking/types';
 import { Embed } from 'discord.js';
 
@@ -48,8 +47,4 @@ export function isEqualMatchPlayer(mp: MatchPlayersRow, newMp: MatchPlayersInser
     mp.rating === newMp.rating &&
     mp.ready === newMp.ready
   );
-}
-
-export function sumRating(acc: number, player: RatedMatchPlayer) {
-  return acc + player.rating;
 }
