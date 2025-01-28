@@ -2,7 +2,7 @@ import { QueryProtocol, TeamSpeak, TeamSpeakClient } from 'ts3-nodejs-library';
 import { info, logErrorMessage, warn } from '@bf2-matchmaking/logging';
 import { ClientDisconnect, ClientMoved } from 'ts3-nodejs-library/lib/types/Events';
 import { api, assertString, teamIncludes } from '@bf2-matchmaking/utils';
-import { MatchesJoined, TeamspeakPlayer } from '@bf2-matchmaking/types';
+import { isGatherPlayer, MatchesJoined, TeamspeakPlayer } from '@bf2-matchmaking/types';
 
 assertString(process.env.TEAMSPEAK_PASSWORD, 'TEAMSPEAK_PASSWORD not defined');
 
@@ -129,7 +129,7 @@ export class TeamspeakBot {
     };
   }
 
-  async initiateMatchChannels(match: MatchesJoined, players: Array<TeamspeakPlayer>) {
+  async initiateMatchChannels(match: MatchesJoined) {
     try {
       const ts = await this.getTS();
       const channel1 = await ts.channelCreate(`Match ${match.id} Team 1`, {
@@ -143,7 +143,10 @@ export class TeamspeakBot {
         channelFlagSemiPermanent: true,
       });
 
-      for (const player of players) {
+      for (const player of match.players) {
+        if (!isGatherPlayer(player)) {
+          continue;
+        }
         if (teamIncludes(match, 1)(player)) {
           await this.movePlayer(channel1.cid)(player);
         }
@@ -163,8 +166,14 @@ export class TeamspeakBot {
     } catch (err) {
       logErrorMessage('TeamspeakBot: Initiate match channels failed', err, {
         match,
-        players,
       });
+    }
+  }
+  async clearQueueChannel() {
+    const ts = await this.getTS();
+    const clients = await ts.clientList({ cid: QUEUE_CHANNEL });
+    for (const client of clients) {
+      await this.kickClient(client, 'Resetting queue', 'Resetting queue');
     }
   }
   static async connect() {

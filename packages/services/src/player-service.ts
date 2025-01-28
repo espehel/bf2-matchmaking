@@ -4,6 +4,9 @@ import {
   isTeamspeakPlayer,
   MatchesJoined,
   MatchPlayerResultsInsert,
+  MatchPlayersInsert,
+  PlayerRatingsRow,
+  RatedMatchPlayer,
   TeamspeakPlayer,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
@@ -68,3 +71,14 @@ export async function getTeamspeakPlayer(
   }
   return data;
 }
+
+export function sumRating(acc: number, player: RatedMatchPlayer) {
+  return acc + player.rating;
+}
+
+export const withRating =
+  (ratings: Array<PlayerRatingsRow>) =>
+  (mp: MatchPlayersInsert): RatedMatchPlayer => ({
+    ...mp,
+    rating: ratings.find((r) => r.player_id === mp.player_id)?.rating || 1500,
+  });
