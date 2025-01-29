@@ -45,7 +45,7 @@ export async function createMatch(queuePlayers: Array<string>, config: MatchConf
     players.map(toMatchPlayer(summoningMatch.id)),
     config
   );
-  await Match.update(summoningMatch.id).setTeams(matchPlayers).commit();
+  return Match.update(summoningMatch.id).setTeams(matchPlayers).commit();
 }
 
 export const finishMatch = async (matchId: string | number) => {

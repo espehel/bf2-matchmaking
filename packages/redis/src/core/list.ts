@@ -35,6 +35,10 @@ export function list(key: string) {
     const index = await client.LPOS(key, value);
     return index !== null;
   };
+  const length = async (): Promise<number> => {
+    const client = await getClient();
+    return client.LLEN(key);
+  };
   return {
     push,
     rpush,
@@ -44,6 +48,7 @@ export function list(key: string) {
     remove,
     range,
     has,
+    length,
     del: () => del(key),
   };
 }

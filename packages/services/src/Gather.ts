@@ -4,6 +4,8 @@ import {
   PlayingStatusChange,
   AbortingStatusChange,
   QueueingStatusChange,
+  StatusChange,
+  SummoningStatusChange,
 } from '@bf2-matchmaking/types/gather';
 import { Match } from './Match';
 import { assertObj, hasEqualKeyhash } from '@bf2-matchmaking/utils';
@@ -28,33 +30,58 @@ import { list } from '@bf2-matchmaking/redis/list';
 import { json } from '@bf2-matchmaking/redis/json';
 import { getMatchConfig, syncConfig } from './config-service';
 import { createMatch } from './match-service';
+import { logMessage } from '@bf2-matchmaking/logging';
+import { stream } from '@bf2-matchmaking/redis/stream';
 
 export function Gather(configId: number) {
   const stateKey = `gather:${configId}`;
   const queueKey = `gather:${configId}:queue`;
+
   const init = async (): Promise<QueueingStatusChange | null> => {
     await syncConfig(configId);
     const state = await _getState();
 
     if (state?.status) {
+      logMessage(`Gather ${configId}: Already initialized`, state);
       return null;
     }
 
-    await hash<GatherState>(stateKey).set({
-      status: GatherStatus.Queueing,
-      matchId: undefined,
-      summoningAt: undefined,
-    });
+    const resetPlayers = await list(queueKey).length();
     await list(queueKey).del();
-    return {
-      prevStatus: null,
-      status: GatherStatus.Queueing,
-      payload: null,
-    };
+
+    return _nextState<QueueingStatusChange>(
+      {
+        status: GatherStatus.Queueing,
+        matchId: undefined,
+        summoningAt: undefined,
+      },
+      { resetPlayers }
+    );
   };
 
   const _getState = async () => {
     return hash<GatherState>(stateKey).getAll();
+  };
+
+  const _nextState = async <T extends StatusChange>(
+    nextState: GatherState,
+    payload: T['payload']
+  ): Promise<T> => {
+    const state = await _getState();
+    await hash<GatherState>(stateKey).set(nextState);
+    const stateChange = {
+      prevStatus: state.status,
+      status: nextState.status,
+      payload,
+    } as T;
+
+    logMessage(
+      `Gather ${configId}: state change from ${state.status} to ${nextState.status}`,
+      { prevState: state, nextState, payload }
+    );
+    await stream(`gather:${configId}:events`).addEvent('stateChange', stateChange);
+
+    return stateChange;
   };
 
   const _getMatch = async () => {
@@ -85,7 +112,7 @@ export function Gather(configId: number) {
     return list(queueKey).has(player);
   };
 
-  const _summon = async () => {
+  const _summon = async (): Promise<SummoningStatusChange> => {
     const config = await getMatchConfig(configId);
     const matchPlayers = await popMatchPlayers(config.size);
     assertObj(matchPlayers, 'Match players not found');
@@ -93,13 +120,15 @@ export function Gather(configId: number) {
     const keyhashes = (
       await Promise.all(matchPlayers.map(getGatherPlayerKeyhash))
     ).filter(isNotNull);
-    await createMatch(keyhashes, config);
+    const match = await createMatch(keyhashes, config);
 
-    await hash<GatherState>(stateKey).set({
-      status: GatherStatus.Summoning,
-      summoningAt: DateTime.now().toISO(),
-    });
-    return _getState();
+    return _nextState(
+      {
+        status: GatherStatus.Summoning,
+        summoningAt: DateTime.now().toISO(),
+      },
+      match
+    );
   };
 
   const handleSummonedPlayers = async (connectedPlayers: Array<PlayerListItem>) => {
@@ -130,58 +159,47 @@ export function Gather(configId: number) {
   };
 
   const _play = async (match: MatchesJoined): Promise<PlayingStatusChange> => {
-    const state = await _getState();
-
-    await Match.update(match.id).commit({ status: MatchStatus.Ongoing });
-    await hash<GatherState>(stateKey).set({ status: GatherStatus.Playing });
-
-    return {
-      prevStatus: state.status,
-      status: GatherStatus.Playing,
-      payload: match,
-    };
+    const updatedMatch = await Match.update(match.id).commit({
+      status: MatchStatus.Ongoing,
+    });
+    return _nextState({ status: GatherStatus.Playing }, updatedMatch);
   };
 
   const _abort = async (
     connectedPlayers: Array<GatherPlayer>
   ): Promise<AbortingStatusChange> => {
-    const state = await _getState();
     const match = await _getMatch();
 
     await returnPlayers(connectedPlayers.map((p) => p.teamspeak_id));
     await Match.remove(match.id, MatchStatus.Deleted);
-    await hash<GatherState>(stateKey).set({
-      status: GatherStatus.Aborting,
-    });
 
     const latePlayers = match.players
       .filter(isGatherPlayer)
       .filter((p) => !connectedPlayers.some(hasEqualKeyhash(p)));
 
-    return {
-      prevStatus: state.status,
-      status: GatherStatus.Aborting,
-      payload: latePlayers,
-    };
+    return _nextState(
+      {
+        status: GatherStatus.Aborting,
+      },
+      latePlayers
+    );
   };
 
   const reset = async (hard: boolean): Promise<QueueingStatusChange> => {
-    const state = await _getState();
-    await hash<GatherState>(stateKey).set({
-      status: GatherStatus.Queueing,
-      matchId: undefined,
-      summoningAt: undefined,
-    });
-
+    let resetPlayers = null;
     if (hard) {
+      resetPlayers = await list(queueKey).length();
       await list(queueKey).del();
     }
 
-    return {
-      prevStatus: state.status,
-      status: GatherStatus.Queueing,
-      payload: null,
-    };
+    return _nextState(
+      {
+        status: GatherStatus.Queueing,
+        matchId: undefined,
+        summoningAt: undefined,
+      },
+      { resetPlayers }
+    );
   };
 
   return {

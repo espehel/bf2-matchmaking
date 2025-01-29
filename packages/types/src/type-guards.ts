@@ -28,6 +28,14 @@ import {
   TeamPlayer,
 } from './index';
 import { ConnectedLiveServer, LiveServer, OfflineServer, ServerStatus } from './server';
+import {
+  AbortingStatusChange,
+  GatherStatus,
+  PlayingStatusChange,
+  QueueingStatusChange,
+  StatusChange,
+  SummoningStatusChange,
+} from './gather';
 
 export const isMatchesRow = (row: unknown): row is MatchesRow => {
   const casted = row as MatchesRow;
@@ -126,4 +134,27 @@ export function isPubobotMatch(value: unknown): value is PubobotMatch {
 
 export function isAdminPlayer(value: unknown): value is AdminPlayer {
   return Boolean(value && (value as AdminPlayer).player);
+}
+
+export function isStatusChange(value: unknown): value is StatusChange {
+  return Boolean(value && (value as StatusChange).status);
+}
+
+export function isPlayingStatusChange(value: unknown): value is PlayingStatusChange {
+  return Boolean(value && (value as PlayingStatusChange).status === GatherStatus.Playing);
+}
+export function isAbortingStatusChange(value: unknown): value is AbortingStatusChange {
+  return Boolean(
+    value && (value as AbortingStatusChange).status === GatherStatus.Aborting
+  );
+}
+export function isQueueingStatusChange(value: unknown): value is QueueingStatusChange {
+  return Boolean(
+    value && (value as QueueingStatusChange).status === GatherStatus.Queueing
+  );
+}
+export function isSummoningStatusChange(value: unknown): value is SummoningStatusChange {
+  return Boolean(
+    value && (value as SummoningStatusChange).status === GatherStatus.Summoning
+  );
 }
