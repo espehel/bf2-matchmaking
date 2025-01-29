@@ -10,13 +10,17 @@ export enum GatherStatus {
 
 export interface GatherState extends Record<string, string | number | undefined> {
   status: number;
-  matchId: string | undefined;
-  summoningAt: string | undefined;
+  matchId?: string;
+  summoningAt?: string;
 }
 export interface StatusChange {
   prevStatus: GatherStatus | null;
   status: GatherStatus;
   payload: unknown;
+}
+export interface SummoningStatusChange extends StatusChange {
+  status: GatherStatus.Summoning;
+  payload: MatchesJoined;
 }
 export interface PlayingStatusChange extends StatusChange {
   status: GatherStatus.Playing;
@@ -28,5 +32,5 @@ export interface AbortingStatusChange extends StatusChange {
 }
 export interface QueueingStatusChange extends StatusChange {
   status: GatherStatus.Queueing;
-  payload: null;
+  payload: { resetPlayers: number | null };
 }
