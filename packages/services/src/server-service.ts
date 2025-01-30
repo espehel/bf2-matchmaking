@@ -45,7 +45,6 @@ export async function updateLiveServer(
   const now = DateTime.now().toISO();
 
   const server = await getServer(address);
-  console.log('server status', server.status);
   try {
     const live = await createLiveInfo(address, shouldLog);
     if (server.status === ServerStatus.RESTARTING) {
