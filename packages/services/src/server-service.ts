@@ -38,13 +38,16 @@ export async function createLiveInfo(
   return liveInfo;
 }
 
-export async function updateLiveServer(address: string): Promise<LiveInfo | null> {
+export async function updateLiveServer(
+  address: string,
+  shouldLog: boolean = false
+): Promise<LiveInfo | null> {
   const now = DateTime.now().toISO();
 
   const server = await getServer(address);
   console.log('server status', server.status);
   try {
-    const live = await createLiveInfo(address, true);
+    const live = await createLiveInfo(address, shouldLog);
     if (server.status === ServerStatus.RESTARTING) {
       await client().getServer(address).then(verifySingleResult).then(Server.init);
       return live;

@@ -211,7 +211,7 @@ serversRouter.post('/', async (ctx: Context): Promise<void> => {
 });
 
 serversRouter.get('/:ip', async (ctx: Context) => {
-  await updateLiveServer(ctx.params.ip);
+  await updateLiveServer(ctx.params.ip, true);
   const server = await getLiveServer(ctx.params.ip);
   ctx.assert(server, 404, 'Live server not found');
   ctx.body = server;
