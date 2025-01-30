@@ -9,6 +9,12 @@ const hashedPassword = createHash('md5')
   .digest('hex')
   .toUpperCase();
 
+assertString(process.env.BF2CC_TEMP_PASSWORD, 'BF2CC_TEMP_PASSWORD is undefined');
+const hashedTempPassword = createHash('md5')
+  .update(process.env.BF2CC_TEMP_PASSWORD)
+  .digest('hex')
+  .toUpperCase();
+
 export function generateMatchUsersXml(match: MatchesJoined) {
   info(
     'generateMatchUsersXml',
@@ -17,10 +23,10 @@ export function generateMatchUsersXml(match: MatchesJoined) {
   const players = match.players
     .concat(match.home_team.players.map(({ player }) => player))
     .concat(match.away_team.players.map(({ player }) => player));
-  return generateUsersXml(players);
+  return generateUsersXml(players, hashedTempPassword);
 }
 
-export function generateUsersXml(players: Array<PlayersRow>) {
+export function generateUsersXml(players: Array<PlayersRow>, password?: string) {
   const uniquePlayers = players
     .filter((p) => p.keyhash !== null && p.keyhash.length > 1)
     .map<[string, string]>((p) => [p.nick, p.keyhash!])
@@ -30,21 +36,22 @@ export function generateUsersXml(players: Array<PlayersRow>) {
 <dsdUsers xmlns="http://bf2cc.com/dsdUsers.xsd">
   <Users>
     <Username>admin</Username>
-    <Password>${hashedPassword}</Password>
+    <Password>${password || hashedPassword}</Password>
     <IsEnabled>true</IsEnabled>
     <Notes>Administrator account</Notes>
     <GroupName>Administrators</GroupName>
   </Users>
-${uniquePlayers.map(getUserElement).join('\n')}
+${uniquePlayers.map(getUserElement(password || hashedPassword)).join('\n')}
 ${getGroupProperties()}
 </dsdUsers>
 `;
 }
 
-function getUserElement([nick, keyhash]: [string, string]) {
-  return `  <Users>
+function getUserElement(password: string) {
+  return ([nick, keyhash]: [string, string]) =>
+    `  <Users>
     <Username>${nick}</Username>
-    <Password>${hashedPassword}</Password>
+    <Password>${password}</Password>
     <IsEnabled>true</IsEnabled>
     <Notes>${nick}</Notes>
     <GroupName>Administrators</GroupName>
