@@ -8,6 +8,7 @@
     "./guards": "./src/type-guards.ts",
     "./platform": "./src/platform.ts",
     "./rcon": "./src/rcon.ts",
+    "./redis": "./src/redis.ts",
     "./server": "./src/server.ts",
     "./supabase": "./src/database-types.ts"
   },

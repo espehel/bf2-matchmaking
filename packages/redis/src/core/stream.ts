@@ -1,19 +1,6 @@
 import { getClient } from '../client';
 import { pack, unpack } from 'msgpackr';
-
-interface StreamMessageReply {
-  id: string;
-  message: Record<string, string>;
-}
-
-interface StreamEventReply {
-  id: string;
-  message: {
-    event: string;
-    payload: unknown;
-    timestamp: string;
-  };
-}
+import { StreamEventReply, StreamMessageReply } from '@bf2-matchmaking/types/redis';
 
 export function stream(key: string) {
   const add = async (record: Record<string, string>) => {
@@ -35,14 +22,13 @@ export function stream(key: string) {
     const results = reverse
       ? await client.XREVRANGE(key, '+', '-')
       : await client.XRANGE(key, '-', '+');
-    return results.map((result) => ({
-      ...result,
-      message: {
-        event: result.message.event,
-        payload: unpack(result.message.payload as unknown as Buffer),
-        timestamp: result.message.timestamp,
-      },
-    }));
+    return results.map(toStreamEventReply);
+  };
+
+  const readEventsBlocking = async (start: string) => {
+    const client = await getClient();
+    const stream = await client.XREAD({ key, id: start }, { BLOCK: 0, COUNT: 10 });
+    return stream ? stream[0].messages.map(toStreamEventReply) : [];
   };
 
   const log = async (message: string, level: 'info' | 'warn' | 'error') => {
@@ -63,8 +49,26 @@ export function stream(key: string) {
     add,
     addEvent,
     readEvents,
+    readEventsBlocking,
     log,
     readAll,
     del,
+  };
+}
+
+function toStreamEventReply({
+  id,
+  message,
+}: {
+  id: string;
+  message: Record<string, string | Buffer>;
+}): StreamEventReply {
+  return {
+    id,
+    message: {
+      event: message.event as string,
+      payload: unpack(message.payload as Buffer),
+      timestamp: message.timestamp as string,
+    },
   };
 }
