@@ -11,7 +11,13 @@ import {
   MatchesJoined,
   PostMatchRequestBody,
 } from '@bf2-matchmaking/types';
-import { deleteJSON, getJSON, postJSON, postWithApiKeyJSON } from './fetcher';
+import {
+  deleteJSON,
+  getEventSource,
+  getJSON,
+  postJSON,
+  postWithApiKeyJSON,
+} from './fetcher';
 import {
   Instance,
   DnsRecordWithoutPriority,
@@ -23,6 +29,7 @@ import {
   ServerLogEntry,
   ServersLogs,
 } from '@bf2-matchmaking/types/server';
+import { StreamEventReply } from '@bf2-matchmaking/types/redis';
 
 const web = () => {
   const basePath = 'https://bf2.top';
@@ -132,11 +139,16 @@ const platform = () => {
 };
 
 const basePath = 'https://api.bf2.top';
+const gathers = `${basePath}/gathers`;
 const matches = `${basePath}/matches`;
 const servers = `${basePath}/servers`;
 const admin = `${basePath}/admin`;
 const v2 = {
   getHealth: () => getJSON(`${basePath}/health`, { signal: AbortSignal.timeout(5000) }),
+  getGatherEvents: (config: number | string) =>
+    getJSON<Array<StreamEventReply>>(`${gathers}/${config}/events`),
+  getGatherEventsStream: (config: number | string, start: string | undefined) =>
+    getEventSource(`${gathers}/${config}/events/stream?start=${start}`),
   postMatch: (body: PostMatchRequestBody) => postJSON<MatchesJoined>(`${matches}`, body),
   getMatches: () => getJSON<Array<LiveMatch>>(`${matches}`),
   getMatch: (matchId: number) => getJSON<LiveMatch>(`${matches}/${matchId}`),

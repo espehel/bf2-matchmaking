@@ -1,9 +1,9 @@
 import Time from '@/components/commons/Time';
-import { stream } from '@bf2-matchmaking/redis/stream';
 import { isStatusChange } from '@bf2-matchmaking/types';
+import { api, verify } from '@bf2-matchmaking/utils';
 
 export default async function Page() {
-  const events = await stream(`gather:${20}:events`).readEvents();
+  const events = await api.v2.getGatherEvents(20).then(verify);
   return (
     <main className="main">
       <section className="section">

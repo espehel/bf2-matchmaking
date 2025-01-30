@@ -146,6 +146,17 @@ export const postWithApiKeyJSON = async <T>(
     headers: { ...options.headers, 'X-API-Key': process.env.API_KEY || '' },
   });
 
+export const getEventSource = (url: string): EventSource => {
+  const source = new EventSource(url);
+  source.onopen = () => {
+    console.log('SSE connection opened.');
+  };
+  source.onerror = (event) => {
+    console.error('SSE Error:', JSON.stringify(event));
+  };
+  return source;
+};
+
 export const verify = <T>(result: FetchResult<T>): T => {
   if (result.error) {
     throw new Error(
