@@ -34,6 +34,7 @@ import { logMessage } from '@bf2-matchmaking/logging';
 import { stream } from '@bf2-matchmaking/redis/stream';
 
 export function Gather(configId: number) {
+  const configKey = `config:${configId}`;
   const stateKey = `gather:${configId}`;
   const queueKey = `gather:${configId}:queue`;
 
@@ -95,7 +96,7 @@ export function Gather(configId: number) {
     const state = await _getState();
     const queueLength = await list(queueKey).push(player.teamspeak_id);
 
-    const gatherSize = await json<MatchConfigsRow>(stateKey).getProperty('size');
+    const gatherSize = await json<MatchConfigsRow>(configKey).getProperty('size');
     assertObj(gatherSize);
 
     if (state.status === GatherStatus.Queueing && queueLength === gatherSize) {
