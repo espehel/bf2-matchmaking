@@ -4,7 +4,10 @@ import { assertString, isUniqueTupleValue } from '@bf2-matchmaking/utils';
 import { createHash } from 'node:crypto';
 
 assertString(process.env.BF2CC_PASSWORD, 'BF2CC_PASSWORD is undefined');
-const hashedPassword = createHash('md5').update(process.env.BF2CC_PASSWORD).digest('hex');
+const hashedPassword = createHash('md5')
+  .update(process.env.BF2CC_PASSWORD)
+  .digest('hex')
+  .toUpperCase();
 
 export function generateMatchUsersXml(match: MatchesJoined) {
   info(
