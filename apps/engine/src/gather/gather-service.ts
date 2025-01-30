@@ -10,68 +10,73 @@ import { Gather } from '@bf2-matchmaking/services/gather';
 import { GatherStatus } from '@bf2-matchmaking/types/gather';
 
 export async function initGatherQueue(configId: number) {
-  const ts = await TeamspeakBot.connect();
+  try {
+    info('initGatherQueue', `Initializing gather queue for config ${configId}`);
+    const ts = await TeamspeakBot.connect();
 
-  const stateChange = await Gather(configId).init();
+    const stateChange = await Gather(configId).init();
 
-  if (stateChange?.status === GatherStatus.Queueing) {
-    await ts.clearQueueChannel();
-  }
-
-  ts.onClientJoined(handleClientJoin);
-  ts.onClientLeft(handleClientLeft);
-
-  async function handleClientJoin(client: TeamSpeakClient) {
-    if (await Gather(configId).hasPlayer(client.uniqueIdentifier)) {
-      info(
-        'listenToChannelJoin',
-        `Client ${client.nickname} already in queue, no action taken.`
-      );
-      return;
+    if (stateChange?.status === GatherStatus.Queueing) {
+      await ts.clearQueueChannel();
     }
 
-    const player = await getTeamspeakPlayer(client.uniqueIdentifier);
-    if (!player) {
-      await ts.kickUnregisteredClient(client);
-      return;
-    }
-    if (!isGatherPlayer(player)) {
-      await ts.kickClient(client, 'Missing keyhash', 'Missing keyhash');
-      return;
-    }
+    ts.onClientJoined(handleClientJoin);
+    ts.onClientLeft(handleClientLeft);
 
-    const { status } = await Gather(configId).addPlayer(player);
-    if (status === GatherStatus.Summoning) {
-      startReadServerTask('cphdock.bf2.top');
-      await topic('server:cphdock.bf2.top').subscribe<LiveInfo>(onLiveInfo);
-    }
-  }
-
-  async function handleClientLeft(client: TeamSpeakClient) {
-    await Gather(configId).removePlayer(client.uniqueIdentifier);
-  }
-
-  async function onLiveInfo(live: LiveInfo) {
-    try {
-      const stateChange = await Gather(configId).handleSummonedPlayers(live.players);
-      if (!stateChange) {
+    async function handleClientJoin(client: TeamSpeakClient) {
+      if (await Gather(configId).hasPlayer(client.uniqueIdentifier)) {
+        info(
+          'listenToChannelJoin',
+          `Client ${client.nickname} already in queue, no action taken.`
+        );
         return;
       }
 
-      if (stateChange.status === GatherStatus.Playing) {
-        await ts.initiateMatchChannels(stateChange.payload);
+      const player = await getTeamspeakPlayer(client.uniqueIdentifier);
+      if (!player) {
+        await ts.kickUnregisteredClient(client);
+        return;
       }
-      if (stateChange.status === GatherStatus.Aborting) {
-        await ts.kickLatePlayers(stateChange.payload.map((p) => p.teamspeak_id));
+      if (!isGatherPlayer(player)) {
+        await ts.kickClient(client, 'Missing keyhash', 'Missing keyhash');
+        return;
       }
 
-      await topic('server:cphdock.bf2.top').unsubscribe();
-      await Gather(configId).reset(false);
-    } catch (e) {
-      logErrorMessage('Failed to handle live info, hard resetting gather', e, { live });
-      await topic('server:cphdock.bf2.top').unsubscribe();
-      await Gather(configId).reset(true);
-      await ts.clearQueueChannel();
+      const { status } = await Gather(configId).addPlayer(player);
+      if (status === GatherStatus.Summoning) {
+        startReadServerTask('cphdock.bf2.top');
+        await topic('server:cphdock.bf2.top').subscribe<LiveInfo>(onLiveInfo);
+      }
     }
+
+    async function handleClientLeft(client: TeamSpeakClient) {
+      await Gather(configId).removePlayer(client.uniqueIdentifier);
+    }
+
+    async function onLiveInfo(live: LiveInfo) {
+      try {
+        const stateChange = await Gather(configId).handleSummonedPlayers(live.players);
+        if (!stateChange) {
+          return;
+        }
+
+        if (stateChange.status === GatherStatus.Playing) {
+          await ts.initiateMatchChannels(stateChange.payload);
+        }
+        if (stateChange.status === GatherStatus.Aborting) {
+          await ts.kickLatePlayers(stateChange.payload.map((p) => p.teamspeak_id));
+        }
+
+        await topic('server:cphdock.bf2.top').unsubscribe();
+        await Gather(configId).reset(false);
+      } catch (e) {
+        logErrorMessage('Failed to handle live info, hard resetting gather', e, { live });
+        await topic('server:cphdock.bf2.top').unsubscribe();
+        await Gather(configId).reset(true);
+        await ts.clearQueueChannel();
+      }
+    }
+  } catch (e) {
+    logErrorMessage(`Gather ${configId}: Failed`, e);
   }
 }

@@ -21,6 +21,7 @@ import {
 } from './tasks/convert8v8queue';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { DateTime } from 'luxon';
+import { initGatherQueue } from './gather/gather-service';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5006;
 
@@ -40,6 +41,7 @@ discordClient
     await initServers();
     await initChannelListener();
     initScheduledEventsListener();
+    await initGatherQueue(20);
 
     closeOldMatchesTask.start();
     startScheduledMatchesTask.start();
