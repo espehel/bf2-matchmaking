@@ -37,16 +37,24 @@ export default function EventList({ defaultEvents, config }: Props) {
             <Time date={entry.message.timestamp} format="LLL dd TT" />
           </span>
           <span className="mr-1 text-accent">{entry.message.event}</span>
-          <span className="text-info">{getText(entry.message.payload)}</span>
+          <span className="text-info">{getText(entry)}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-function getText(payload: unknown) {
-  if (isStatusChange(payload)) {
-    return `Status change: ${payload.prevStatus} -> ${payload.status}`;
+function getText({ message }: StreamEventReply) {
+  if (isStatusChange(message.payload)) {
+    return `Status change: ${message.payload.prevStatus} -> ${message.payload.status}`;
+  }
+  if (message.event === 'playerJoin') {
+    // @ts-ignore
+    return `Player ${message.payload.nick} joined the queue`;
+  }
+  if (message.event === 'playerLeave') {
+    // @ts-ignore
+    return `Player ${message.payload.nick} left the queue`;
   }
   return '';
 }

@@ -19,6 +19,7 @@ import {
   PlayerListItem,
 } from '@bf2-matchmaking/types';
 import {
+  getGatherPlayer,
   getGatherPlayerKeyhash,
   popMatchPlayers,
   returnPlayers,
@@ -95,6 +96,7 @@ export function Gather(configId: number) {
     await setGatherPlayer(player);
     const state = await _getState();
     const queueLength = await list(queueKey).push(player.teamspeak_id);
+    await stream(`gather:${configId}:events`).addEvent('playerJoin', player);
 
     const gatherSize = await json<MatchConfigsRow>(configKey).getProperty('size');
     assertObj(gatherSize);
@@ -106,7 +108,10 @@ export function Gather(configId: number) {
   };
 
   const removePlayer = async (player: string) => {
-    return list(queueKey).remove(player);
+    const count = await list(queueKey).remove(player);
+    const playerData = await getGatherPlayer(player);
+    await stream(`gather:${configId}:events`).addEvent('playerLeave', playerData);
+    return count;
   };
 
   const hasPlayer = async (player: string) => {

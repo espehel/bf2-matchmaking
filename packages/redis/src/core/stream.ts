@@ -12,7 +12,7 @@ export function stream(key: string) {
     const client = await getClient();
     return client.XADD(key, '*', {
       event,
-      payload: pack(value),
+      payload: pack(value).toString('base64'),
       timestamp: Date.now().toString(),
     });
   };
@@ -23,6 +23,7 @@ export function stream(key: string) {
       ? await client.XREVRANGE(key, '+', '-')
       : await client.XRANGE(key, '-', '+');
     return results.map(toStreamEventReply);
+    //return pack({ h: 1, sada: 'asdasd' }) as any;
   };
 
   const readEventsBlocking = async (start: string) => {
@@ -61,13 +62,13 @@ function toStreamEventReply({
   message,
 }: {
   id: string;
-  message: Record<string, string | Buffer>;
+  message: Record<string, string>;
 }): StreamEventReply {
   return {
     id,
     message: {
       event: message.event as string,
-      payload: unpack(message.payload as Buffer),
+      payload: unpack(Buffer.from(message.payload, 'base64')),
       timestamp: message.timestamp as string,
     },
   };
