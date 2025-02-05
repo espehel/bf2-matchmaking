@@ -15,6 +15,7 @@ import {
   isNotNull,
   MatchConfigsRow,
   MatchesJoined,
+  MatchPlayersRow,
   MatchStatus,
   PlayerListItem,
 } from '@bf2-matchmaking/types';
@@ -33,16 +34,19 @@ import { getMatchConfig, syncConfig } from './config-service';
 import { createMatch } from './match-service';
 import { logMessage } from '@bf2-matchmaking/logging';
 import { stream } from '@bf2-matchmaking/redis/stream';
+import { z } from 'zod';
+import { GatherStateSchema } from './schemas/gather-schemas';
 
 export function Gather(configId: number) {
   const configKey = `config:${configId}`;
   const stateKey = `gather:${configId}`;
   const queueKey = `gather:${configId}:queue`;
 
-  const init = async (): Promise<QueueingStatusChange | null> => {
+  const init = async (address: string): Promise<QueueingStatusChange | null> => {
     await syncConfig(configId);
     const state = await _getState();
 
+    // TODO: Make this check not neccessary, so address will be set for every init
     if (state?.status) {
       logMessage(`Gather ${configId}: Already initialized`, state);
       return null;
@@ -56,17 +60,18 @@ export function Gather(configId: number) {
         status: GatherStatus.Queueing,
         matchId: undefined,
         summoningAt: undefined,
+        address,
       },
       { resetPlayers }
     );
   };
 
   const _getState = async () => {
-    return hash<GatherState>(stateKey).getAll();
+    return GatherStateSchema.parse(await hash<GatherState>(stateKey).getAll());
   };
 
   const _nextState = async <T extends StatusChange>(
-    nextState: GatherState,
+    nextState: Partial<GatherState>,
     payload: T['payload']
   ): Promise<T> => {
     const state = await _getState();
@@ -153,6 +158,9 @@ export function Gather(configId: number) {
     const readyPlayers = gatherPlayers.filter((player) =>
       connectedPlayers.some(hasEqualKeyhash(player))
     );
+    await Match.update(match.id)
+      .updateTeams(match.teams.map(withReadyState(readyPlayers)))
+      .commit();
 
     if (readyPlayers.length === config.size) {
       return _play(match);
@@ -216,4 +224,13 @@ export function Gather(configId: number) {
     handleSummonedPlayers,
     reset,
   };
+}
+
+function withReadyState(readyPlayers: Array<GatherPlayer>) {
+  const playerIds = readyPlayers.map((p) => p.id);
+  return ({ player_id, match_id }: MatchPlayersRow) => ({
+    player_id,
+    match_id,
+    ready: playerIds.includes(player_id),
+  });
 }

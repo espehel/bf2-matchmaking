@@ -12,7 +12,7 @@ import {
 } from '@bf2-matchmaking/redis/servers';
 import { disconnect, hasNoVehicles } from './rcon/bf2-rcon-api';
 import { getServerLocation } from './external-service';
-import { LogContext, ServersRow } from '@bf2-matchmaking/types';
+import { isNotNull, LogContext, ServersRow } from '@bf2-matchmaking/types';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 import {
   info,
@@ -94,6 +94,22 @@ export const Server = {
   },
   findByMatch: async (matchId: string | number) => {
     return getActiveMatchServer(matchId.toString());
+  },
+  findIdle: async (): Promise<string | undefined> => {
+    const idleServers = (
+      await Promise.all(
+        [
+          'skasams.bf2.top',
+          'skasberlin.bf2.top',
+          'cphdock.bf2.top',
+          'skascz.bf2.top',
+        ].map(async (address) => {
+          const server = await getServer(address);
+          return server.status === ServerStatus.IDLE ? address : null;
+        })
+      )
+    ).filter(isNotNull);
+    return idleServers.at(Math.floor(Math.random() * idleServers.length));
   },
   reset: async (address: string) => {
     info('Server.reset', `Server ${address}: Resetting...`);

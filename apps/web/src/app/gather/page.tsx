@@ -3,6 +3,7 @@ import EventList from '@/components/gather/EventList';
 
 export default async function Page() {
   const events = await api.v2.getGatherEvents(20).then(verify);
+  // TODO show gather state, enable server picking, enable map voting
   return (
     <main className="main">
       <section className="section">

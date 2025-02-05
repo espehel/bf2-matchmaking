@@ -8,13 +8,19 @@ import { topic } from '@bf2-matchmaking/redis/topic';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
 import { Gather } from '@bf2-matchmaking/services/gather';
 import { GatherStatus } from '@bf2-matchmaking/types/gather';
+import { Server } from '@bf2-matchmaking/services/server/Server';
+import { assertString } from '@bf2-matchmaking/utils';
 
 export async function initGatherQueue(configId: number) {
   try {
     info('initGatherQueue', `Initializing gather queue for config ${configId}`);
     const ts = await TeamspeakBot.connect();
 
-    const stateChange = await Gather(configId).init();
+    // TODO mark server as used for gather somehow
+    const address = await Server.findIdle();
+    assertString(address, 'No idle server found'); // TODO handle this error
+
+    const stateChange = await Gather(configId).init(address);
 
     if (stateChange?.status === GatherStatus.Queueing) {
       await ts.clearQueueChannel();
@@ -44,8 +50,9 @@ export async function initGatherQueue(configId: number) {
 
       const { status } = await Gather(configId).addPlayer(player);
       if (status === GatherStatus.Summoning) {
-        startReadServerTask('cphdock.bf2.top');
-        await topic('server:cphdock.bf2.top').subscribe<LiveInfo>(onLiveInfo);
+        assertString(address, 'Missing server address');
+        startReadServerTask(address);
+        await topic(`server:${address}`).subscribe<LiveInfo>(onLiveInfo);
       }
     }
 
@@ -67,11 +74,13 @@ export async function initGatherQueue(configId: number) {
           await ts.kickLatePlayers(stateChange.payload.map((p) => p.teamspeak_id));
         }
 
-        await topic('server:cphdock.bf2.top').unsubscribe();
+        assertString(address, 'Missing server address');
+        await topic(`server:${address}`).unsubscribe();
         await Gather(configId).reset(false);
       } catch (e) {
         logErrorMessage('Failed to handle live info, hard resetting gather', e, { live });
-        await topic('server:cphdock.bf2.top').unsubscribe();
+        assertString(address, 'Missing server address');
+        await topic(`server:${address}`).unsubscribe();
         await Gather(configId).reset(true);
         await ts.clearQueueChannel();
       }

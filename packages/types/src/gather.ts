@@ -10,6 +10,7 @@ export enum GatherStatus {
 
 export interface GatherState extends Record<string, string | number | undefined> {
   status: number;
+  address: string;
   matchId?: string;
   summoningAt?: string;
 }

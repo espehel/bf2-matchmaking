@@ -22,7 +22,8 @@
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
     "luxon": "^3.4.4",
-    "recursive-diff": "^1.0.9"
+    "recursive-diff": "^1.0.9",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "typescript": "latest"

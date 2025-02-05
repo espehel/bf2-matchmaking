@@ -71,6 +71,7 @@ export const Match = {
 class MatchUpdater {
   maps: Array<number> | null = null;
   teams: Array<MatchPlayersInsert> | null = null;
+  updateMatchPlayers: Array<MatchPlayersInsert> | null = null;
   matchId: number;
 
   constructor(matchId: number | string) {
@@ -84,9 +85,14 @@ class MatchUpdater {
     this.teams = players;
     return this;
   }
+  updateTeams(players: Array<MatchPlayersInsert>) {
+    this.updateMatchPlayers = players;
+    return this;
+  }
   async commit(values?: MatchesUpdate) {
-    const maps = await this.createMatchMaps();
-    const teams = await this.createMatchPlayers();
+    const maps = await this.#createMatchMaps();
+    const teams = await this.#createMatchPlayers();
+    const updatedPlayers = await this.#upsertMatchPlayers();
 
     const updatedMatch = values
       ? await client().updateMatch(this.matchId, values).then(verifySingleResult)
@@ -98,6 +104,7 @@ class MatchUpdater {
       values,
       maps,
       teams,
+      updatedPlayers,
       updatedMatch,
       redisResult,
     });
@@ -105,7 +112,7 @@ class MatchUpdater {
     return updatedMatch;
   }
 
-  async createMatchPlayers() {
+  async #createMatchPlayers() {
     if (!this.teams || this.teams.length === 0) {
       return null;
     }
@@ -114,7 +121,15 @@ class MatchUpdater {
     return client().createMatchPlayers(this.teams).then(verifyResult);
   }
 
-  async createMatchMaps() {
+  async #upsertMatchPlayers() {
+    if (!this.updateMatchPlayers || this.updateMatchPlayers.length === 0) {
+      return null;
+    }
+    info('updateMatchPlayers', `Updating match players`);
+    return client().upsertMatchPlayers(this.updateMatchPlayers).then(verifyResult);
+  }
+
+  async #createMatchMaps() {
     if (!this.maps || this.maps.length === 0) {
       return null;
     }
