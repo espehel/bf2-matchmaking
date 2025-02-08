@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
+import { GatherStatus } from '@bf2-matchmaking/types/gather';
 
 export const matchSchema = z.object({
   state: z.enum([
@@ -39,3 +40,11 @@ type Json = Literal | { [key: string]: Json } | Json[];
 export const jsonSchema: z.ZodType<Json> = z.lazy(() =>
   z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
 );
+
+export const GatherStateSchema = z.object({
+  status: z.nativeEnum(GatherStatus),
+  address: z.string(),
+  matchId: z.string().optional(),
+  summoningAt: z.string().optional(),
+  failReason: z.string().optional(),
+});

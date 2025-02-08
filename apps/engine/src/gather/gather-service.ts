@@ -18,13 +18,12 @@ export async function initGatherQueue(configId: number) {
 
     // TODO mark server as used for gather somehow
     const address = await Server.findIdle();
-    assertString(address, 'No idle server found'); // TODO handle this error
-
-    const stateChange = await Gather(configId).init(address);
-
-    if (stateChange?.status === GatherStatus.Queueing) {
-      await ts.clearQueueChannel();
+    if (!address) {
+      await Gather(configId).error('No idle server found');
+      return;
     }
+    const queuePlayers = await ts.getQueueChannelPlayers();
+    await Gather(configId).init(address, queuePlayers);
 
     ts.onClientJoined(handleClientJoin);
     ts.onClientLeft(handleClientLeft);
@@ -76,16 +75,18 @@ export async function initGatherQueue(configId: number) {
 
         assertString(address, 'Missing server address');
         await topic(`server:${address}`).unsubscribe();
-        await Gather(configId).reset(false);
+        const queuePlayers = await ts.getQueueChannelPlayers();
+        await Gather(configId).init(address, queuePlayers);
       } catch (e) {
         logErrorMessage('Failed to handle live info, hard resetting gather', e, { live });
         assertString(address, 'Missing server address');
         await topic(`server:${address}`).unsubscribe();
-        await Gather(configId).reset(true);
         await ts.clearQueueChannel();
+        await Gather(configId).init(address, []);
       }
     }
   } catch (e) {
     logErrorMessage(`Gather ${configId}: Failed`, e);
+    await Gather(configId).error('Unknown Gather Error');
   }
 }

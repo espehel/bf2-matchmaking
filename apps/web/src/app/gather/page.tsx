@@ -1,11 +1,27 @@
-import { api, verify } from '@bf2-matchmaking/utils';
+import { api, assertObj, verify } from '@bf2-matchmaking/utils';
 import EventList from '@/components/gather/EventList';
+import {
+  getGatherConfig,
+  getGatherQueue,
+  getGatherState,
+} from '@bf2-matchmaking/redis/gather';
+import { GatherStatus } from '@bf2-matchmaking/types/gather';
+import ServerSection from '@/components/gather/ServerSection';
 
 export default async function Page() {
   const events = await api.v2.getGatherEvents(20).then(verify);
-  // TODO show gather state, enable server picking, enable map voting
+  const gatherState = await getGatherState(20);
+  const config = await getGatherConfig(20);
+  assertObj(config, 'Missing gather config');
+  const gatherPlayers = await getGatherQueue(20);
   return (
     <main className="main">
+      <h1>{config.name}</h1>
+      <p>
+        {gatherPlayers.length}/{config.size}
+      </p>
+      <p>{getGatherStatusName(gatherState.status)}</p>
+      <ServerSection address={gatherState.address} />
       <section className="section">
         <h2>Gather events</h2>
         <code className="bg-base-300 p-4 rounded">
@@ -14,4 +30,8 @@ export default async function Page() {
       </section>
     </main>
   );
+}
+
+function getGatherStatusName(targetValue: GatherStatus) {
+  return GatherStatus[targetValue] as keyof typeof GatherStatus;
 }

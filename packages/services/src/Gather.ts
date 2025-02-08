@@ -22,6 +22,7 @@ import {
 import {
   getGatherPlayer,
   getGatherPlayerKeyhash,
+  getGatherState,
   popMatchPlayers,
   returnPlayers,
   setGatherPlayer,
@@ -32,49 +33,38 @@ import { list } from '@bf2-matchmaking/redis/list';
 import { json } from '@bf2-matchmaking/redis/json';
 import { getMatchConfig, syncConfig } from './config-service';
 import { createMatch } from './match-service';
-import { logMessage } from '@bf2-matchmaking/logging';
+import { logMessage, logWarnMessage } from '@bf2-matchmaking/logging';
 import { stream } from '@bf2-matchmaking/redis/stream';
-import { z } from 'zod';
-import { GatherStateSchema } from './schemas/gather-schemas';
 
 export function Gather(configId: number) {
   const configKey = `config:${configId}`;
   const stateKey = `gather:${configId}`;
   const queueKey = `gather:${configId}:queue`;
 
-  const init = async (address: string): Promise<QueueingStatusChange | null> => {
+  const init = async (
+    address: string,
+    teamspeakPlayers: Array<string>
+  ): Promise<QueueingStatusChange | null> => {
     await syncConfig(configId);
-    const state = await _getState();
-
-    // TODO: Make this check not neccessary, so address will be set for every init
-    if (state?.status) {
-      logMessage(`Gather ${configId}: Already initialized`, state);
-      return null;
-    }
-
-    const resetPlayers = await list(queueKey).length();
-    await list(queueKey).del();
+    await _syncPlayers(teamspeakPlayers);
 
     return _nextState<QueueingStatusChange>(
       {
         status: GatherStatus.Queueing,
         matchId: undefined,
         summoningAt: undefined,
+        failReason: undefined,
         address,
       },
-      { resetPlayers }
+      { server: address, playerCount: teamspeakPlayers.length }
     );
-  };
-
-  const _getState = async () => {
-    return GatherStateSchema.parse(await hash<GatherState>(stateKey).getAll());
   };
 
   const _nextState = async <T extends StatusChange>(
     nextState: Partial<GatherState>,
     payload: T['payload']
   ): Promise<T> => {
-    const state = await _getState();
+    const state = await getGatherState(configId);
     await hash<GatherState>(stateKey).set(nextState);
     const stateChange = {
       prevStatus: state.status,
@@ -82,10 +72,18 @@ export function Gather(configId: number) {
       payload,
     } as T;
 
-    logMessage(
-      `Gather ${configId}: state change from ${state.status} to ${nextState.status}`,
-      { prevState: state, nextState, payload }
-    );
+    if (nextState.status === GatherStatus.Failed) {
+      logWarnMessage(
+        `Gather ${configId}: state change from ${state.status} to ${nextState.status}`,
+        { prevState: state, nextState, payload }
+      );
+    } else {
+      logMessage(
+        `Gather ${configId}: state change from ${state.status} to ${nextState.status}`,
+        { prevState: state, nextState, payload }
+      );
+    }
+
     await stream(`gather:${configId}:events`).addEvent('stateChange', stateChange);
 
     return stateChange;
@@ -97,9 +95,28 @@ export function Gather(configId: number) {
     return Match.get(matchId);
   };
 
+  const _syncPlayers = async (teamspeakPlayers: Array<string>) => {
+    const queuePlayers = await list(queueKey).range();
+
+    const playersToAdd = teamspeakPlayers.filter((p) => !queuePlayers.includes(p));
+    const playersToRemove = queuePlayers.filter((p) => !teamspeakPlayers.includes(p));
+
+    const playersRemoved = await Promise.all(playersToRemove.map(list(queueKey).remove));
+    const playersAdded = await list(queueKey).push(...playersToAdd);
+
+    logMessage(`Gather ${configId}: Synced players`, {
+      teamspeakPlayers,
+      queuePlayers,
+      playersToAdd,
+      playersToRemove,
+      playersAdded,
+      playersRemoved: playersRemoved.reduce((a, c) => a + c, 0),
+    });
+  };
+
   const addPlayer = async (player: GatherPlayer) => {
     await setGatherPlayer(player);
-    const state = await _getState();
+    const state = await getGatherState(configId);
     const queueLength = await list(queueKey).push(player.teamspeak_id);
     await stream(`gather:${configId}:events`).addEvent('playerJoin', player);
 
@@ -125,7 +142,7 @@ export function Gather(configId: number) {
 
   const _summon = async (): Promise<SummoningStatusChange> => {
     const config = await getMatchConfig(configId);
-    const matchPlayers = await popMatchPlayers(config.size);
+    const matchPlayers = await popMatchPlayers(configId, config.size);
     assertObj(matchPlayers, 'Match players not found');
 
     const keyhashes = (
@@ -144,7 +161,7 @@ export function Gather(configId: number) {
 
   const handleSummonedPlayers = async (connectedPlayers: Array<PlayerListItem>) => {
     const config = await getMatchConfig(configId);
-    const state = await _getState();
+    const state = await getGatherState(configId);
     if (state.status !== GatherStatus.Summoning || !state.summoningAt) {
       throw new Error('Invalid gather state: not summoning');
     }
@@ -184,7 +201,10 @@ export function Gather(configId: number) {
   ): Promise<AbortingStatusChange> => {
     const match = await _getMatch();
 
-    await returnPlayers(connectedPlayers.map((p) => p.teamspeak_id));
+    await returnPlayers(
+      configId,
+      connectedPlayers.map((p) => p.teamspeak_id)
+    );
     await Match.remove(match.id, MatchStatus.Deleted);
 
     const latePlayers = match.players
@@ -199,20 +219,16 @@ export function Gather(configId: number) {
     );
   };
 
-  const reset = async (hard: boolean): Promise<QueueingStatusChange> => {
-    let resetPlayers = null;
-    if (hard) {
-      resetPlayers = await list(queueKey).length();
-      await list(queueKey).del();
-    }
-
+  const error = async (reason: string) => {
     return _nextState(
       {
-        status: GatherStatus.Queueing,
-        matchId: undefined,
+        status: GatherStatus.Failed,
+        failReason: reason,
+        address: undefined,
         summoningAt: undefined,
+        matchId: undefined,
       },
-      { resetPlayers }
+      null
     );
   };
 
@@ -222,7 +238,7 @@ export function Gather(configId: number) {
     removePlayer,
     hasPlayer,
     handleSummonedPlayers,
-    reset,
+    error,
   };
 }
 

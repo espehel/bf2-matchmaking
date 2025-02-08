@@ -169,6 +169,11 @@ export class TeamspeakBot {
       });
     }
   }
+  async getQueueChannelPlayers() {
+    const ts = await this.getTS();
+    const clients = await ts.clientList({ cid: QUEUE_CHANNEL });
+    return clients.map((client) => client.uniqueIdentifier);
+  }
   async clearQueueChannel() {
     const ts = await this.getTS();
     const clients = await ts.clientList({ cid: QUEUE_CHANNEL });

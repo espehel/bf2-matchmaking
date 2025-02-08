@@ -13,6 +13,7 @@ export interface GatherState extends Record<string, string | number | undefined>
   address: string;
   matchId?: string;
   summoningAt?: string;
+  failReason?: string;
 }
 export interface StatusChange {
   prevStatus: GatherStatus | null;
@@ -33,5 +34,5 @@ export interface AbortingStatusChange extends StatusChange {
 }
 export interface QueueingStatusChange extends StatusChange {
   status: GatherStatus.Queueing;
-  payload: { resetPlayers: number | null };
+  payload: { server: string; playerCount: number };
 }
