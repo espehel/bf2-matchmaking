@@ -9,7 +9,7 @@ export const gathersRouter = new Router({
 });
 
 gathersRouter.get('/:config/events', async (ctx: Context) => {
-  ctx.body = await stream(`gather:${ctx.params.id}:events`).readEvents();
+  ctx.body = await stream(`gather:${ctx.params.config}:events`).readEvents();
 });
 
 gathersRouter.get('/:config/events/stream', (ctx) => {
@@ -29,7 +29,7 @@ gathersRouter.get('/:config/events/stream', (ctx) => {
   ctx.body = sseStream;
 
   async function waitForEvent(lastEvent: string) {
-    const events = await stream(`gather:${ctx.params.id}:events`).readEventsBlocking(
+    const events = await stream(`gather:${ctx.params.config}:events`).readEventsBlocking(
       lastEvent
     );
     let lastId = lastEvent;

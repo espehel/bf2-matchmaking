@@ -23,7 +23,6 @@ export function stream(key: string) {
       ? await client.XREVRANGE(key, '+', '-')
       : await client.XRANGE(key, '-', '+');
     return results.map(toStreamEventReply);
-    //return pack({ h: 1, sada: 'asdasd' }) as any;
   };
 
   const readEventsBlocking = async (start: string) => {
