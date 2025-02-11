@@ -32,7 +32,3 @@ export interface AbortingStatusChange extends StatusChange {
   status: GatherStatus.Aborting;
   payload: Array<GatherPlayer>;
 }
-export interface QueueingStatusChange extends StatusChange {
-  status: GatherStatus.Queueing;
-  payload: { server: string; playerCount: number };
-}

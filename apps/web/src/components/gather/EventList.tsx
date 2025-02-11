@@ -56,5 +56,9 @@ function getText({ message }: StreamEventReply) {
     // @ts-ignore
     return `Player ${message.payload.nick} left the queue`;
   }
+  if (message.event === 'initiated') {
+    // @ts-ignore
+    return `Gather initiated at ${message.payload.address} with ${message.payload.playerCount} players`;
+  }
   return '';
 }

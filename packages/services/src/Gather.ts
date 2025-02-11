@@ -3,7 +3,6 @@ import {
   GatherStatus,
   PlayingStatusChange,
   AbortingStatusChange,
-  QueueingStatusChange,
   StatusChange,
   SummoningStatusChange,
 } from '@bf2-matchmaking/types/gather';
@@ -41,23 +40,24 @@ export function Gather(configId: number) {
   const stateKey = `gather:${configId}`;
   const queueKey = `gather:${configId}:queue`;
 
-  const init = async (
-    address: string,
-    teamspeakPlayers: Array<string>
-  ): Promise<QueueingStatusChange | null> => {
+  const init = async (address: string, teamspeakPlayers: Array<string>) => {
     await syncConfig(configId);
     await _syncPlayers(teamspeakPlayers);
 
-    return _nextState<QueueingStatusChange>(
-      {
-        status: GatherStatus.Queueing,
-        matchId: undefined,
-        summoningAt: undefined,
-        failReason: undefined,
-        address,
-      },
-      { server: address, playerCount: teamspeakPlayers.length }
-    );
+    await hash<GatherState>(stateKey).set({
+      status: GatherStatus.Queueing,
+      matchId: undefined,
+      summoningAt: undefined,
+      failReason: undefined,
+      address,
+    });
+
+    logMessage(`Gather ${configId}: initiated`, { address, teamspeakPlayers });
+
+    await stream(`gather:${configId}:events`).addEvent('initiated', {
+      address,
+      playerCount: teamspeakPlayers.length,
+    });
   };
 
   const _nextState = async <T extends StatusChange>(

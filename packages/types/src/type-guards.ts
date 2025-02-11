@@ -32,7 +32,6 @@ import {
   AbortingStatusChange,
   GatherStatus,
   PlayingStatusChange,
-  QueueingStatusChange,
   StatusChange,
   SummoningStatusChange,
 } from './gather';
@@ -146,11 +145,6 @@ export function isPlayingStatusChange(value: unknown): value is PlayingStatusCha
 export function isAbortingStatusChange(value: unknown): value is AbortingStatusChange {
   return Boolean(
     value && (value as AbortingStatusChange).status === GatherStatus.Aborting
-  );
-}
-export function isQueueingStatusChange(value: unknown): value is QueueingStatusChange {
-  return Boolean(
-    value && (value as QueueingStatusChange).status === GatherStatus.Queueing
   );
 }
 export function isSummoningStatusChange(value: unknown): value is SummoningStatusChange {
