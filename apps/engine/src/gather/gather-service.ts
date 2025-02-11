@@ -1,5 +1,5 @@
 import { TeamspeakBot } from './TeamspeakBot';
-import { info, logErrorMessage } from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
 import { TeamSpeakClient } from 'ts3-nodejs-library';
 import { getTeamspeakPlayer } from '@bf2-matchmaking/services/players';
 import { isGatherPlayer } from '@bf2-matchmaking/types';
@@ -86,7 +86,10 @@ export async function initGatherQueue(configId: number) {
       }
     }
   } catch (e) {
+    error('initGatherQueue', e);
     logErrorMessage(`Gather ${configId}: Failed`, e);
-    await Gather(configId).error('Unknown Gather Error');
+    await Gather(configId)
+      .error('Unknown Gather Error')
+      .catch((e) => error('initGatherQueue', e));
   }
 }

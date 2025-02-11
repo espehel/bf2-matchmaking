@@ -4,10 +4,16 @@ import { del } from './generic';
 export function list(key: string) {
   const push = async (...value: Array<string>): Promise<number> => {
     const client = await getClient();
+    if (value.length === 0) {
+      return 0;
+    }
     return client.LPUSH(key, value);
   };
   const rpush = async (...value: Array<string>): Promise<number> => {
     const client = await getClient();
+    if (value.length === 0) {
+      return 0;
+    }
     return client.RPUSH(key, value);
   };
   const pop = async (): Promise<string | null> => {
