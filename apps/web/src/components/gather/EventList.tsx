@@ -15,11 +15,11 @@ export default function EventList({ defaultEvents, config }: Props) {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    const source = api.v2.getGatherEventsStream(config, events.at(-1)?.id);
+    const source = api.v2.getGatherEventsStream(config, events.at(0)?.id);
 
     source.addEventListener('data', (event) => {
       const newEvent = JSON.parse(event.data);
-      setEvents((currentEvents) => [...currentEvents, ...newEvent]);
+      setEvents((currentEvents) => [newEvent, ...currentEvents]);
     });
 
     return () => source.close();
@@ -34,7 +34,7 @@ export default function EventList({ defaultEvents, config }: Props) {
       {events.map((entry) => (
         <li key={entry.id}>
           <span className="mr-1">
-            <Time date={entry.message.timestamp} format="LLL dd TT" />
+            <Time date={Number(entry.message.timestamp)} format="LLL dd TT" />
           </span>
           <span className="mr-1 text-accent">{entry.message.event}</span>
           <span className="text-info">{getText(entry)}</span>

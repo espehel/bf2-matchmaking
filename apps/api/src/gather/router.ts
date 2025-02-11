@@ -9,7 +9,7 @@ export const gathersRouter = new Router({
 });
 
 gathersRouter.get('/:config/events', async (ctx: Context) => {
-  ctx.body = await stream(`gather:${ctx.params.config}:events`).readEvents();
+  ctx.body = await stream(`gather:${ctx.params.config}:events`).readEvents(true);
 });
 
 gathersRouter.get('/:config/events/stream', (ctx) => {
