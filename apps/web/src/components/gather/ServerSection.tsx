@@ -13,11 +13,12 @@ interface Props {
 export default async function ServerSection({ address }: Props) {
   const server = address ? await api.v2.getServer(address).then(verify) : null;
   return (
-    <section>
-      <h2>{server ? server.name : 'No server selected'}</h2>
+    <section className="section mt-8">
+      <h2>
+        {server ? `Server: ${server.name} - ${server.status}` : 'No server selected'}
+      </h2>
       {server && (
         <div className="flex flex-col gap-2">
-          <p>Server status: {server.status}</p>
           {server.matchId && (
             <Link
               className="link link-hover link-accent"

@@ -21,7 +21,7 @@ export default function JoinMeLink({ server, disabled }: Props) {
   }
   return (
     <button
-      className="link link-hover link-accent"
+      className="link link-hover link-accent flex items-center gap-1"
       onClick={handleClick}
       disabled={disabled}
     >

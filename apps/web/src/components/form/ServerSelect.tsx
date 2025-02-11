@@ -23,6 +23,7 @@ export default async function LiveServerSelectAction({ action, defaultServer }: 
       action={action}
       successMessage="Gather server selected"
       errorMessage="Failed to select Gather server"
+      className="flex items-end gap-2"
     >
       <Select
         label="Server"
@@ -32,7 +33,7 @@ export default async function LiveServerSelectAction({ action, defaultServer }: 
         options={servers.map((server) => [server.address, getServerName(server)])}
       />
       <SubmitActionFormButton>
-        <ArrowRightCircleIcon className="size-6" />
+        <ArrowRightCircleIcon className="size-8" />
       </SubmitActionFormButton>
     </ActionForm>
   );
