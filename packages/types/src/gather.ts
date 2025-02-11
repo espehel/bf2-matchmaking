@@ -1,15 +1,15 @@
 import { GatherPlayer, MatchesJoined } from './database-types';
 
 export enum GatherStatus {
-  Queueing,
-  Summoning,
-  Playing,
-  Aborting,
-  Failed,
+  Queueing = 'Queueing',
+  Summoning = 'Summoning',
+  Playing = 'Playing',
+  Aborting = 'Aborting',
+  Failed = 'Failed',
 }
 
 export interface GatherState extends Record<string, string | number | undefined> {
-  status: number;
+  status: GatherStatus;
   address: string;
   matchId?: string;
   summoningAt?: string;

@@ -5,7 +5,6 @@ import {
   getGatherQueue,
   getGatherState,
 } from '@bf2-matchmaking/redis/gather';
-import { GatherStatus } from '@bf2-matchmaking/types/gather';
 import ServerSection from '@/components/gather/ServerSection';
 
 export default async function Page() {
@@ -18,9 +17,8 @@ export default async function Page() {
     <main className="main">
       <h1>{config.name}</h1>
       <p>
-        {gatherPlayers.length}/{config.size}
+        Status: {gatherState.status} ({gatherPlayers.length}/{config.size})
       </p>
-      <p>{getGatherStatusName(gatherState.status)}</p>
       <ServerSection address={gatherState.address} />
       <section className="section">
         <h2>Gather events</h2>
@@ -30,8 +28,4 @@ export default async function Page() {
       </section>
     </main>
   );
-}
-
-function getGatherStatusName(targetValue: GatherStatus) {
-  return GatherStatus[targetValue] as keyof typeof GatherStatus;
 }
