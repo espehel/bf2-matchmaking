@@ -146,7 +146,9 @@ const admin = `${basePath}/admin`;
 const v2 = {
   getHealth: () => getJSON(`${basePath}/health`, { signal: AbortSignal.timeout(5000) }),
   getGatherEvents: (config: number | string) =>
-    getJSON<Array<StreamEventReply>>(`${gathers}/${config}/events`),
+    getJSON<Array<StreamEventReply>>(`${gathers}/${config}/events`, {
+      cache: 'no-store',
+    }),
   getGatherEventsStream: (config: number | string, start: string | undefined) =>
     getEventSource(`${gathers}/${config}/events/stream?start=${start}`),
   postMatch: (body: PostMatchRequestBody) => postJSON<MatchesJoined>(`${matches}`, body),
@@ -164,10 +166,7 @@ const v2 = {
     getJSON<Array<LiveServer>>(`${servers}`, {
       next: { revalidate: 60 },
     }),
-  getServersLogs: () =>
-    getJSON<ServersLogs>(`${servers}/logs`, {
-      next: { revalidate: 60 },
-    }),
+  getServersLogs: () => getJSON<ServersLogs>(`${servers}/logs`, { cache: 'no-store' }),
   getServer: (address: string) =>
     getJSON<LiveServer>(`${servers}/${address}`, {
       cache: 'no-store',

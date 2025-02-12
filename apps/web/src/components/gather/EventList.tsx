@@ -15,7 +15,7 @@ export default function EventList({ defaultEvents, config }: Props) {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    const source = api.v2.getGatherEventsStream(config, events.at(0)?.id);
+    const source = api.v2.getGatherEventsStream(config, defaultEvents.at(0)?.id);
 
     source.addEventListener('data', (event) => {
       const newEvent = JSON.parse(event.data);
@@ -23,7 +23,7 @@ export default function EventList({ defaultEvents, config }: Props) {
     });
 
     return () => source.close();
-  }, []);
+  }, [defaultEvents]);
 
   useEffect(() => {
     listRef.current?.scrollTo(0, listRef.current.scrollHeight);
