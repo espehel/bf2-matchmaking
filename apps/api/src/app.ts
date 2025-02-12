@@ -15,6 +15,7 @@ import { DateTime } from 'luxon';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 import { playersRouter } from './players/router';
 import { gathersRouter } from './gather/router';
+import { bearerToken } from './auth';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5004;
 
@@ -26,6 +27,7 @@ rootRouter.get('/health', (ctx) => {
 new Koa()
   .use(logger())
   .use(bodyParser())
+  .use(bearerToken())
   .use(adminRouter.routes())
   .use(adminRouter.allowedMethods())
   .use(cacheRouter.routes())

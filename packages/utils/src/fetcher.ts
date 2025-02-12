@@ -5,7 +5,6 @@ import {
   FetchSuccessResponse,
   isDefined,
 } from '@bf2-matchmaking/types';
-import { assertString } from './assert';
 
 const parseError = (error: any): FetchError => {
   if (!error) {
@@ -165,3 +164,11 @@ export const verify = <T>(result: FetchResult<T>): T => {
   }
   return result.data as T;
 };
+
+export function toBearerRequestInit(token: string): Partial<RequestInit> {
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+}

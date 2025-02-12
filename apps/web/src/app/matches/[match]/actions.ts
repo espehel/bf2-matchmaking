@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { EventMatchesUpdate, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { api, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
+import { api, assertObj, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   deleteGuildScheduledEvent,
@@ -12,6 +12,7 @@ import {
 import { getMatchDescription } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
 import { DateTime } from 'luxon';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import { createToken } from '@bf2-matchmaking/auth/token';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const result = await supabase(cookies).deleteMatchPlayer(matchId, playerId);
@@ -158,7 +159,13 @@ export async function unpauseRound(matchId: number, serverIp: string) {
 }
 
 export async function restartRound(matchId: number, serverIp: string) {
-  const result = await api.live().postServerExec(serverIp, { cmd: 'admin.restartMap' });
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.postServerExec(
+    serverIp,
+    { cmd: 'admin.restartMap' },
+    createToken(player)
+  );
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -168,7 +175,13 @@ export async function restartRound(matchId: number, serverIp: string) {
 }
 
 export async function restartServer(matchId: number, serverIp: string) {
-  const result = await api.live().postServerExec(serverIp, { cmd: 'quit' });
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.postServerExec(
+    serverIp,
+    { cmd: 'quit' },
+    createToken(player)
+  );
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);

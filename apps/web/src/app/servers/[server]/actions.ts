@@ -9,8 +9,9 @@ import {
 } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
 import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
-import { api } from '@bf2-matchmaking/utils';
+import { api, assertObj } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { createToken } from '@bf2-matchmaking/auth/token';
 
 export async function pauseRound(address: string) {
   const result = await api.live().postServerPause(address);
@@ -32,7 +33,13 @@ export async function unpauseRound(address: string) {
 }
 
 export async function restartRound(address: string) {
-  const result = await api.live().postServerExec(address, { cmd: 'admin.restartMap' });
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.postServerExec(
+    address,
+    { cmd: 'admin.restartMap' },
+    createToken(player)
+  );
 
   if (!result.error) {
     revalidatePath(`/servers/${address}`);

@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import { error, info } from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
 import {
   createSocket,
   exec,
@@ -36,7 +36,7 @@ export const serversRouter = new Router({
   prefix: '/servers',
 });
 
-serversRouter.get('/rcons', protect(), async (ctx) => {
+serversRouter.get('/rcons', protect('system'), async (ctx) => {
   const servers = await getLiveServers();
   const rcons = await hash<Record<string, string>>('cache:rcons').getAll();
   ctx.body = servers.map<ServerRconsRow>((s) => ({
@@ -65,7 +65,7 @@ serversRouter.get('/:address/log', async (ctx: Context) => {
   ctx.body = streamMessages.map(({ message }) => message);
 });
 
-serversRouter.post('/:ip/restart', protect(), async (ctx: Context) => {
+serversRouter.post('/:ip/restart', protect('system'), async (ctx: Context) => {
   const { mode, mapName, serverName, admins } = ctx.request
     .body as PostRestartServerRequestBody;
 
@@ -130,9 +130,23 @@ serversRouter.post('/:ip/maps', async (ctx: Context) => {
   ctx.body = { currentMapName: info.currentMapName, nextMapName: info.nextMapName };
 });
 
-serversRouter.post('/:ip/exec', async (ctx: Context) => {
+serversRouter.post('/:ip/exec', protect('user'), async (ctx: Context) => {
   const { cmd } = ctx.request.body;
   ctx.assert(cmd, 400, 'Missing cmd');
+  if (cmd === 'admin.restartMap' && ctx.request.user) {
+    stream(`servers:${ctx.params.ip}:log`)
+      .log(`Map restarted by ${ctx.request.user.nick}`, 'info')
+      .catch((e) =>
+        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+      );
+  }
+  if (cmd === 'quit' && ctx.request.user) {
+    stream(`servers:${ctx.params.ip}:log`)
+      .log(`Server restarted by ${ctx.request.user.nick}`, 'info')
+      .catch((e) =>
+        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+      );
+  }
   ctx.body = await exec(ctx.params.ip, cmd).then(verifyRconResult);
 });
 

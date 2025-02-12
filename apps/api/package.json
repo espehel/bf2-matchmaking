@@ -34,6 +34,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@bf2-matchmaking/auth": "^1.0.0",
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/railway": "*",
     "@bf2-matchmaking/redis": "*",

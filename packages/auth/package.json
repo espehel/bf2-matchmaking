@@ -1,0 +1,23 @@
+{
+  "name": "@bf2-matchmaking/auth",
+  "exports": {
+    "./token": "./src/token.ts"
+  },
+  "version": "1.0.0",
+  "scripts": {
+    "verify": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bf2-matchmaking/redis": "*",
+    "@bf2-matchmaking/supabase": "*",
+    "@bf2-matchmaking/types": "*",
+    "@bf2-matchmaking/utils": "*",
+    "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.4.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.8",
+    "typescript": "latest"
+  }
+}

@@ -1,6 +1,5 @@
 import {
   PlayerListItem,
-  ServerInfo,
   PostServerExecRequestBody,
   PostServerExecResponseBody,
   LiveMatch,
@@ -17,6 +16,7 @@ import {
   getJSON,
   postJSON,
   postWithApiKeyJSON,
+  toBearerRequestInit,
 } from './fetcher';
 import {
   Instance,
@@ -48,10 +48,8 @@ const live = () => {
     server: (ip: string) => `/servers/${ip}`,
     serverInfo: (ip: string) => `/servers/${ip}/si`,
     serverPlayerList: (ip: string) => `/servers/${ip}/pl`,
-    serverExec: (ip: string) => `/servers/${ip}/exec`,
     serverPause: (ip: string) => `/servers/${ip}/pause`,
     serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
-    serverRestart: (ip: string) => `/servers/${ip}/restart`,
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
     serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
@@ -63,10 +61,6 @@ const live = () => {
     paths,
     postServers: (body: PostServersRequestBody) =>
       postJSON<LiveServer>(basePath.concat(paths.servers()), body),
-    getServerInfo: (ip: string) =>
-      getJSON<ServerInfo>(basePath.concat(paths.serverInfo(ip)), { cache: 'no-store' }),
-    postServerExec: (ip: string, body: PostServerExecRequestBody) =>
-      postJSON<PostServerExecResponseBody>(basePath.concat(paths.serverExec(ip)), body),
     postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
     postServerUnpause: (ip: string) =>
       postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
@@ -175,6 +169,12 @@ const v2 = {
     getJSON<Array<ServerLogEntry>>(`${servers}/${address}/log`, {
       cache: 'no-store',
     }),
+  postServerExec: (address: string, body: PostServerExecRequestBody, token: string) =>
+    postJSON<PostServerExecResponseBody>(
+      `${servers}/${address}/exec`,
+      body,
+      toBearerRequestInit(token)
+    ),
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
   postServerRestart: (address: string, body: PostRestartServerRequestBody) =>
     postWithApiKeyJSON<PostServerExecResponseBody>(`${servers}/${address}/restart`, body),

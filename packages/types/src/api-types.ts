@@ -2,6 +2,19 @@ import { MatchesInsert, MatchPlayersInsert } from './database-types';
 import { LiveServerState, PlayerListItem, ServerInfo } from './index';
 import { LiveServer } from './server';
 
+export interface SessionUser {
+  id: string;
+  nick: string;
+  keyhash: string;
+}
+
+export type AccessRoles =
+  | 'system'
+  | 'user'
+  | 'player-admin'
+  | 'match-admin'
+  | 'server-admin';
+
 export interface LiveInfo extends ServerInfo {
   players: Array<PlayerListItem>;
 }
