@@ -3,7 +3,6 @@ import invariant from 'tiny-invariant';
 import {
   LiveServerState,
   MatchesJoined,
-  MatchStatus,
   PostgrestError,
   LiveInfo,
   RoundsInsert,
