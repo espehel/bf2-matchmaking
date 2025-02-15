@@ -1,4 +1,4 @@
-import { getClient } from '../client';
+import { createNewClient, getClient } from '../client';
 import { pack, unpack } from 'msgpackr';
 import { StreamEventReply, StreamMessageReply } from '@bf2-matchmaking/types/redis';
 
@@ -26,9 +26,12 @@ export function stream(key: string) {
   };
 
   const readEventsBlocking = async (start: string) => {
-    const client = await getClient();
-    const stream = await client.XREAD({ key, id: start }, { BLOCK: 0, COUNT: 10 });
-    return stream ? stream[0].messages.map(toStreamEventReply) : [];
+    const client = await createNewClient(`stream_${key}_client`).connect();
+    const stream = await client.XREAD(
+      { key, id: start },
+      { BLOCK: 1000 * 60 * 30, COUNT: 10 }
+    );
+    return stream ? stream[0].messages.map(toStreamEventReply) : null;
   };
 
   const log = async (message: string, level: 'info' | 'warn' | 'error') => {

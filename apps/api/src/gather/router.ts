@@ -3,6 +3,8 @@ import { Context } from 'koa';
 import { GatherEventStream } from './GatherEventStream';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { isString } from '@bf2-matchmaking/types';
+import { waitForEvent } from './event-stream';
+import { error } from '@bf2-matchmaking/logging';
 
 export const gathersRouter = new Router({
   prefix: '/gathers',
@@ -26,26 +28,16 @@ gathersRouter.get('/:config/events/stream', (ctx) => {
 
   const sseStream = new GatherEventStream();
 
-  ctx.status = 200;
-  ctx.body = sseStream;
-
-  async function waitForEvent(lastEvent: string) {
-    const events = await stream(`gather:${ctx.params.config}:events`).readEventsBlocking(
-      lastEvent
-    );
-    let lastId = lastEvent;
-    for (const event of events) {
+  const closeStream = waitForEvent(
+    ctx.params.config,
+    isString(ctx.query.start) ? ctx.query.start : '$',
+    (event) => {
       sseStream.writeEvent(event);
-      lastId = event.id;
+    },
+    (err) => {
+      sseStream.destroy(err);
     }
-    if (sseStream.closed) {
-      return;
-    }
-    setImmediate(() => waitForEvent(lastId));
-  }
-  waitForEvent(isString(ctx.query.start) ? ctx.query.start : '$').catch((err) => {
-    sseStream.destroy(err);
-  });
+  );
 
   const interval = setInterval(() => {
     sseStream.writeHeartbeat();
@@ -53,5 +45,13 @@ gathersRouter.get('/:config/events/stream', (ctx) => {
 
   sseStream.on('close', async () => {
     clearInterval(interval);
+    closeStream();
   });
+  sseStream.on('error', (err) => {
+    error('GET /:config/events/stream', err);
+  });
+
+  ctx.status = 200;
+  ctx.body = sseStream;
+  sseStream.writeHeartbeat();
 });
