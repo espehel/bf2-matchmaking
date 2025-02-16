@@ -9,9 +9,10 @@ interface Props {
   defaultEvents: Array<StreamEventReply>;
   config: number;
 }
-
+let timeoutId: number | undefined;
 export default function EventList({ defaultEvents, config }: Props) {
   const [events, setEvents] = useState(defaultEvents);
+  const [isConnected, setConnected] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -22,6 +23,14 @@ export default function EventList({ defaultEvents, config }: Props) {
       setEvents((currentEvents) => [newEvent, ...currentEvents]);
     });
 
+    source.addEventListener('heartbeat', (event) => {
+      setConnected(true);
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        setConnected(false);
+      }, 15000);
+    });
+
     return () => source.close();
   }, [defaultEvents]);
 
@@ -30,17 +39,26 @@ export default function EventList({ defaultEvents, config }: Props) {
   }, [events]);
 
   return (
-    <ul ref={listRef} className="overflow-auto">
-      {events.map((entry) => (
-        <li key={entry.id}>
-          <span className="mr-1">
-            <Time date={Number(entry.message.timestamp)} format="LLL dd TT" />
-          </span>
-          <span className="mr-1 text-accent">{entry.message.event}</span>
-          <span className="text-info">{getText(entry)}</span>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul ref={listRef} className="overflow-auto">
+        {events.map((entry) => (
+          <li key={entry.id}>
+            <span className="mr-1">
+              <Time date={Number(entry.message.timestamp)} format="LLL dd TT" />
+            </span>
+            <span className="inline-block mr-1 text-accent min-w-32">
+              [{entry.message.event}]
+            </span>
+            <span className="text-info">{getText(entry)}</span>
+          </li>
+        ))}
+      </ul>
+      {isConnected ? (
+        <p className="text-success text-xs text-right">Connected</p>
+      ) : (
+        <p className="text-warning text-xs text-right">Disconnected</p>
+      )}
+    </>
   );
 }
 
