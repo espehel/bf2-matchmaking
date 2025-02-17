@@ -78,5 +78,9 @@ function getText({ message }: StreamEventReply) {
     // @ts-ignore
     return `Gather initiated at ${message.payload.address} with ${message.payload.playerCount} players`;
   }
+  if (message.event === 'deleted') {
+    // @ts-ignore
+    return `Gather deleted state and player queue`;
+  }
   return '';
 }

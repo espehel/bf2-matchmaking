@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import { runService } from '@bf2-matchmaking/railway';
+import { restartServiceByName, runService } from '@bf2-matchmaking/railway';
 import {
   buildLocationsCache,
   buildMapsCache,
@@ -12,11 +12,24 @@ import { set } from '@bf2-matchmaking/redis/set';
 import { logMessage } from '@bf2-matchmaking/logging';
 import { putMatch } from '@bf2-matchmaking/redis/matches';
 import { DateTime } from 'luxon';
+import { protect } from '../auth';
+import { Gather } from '@bf2-matchmaking/services/gather';
 
 const RESTART_TOOL_SERVICE_ID = 'c5633c6e-3e36-4939-b2a6-46658cabd47e';
 
 export const adminRouter = new Router({
   prefix: '/admin',
+});
+
+adminRouter.post('/engine/reset', protect('system'), async (ctx) => {
+  const [gatherResult, serviceResult] = await Promise.all([
+    Gather(20).del(),
+    restartServiceByName('engine'),
+  ]);
+  ctx.body = {
+    ...gatherResult,
+    ...serviceResult,
+  };
 });
 
 adminRouter.post('/reset', async (ctx) => {

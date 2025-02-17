@@ -232,6 +232,20 @@ export function Gather(configId: number) {
     );
   };
 
+  const del = async () => {
+    const stateResult = await hash(stateKey).del();
+    const queueResult = await list(queueKey).del();
+    await stream(`gather:${configId}:events`).addEvent('deleted', {
+      state: stateResult,
+      queue: queueResult,
+    });
+    logMessage(`Gather ${configId}: deleted state and player queue`, {
+      stateResult,
+      queueResult,
+    });
+    return { stateResult, queueResult };
+  };
+
   return {
     init,
     addPlayer,
@@ -239,6 +253,7 @@ export function Gather(configId: number) {
     hasPlayer,
     handleSummonedPlayers,
     error,
+    del,
   };
 }
 
