@@ -4,7 +4,7 @@ import { GatherEventStream } from './GatherEventStream';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { isString } from '@bf2-matchmaking/types';
 import { waitForEvent } from './event-stream';
-import { error } from '@bf2-matchmaking/logging';
+import { error, info } from '@bf2-matchmaking/logging';
 
 export const gathersRouter = new Router({
   prefix: '/gathers',
@@ -35,6 +35,7 @@ gathersRouter.get('/:config/events/stream', (ctx) => {
       sseStream.writeEvent(event);
     },
     (err) => {
+      info(`GET /${ctx.params.config}/events/stream`, 'Event error');
       sseStream.destroy(err);
     }
   );
@@ -44,11 +45,15 @@ gathersRouter.get('/:config/events/stream', (ctx) => {
   }, 10000);
 
   sseStream.on('close', async () => {
+    info(`GET /${ctx.params.config}/events/stream`, 'Stream close');
     clearInterval(interval);
     closeStream();
   });
   sseStream.on('error', (err) => {
-    error('GET /:config/events/stream', err);
+    error(`GET /${ctx.params.config}/events/stream`, err);
+  });
+  sseStream.on('finish', () => {
+    info(`GET /${ctx.params.config}/events/stream`, 'Stream finish');
   });
 
   ctx.status = 200;

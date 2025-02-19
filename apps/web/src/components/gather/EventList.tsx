@@ -4,6 +4,7 @@ import { StreamEventReply } from '@bf2-matchmaking/types/redis';
 import { api } from '@bf2-matchmaking/utils';
 import Time from '@/components/commons/Time';
 import { isStatusChange } from '@bf2-matchmaking/types';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   defaultEvents: Array<StreamEventReply>;
@@ -14,6 +15,7 @@ export default function EventList({ defaultEvents, config }: Props) {
   const [events, setEvents] = useState(defaultEvents);
   const [isConnected, setConnected] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const source = api.v2.getGatherEventsStream(config, defaultEvents.at(0)?.id);
@@ -21,6 +23,7 @@ export default function EventList({ defaultEvents, config }: Props) {
     source.addEventListener('data', (event) => {
       const newEvent = JSON.parse(event.data);
       setEvents((currentEvents) => [newEvent, ...currentEvents]);
+      router.refresh();
     });
 
     source.addEventListener('heartbeat', (event) => {
@@ -32,7 +35,7 @@ export default function EventList({ defaultEvents, config }: Props) {
     });
 
     return () => source.close();
-  }, [defaultEvents]);
+  }, [defaultEvents, router]);
 
   useEffect(() => {
     listRef.current?.scrollTo(0, listRef.current.scrollHeight);
