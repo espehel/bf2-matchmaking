@@ -14,6 +14,7 @@ import { putMatch } from '@bf2-matchmaking/redis/matches';
 import { DateTime } from 'luxon';
 import { protect } from '../auth';
 import { Gather } from '@bf2-matchmaking/services/gather';
+import { resetServers } from '@bf2-matchmaking/services/server';
 
 const RESTART_TOOL_SERVICE_ID = 'c5633c6e-3e36-4939-b2a6-46658cabd47e';
 
@@ -21,7 +22,7 @@ export const adminRouter = new Router({
   prefix: '/admin',
 });
 
-adminRouter.post('/engine/reset', protect('system'), async (ctx) => {
+adminRouter.post('/reset/engine', protect('system'), async (ctx) => {
   const [gatherResult, serviceResult] = await Promise.all([
     Gather(20).del(),
     restartServiceByName('engine'),
@@ -32,7 +33,11 @@ adminRouter.post('/engine/reset', protect('system'), async (ctx) => {
   };
 });
 
-adminRouter.post('/reset', async (ctx) => {
+adminRouter.post('/reset/servers', protect('system'), async (ctx) => {
+  ctx.body = resetServers();
+});
+
+adminRouter.post('/reset', protect('system'), async (ctx) => {
   const [locations, maps, rcons, matches] = await Promise.all([
     buildLocationsCache(),
     buildMapsCache(),

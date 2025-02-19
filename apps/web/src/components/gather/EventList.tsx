@@ -38,12 +38,12 @@ export default function EventList({ defaultEvents, config }: Props) {
   }, [defaultEvents, router]);
 
   useEffect(() => {
-    listRef.current?.scrollTo(0, listRef.current.scrollHeight);
+    listRef.current?.scrollTo(0, 0);
   }, [events]);
 
   return (
     <>
-      <ul ref={listRef} className="overflow-auto">
+      <ul ref={listRef} className="overflow-auto max-h-60">
         {events.map((entry) => (
           <li key={entry.id}>
             <span className="mr-1">

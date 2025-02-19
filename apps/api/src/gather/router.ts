@@ -10,6 +10,7 @@ import {
   getGatherQueue,
   getGatherState,
 } from '@bf2-matchmaking/redis/gather';
+import { hash } from '@bf2-matchmaking/redis/hash';
 
 export const gathersRouter = new Router({
   prefix: '/gathers',
@@ -21,6 +22,16 @@ gathersRouter.get('/:config', async (ctx: Context) => {
   const players = await getGatherPlayers(queue);
   const events = await stream(`gather:${ctx.params.config}:events`).readEvents(true);
   ctx.body = { state, players, events };
+});
+
+gathersRouter.post('/:config/address', async (ctx: Context) => {
+  const state = await getGatherState(ctx.params.config);
+  if (state.status !== 'Queueing') {
+    ctx.throw(400, 'Gather is not in queueing state');
+  }
+  ctx.body = await hash(`gather:${ctx.params.config}`).set({
+    address: ctx.request.body.address,
+  });
 });
 
 gathersRouter.get('/:config/events', async (ctx: Context) => {

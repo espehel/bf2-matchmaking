@@ -144,6 +144,10 @@ const v2 = {
     getJSON<GetGatherResponse>(`${gathers}/${config}`, {
       cache: 'no-store',
     }),
+  postGatherServer: (config: number | string, address: string) =>
+    postJSON<number>(`${gathers}/${config}/server`, {
+      address,
+    }),
   getGatherEvents: (config: number | string) =>
     getJSON<Array<StreamEventReply>>(`${gathers}/${config}/events`, {
       cache: 'no-store',
@@ -183,7 +187,9 @@ const v2 = {
   deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
   postServerRestart: (address: string, body: PostRestartServerRequestBody) =>
     postWithApiKeyJSON<PostServerExecResponseBody>(`${servers}/${address}/restart`, body),
-  adminReset: () => postJSON(`${admin}/reset`, {}),
+  adminReset: () => postWithApiKeyJSON(`${admin}/reset`, {}),
+  adminResetEngine: () => postWithApiKeyJSON(`${admin}/reset/engine`, {}),
+  adminResetServers: () => postWithApiKeyJSON(`${admin}/reset/servers`, {}),
 };
 
 export const api = {

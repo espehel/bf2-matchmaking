@@ -11,16 +11,27 @@ interface Props {
     formData: FormData
   ) => Promise<{ data: unknown; error: { message: string } | null } | undefined>;
   defaultServer?: string;
+  disabled?: boolean;
 }
 
-export default async function LiveServerSelectAction({ action, defaultServer }: Props) {
+export default async function LiveServerSelectAction({
+  action,
+  defaultServer,
+  disabled,
+}: Props) {
   const { data: servers } = await api.v2.getServers();
   if (!servers) {
     return null;
   }
+
+  async function serverAction(data: FormData) {
+    'use server';
+    return action(data);
+  }
+
   return (
     <ActionForm
-      action={action}
+      action={serverAction}
       successMessage="Gather server selected"
       errorMessage="Failed to select Gather server"
       className="flex items-end gap-2"
@@ -31,8 +42,9 @@ export default async function LiveServerSelectAction({ action, defaultServer }: 
         placeholder="No server set"
         defaultValue={defaultServer}
         options={servers.map((server) => [server.address, getServerName(server)])}
+        disabled={disabled}
       />
-      <SubmitActionFormButton>
+      <SubmitActionFormButton disabled={disabled}>
         <ArrowRightCircleIcon className="size-8" />
       </SubmitActionFormButton>
     </ActionForm>

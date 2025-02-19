@@ -22,6 +22,7 @@ import {
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { DateTime } from 'luxon';
 import { initGatherQueue } from './gather/gather-service';
+import { resetServersTask } from './tasks/resetServers';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5006;
 
@@ -30,18 +31,18 @@ assertString(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN is not define
 discordClient
   .login(process.env.DISCORD_TOKEN)
   .then(async () => {
-    await getClient(); // TODO fix connect race without exposing client?
     if (isDevelopment()) {
       warn('app', 'Starting in development mode');
       return;
     }
 
     await hash('system').set({ engineStartedAt: DateTime.now().toISO() });
-    await json('app:engine:state').set({});
-    await initServers();
-    await initChannelListener();
+    await Promise.all([
+      json('app:engine:state').set({}),
+      initChannelListener(),
+      initGatherQueue(20),
+    ]);
     initScheduledEventsListener();
-    await initGatherQueue(20);
 
     closeOldMatchesTask.start();
     startScheduledMatchesTask.start();
@@ -50,6 +51,7 @@ discordClient
     closeOldChallengesTask.start();
     set8v8queueCheckinTask.start();
     reset8v8queueCheckinTask.start();
+    resetServersTask.start();
   })
   .then(async () => {
     createServer(requestListener).listen(PORT, () => {

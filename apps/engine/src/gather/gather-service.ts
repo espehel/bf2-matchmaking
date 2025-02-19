@@ -22,8 +22,7 @@ export async function initGatherQueue(configId: number) {
       await Gather(configId).error('No idle server found');
       return;
     }
-    const queuePlayers = await ts.getQueueChannelPlayers();
-    await Gather(configId).init(address, queuePlayers);
+    await Gather(configId).init(address, ts.getQueueingPlayers());
 
     ts.onClientJoined(handleClientJoin);
     ts.onClientLeft(handleClientLeft);
@@ -47,43 +46,17 @@ export async function initGatherQueue(configId: number) {
         return;
       }
 
-      const { status } = await Gather(configId).addPlayer(player);
-      if (status === GatherStatus.Summoning) {
-        assertString(address, 'Missing server address');
-        startReadServerTask(address);
-        await topic(`server:${address}`).subscribe<LiveInfo>(onLiveInfo);
+      const nextState = await Gather(configId).addPlayer(player);
+      if (nextState) {
+        startReadServerTask(nextState.payload.address);
+        await topic(`server:${nextState.payload.address}`).subscribe<LiveInfo>(
+          onLiveInfo(ts, configId, nextState.payload.address)
+        );
       }
     }
 
     async function handleClientLeft(client: TeamSpeakClient) {
       await Gather(configId).removePlayer(client.uniqueIdentifier);
-    }
-
-    async function onLiveInfo(live: LiveInfo) {
-      try {
-        const stateChange = await Gather(configId).handleSummonedPlayers(live.players);
-        if (!stateChange) {
-          return;
-        }
-
-        if (stateChange.status === GatherStatus.Playing) {
-          await ts.initiateMatchChannels(stateChange.payload);
-        }
-        if (stateChange.status === GatherStatus.Aborting) {
-          await ts.kickLatePlayers(stateChange.payload.map((p) => p.teamspeak_id));
-        }
-
-        assertString(address, 'Missing server address');
-        await topic(`server:${address}`).unsubscribe();
-        const queuePlayers = await ts.getQueueChannelPlayers();
-        await Gather(configId).init(address, queuePlayers);
-      } catch (e) {
-        logErrorMessage('Failed to handle live info, hard resetting gather', e, { live });
-        assertString(address, 'Missing server address');
-        await topic(`server:${address}`).unsubscribe();
-        await ts.clearQueueChannel();
-        await Gather(configId).init(address, []);
-      }
     }
   } catch (e) {
     error('initGatherQueue', e);
@@ -92,4 +65,34 @@ export async function initGatherQueue(configId: number) {
       .error('Unknown Gather Error')
       .catch((e) => error('initGatherQueue', e));
   }
+}
+
+function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
+  return async (live: LiveInfo) => {
+    try {
+      const stateChange = await Gather(configId).handleSummonedPlayers(live.players);
+      if (!stateChange) {
+        return;
+      }
+
+      if (stateChange.status === GatherStatus.Playing) {
+        await ts.initiateMatchChannels(stateChange.payload);
+      }
+      if (stateChange.status === GatherStatus.Aborting) {
+        await ts.kickLatePlayers(stateChange.payload.map((p) => p.teamspeak_id));
+      }
+
+      assertString(address, 'Missing server address');
+      await topic(`server:${address}`).unsubscribe();
+      await Gather(configId).init(address, ts.getQueueingPlayers());
+    } catch (e) {
+      logErrorMessage('Failed to handle live info, hard resetting gather', e, {
+        live,
+      });
+      assertString(address, 'Missing server address');
+      await topic(`server:${address}`).unsubscribe();
+      await ts.clearQueueChannel();
+      await Gather(configId).init(address, []);
+    }
+  };
 }

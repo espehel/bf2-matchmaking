@@ -13,12 +13,15 @@ const BOT_CHANNEL = '42497';
 export class TeamspeakBot {
   isConnected: boolean = true;
   #ts: TeamSpeak;
-  queueingPlayers = new Map<string, string>();
+  #queueingPlayers: Map<string, string>;
   clientJoinedCB: ((client: TeamSpeakClient) => void) | null = null;
   clientLeftCB: ((client: TeamSpeakClient) => void) | null = null;
 
-  constructor(ts: TeamSpeak) {
+  constructor(ts: TeamSpeak, queueClients: Array<TeamSpeakClient>) {
     this.#ts = ts;
+    this.#queueingPlayers = new Map(
+      queueClients.map((client) => [client.uniqueIdentifier, client.clid])
+    );
     ts.on('close', () => {
       info('listenToChannelJoin', 'Teamspeak connection closed');
       this.isConnected = false;
@@ -43,7 +46,7 @@ export class TeamspeakBot {
   #handleClientMoved({ client, channel }: ClientMoved) {
     if (channel.cid === QUEUE_CHANNEL) {
       info('TeamspeakBot', `Client ${client.nickname} joined queue`);
-      this.queueingPlayers.set(client.uniqueIdentifier, client.clid);
+      this.#queueingPlayers.set(client.uniqueIdentifier, client.clid);
       if (this.clientJoinedCB) {
         return this.clientJoinedCB(client);
       }
@@ -51,24 +54,24 @@ export class TeamspeakBot {
 
     if (
       channel.cid !== QUEUE_CHANNEL &&
-      this.queueingPlayers.has(client.uniqueIdentifier)
+      this.#queueingPlayers.has(client.uniqueIdentifier)
     ) {
       info('TeamspeakBot', `Client ${client.nickname} left queue by move`);
-      this.queueingPlayers.delete(client.uniqueIdentifier);
+      this.#queueingPlayers.delete(client.uniqueIdentifier);
       if (this.clientLeftCB) return this.clientLeftCB(client);
     }
   }
   #handleClientDisconnected({ client }: ClientDisconnect) {
-    if (client && this.queueingPlayers.has(client.uniqueIdentifier)) {
+    if (client && this.#queueingPlayers.has(client.uniqueIdentifier)) {
       info('TeamspeakBot', `Client ${client.nickname} left queue by disconnect`);
-      this.queueingPlayers.delete(client.uniqueIdentifier);
+      this.#queueingPlayers.delete(client.uniqueIdentifier);
       if (this.clientLeftCB) return this.clientLeftCB(client);
     }
   }
   async kickClient(tsClient: TeamSpeakClient | string, poke: string, message: string) {
     const ts = await this.getTS();
     const clid =
-      typeof tsClient === 'string' ? this.queueingPlayers.get(tsClient) : tsClient.clid;
+      typeof tsClient === 'string' ? this.#queueingPlayers.get(tsClient) : tsClient.clid;
 
     if (!clid) {
       warn('TeamspeakBot', 'Kick failed due to noe clid');
@@ -112,7 +115,7 @@ export class TeamspeakBot {
 
   movePlayer(channelId: string) {
     return async (player: TeamspeakPlayer) => {
-      const clid = this.queueingPlayers.get(player.teamspeak_id);
+      const clid = this.#queueingPlayers.get(player.teamspeak_id);
       info(
         'TeamspeakBot',
         `Moving player ${player.teamspeak_id}(${clid}) to ${channelId}`
@@ -169,10 +172,8 @@ export class TeamspeakBot {
       });
     }
   }
-  async getQueueChannelPlayers() {
-    const ts = await this.getTS();
-    const clients = await ts.clientList({ cid: QUEUE_CHANNEL });
-    return clients.map((client) => client.uniqueIdentifier);
+  getQueueingPlayers() {
+    return Array.from(this.#queueingPlayers.keys());
   }
   async clearQueueChannel() {
     const ts = await this.getTS();
@@ -182,7 +183,7 @@ export class TeamspeakBot {
     }
   }
   static async connect() {
-    const client = await TeamSpeak.connect({
+    const ts = await TeamSpeak.connect({
       host: 'oslo21.spillvert.no',
       queryport: 10022,
       protocol: QueryProtocol.SSH,
@@ -192,7 +193,9 @@ export class TeamspeakBot {
       nickname: 'bf2.gg',
     });
     info('TeamspeakBot', 'Connected to teamspeak');
-    return new TeamspeakBot(client);
+    const queueClients = await ts.clientList({ cid: QUEUE_CHANNEL });
+    info('TeamspeakBot', `Initializing with ${queueClients.length} clients in queue`);
+    return new TeamspeakBot(ts, queueClients);
   }
 }
 

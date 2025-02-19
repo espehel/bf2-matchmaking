@@ -22,7 +22,7 @@ export interface StatusChange {
 }
 export interface SummoningStatusChange extends StatusChange {
   status: GatherStatus.Summoning;
-  payload: MatchesJoined;
+  payload: { address: string };
 }
 export interface PlayingStatusChange extends StatusChange {
   status: GatherStatus.Playing;

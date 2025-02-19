@@ -1,7 +1,7 @@
 import { getConnections, hello } from '@bf2-matchmaking/redis/generic';
 import StatusCollapse from '@/components/admin/StatusCollapse';
 import ActionButton from '@/components/ActionButton';
-import { resetSystem } from '@/app/admin/actions';
+import { resetEngine, resetServers, resetSystem } from '@/app/admin/actions';
 import { api, engine } from '@bf2-matchmaking/utils';
 import { json } from '@bf2-matchmaking/redis/json';
 import { hash } from '@bf2-matchmaking/redis/hash';
@@ -43,14 +43,32 @@ export default async function AdminPage() {
       <section className="section mb-8">
         <h2>System</h2>
         <p>{`Last reset: ${systemState?.resetAt}`}</p>
-        <ActionButton
-          action={resetSystem}
-          successMessage="System reset, services restarting..."
-          errorMessage="Failed to reset system"
-          disabled={!adminRoles?.system_admin}
-        >
-          Reset
-        </ActionButton>
+        <div className="flex gap-4">
+          <ActionButton
+            action={resetSystem}
+            successMessage="System reset, services restarting..."
+            errorMessage="Failed to reset system"
+            disabled={!adminRoles?.system_admin}
+          >
+            Reset
+          </ActionButton>
+          <ActionButton
+            action={resetEngine}
+            successMessage="Engine reset"
+            errorMessage="Failed to reset Engine"
+            disabled={!adminRoles?.system_admin}
+          >
+            Reset Engine
+          </ActionButton>
+          <ActionButton
+            action={resetServers}
+            successMessage="Servers reset"
+            errorMessage="Failed to reset servers"
+            disabled={!adminRoles?.system_admin}
+          >
+            Reset servers
+          </ActionButton>
+        </div>
       </section>
       <section className="section">
         <h2>Status</h2>

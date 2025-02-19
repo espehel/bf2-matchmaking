@@ -124,9 +124,9 @@ export function Gather(configId: number) {
     assertObj(gatherSize);
 
     if (state.status === GatherStatus.Queueing && queueLength === gatherSize) {
-      return _summon();
+      return _summon(state.address);
     }
-    return state;
+    return null;
   };
 
   const removePlayer = async (player: string) => {
@@ -140,7 +140,7 @@ export function Gather(configId: number) {
     return list(queueKey).has(player);
   };
 
-  const _summon = async (): Promise<SummoningStatusChange> => {
+  const _summon = async (address: string): Promise<SummoningStatusChange> => {
     const config = await getMatchConfig(configId);
     const matchPlayers = await popMatchPlayers(configId, config.size);
     assertObj(matchPlayers, 'Match players not found');
@@ -148,14 +148,14 @@ export function Gather(configId: number) {
     const keyhashes = (
       await Promise.all(matchPlayers.map(getGatherPlayerKeyhash))
     ).filter(isNotNull);
-    const match = await createMatch(keyhashes, config);
+    await createMatch(keyhashes, config);
 
     return _nextState(
       {
         status: GatherStatus.Summoning,
         summoningAt: DateTime.now().toISO(),
       },
-      match
+      { address }
     );
   };
 

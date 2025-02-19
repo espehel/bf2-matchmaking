@@ -9,3 +9,17 @@ export async function resetSystem() {
   }
   return result;
 }
+export async function resetEngine() {
+  const result = await api.v2.adminResetEngine();
+  if (!result.error) {
+    revalidatePath('/admin');
+  }
+  return result;
+}
+export async function resetServers() {
+  const result = await api.v2.adminResetServers();
+  if (!result.error) {
+    revalidatePath('/admin');
+  }
+  return result;
+}

@@ -1,13 +1,16 @@
 import { LiveInfo } from '@bf2-matchmaking/types';
-import { info, warn } from '@bf2-matchmaking/logging';
+import { info, logErrorMessage, warn } from '@bf2-matchmaking/logging';
 import { getPlayerList, getServerInfo } from './rcon/bf2-rcon-api';
 import { getServer, setServerLiveInfo } from '@bf2-matchmaking/redis/servers';
 import { DateTime } from 'luxon';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 import { Server } from './Server';
 import dns from 'dns';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { parseError } from '@bf2-matchmaking/utils';
+import { set } from '@bf2-matchmaking/redis/set';
+import { hash } from '@bf2-matchmaking/redis/hash';
+import { ApiErrorType, ServiceError } from './error';
 
 export async function createLiveInfo(
   address: string,
@@ -98,4 +101,44 @@ export async function getJoinmeDirect(ip: string, port: string): Promise<string>
       }
     });
   });
+}
+
+export async function resetServers() {
+  try {
+    const servers = await client().getServers().then(verifyResult);
+    const [
+      deletedIdleServers,
+      deletedOfflineServers,
+      deletedRestartingServers,
+      deletedActiveServers,
+    ] = await Promise.all([
+      set('servers:idle').del(),
+      set('servers:offline').del(),
+      set('servers:restarting').del(),
+      hash('servers:active').del(),
+    ]);
+    let offlineServers = 0;
+    let idleServers = 0;
+
+    for (const server of servers) {
+      const { status } = await Server.init(server);
+      if (status === ServerStatus.IDLE) {
+        idleServers++;
+      } else if (status === ServerStatus.OFFLINE) {
+        offlineServers++;
+      }
+    }
+
+    return {
+      idleServers,
+      offlineServers,
+      deletedIdleServers,
+      deletedOfflineServers,
+      deletedRestartingServers,
+      deletedActiveServers,
+    };
+  } catch (e) {
+    logErrorMessage('Failed to reset servers', e);
+    throw ServiceError.BadGateway('Failed to reset servers');
+  }
 }
