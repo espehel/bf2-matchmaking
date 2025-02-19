@@ -5,9 +5,22 @@ import { stream } from '@bf2-matchmaking/redis/stream';
 import { isString } from '@bf2-matchmaking/types';
 import { waitForEvent } from './event-stream';
 import { error, info } from '@bf2-matchmaking/logging';
+import {
+  getGatherPlayers,
+  getGatherQueue,
+  getGatherState,
+} from '@bf2-matchmaking/redis/gather';
 
 export const gathersRouter = new Router({
   prefix: '/gathers',
+});
+
+gathersRouter.get('/:config', async (ctx: Context) => {
+  const state = await getGatherState(ctx.params.config);
+  const queue = await getGatherQueue(ctx.params.config);
+  const players = await getGatherPlayers(queue);
+  const events = await stream(`gather:${ctx.params.config}:events`).readEvents(true);
+  ctx.body = { state, players, events };
 });
 
 gathersRouter.get('/:config/events', async (ctx: Context) => {

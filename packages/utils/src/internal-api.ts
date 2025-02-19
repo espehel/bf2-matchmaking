@@ -9,6 +9,7 @@ import {
   ServersRow,
   MatchesJoined,
   PostMatchRequestBody,
+  GetGatherResponse,
 } from '@bf2-matchmaking/types';
 import {
   deleteJSON,
@@ -139,6 +140,10 @@ const servers = `${basePath}/servers`;
 const admin = `${basePath}/admin`;
 const v2 = {
   getHealth: () => getJSON(`${basePath}/health`, { signal: AbortSignal.timeout(5000) }),
+  getGather: (config: number | string) =>
+    getJSON<GetGatherResponse>(`${gathers}/${config}`, {
+      cache: 'no-store',
+    }),
   getGatherEvents: (config: number | string) =>
     getJSON<Array<StreamEventReply>>(`${gathers}/${config}/events`, {
       cache: 'no-store',

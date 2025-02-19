@@ -1,5 +1,5 @@
 import { list } from '../core/list';
-import { json } from '../core/json';
+import { getMultiple, json } from '../core/json';
 import { GatherPlayer, MatchConfigsRow } from '@bf2-matchmaking/types';
 import { hash } from '../core/hash';
 import { GatherState } from '@bf2-matchmaking/types/gather';
@@ -19,6 +19,10 @@ export function getGatherQueue(configId: number) {
 
 export function getGatherPlayer(identifier: string) {
   return json<GatherPlayer>(`gather:players:${identifier}`).get();
+}
+
+export function getGatherPlayers(identifiers: Array<string>) {
+  return getMultiple<GatherPlayer>(identifiers.map((id) => `gather:players:${id}`));
 }
 export function getGatherPlayerKeyhash(identifier: string) {
   return json<GatherPlayer>(`gather:players:${identifier}`).getProperty('keyhash');

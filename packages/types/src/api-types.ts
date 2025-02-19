@@ -1,6 +1,8 @@
-import { MatchesInsert, MatchPlayersInsert } from './database-types';
+import { GatherPlayer, MatchesInsert, MatchPlayersInsert } from './database-types';
 import { LiveServerState, PlayerListItem, ServerInfo } from './index';
 import { LiveServer } from './server';
+import { GatherState } from './gather';
+import { StreamEventReply } from './redis';
 
 export interface SessionUser {
   id: string;
@@ -55,4 +57,10 @@ export interface PostMatchRequestBody {
   matchValues: MatchesInsert;
   matchMaps: Array<number> | null;
   matchTeams: Array<MatchPlayersInsert> | null;
+}
+
+export interface GetGatherResponse {
+  state: GatherState;
+  players: Array<GatherPlayer>;
+  events: Array<StreamEventReply>;
 }
