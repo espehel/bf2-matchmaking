@@ -99,11 +99,13 @@ export class TeamspeakBot {
     }
   }
 
-  async kickUnregisteredClient(tsClient: TeamSpeakClient) {
+  async kickUnregisteredClient(tsClient: TeamSpeakClient | string) {
+    const identifier =
+      typeof tsClient === 'string' ? tsClient : tsClient.uniqueIdentifier;
     await this.kickClient(
       tsClient,
-      getRegisterPoke(tsClient.uniqueIdentifier),
-      getRegisterMessage(tsClient.uniqueIdentifier)
+      getRegisterPoke(identifier),
+      getRegisterMessage(identifier)
     );
   }
   async kickLatePlayers(players: Array<string>) {

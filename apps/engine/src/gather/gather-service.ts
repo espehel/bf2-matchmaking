@@ -2,7 +2,7 @@ import { TeamspeakBot } from './TeamspeakBot';
 import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
 import { TeamSpeakClient } from 'ts3-nodejs-library';
 import { getTeamspeakPlayer } from '@bf2-matchmaking/services/players';
-import { isGatherPlayer } from '@bf2-matchmaking/types';
+import { isGatherPlayer, isNotNull } from '@bf2-matchmaking/types';
 import { startReadServerTask } from '../tasks/readServerTask';
 import { topic } from '@bf2-matchmaking/redis/topic';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
@@ -10,6 +10,7 @@ import { Gather } from '@bf2-matchmaking/services/gather';
 import { GatherStatus } from '@bf2-matchmaking/types/gather';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { assertString } from '@bf2-matchmaking/utils';
+import { getGatherPlayer, setGatherPlayer } from '@bf2-matchmaking/redis/gather';
 
 export async function initGatherQueue(configId: number) {
   try {
@@ -22,7 +23,12 @@ export async function initGatherQueue(configId: number) {
       await Gather(configId).error('No idle server found');
       return;
     }
-    await Gather(configId).init(address, ts.getQueueingPlayers());
+
+    const queueingPlayers = await Promise.all(
+      ts.getQueueingPlayers().map((p) => verifyPlayer(p, ts))
+    );
+
+    await Gather(configId).init(address, queueingPlayers.filter(isNotNull));
 
     ts.onClientJoined(handleClientJoin);
     ts.onClientLeft(handleClientLeft);
@@ -36,13 +42,8 @@ export async function initGatherQueue(configId: number) {
         return;
       }
 
-      const player = await getTeamspeakPlayer(client.uniqueIdentifier);
+      const player = await verifyPlayer(client.uniqueIdentifier, ts);
       if (!player) {
-        await ts.kickUnregisteredClient(client);
-        return;
-      }
-      if (!isGatherPlayer(player)) {
-        await ts.kickClient(client, 'Missing keyhash', 'Missing keyhash');
         return;
       }
 
@@ -84,7 +85,11 @@ function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
 
       assertString(address, 'Missing server address');
       await topic(`server:${address}`).unsubscribe();
-      await Gather(configId).init(address, ts.getQueueingPlayers());
+      const queueingPlayers = await Promise.all(
+        ts.getQueueingPlayers().map((p) => verifyPlayer(p, ts))
+      );
+      // TODO should probably use the redis list/queueu somehow here
+      await Gather(configId).init(address, queueingPlayers.filter(isNotNull));
     } catch (e) {
       logErrorMessage('Failed to handle live info, hard resetting gather', e, {
         live,
@@ -95,4 +100,23 @@ function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
       await Gather(configId).init(address, []);
     }
   };
+}
+
+async function verifyPlayer(identifier: string, ts: TeamspeakBot) {
+  const cachedPlayer = await getGatherPlayer(identifier);
+  if (cachedPlayer) {
+    return cachedPlayer;
+  }
+
+  const player = await getTeamspeakPlayer(identifier);
+  if (!player) {
+    await ts.kickUnregisteredClient(identifier);
+    return null;
+  }
+  if (!isGatherPlayer(player)) {
+    await ts.kickClient(identifier, 'Missing keyhash', 'Missing keyhash');
+    return null;
+  }
+  await setGatherPlayer(player);
+  return player;
 }

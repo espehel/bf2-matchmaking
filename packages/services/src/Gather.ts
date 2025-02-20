@@ -40,9 +40,9 @@ export function Gather(configId: number) {
   const stateKey = `gather:${configId}`;
   const queueKey = `gather:${configId}:queue`;
 
-  const init = async (address: string, teamspeakPlayers: Array<string>) => {
+  const init = async (address: string, queueingPlayers: Array<GatherPlayer>) => {
     await syncConfig(configId);
-    await _syncPlayers(teamspeakPlayers);
+    await _syncPlayers(queueingPlayers.map((p) => p.teamspeak_id));
 
     await hash<GatherState>(stateKey).set({
       status: GatherStatus.Queueing,
@@ -52,11 +52,14 @@ export function Gather(configId: number) {
       address,
     });
 
-    logMessage(`Gather ${configId}: initiated`, { address, teamspeakPlayers });
+    logMessage(`Gather ${configId}: initiated`, {
+      address,
+      teamspeakPlayers: queueingPlayers,
+    });
 
     await stream(`gather:${configId}:events`).addEvent('initiated', {
       address,
-      playerCount: teamspeakPlayers.length,
+      playerCount: queueingPlayers.length,
     });
   };
 
@@ -119,7 +122,6 @@ export function Gather(configId: number) {
   };
 
   const addPlayer = async (player: GatherPlayer) => {
-    await setGatherPlayer(player);
     const state = await getGatherState(configId);
     const queueLength = await list(queueKey).push(player.teamspeak_id);
     await stream(`gather:${configId}:events`).addEvent('playerJoin', player);
