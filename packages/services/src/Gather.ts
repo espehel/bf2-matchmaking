@@ -64,22 +64,26 @@ export function Gather(configId: number) {
     nextState: Partial<GatherState>,
     payload: T['payload']
   ): Promise<T> => {
-    const state = await getGatherState(configId);
+    const state = await getGatherState(configId).catch(() => null);
     await hash<GatherState>(stateKey).set(nextState);
     const stateChange = {
-      prevStatus: state.status,
+      prevStatus: state?.status || null,
       status: nextState.status,
       payload,
     } as T;
 
     if (nextState.status === GatherStatus.Failed) {
       logWarnMessage(
-        `Gather ${configId}: state change from ${state.status} to ${nextState.status}`,
+        `Gather ${configId}: state change from ${state?.status || null} to ${
+          nextState.status
+        }`,
         { prevState: state, nextState, payload }
       );
     } else {
       logMessage(
-        `Gather ${configId}: state change from ${state.status} to ${nextState.status}`,
+        `Gather ${configId}: state change from ${state?.status || null} to ${
+          nextState.status
+        }`,
         { prevState: state, nextState, payload }
       );
     }
@@ -224,7 +228,7 @@ export function Gather(configId: number) {
       {
         status: GatherStatus.Failed,
         failReason: reason,
-        address: undefined,
+        address: 'invalid',
         summoningAt: undefined,
         matchId: undefined,
       },
