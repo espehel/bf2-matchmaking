@@ -138,6 +138,7 @@ export function Gather(configId: number) {
   const removePlayer = async (player: string) => {
     const count = await list(queueKey).remove(player);
     const playerData = await getGatherPlayer(player);
+    assertObj(playerData, 'Gather Player not found');
     await stream(`gather:${configId}:events`).addEvent('playerLeave', playerData);
     return count;
   };
