@@ -20,6 +20,7 @@ export async function getPlayerRoles(playerId: string) {
   const adminRoles = Object.entries(rolesData)
     .filter(([_, hasRole]) => hasRole)
     .map(([roleName]) => roleName)
+    .concat('user')
     .join(',');
   await hash<Record<string, string>>('players:roles').set({
     playerId: 'user'.concat(adminRoles),
