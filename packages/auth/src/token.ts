@@ -22,5 +22,6 @@ export async function verifyToken(token: string) {
   }
 
   await client().getPlayer(parsed.id).then(verifySingleResult);
+  await set('players').add(parsed.id);
   return parsed;
 }

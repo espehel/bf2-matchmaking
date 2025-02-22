@@ -1,7 +1,8 @@
 {
   "name": "@bf2-matchmaking/auth",
   "exports": {
-    "./token": "./src/token.ts"
+    "./token": "./src/token.ts",
+    "./roles": "./src/roles.ts"
   },
   "version": "1.0.0",
   "scripts": {

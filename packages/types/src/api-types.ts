@@ -10,12 +10,13 @@ export interface SessionUser {
   keyhash: string;
 }
 
-export type AccessRoles =
-  | 'system'
-  | 'user'
-  | 'player-admin'
-  | 'match-admin'
-  | 'server-admin';
+export interface SystemUser extends SessionUser {
+  id: 'system';
+  nick: 'system';
+  keyhash: 'system';
+}
+
+export type AccessRoles = 'user' | 'player-admin' | 'match-admin' | 'server-admin';
 
 export interface LiveInfo extends ServerInfo {
   players: Array<PlayerListItem>;

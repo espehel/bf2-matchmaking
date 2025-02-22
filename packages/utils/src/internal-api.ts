@@ -49,10 +49,7 @@ const live = () => {
     server: (ip: string) => `/servers/${ip}`,
     serverInfo: (ip: string) => `/servers/${ip}/si`,
     serverPlayerList: (ip: string) => `/servers/${ip}/pl`,
-    serverPause: (ip: string) => `/servers/${ip}/pause`,
-    serverUnpause: (ip: string) => `/servers/${ip}/unpause`,
     serverPlayersSwitch: (ip: string) => `/servers/${ip}/players/switch`,
-    serverMaps: (ip: string) => `/servers/${ip}/maps`,
     matches: () => '/matches',
     match: (matchId: number) => `/matches/${matchId}`,
     matchServer: (matchId: number) => `/matches/${matchId}/server`,
@@ -62,13 +59,8 @@ const live = () => {
     paths,
     postServers: (body: PostServersRequestBody) =>
       postJSON<LiveServer>(basePath.concat(paths.servers()), body),
-    postServerPause: (ip: string) => postJSON(basePath.concat(paths.serverPause(ip)), {}),
-    postServerUnpause: (ip: string) =>
-      postJSON(basePath.concat(paths.serverUnpause(ip)), {}),
     postServerPlayersSwitch: (ip: string, body: PostServerPlayersSwitchRequestBody) =>
       postJSON(basePath.concat(paths.serverPlayersSwitch(ip)), {}),
-    postServerMaps: (ip: string, map: number) =>
-      postJSON(basePath.concat(paths.serverMaps(ip)), { map }),
     getServerPlayerList: (ip: string) =>
       getJSON<Array<PlayerListItem>>(basePath.concat(paths.serverPlayerList(ip)), {
         next: { tags: ['getServerPlayerList'] },
@@ -184,7 +176,14 @@ const v2 = {
       body,
       toBearerRequestInit(token)
     ),
-  deleteServer: (address: string) => deleteJSON(`${servers}/${address}`),
+  postServerPause: (address: string, token: string) =>
+    postJSON(`${servers}/${address}/pause`, {}, toBearerRequestInit(token)),
+  postServerUnpause: (address: string, token: string) =>
+    postJSON(`${servers}/${address}/unpause`, {}, toBearerRequestInit(token)),
+  postServerMaps: (address: string, map: number, token: string) =>
+    postJSON(`${servers}/${address}/maps`, { map }, toBearerRequestInit(token)),
+  deleteServer: (address: string, token: string) =>
+    deleteJSON(`${servers}/${address}`, toBearerRequestInit(token)),
   postServerRestart: (address: string, body: PostRestartServerRequestBody) =>
     postWithApiKeyJSON<PostServerExecResponseBody>(`${servers}/${address}/restart`, body),
   adminReset: () => postWithApiKeyJSON(`${admin}/reset`, {}),

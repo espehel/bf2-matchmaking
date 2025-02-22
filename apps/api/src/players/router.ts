@@ -8,7 +8,7 @@ export const playersRouter = new Router({
   prefix: '/players',
 });
 
-playersRouter.get('/users.xml', protect('system'), async (ctx: Context) => {
+playersRouter.get('/users.xml', protect(), async (ctx: Context) => {
   const { data: players } = await client().getPlayers();
   ctx.assert(players, 500, 'Failed to get players');
 

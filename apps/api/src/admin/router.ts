@@ -22,7 +22,7 @@ export const adminRouter = new Router({
   prefix: '/admin',
 });
 
-adminRouter.post('/reset/engine', protect('system'), async (ctx) => {
+adminRouter.post('/reset/engine', protect(), async (ctx) => {
   const [gatherResult, serviceResult] = await Promise.all([
     Gather(20).del(),
     restartServiceByName('engine'),
@@ -33,11 +33,11 @@ adminRouter.post('/reset/engine', protect('system'), async (ctx) => {
   };
 });
 
-adminRouter.post('/reset/servers', protect('system'), async (ctx) => {
+adminRouter.post('/reset/servers', protect(), async (ctx) => {
   ctx.body = resetServers();
 });
 
-adminRouter.post('/reset', protect('system'), async (ctx) => {
+adminRouter.post('/reset', protect(), async (ctx) => {
   const [locations, maps, rcons, matches] = await Promise.all([
     buildLocationsCache(),
     buildMapsCache(),

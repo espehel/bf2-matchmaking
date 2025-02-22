@@ -140,7 +140,9 @@ export async function deleteMatch(matchId: number) {
 }
 
 export async function pauseRound(matchId: number, serverIp: string) {
-  const result = await api.live().postServerPause(serverIp);
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.postServerPause(serverIp, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -150,7 +152,9 @@ export async function pauseRound(matchId: number, serverIp: string) {
 }
 
 export async function unpauseRound(matchId: number, serverIp: string) {
-  const result = await api.live().postServerUnpause(serverIp);
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.postServerUnpause(serverIp, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -310,7 +314,9 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
 }
 
 export async function changeServerMap(serverIp: string, mapId: number) {
-  return api.live().postServerMaps(serverIp, mapId);
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  return api.v2.postServerMaps(serverIp, mapId, createToken(player));
 }
 
 export async function acceptMatchTime(

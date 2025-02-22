@@ -14,7 +14,9 @@ import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { createToken } from '@bf2-matchmaking/auth/token';
 
 export async function pauseRound(address: string) {
-  const result = await api.live().postServerPause(address);
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.postServerPause(address, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/servers/${address}`);
@@ -24,7 +26,9 @@ export async function pauseRound(address: string) {
 }
 
 export async function unpauseRound(address: string) {
-  const result = await api.live().postServerUnpause(address);
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.postServerUnpause(address, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/servers/${address}`);
@@ -113,7 +117,9 @@ const toRconUpdateValues = (data: FormData) => {
 };
 
 export async function deleteServer(address: string) {
-  const result = await api.v2.deleteServer(address);
+  const { data: player } = await supabase(cookies).getSessionPlayer();
+  assertObj(player, 'Player not found');
+  const result = await api.v2.deleteServer(address, createToken(player));
 
   if (result.error) {
     logErrorMessage(`Server ${address}: Failed to delete`, result.error);

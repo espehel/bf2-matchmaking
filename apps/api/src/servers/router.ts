@@ -36,7 +36,7 @@ export const serversRouter = new Router({
   prefix: '/servers',
 });
 
-serversRouter.get('/rcons', protect('system'), async (ctx) => {
+serversRouter.get('/rcons', protect(), async (ctx) => {
   const servers = await getLiveServers();
   const rcons = await hash<Record<string, string>>('cache:rcons').getAll();
   ctx.body = servers.map<ServerRconsRow>((s) => ({
@@ -65,7 +65,7 @@ serversRouter.get('/:address/log', async (ctx: Context) => {
   ctx.body = streamMessages.map(({ message }) => message);
 });
 
-serversRouter.post('/:ip/restart', protect('system'), async (ctx: Context) => {
+serversRouter.post('/:ip/restart', protect('server-admin'), async (ctx: Context) => {
   const { mode, mapName, serverName, admins } = ctx.request
     .body as PostRestartServerRequestBody;
 
@@ -103,6 +103,13 @@ serversRouter.post('/:ip/restart', protect('system'), async (ctx: Context) => {
     }
   }
   ctx.body = await Server.restart(ctx.params.ip);
+  if (ctx.request.user) {
+    stream(`servers:${ctx.params.ip}:log`)
+      .log(`Server restarted with mode ${mode} by ${ctx.request.user.nick}`, 'info')
+      .catch((e) =>
+        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+      );
+  }
   ctx.status = 202;
 });
 
@@ -111,7 +118,7 @@ serversRouter.post('/:ip/players/switch', async (ctx) => {
   ctx.status = 501;
 });
 
-serversRouter.post('/:ip/maps', async (ctx: Context) => {
+serversRouter.post('/:ip/maps', protect('user'), async (ctx: Context) => {
   const map = await hash<Record<string, string>>('cache:maps').get(
     ctx.request.body.map.toString()
   );
@@ -126,7 +133,13 @@ serversRouter.post('/:ip/maps', async (ctx: Context) => {
   await exec(ctx.params.ip, 'admin.runNextLevel').then(verifyRconResult);
 
   const info = await getServerInfo(ctx.params.ip).then(verifyRconResult);
-
+  if (ctx.request.user) {
+    stream(`servers:${ctx.params.ip}:log`)
+      .log(`Server map changed to ${map} by ${ctx.request.user.nick}`, 'info')
+      .catch((e) =>
+        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+      );
+  }
   ctx.body = { currentMapName: info.currentMapName, nextMapName: info.nextMapName };
 });
 
@@ -140,6 +153,7 @@ serversRouter.post('/:ip/exec', protect('user'), async (ctx: Context) => {
         logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
       );
   }
+  ctx.body = await exec(ctx.params.ip, cmd).then(verifyRconResult);
   if (cmd === 'quit' && ctx.request.user) {
     stream(`servers:${ctx.params.ip}:log`)
       .log(`Server restarted by ${ctx.request.user.nick}`, 'info')
@@ -147,15 +161,28 @@ serversRouter.post('/:ip/exec', protect('user'), async (ctx: Context) => {
         logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
       );
   }
-  ctx.body = await exec(ctx.params.ip, cmd).then(verifyRconResult);
 });
 
-serversRouter.post('/:ip/unpause', async (ctx) => {
+serversRouter.post('/:ip/unpause', protect('user'), async (ctx) => {
   await unpauseRound(ctx.params.ip).then(verifyRconResult);
+  if (ctx.request.user) {
+    stream(`servers:${ctx.params.ip}:log`)
+      .log(`Server unpaused by ${ctx.request.user.nick}`, 'info')
+      .catch((e) =>
+        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+      );
+  }
   ctx.status = 204;
 });
-serversRouter.post('/:ip/pause', async (ctx) => {
+serversRouter.post('/:ip/pause', protect('user'), async (ctx) => {
   await pauseRound(ctx.params.ip).then(verifyRconResult);
+  if (ctx.request.user) {
+    stream(`servers:${ctx.params.ip}:log`)
+      .log(`Server paused by ${ctx.request.user.nick}`, 'info')
+      .catch((e) =>
+        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+      );
+  }
   ctx.status = 204;
 });
 
@@ -167,12 +194,19 @@ serversRouter.get('/:ip/si', async (ctx: Context) => {
   ctx.body = await getServerInfo(ctx.params.ip).then(verifyRconResult);
 });
 
-serversRouter.delete('/:address', async (ctx) => {
+serversRouter.delete('/:address', protect('server-admin'), async (ctx) => {
   const { address } = ctx.params;
   const server = await client().deleteServer(address);
   const rcon = await client().deleteServerRcon(address);
   const instance = await deleteInstance(address).catch((e) => e);
   const redis = await Server.delete(address).catch((e) => e);
+  if (ctx.request.user) {
+    stream(`servers:${ctx.params.ip}:log`)
+      .log(`Server deleted by ${ctx.request.user.nick}`, 'info')
+      .catch((e) =>
+        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+      );
+  }
   ctx.status = 200;
   ctx.body = { server, rcon, instance, redis };
 });
