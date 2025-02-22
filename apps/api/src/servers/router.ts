@@ -61,7 +61,7 @@ serversRouter.get('/logs', async (ctx: Context) => {
 });
 
 serversRouter.get('/:address/log', async (ctx: Context) => {
-  const streamMessages = await stream(`servers:${ctx.params.address}:log`).readAll();
+  const streamMessages = await stream(`servers:${ctx.params.address}:log`).readAll(true);
   ctx.body = streamMessages.map(({ message }) => message);
 });
 
