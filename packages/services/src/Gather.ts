@@ -32,7 +32,7 @@ import { list } from '@bf2-matchmaking/redis/list';
 import { json } from '@bf2-matchmaking/redis/json';
 import { getMatchConfig, syncConfig } from './config-service';
 import { createMatch } from './match-service';
-import { logMessage, logWarnMessage } from '@bf2-matchmaking/logging';
+import { info, logMessage, logWarnMessage } from '@bf2-matchmaking/logging';
 import { stream } from '@bf2-matchmaking/redis/stream';
 
 export function Gather(configId: number) {
@@ -187,10 +187,15 @@ export function Gather(configId: number) {
       .commit();
 
     if (readyPlayers.length === config.size) {
+      info(
+        'handleSummonedPlayers',
+        `Gather ${configId}: All players connected, starting match`
+      );
       return _play(match);
     }
 
     if (DateTime.fromISO(state.summoningAt).plus({ minutes: 10 }) < DateTime.now()) {
+      info('handleSummonedPlayers', `Gather ${configId}: Timeout, aborting match`);
       return _abort(readyPlayers);
     }
     return null;

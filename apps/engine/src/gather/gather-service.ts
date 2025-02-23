@@ -71,6 +71,10 @@ export async function initGatherQueue(configId: number) {
 function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
   return async (live: LiveInfo) => {
     try {
+      info(
+        'onLiveInfo',
+        `Gather ${configId}: Handling live info at ${address}[${live.players.length} players]`
+      );
       const stateChange = await Gather(configId).handleSummonedPlayers(live.players);
       if (!stateChange) {
         return;
