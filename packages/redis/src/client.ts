@@ -8,9 +8,13 @@ export function createNewClient(name: string) {
     .on('error', (err) => console.log('Redis Client Error', err));
 }
 
-const client = createNewClient('default_client');
+const defaultClient = createNewClient('default_client');
 
-export async function getClient() {
+export function getClient() {
+  return handleClientConnection(defaultClient);
+}
+
+export async function handleClientConnection(client: ReturnType<typeof createClient>) {
   if (client && client.isReady) {
     return client;
   }
