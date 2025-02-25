@@ -4,13 +4,11 @@ import { discordClient } from './discord/client';
 import { info, warn } from '@bf2-matchmaking/logging';
 import { initScheduledEventsListener } from './discord/scheduled-events-listener';
 import { assertString } from '@bf2-matchmaking/utils';
-import { initServers } from './server/server-manager';
-import { getClient } from '@bf2-matchmaking/redis/client';
 import { createServer } from 'node:http';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { json } from '@bf2-matchmaking/redis/json';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
-import { closeOldMatchesTask } from './tasks/closeOldMatches';
+import { closeOldMatchesTask, scheduleCloseOldMatches } from './tasks/closeOldMatches';
 import { startScheduledMatchesTask } from './tasks/startScheduledMatches';
 import { updateLiveServersTask } from './tasks/update-live-servers';
 import { updateIdleServersTask } from './tasks/update-idle-servers';
@@ -44,7 +42,8 @@ discordClient
     ]);
     initScheduledEventsListener();
 
-    closeOldMatchesTask.start();
+    //closeOldMatchesTask.start();
+    scheduleCloseOldMatches();
     startScheduledMatchesTask.start();
     updateLiveServersTask.start();
     updateIdleServersTask.start();

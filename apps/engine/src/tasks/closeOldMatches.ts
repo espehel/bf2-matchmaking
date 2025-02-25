@@ -1,11 +1,12 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { client } from '@bf2-matchmaking/supabase';
-import { info, logMessage } from '@bf2-matchmaking/logging';
+import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { getWithStatus } from '@bf2-matchmaking/redis/matches';
 import cron from 'node-cron';
 import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { closeMatch } from '@bf2-matchmaking/services/matches';
+import { Jobs } from '@bf2-matchmaking/scheduler';
 
 const startedStatuses = [
   MatchStatus.Summoning,
@@ -61,3 +62,13 @@ async function forceClose(match: MatchesJoined) {
 export const closeOldMatchesTask = cron.schedule('0 0,8,16 * * *', closeOldMatches, {
   scheduled: false,
 });
+
+export function scheduleCloseOldMatches() {
+  const job = Jobs('closeOldMatches').setCron('0 0,8,16 * * *', closeOldMatches);
+  job.on('scheduled', (name, time) =>
+    info('closeOldMatches', `Scheduled ${name} at ${time}`)
+  );
+  job.on('started', (name) => info('closeOldMatches', `Started ${name}`));
+  job.on('failed', (name, err) => error('closeOldMatches', err));
+  job.on('finished', (name) => info('closeOldMatches', `Finished ${name}`));
+}
