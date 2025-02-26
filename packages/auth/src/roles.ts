@@ -23,7 +23,7 @@ export async function getPlayerRoles(playerId: string) {
     .concat('user')
     .join(',');
   await hash<Record<string, string>>('players:roles').set({
-    playerId: 'user'.concat(adminRoles),
+    [playerId]: adminRoles,
   });
 
   return adminRoles.split(',');
