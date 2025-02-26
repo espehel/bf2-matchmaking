@@ -18,15 +18,13 @@ export interface ScheduleOptions<I = undefined> {
   input: I;
 }
 function getTimeoutMs({ cron, interval }: Omit<ScheduleOptions, 'input'>) {
-  let cronMs = 0;
-  if (cron) {
-    cronMs = CronExpressionParser.parse(cron).next().getTime() - Date.now();
-  }
-  let intervalMs = 0;
-  if (interval) {
-    intervalMs = ms(interval);
-  }
-  if (!(cronMs > 0) && !(intervalMs > 0)) {
+  const cronMs = cron
+    ? CronExpressionParser.parse(cron).next().getTime() - Date.now()
+    : Number.MAX_SAFE_INTEGER;
+
+  const intervalMs = interval ? ms(interval) : Number.MAX_SAFE_INTEGER;
+
+  if (cronMs === Number.MAX_SAFE_INTEGER && intervalMs === Number.MAX_SAFE_INTEGER) {
     throw new Error('No valid cron expression or interval provided');
   }
   return Math.min(cronMs, intervalMs);
