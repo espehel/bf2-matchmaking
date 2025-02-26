@@ -16,7 +16,12 @@ export interface SystemUser extends SessionUser {
   keyhash: 'system';
 }
 
-export type AccessRoles = 'user' | 'player-admin' | 'match-admin' | 'server-admin';
+export type AccessRoles =
+  | 'user'
+  | 'player_admin'
+  | 'match_admin'
+  | 'server_admin'
+  | 'system_admin';
 
 export interface LiveInfo extends ServerInfo {
   players: Array<PlayerListItem>;

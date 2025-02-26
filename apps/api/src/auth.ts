@@ -34,7 +34,10 @@ export function protect(...roles: Array<AccessRoles>) {
     try {
       const userFromToken = await verifyToken(idToken);
       const userRoles = await getPlayerRoles(userFromToken.id);
-      if (roles.some((role) => userRoles.includes(role))) {
+      if (
+        userRoles.includes('system_admin') ||
+        roles.some((role) => userRoles.includes(role))
+      ) {
         ctx.request.user = userFromToken;
         return await next();
       }

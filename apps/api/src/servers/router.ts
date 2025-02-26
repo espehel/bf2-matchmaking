@@ -65,7 +65,7 @@ serversRouter.get('/:address/log', async (ctx: Context) => {
   ctx.body = streamMessages.map(({ message }) => message);
 });
 
-serversRouter.post('/:ip/restart', protect('server-admin'), async (ctx: Context) => {
+serversRouter.post('/:ip/restart', protect('server_admin'), async (ctx: Context) => {
   const { mode, mapName, serverName, admins } = ctx.request
     .body as PostRestartServerRequestBody;
 
@@ -194,7 +194,7 @@ serversRouter.get('/:ip/si', async (ctx: Context) => {
   ctx.body = await getServerInfo(ctx.params.ip).then(verifyRconResult);
 });
 
-serversRouter.delete('/:address', protect('server-admin'), async (ctx) => {
+serversRouter.delete('/:address', protect('server_admin'), async (ctx) => {
   const { address } = ctx.params;
   const server = await client().deleteServer(address);
   const rcon = await client().deleteServerRcon(address);
