@@ -6,7 +6,7 @@ import { getWithStatus } from '@bf2-matchmaking/redis/matches';
 import cron from 'node-cron';
 import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { closeMatch } from '@bf2-matchmaking/services/matches';
-import { Jobs } from '@bf2-matchmaking/scheduler';
+import { createJob } from '@bf2-matchmaking/scheduler';
 
 const startedStatuses = [
   MatchStatus.Summoning,
@@ -39,6 +39,7 @@ async function closeOldMatches() {
     info('closeOldMatches', `Force closing ${oldMatches.length} matches without rounds.`);
     await Promise.all(matchesWithoutRounds.map(forceClose));
   }
+  return oldMatches.length;
 }
 
 function isOlderThan3Hours(match: MatchesJoined) {
@@ -64,11 +65,19 @@ export const closeOldMatchesTask = cron.schedule('0 0,8,16 * * *', closeOldMatch
 });
 
 export function scheduleCloseOldMatches() {
-  const job = Jobs('closeOldMatches').setCron('0 0,8,16 * * *', closeOldMatches);
-  job.on('scheduled', (name, time) =>
-    info('closeOldMatches', `Scheduled ${name} at ${time}`)
-  );
-  job.on('started', (name) => info('closeOldMatches', `Started ${name}`));
-  job.on('failed', (name, err) => error('closeOldMatches', err));
-  job.on('finished', (name) => info('closeOldMatches', `Finished ${name}`));
+  createJob('closeOldMatches', closeOldMatches)
+    .on('scheduled', (name, time) =>
+      info(
+        name,
+        `Scheduled at ${DateTime.fromMillis(time).toLocaleString(
+          DateTime.DATETIME_SHORT
+        )}`
+      )
+    )
+    .on('started', (name, input) => info(name, `Started with input ${input}`))
+    .on('failed', (name, err) => error(name, err))
+    .on('finished', (name, output) =>
+      info(name, `Finished with ${output} old matches processed`)
+    )
+    .schedule({ cron: '0 0,8,16 * * *' });
 }
