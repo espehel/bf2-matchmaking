@@ -1,5 +1,5 @@
 import { parseError } from '@bf2-matchmaking/utils';
-import { error, verbose } from '@bf2-matchmaking/logging';
+import { error, info, verbose } from '@bf2-matchmaking/logging';
 import { LiveInfo, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { isActiveMatchServer } from '../server/server-manager';
 import { getServersWithStatus } from '@bf2-matchmaking/redis/servers';
@@ -12,11 +12,11 @@ import { updateLiveServer } from '@bf2-matchmaking/services/server';
 import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
-import cron from 'node-cron';
 import { createPendingLiveMatch } from '@bf2-matchmaking/services/matches';
 import { Match } from '@bf2-matchmaking/redis/types';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
+import { createJob } from '@bf2-matchmaking/scheduler';
 
 async function updateIdleServers() {
   verbose('updateIdleServers', 'Updating idle servers');
@@ -42,6 +42,7 @@ async function updateIdleServers() {
       updated: updatedServers,
       updatedAt: DateTime.now().toISO(),
     });
+    return updatedServers;
   } catch (e) {
     error('updateIdleServers', e);
     await json<AppEngineState>('app:engine:state').setProperty('idleServerTask', {
@@ -107,6 +108,15 @@ async function hasMatchPlayers(address: string, match: MatchesJoined, live: Live
   );
 }
 
-export const updateIdleServersTask = cron.schedule('*/30 * * * * *', updateIdleServers, {
-  scheduled: false,
-});
+export function scheduleIdleServersTask() {
+  createJob('idleServers', updateIdleServers)
+    .on('scheduled', (name, time) =>
+      info(name, `Scheduled at ${DateTime.fromMillis(time).toFormat('D, TT')}`)
+    )
+    .on('started', (name, input) => info(name, `Started with input ${input}`))
+    .on('failed', (name, err) => error(name, err))
+    .on('finished', (name, output) =>
+      info(name, `Finished with ${output} idle servers processed`)
+    )
+    .schedule({ interval: '30s' });
+}

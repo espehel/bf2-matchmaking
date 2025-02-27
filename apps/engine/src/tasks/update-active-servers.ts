@@ -10,10 +10,10 @@ import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
 import { parseError } from '@bf2-matchmaking/utils';
-import cron from 'node-cron';
 import { Server } from '@bf2-matchmaking/services/server/Server';
+import { createJob } from '@bf2-matchmaking/scheduler';
 
-async function updateLiveServers() {
+async function updateActiveServers() {
   const servers = await getActiveMatchServers().then(Object.entries<string>);
   if (servers.length === 0) {
     verbose('updateLiveServers', `No live servers`);
@@ -26,6 +26,7 @@ async function updateLiveServers() {
       await updateLiveMatch(address, matchId, liveState);
     }
   }
+  return servers.length;
 }
 
 async function updateLiveMatch(address: string, matchId: string, live: LiveInfo) {
@@ -68,6 +69,13 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
   }
 }
 
-export const updateLiveServersTask = cron.schedule('*/10 * * * * *', updateLiveServers, {
-  scheduled: false,
-});
+export function scheduleActiveServersTask() {
+  createJob('activeServers', updateActiveServers)
+    .on('failed', (name, err) => error(name, err))
+    .on('finished', (name, output) => {
+      if (output) {
+        info(name, `Finished with ${output} active servers processed`);
+      }
+    })
+    .schedule({ interval: '10s' });
+}

@@ -8,10 +8,10 @@ import { createServer } from 'node:http';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { json } from '@bf2-matchmaking/redis/json';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
-import { closeOldMatchesTask, scheduleCloseOldMatches } from './tasks/closeOldMatches';
+import { scheduleCloseOldMatches } from './tasks/closeOldMatches';
 import { startScheduledMatchesTask } from './tasks/startScheduledMatches';
-import { updateLiveServersTask } from './tasks/update-live-servers';
-import { updateIdleServersTask } from './tasks/update-idle-servers';
+import { scheduleActiveServersTask } from './tasks/update-active-servers';
+import { scheduleIdleServersTask } from './tasks/update-idle-servers';
 import { closeOldChallengesTask } from './tasks/closeOldChallenges';
 import {
   set8v8queueCheckinTask,
@@ -44,9 +44,11 @@ discordClient
 
     //closeOldMatchesTask.start();
     scheduleCloseOldMatches();
+    scheduleIdleServersTask();
+    scheduleActiveServersTask();
     startScheduledMatchesTask.start();
-    updateLiveServersTask.start();
-    updateIdleServersTask.start();
+    //updateLiveServersTask.start();
+    //updateIdleServersTask.start();
     closeOldChallengesTask.start();
     set8v8queueCheckinTask.start();
     reset8v8queueCheckinTask.start();

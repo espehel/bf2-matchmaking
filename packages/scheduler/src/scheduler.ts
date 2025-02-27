@@ -24,7 +24,10 @@ function getTimeoutMs({ cron, interval }: Omit<ScheduleOptions, 'input'>) {
 
   const intervalMs = interval ? ms(interval) : Number.MAX_SAFE_INTEGER;
 
-  if (cronMs === Number.MAX_SAFE_INTEGER && intervalMs === Number.MAX_SAFE_INTEGER) {
+  if (
+    (cronMs === Number.MAX_SAFE_INTEGER || cronMs < 0) &&
+    (intervalMs === Number.MAX_SAFE_INTEGER || intervalMs < 0)
+  ) {
     throw new Error('No valid cron expression or interval provided');
   }
   return Math.min(cronMs, intervalMs);
