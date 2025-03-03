@@ -108,7 +108,7 @@ async function hasMatchPlayers(address: string, match: MatchesJoined, live: Live
   );
 }
 
-export function scheduleIdleServersTask() {
+export function scheduleIdleServersJob() {
   createJob('idleServers', updateIdleServers)
     .on('scheduled', (name, time) =>
       info(name, `Scheduled at ${DateTime.fromMillis(time).toFormat('D, TT')}`)

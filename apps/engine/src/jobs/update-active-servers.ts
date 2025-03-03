@@ -69,7 +69,7 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
   }
 }
 
-export function scheduleActiveServersTask() {
+export function scheduleActiveServersJob() {
   createJob('activeServers', updateActiveServers)
     .on('failed', (name, err) => error(name, err))
     .on('finished', (name, output) => {

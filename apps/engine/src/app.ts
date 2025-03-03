@@ -8,19 +8,16 @@ import { createServer } from 'node:http';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { json } from '@bf2-matchmaking/redis/json';
 import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
-import { scheduleCloseOldMatches } from './tasks/closeOldMatches';
-import { startScheduledMatchesTask } from './tasks/startScheduledMatches';
-import { scheduleActiveServersTask } from './tasks/update-active-servers';
-import { scheduleIdleServersTask } from './tasks/update-idle-servers';
-import { closeOldChallengesTask } from './tasks/closeOldChallenges';
-import {
-  set8v8queueCheckinTask,
-  reset8v8queueCheckinTask,
-} from './tasks/convert8v8queue';
+import { scheduleCloseOldMatchesJob } from './jobs/closeOldMatches';
+import { scheduleStartScheduledMatchesJob } from './jobs/startScheduledMatches';
+import { scheduleActiveServersJob } from './jobs/update-active-servers';
+import { scheduleIdleServersJob } from './jobs/update-idle-servers';
+import { scheduleCloseOldChallengesJob } from './jobs/closeOldChallenges';
+import { set8v8queueCheckinTask, reset8v8queueCheckinTask } from './jobs/convert8v8queue';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { DateTime } from 'luxon';
 import { initGatherQueue } from './gather/gather-service';
-import { resetServersTask } from './tasks/resetServers';
+import { scheduleResetServersJob } from './jobs/resetServers';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5006;
 
@@ -42,17 +39,14 @@ discordClient
     ]);
     initScheduledEventsListener();
 
-    //closeOldMatchesTask.start();
-    scheduleCloseOldMatches();
-    scheduleIdleServersTask();
-    scheduleActiveServersTask();
-    startScheduledMatchesTask.start();
-    //updateLiveServersTask.start();
-    //updateIdleServersTask.start();
-    closeOldChallengesTask.start();
+    scheduleCloseOldMatchesJob();
+    scheduleIdleServersJob();
+    scheduleActiveServersJob();
+    scheduleStartScheduledMatchesJob();
+    scheduleCloseOldChallengesJob();
     set8v8queueCheckinTask.start();
     reset8v8queueCheckinTask.start();
-    resetServersTask.start();
+    scheduleResetServersJob();
   })
   .then(async () => {
     createServer(requestListener).listen(PORT, () => {

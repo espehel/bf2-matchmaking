@@ -23,7 +23,11 @@ export class TeamspeakBot {
       queueClients.map((client) => [client.uniqueIdentifier, client.clid])
     );
     ts.on('close', () => {
-      info('listenToChannelJoin', 'Teamspeak connection closed');
+      warn('TeamspeakBot', 'Teamspeak connection closed');
+      this.isConnected = false;
+    });
+    ts.on('error', (err) => {
+      logErrorMessage('TeamspeakBot failed', err);
       this.isConnected = false;
     });
     ts.on('clientmoved', this.#handleClientMoved.bind(this));

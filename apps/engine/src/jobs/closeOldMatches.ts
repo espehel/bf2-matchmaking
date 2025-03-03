@@ -64,7 +64,7 @@ export const closeOldMatchesTask = cron.schedule('0 0,8,16 * * *', closeOldMatch
   scheduled: false,
 });
 
-export function scheduleCloseOldMatches() {
+export function scheduleCloseOldMatchesJob() {
   createJob('closeOldMatches', closeOldMatches)
     .on('scheduled', (name, time) =>
       info(name, `Scheduled at ${DateTime.fromMillis(time).toFormat('D, TT')}`)

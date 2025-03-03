@@ -3,7 +3,7 @@ import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
 import { TeamSpeakClient } from 'ts3-nodejs-library';
 import { getTeamspeakPlayer } from '@bf2-matchmaking/services/players';
 import { isGatherPlayer, isNotNull } from '@bf2-matchmaking/types';
-import { startReadServerTask } from '../tasks/readServerTask';
+import { startReadServerTask } from '../jobs/readServerTask';
 import { topic } from '@bf2-matchmaking/redis/topic';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
 import { Gather } from '@bf2-matchmaking/services/gather';
