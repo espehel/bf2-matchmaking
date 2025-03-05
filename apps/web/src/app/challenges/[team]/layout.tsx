@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import AuthButton from '@/components/AuthButton';
 import ChallengesMenu from '@/components/challenges/ChallengesMenu';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import Link from 'next/link';
 
 interface Props {
   children: ReactNode;
@@ -15,9 +16,12 @@ export default async function ChallengesTeamLayout({ children, params }: Props) 
     .getTeam(Number(params.team))
     .then(verifySingleResult);
   const { data: player } = await supabase(cookies).getSessionPlayer();
+  const isNotPlayerTeam = player
+    ? !selectedTeam.players.some((p) => p.id === player.id)
+    : false;
   return (
     <div className="flex">
-      {player && (
+      {!isNotPlayerTeam && player && (
         <aside className="bg-base-100 min-h-main border-r border-primary p-4 w-64">
           <Suspense fallback={null}>
             <ChallengesMenu player={player} selectedTeam={selectedTeam} />
@@ -25,12 +29,20 @@ export default async function ChallengesTeamLayout({ children, params }: Props) 
         </aside>
       )}
       <main className="main">
-        <h1 className="mb-6">Challenges</h1>
-        {player && children}
+        <h1 className="mb-6">{selectedTeam.name} Challenges</h1>
+        {!isNotPlayerTeam && player && children}
         {!player && (
           <section className="section w-fit">
             <h2>You are not logged in</h2>
             <AuthButton className="btn btn-accent w-20" session={null} />
+          </section>
+        )}
+        {isNotPlayerTeam && (
+          <section className="section w-fit">
+            <h2>You are not a member of this team</h2>
+            <Link className="link link-accent" href={`/teams/${selectedTeam.id}`}>
+              Go to {selectedTeam.name}
+            </Link>
           </section>
         )}
       </main>

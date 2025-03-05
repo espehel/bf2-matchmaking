@@ -15,11 +15,13 @@ interface Props {
   searchParams: { edit?: string };
 }
 export default async function TeamPage({ params, searchParams }: Props) {
+  const { data: player } = await supabase(cookies).getSessionPlayer();
   const team = await supabase(cookies)
     .getTeam(Number(params.team))
     .then(verifySingleResult);
 
   const isTeamOfficer = await supabase(cookies).isTeamPlayerOfficer(team.id);
+  const isTeamPlayer = team.players.some((p) => p.id === player?.id);
 
   const edit = isTeamOfficer && searchParams.edit === 'true';
 
@@ -41,9 +43,11 @@ export default async function TeamPage({ params, searchParams }: Props) {
               Add players
             </Link>
           )}
-          <Link className="btn btn-secondary" href={`/challenges/${team.id}`}>
-            Go to challenges
-          </Link>
+          {isTeamPlayer && (
+            <Link className="btn btn-secondary" href={`/challenges/${team.id}`}>
+              Go to challenges
+            </Link>
+          )}
         </div>
       )}
       <Suspense fallback={<LoadingSection />}>
