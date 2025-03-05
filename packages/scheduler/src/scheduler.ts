@@ -3,11 +3,12 @@ import { CronExpressionParser } from 'cron-parser';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { EventEmitter } from 'node:events';
 
-type EventName = 'scheduled' | 'started' | 'finished' | 'failed' | 'stopped';
+type EventName = 'scheduled' | 'started' | 'finished' | 'error' | 'failed' | 'stopped';
 declare interface Job<I, O> {
   on(event: 'scheduled', listener: (name: string, timeoutAt: number) => void): this;
   on(event: 'started', listener: (name: string, input: I) => void): this;
   on(event: 'finished', listener: (name: string, output: O) => void): this;
+  on(event: 'error', listener: (name: string, err: unknown) => void): this;
   on(event: 'failed', listener: (name: string, err: unknown) => void): this;
   on(event: 'stopped', listener: (name: string) => void): this;
 }
@@ -16,6 +17,7 @@ export interface ScheduleOptions<I = undefined> {
   cron?: string;
   interval?: StringValue;
   input: I;
+  retries?: number;
 }
 function getTimeoutMs({ cron, interval }: Omit<ScheduleOptions, 'input'>) {
   const cronMs = cron
@@ -34,6 +36,7 @@ function getTimeoutMs({ cron, interval }: Omit<ScheduleOptions, 'input'>) {
 }
 class Job<I = undefined, O = unknown> extends EventEmitter {
   timeout: NodeJS.Timeout | undefined;
+  errorCount = 0;
   constructor(public name: string, public task: Task<I, O>) {
     super();
   }
@@ -53,11 +56,19 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
       try {
         this.emit('started', options.input);
         const result = await this.task(options.input as I);
+        this.errorCount = 0;
         this.emit('finished', result);
       } catch (e) {
-        this.emit('failed', e);
+        if (this.hasFailed(options.retries)) {
+          this.emit('failed', e);
+        } else {
+          this.errorCount++;
+          this.emit('error', e);
+        }
       } finally {
-        this.schedule(options);
+        if (!this.hasFailed(options.retries)) {
+          this.schedule(options);
+        }
       }
     }, timeoutMs);
     this.emit('scheduled', timeoutAt);
@@ -66,6 +77,20 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
   stop() {
     clearTimeout(this.timeout);
     this.emit('stopped');
+  }
+  hasFailed(retries: number = 5) {
+    return this.errorCount > retries;
+  }
+  debug(outputFn?: (output: O) => unknown) {
+    this.on('scheduled', (name, time) => console.log(name, 'scheduled', new Date(time)));
+    this.on('started', (name, input) => console.log(name, 'started', input));
+    this.on('finished', (name, output) =>
+      console.log(name, 'finished', outputFn ? outputFn(output) : output)
+    );
+    this.on('error', (name, err) => console.log(name, 'error', this.errorCount, err));
+    this.on('failed', (name, err) => console.log(name, 'failed', err));
+    this.on('stopped', (name) => console.log(name, 'stopped'));
+    return this;
   }
 }
 
@@ -79,4 +104,10 @@ export function getJob(name: string) {
   const job = jobs.get(name);
   assertObj(job, `Cron Job ${name} not found`);
   return job;
+}
+export function deleteJob(name: string) {
+  const job = getJob(name);
+  job.stop();
+  jobs.delete(name);
+  return 'OK';
 }

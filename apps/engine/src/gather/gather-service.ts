@@ -3,8 +3,7 @@ import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
 import { TeamSpeakClient } from 'ts3-nodejs-library';
 import { getTeamspeakPlayer } from '@bf2-matchmaking/services/players';
 import { isGatherPlayer, isNotNull } from '@bf2-matchmaking/types';
-import { startReadServerTask } from '../jobs/readServerTask';
-import { topic } from '@bf2-matchmaking/redis/topic';
+import { scheduleReadServerJob, stopReadServerJob } from '../jobs/readServerTask';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
 import { Gather } from '@bf2-matchmaking/services/gather';
 import { GatherStatus } from '@bf2-matchmaking/types/gather';
@@ -49,8 +48,8 @@ export async function initGatherQueue(configId: number) {
 
       const nextState = await Gather(configId).addPlayer(player);
       if (nextState) {
-        startReadServerTask(nextState.payload.address);
-        await topic(`server:${nextState.payload.address}`).subscribe<LiveInfo>(
+        scheduleReadServerJob(nextState.payload.address).on(
+          'finished',
           onLiveInfo(ts, configId, nextState.payload.address)
         );
       }
@@ -69,7 +68,7 @@ export async function initGatherQueue(configId: number) {
 }
 
 function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
-  return async (live: LiveInfo) => {
+  return async (name: string, live: LiveInfo) => {
     try {
       info(
         'onLiveInfo',
@@ -88,7 +87,7 @@ function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
       }
 
       assertString(address, 'Missing server address');
-      await topic(`server:${address}`).unsubscribe();
+      stopReadServerJob(address);
       const queueingPlayers = await Promise.all(
         ts.getQueueingPlayers().map((p) => verifyPlayer(p, ts))
       );
@@ -99,7 +98,7 @@ function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
         live,
       });
       assertString(address, 'Missing server address');
-      await topic(`server:${address}`).unsubscribe();
+      stopReadServerJob(address);
       await ts.clearQueueChannel();
       await Gather(configId).init(address, []);
     }
