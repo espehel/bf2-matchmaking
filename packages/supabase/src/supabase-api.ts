@@ -1,7 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import matches from './matches-api';
 import {
-  AdminPlayer,
   AdminRolesInsert,
   AdminRolesUpdate,
   Challenge,
@@ -27,7 +26,6 @@ import {
   ServerRconsInsert,
   ServerRconsUpdate,
   ServersInsert,
-  ServersJoined,
   ServersUpdate,
   TeamPlayersInsert,
   TeamPlayersUpdate,
@@ -35,7 +33,8 @@ import {
   TeamsJoined,
   TeamsRow,
   TeamsUpdate,
-  VisibleTeam,
+  ActiveTeam,
+  InactiveTeam,
 } from '@bf2-matchmaking/types';
 
 const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
@@ -182,12 +181,18 @@ export default (client: SupabaseClient<Database>) => ({
   deleteAdminRole: (userId: string) =>
     client.from('admin_roles').delete().eq('user_id', userId),
   createTeam: (team: TeamsInsert) => client.from('teams').insert(team).select().single(),
-  getVisibleTeams: () =>
+  getInactiveTeams: () =>
+    client
+      .from('teams')
+      .select('*, owner(*)')
+      .eq('active', false)
+      .returns<Array<InactiveTeam>>(),
+  getActiveTeams: () =>
     client
       .from('teams')
       .select('*, owner(*), players:team_players(*),challenges:challenge_teams(*)')
-      .eq('visible', true)
-      .returns<Array<VisibleTeam>>(),
+      .eq('active', true)
+      .returns<Array<ActiveTeam>>(),
   getTeam: (id: number) =>
     client
       .from('teams')

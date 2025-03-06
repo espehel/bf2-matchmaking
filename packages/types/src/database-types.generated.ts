@@ -1052,31 +1052,31 @@ export type Database = {
       }
       teams: {
         Row: {
+          active: boolean
           avatar: string | null
           created_at: string
           discord_role: string | null
           id: number
           name: string
           owner: string
-          visible: boolean
         }
         Insert: {
+          active?: boolean
           avatar?: string | null
           created_at?: string
           discord_role?: string | null
           id?: number
           name: string
           owner: string
-          visible?: boolean
         }
         Update: {
+          active?: boolean
           avatar?: string | null
           created_at?: string
           discord_role?: string | null
           id?: number
           name?: string
           owner?: string
-          visible?: boolean
         }
         Relationships: [
           {

@@ -12,7 +12,7 @@ import {
   isConnectedLiveServer,
   MatchConfigsRow,
   TeamsJoined,
-  VisibleTeam,
+  ActiveTeam,
 } from '@bf2-matchmaking/types';
 import { createChallenge } from '@/app/challenges/[team]/actions';
 
@@ -35,7 +35,7 @@ export default async function CreateChallengeSection({ selectedTeam }: Props) {
   }
 
   const teams = await supabase(cookies)
-    .getVisibleTeams()
+    .getActiveTeams()
     .then(verifyResult)
     .then(filterNotSelectedTeam(selectedTeam))
     .then(filterAvailableTeams(configs));
@@ -114,7 +114,7 @@ function filterAvailableChallenge(team: TeamsJoined) {
 }
 
 function filterAvailableTeams(configs: Array<MatchConfigsRow>) {
-  return (teams: Array<VisibleTeam>) =>
+  return (teams: Array<ActiveTeam>) =>
     teams.filter((team) =>
       configs.some((config) =>
         team.challenges.some((challenge) => challenge.config === config.id)
@@ -123,6 +123,6 @@ function filterAvailableTeams(configs: Array<MatchConfigsRow>) {
 }
 
 function filterNotSelectedTeam(selectedTeam: TeamsJoined) {
-  return (teams: Array<VisibleTeam>) =>
+  return (teams: Array<ActiveTeam>) =>
     teams.filter((team) => team.id !== selectedTeam.id);
 }

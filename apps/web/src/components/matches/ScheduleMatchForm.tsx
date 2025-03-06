@@ -17,7 +17,7 @@ export default async function ScheduleMatchForm() {
     .then(verifyResult)
     .then(filterVisible);
   const teams = await supabase(cookies)
-    .getVisibleTeams()
+    .getActiveTeams()
     .then(verifyResult)
     .then(sortByName);
   const servers = await supabase(cookies).getServers().then(verifyResult);

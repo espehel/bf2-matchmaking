@@ -3,7 +3,7 @@ import {
   isConnectedLiveServer,
   MapsRow,
   PlayersRow,
-  VisibleTeam,
+  ActiveTeam,
 } from '@bf2-matchmaking/types';
 import ActionFormModal from '@/components/commons/ActionFormModal';
 import Select from '@/components/commons/Select';
@@ -21,7 +21,7 @@ interface Props {
 
 export default async function AcceptOpenChallengeModal({ challenge }: Props) {
   const player = await supabase(cookies).getSessionPlayerOrThrow();
-  const teams = await supabase(cookies).getVisibleTeams().then(verifyResult);
+  const teams = await supabase(cookies).getActiveTeams().then(verifyResult);
   const availableTeams = teams
     .filter(isPlayerTeam(player))
     .filter(isNotHomeTeam(challenge));
@@ -70,10 +70,10 @@ export default async function AcceptOpenChallengeModal({ challenge }: Props) {
 }
 
 function isPlayerTeam(player: PlayersRow) {
-  return (team: VisibleTeam) => team.players.some((p) => player.id === p.player_id);
+  return (team: ActiveTeam) => team.players.some((p) => player.id === p.player_id);
 }
 function isNotHomeTeam(challenge: Challenge) {
-  return (team: VisibleTeam) => team.id !== challenge.home_team.id;
+  return (team: ActiveTeam) => team.id !== challenge.home_team.id;
 }
 function isNotHomeMap(challenge: Challenge) {
   return (map: MapsRow) => map.id !== challenge.home_map.id;

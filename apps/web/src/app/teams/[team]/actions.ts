@@ -95,3 +95,19 @@ async function createTeamPlayer(team_id: number, player_id: string) {
   }
   return result;
 }
+
+export async function activateTeam(teamId: number) {
+  const result = await supabase(cookies).updateTeam(teamId, { active: true });
+  if (!result.error) {
+    revalidatePath(`/teams`);
+  }
+  return result;
+}
+
+export async function deactivateTeam(teamId: number) {
+  const result = await supabase(cookies).updateTeam(teamId, { active: false });
+  if (!result.error) {
+    revalidatePath(`/teams`);
+  }
+  return result;
+}

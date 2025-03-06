@@ -12,6 +12,7 @@ interface Props extends PropsWithChildren {
   errorRedirect?: string;
   visible?: boolean;
   disabled?: boolean;
+  className?: string;
 }
 
 export default function ActionWrapper({
@@ -23,6 +24,7 @@ export default function ActionWrapper({
   errorRedirect,
   visible = true,
   disabled,
+  className,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -66,7 +68,7 @@ export default function ActionWrapper({
   }
 
   return (
-    <span role="button" onClick={handleAction} className="w-fit h-fit">
+    <span role="button" onClick={handleAction} className={`w-fit h-fit ${className}`}>
       {children}
     </span>
   );
