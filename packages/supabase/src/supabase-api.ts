@@ -35,6 +35,8 @@ import {
   TeamsUpdate,
   ActiveTeam,
   InactiveTeam,
+  EventsInsert,
+  EventsUpdate,
 } from '@bf2-matchmaking/types';
 
 const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
@@ -231,9 +233,12 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('team_players').select('*').eq('player_id', playerId),
   deleteTeamPlayer: (teamId: number, playerId: string) =>
     client.from('team_players').delete().eq('team_id', teamId).eq('player_id', playerId),
+  createEvent: (values: EventsInsert) => client.from('events').insert(values).select('*'),
   getEvents: () => client.from('events').select('*'),
   getEvent: (id: number) =>
     client.from('events').select(EVENT_QUERY).eq('id', id).single<EventsJoined>(),
+  updateEvent: (eventId: number | string, values: EventsUpdate) =>
+    client.from('events').update(values).eq('id', eventId).select('*'),
   getEventMatch: (match: number) =>
     client.from('event_matches').select('*').eq('match', match).single(),
   createEventTeam: (event: number, team: number) =>

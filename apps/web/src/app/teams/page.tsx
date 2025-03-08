@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { deactivateTeam } from '@/app/teams/[team]/actions';
 import ActionWrapper from '@/components/commons/ActionWrapper';
 import { isTeamOfficer } from '@bf2-matchmaking/utils';
+import Main from '@/components/commons/Main';
 
 interface Props {
   searchParams: { edit?: string };
@@ -35,7 +36,7 @@ export default async function TeamsPage({ searchParams }: Props) {
   const edit = hasEditPermission && searchParams.edit === 'true';
 
   return (
-    <main className="main">
+    <Main title="Teams" relevantRoles={['player_admin']}>
       <div className="flex gap-4">
         {myTeams.length > 0 && (
           <section className="section w-fit">
@@ -76,7 +77,7 @@ export default async function TeamsPage({ searchParams }: Props) {
           edit={edit}
         />
       </section>
-    </main>
+    </Main>
   );
 }
 

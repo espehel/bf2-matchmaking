@@ -249,6 +249,7 @@ export type Database = {
           event: number
           id: number
           label: string
+          open: boolean
           start_at: string
         }
         Insert: {
@@ -256,6 +257,7 @@ export type Database = {
           event: number
           id?: number
           label: string
+          open?: boolean
           start_at: string
         }
         Update: {
@@ -263,6 +265,7 @@ export type Database = {
           event?: number
           id?: number
           label?: string
+          open?: boolean
           start_at?: string
         }
         Relationships: [
@@ -314,6 +317,7 @@ export type Database = {
           created_at: string
           id: number
           name: string
+          open: boolean
           owner: string
         }
         Insert: {
@@ -321,6 +325,7 @@ export type Database = {
           created_at?: string
           id?: number
           name: string
+          open?: boolean
           owner: string
         }
         Update: {
@@ -328,6 +333,7 @@ export type Database = {
           created_at?: string
           id?: number
           name?: string
+          open?: boolean
           owner?: string
         }
         Relationships: [

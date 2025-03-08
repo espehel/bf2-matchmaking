@@ -4,6 +4,7 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import { InactiveTeam } from '@bf2-matchmaking/types';
 import ActionWrapper from '@/components/commons/ActionWrapper';
 import { activateTeam } from '@/app/teams/[team]/actions';
+import Main from '@/components/commons/Main';
 
 export default async function TeamsPage() {
   const teams = await supabase(cookies).getInactiveTeams().then(verifyResult);
@@ -21,17 +22,25 @@ export default async function TeamsPage() {
 
   if (myTeams.length === 0 && otherTeams.length === 0) {
     return (
-      <main className="main">
+      <Main
+        title="Inactive teams"
+        relevantRoles={['player_admin']}
+        breadcrumbs={[{ label: 'Teams', href: '/teams' }]}
+      >
         <h1>No visible teams</h1>
         <p>
           You need to be either captain of a team or player admin to see inactive teams.
         </p>
-      </main>
+      </Main>
     );
   }
 
   return (
-    <main className="main">
+    <Main
+      title="Inactive teams"
+      relevantRoles={['player_admin']}
+      breadcrumbs={[{ label: 'Teams', href: '/teams' }, { label: 'Inactive teams' }]}
+    >
       <div className="w-fit">
         {myTeams.length > 0 && (
           <section className="section">
@@ -46,7 +55,7 @@ export default async function TeamsPage() {
           </section>
         )}
       </div>
-    </main>
+    </Main>
   );
 }
 

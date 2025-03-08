@@ -10,6 +10,7 @@ interface Props {
   readonly?: boolean;
   className?: string;
   onChange?: ChangeEventHandler<HTMLSelectElement>;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 export default function Select({
   options,
@@ -21,6 +22,7 @@ export default function Select({
   readonly,
   className,
   onChange,
+  size = 'md',
 }: Props) {
   return (
     <div className={className}>
@@ -33,7 +35,7 @@ export default function Select({
       <select
         key={defaultValue}
         name={name}
-        className="select select-bordered w-full"
+        className={`select select-bordered select-${size} w-full`}
         defaultValue={defaultValue}
         disabled={disabled || readonly}
         onChange={onChange}

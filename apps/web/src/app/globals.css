@@ -21,6 +21,9 @@
   .sheet {
     @apply bg-base-100 p-4 rounded shadow-sm shadow-primary;
   }
+  .list-item {
+    @apply bg-secondary text-secondary-content border-accent border rounded w-full flex;
+  }
 }
 
 @layer base {
@@ -31,7 +34,7 @@
     @apply min-h-full bg-base-300 text-base-content;
   }
   h1 {
-    @apply text-3xl mb-2;
+    @apply text-4xl mb-4;
   }
 }
 

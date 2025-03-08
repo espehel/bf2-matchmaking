@@ -43,6 +43,7 @@ export type ChallengesInsert = Database['public']['Tables']['challenges']['Inser
 export type ChallengeTeamsInsert =
   Database['public']['Tables']['challenge_teams']['Insert'];
 export type AdminRolesInsert = Database['public']['Tables']['admin_roles']['Insert'];
+export type EventsInsert = Database['public']['Tables']['events']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];
 export type PlayersUpdate = Database['public']['Tables']['players']['Update'];
@@ -51,6 +52,7 @@ export type ServerRconsUpdate = Database['public']['Tables']['server_rcons']['Up
 export type TeamsUpdate = Database['public']['Tables']['teams']['Update'];
 export type TeamPlayersUpdate = Database['public']['Tables']['team_players']['Update'];
 export type MatchServersUpdate = Database['public']['Tables']['match_servers']['Update'];
+export type EventsUpdate = Database['public']['Tables']['events']['Update'];
 export type EventMatchesUpdate = Database['public']['Tables']['event_matches']['Update'];
 export type ChallengesUpdate = Database['public']['Tables']['challenges']['Update'];
 export type AdminRolesUpdate = Database['public']['Tables']['admin_roles']['Update'];

@@ -9,6 +9,7 @@ import { Suspense } from 'react';
 import LoadingSection from '@/components/commons/LoadingSection';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/16/solid';
+import Main from '@/components/commons/Main';
 
 interface Props {
   params: { team: string };
@@ -26,37 +27,42 @@ export default async function TeamPage({ params, searchParams }: Props) {
   const edit = isTeamOfficer && searchParams.edit === 'true';
 
   return (
-    <main className="main flex flex-col gap-6">
-      <h1 className="font-serif font-extrabold text-5xl text-center text-accent">{`Team ${team.name}`}</h1>
-      <Suspense fallback={<LoadingSection />}>
-        {edit ? <TeamDetailsForm team={team} /> : <TeamDetailsSection team={team} />}
-      </Suspense>
-      {isTeamOfficer && (
-        <div className="flex gap-4">
-          {edit ? (
-            <Link className="btn btn-secondary" href={`/teams/${team.id}`}>
-              <ChevronLeftIcon className="size-8" />
-              Back
-            </Link>
-          ) : (
-            <Link className="btn btn-secondary" href={`/teams/${team.id}/?edit=true`}>
-              Add players
-            </Link>
-          )}
-          {isTeamPlayer && (
-            <Link className="btn btn-secondary" href={`/challenges/${team.id}`}>
-              Go to challenges
-            </Link>
-          )}
-        </div>
-      )}
-      <Suspense fallback={<LoadingSection />}>
-        {edit ? (
-          <EditTeamPlayersSection team={team} />
-        ) : (
-          <TeamPlayersSection team={team} />
+    <Main
+      title={`Team ${team.name}`}
+      relevantRoles={['player_admin']}
+      breadcrumbs={[{ label: 'Teams', href: '/teams' }, { label: team.name }]}
+    >
+      <div className="flex flex-col gap-6">
+        <Suspense fallback={<LoadingSection />}>
+          {edit ? <TeamDetailsForm team={team} /> : <TeamDetailsSection team={team} />}
+        </Suspense>
+        {isTeamOfficer && (
+          <div className="flex gap-4">
+            {edit ? (
+              <Link className="btn btn-secondary" href={`/teams/${team.id}`}>
+                <ChevronLeftIcon className="size-8" />
+                Back
+              </Link>
+            ) : (
+              <Link className="btn btn-secondary" href={`/teams/${team.id}/?edit=true`}>
+                Add players
+              </Link>
+            )}
+            {isTeamPlayer && (
+              <Link className="btn btn-secondary" href={`/challenges/${team.id}`}>
+                Go to challenges
+              </Link>
+            )}
+          </div>
         )}
-      </Suspense>
-    </main>
+        <Suspense fallback={<LoadingSection />}>
+          {edit ? (
+            <EditTeamPlayersSection team={team} />
+          ) : (
+            <TeamPlayersSection team={team} />
+          )}
+        </Suspense>
+      </div>
+    </Main>
   );
 }

@@ -2,9 +2,11 @@ import AddTeamForm from '@/components/events/AddTeamForm';
 import { EventsJoined } from '@bf2-matchmaking/types';
 import IconBtn from '@/components/commons/IconBtn';
 import { XCircleIcon } from '@heroicons/react/24/outline';
-import { deleteEventTeam } from '@/app/events/[event]/actions';
+import { deleteEventTeam, setEventOpen } from '@/app/events/[event]/actions';
 import ActionWrapper from '@/components/commons/ActionWrapper';
 import Link from 'next/link';
+import ToggleAction from '@/components/form/ToggleAction';
+import { TeamsSelect } from '@/components/TeamsSelect';
 
 interface Props {
   event: EventsJoined;
@@ -21,7 +23,20 @@ export default function TeamsSection({ event, edit }: Props) {
 
   return (
     <section className="section gap-2">
-      <h2>Teams</h2>
+      <div className="flex gap-8 items-center justify-between">
+        <h2>Teams</h2>
+        {edit && (
+          <ToggleAction
+            name="open"
+            label="Allow sign ups"
+            action={setEventOpen}
+            successMessage={event.open ? 'Sign ups closed' : 'Sign ups open'}
+            errorMessage="Failed to update sign ups"
+            extras={{ event: event.id.toString() }}
+            defaultChecked={event.open}
+          />
+        )}
+      </div>
       <ul>
         {event.teams.map((team) => (
           <li className="flex items-center gap-1 text-lg" key={team.id}>
@@ -39,7 +54,7 @@ export default function TeamsSection({ event, edit }: Props) {
           </li>
         ))}
       </ul>
-      {edit && <AddTeamForm eventId={event.id} />}
+      <AddTeamForm eventId={event.id} edit={edit} open={event.open} />
     </section>
   );
 }

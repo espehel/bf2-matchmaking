@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { EventMatchesRow, EventRoundsRow, EventsJoined } from '@bf2-matchmaking/types';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import { getValue, getValues } from '@bf2-matchmaking/utils/src/form-data';
 
 export async function addRoundMatch(
   event: EventsJoined,
@@ -27,9 +28,10 @@ export async function addRoundMatch(
 
   return result;
 }
-export async function addEventTeam(eventId: number, data: FormData) {
-  const teamId = Number(data.get('team[id]'));
-  assertNumber(teamId, 'Missing teamId');
+export async function addEventTeam(data: FormData) {
+  'use server';
+  const teamId = Number(getValue(data, 'team[id]'));
+  const eventId = Number(getValue(data, 'event'));
 
   const result = await supabase(cookies).createEventTeam(eventId, teamId);
 
@@ -86,6 +88,16 @@ export async function deleteEventTeam(event: EventsJoined, teamId: number) {
         .map((m) => supabase(cookies).deleteMatch(m.id))
     );
     revalidatePath(`/events/${event.id}`);
+  }
+  return result;
+}
+
+export async function setEventOpen(formData: FormData) {
+  'use server';
+  const { open, event } = getValues(formData, 'open', 'event');
+  const result = await supabase(cookies).updateEvent(event, { open: open === 'true' });
+  if (!result.error) {
+    revalidatePath(`/events/${event}`);
   }
   return result;
 }

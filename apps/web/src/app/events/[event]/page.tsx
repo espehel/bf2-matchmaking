@@ -5,6 +5,7 @@ import AddRoundForm from '@/components/events/AddRoundForm';
 import EventRound from '@/components/events/EventRound';
 import TeamsSection from '@/components/events/TeamsSection';
 import Link from 'next/link';
+import Main from '@/components/commons/Main';
 
 interface Props {
   params: { event: string };
@@ -20,11 +21,14 @@ export default async function EventPage({ params, searchParams }: Props) {
   const edit = adminRoles?.match_admin ? searchParams.edit === 'true' : false;
 
   return (
-    <main className="main">
+    <Main
+      title={event.name}
+      breadcrumbs={[{ href: '/events', label: 'Events' }, { label: event.name }]}
+      relevantRoles={['match_admin']}
+    >
       <div className="flex justify-between items-end">
-        <h1>{event.name}</h1>
         <Link
-          className="btn btn-sm btn-secondary"
+          className="btn btn-sm btn-secondary ml-auto"
           href={edit ? `/events/${event.id}` : `/events/${event.id}?edit=true`}
         >
           {edit ? 'Back' : 'Edit'}
@@ -44,6 +48,6 @@ export default async function EventPage({ params, searchParams }: Props) {
         </section>
         <TeamsSection event={event} edit={edit} />
       </div>
-    </main>
+    </Main>
   );
 }
