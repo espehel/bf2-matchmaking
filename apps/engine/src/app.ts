@@ -13,7 +13,6 @@ import { scheduleStartScheduledMatchesJob } from './jobs/startScheduledMatches';
 import { scheduleActiveServersJob } from './jobs/update-active-servers';
 import { scheduleIdleServersJob } from './jobs/update-idle-servers';
 import { scheduleCloseOldChallengesJob } from './jobs/closeOldChallenges';
-import { set8v8queueCheckinTask, reset8v8queueCheckinTask } from './jobs/convert8v8queue';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { DateTime } from 'luxon';
 import { initGatherQueue } from './gather/gather-service';
@@ -44,8 +43,8 @@ discordClient
     scheduleActiveServersJob();
     scheduleStartScheduledMatchesJob();
     scheduleCloseOldChallengesJob();
-    set8v8queueCheckinTask.start();
-    reset8v8queueCheckinTask.start();
+    //set8v8queueCheckinTask.start();
+    //reset8v8queueCheckinTask.start();
     scheduleResetServersJob();
   })
   .then(async () => {
