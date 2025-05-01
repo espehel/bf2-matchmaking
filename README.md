@@ -1,4 +1,5 @@
 # BF2 Matchmaking
+The code behind https://bf2.top/
 
 ## Structure
 
@@ -12,15 +13,11 @@ Discord bot for listening to matches being arranged in discord.
 
 #### engine
 
-Handle automation of matches
+The core of the system, scheduling automation jobs, hosting discord and teamspeak bots, handling match and server states. 
 
-#### platform
+#### api
 
-Sets up and tear down BF2 servers
-
-#### rcon
-
-Communicating with live servers and links them to live matches.
+Hosting apis. Platform api to create and delete bf2 servers, rcon api to interact with running servers, and api's for changing the player, match and server models.
 
 #### web
 
@@ -28,9 +25,16 @@ Web app where users can interact with matches, see scores and stats, set up team
 
 ### packages
 
+### redis
+Utility functions wrapping core api and domain specific functions.
+
 #### discord
 
 Utility functions for interaction with discord
+
+### scheduler
+
+Very lightweight scheduler wrapping setTimeout. Supports time intervals and cron notation.
 
 #### logging
 
