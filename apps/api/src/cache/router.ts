@@ -6,7 +6,8 @@ import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
 import { json } from '@bf2-matchmaking/redis/json';
 import { MatchesJoined } from '@bf2-matchmaking/types';
-import { buildLocationsCache, buildMapsCache, buildRconsCache } from './cache-service';
+import { buildLocationsCache } from './cache-service';
+import { buildMapsCache, buildRconsCache } from '@bf2-matchmaking/services/cache';
 
 export const cacheRouter = new Router({
   prefix: '/cache',

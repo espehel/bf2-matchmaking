@@ -9,7 +9,8 @@
     "./players": "./src/player-service.ts",
     "./rcon": "./src/rcon/bf2-rcon-api.ts",
     "./server": "./src/server-service.ts",
-    "./server/Server": "./src/Server.ts"
+    "./server/Server": "./src/Server.ts",
+    "./cache": "./src/cache-service.ts"
   },
   "version": "1.0.0",
   "scripts": {

@@ -1,11 +1,6 @@
 import Router from '@koa/router';
 import { restartServiceByName, runService } from '@bf2-matchmaking/railway';
-import {
-  buildLocationsCache,
-  buildMapsCache,
-  buildMatchesCache,
-  buildRconsCache,
-} from '../cache/cache-service';
+import { buildLocationsCache } from '../cache/cache-service';
 import { flush, save } from '@bf2-matchmaking/redis/generic';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { set } from '@bf2-matchmaking/redis/set';
@@ -15,6 +10,11 @@ import { DateTime } from 'luxon';
 import { protect } from '../auth';
 import { Gather } from '@bf2-matchmaking/services/gather';
 import { resetServers } from '@bf2-matchmaking/services/server';
+import {
+  buildMapsCache,
+  buildMatchesCache,
+  buildRconsCache,
+} from '@bf2-matchmaking/services/cache';
 
 const RESTART_TOOL_SERVICE_ID = 'c5633c6e-3e36-4939-b2a6-46658cabd47e';
 
@@ -34,7 +34,7 @@ adminRouter.post('/reset/engine', protect(), async (ctx) => {
 });
 
 adminRouter.post('/reset/servers', protect(), async (ctx) => {
-  ctx.body = resetServers();
+  ctx.body = await resetServers();
 });
 
 adminRouter.post('/reset', protect(), async (ctx) => {

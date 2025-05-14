@@ -11,6 +11,7 @@ import { parseError } from '@bf2-matchmaking/utils';
 import { set } from '@bf2-matchmaking/redis/set';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { ApiErrorType, ServiceError } from './error';
+import { createRconsCache } from './cache-service';
 
 export async function createLiveInfo(
   address: string,
@@ -105,6 +106,7 @@ export async function getJoinmeDirect(ip: string, port: string): Promise<string>
 
 export async function resetServers() {
   try {
+    await createRconsCache();
     const servers = await client().getServers().then(verifyResult);
     const [
       deletedIdleServers,
