@@ -98,7 +98,7 @@ export function pollInstance(id: string, cb: (instance: Instance) => Promise<boo
 }
 
 export async function getRegions() {
-  const { plans } = await client.plans.listPlans({ type: VULTR.type, os: VULTR.os_id });
+  const { plans } = await client.plans.listPlans({ type: VULTR.type });
   assertArray(plans, 'Failed to get plans');
   const validPlans = (plans as Array<Plan>).filter(
     (p) => p.id === VULTR.plan || p.id === VULTR.sao_plan
