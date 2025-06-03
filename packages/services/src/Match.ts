@@ -46,7 +46,7 @@ export const Match = {
     status: MatchStatus.Closed | MatchStatus.Deleted
   ) {
     const removedMatch = await client()
-      .updateMatch(matchId, { status, closed_at: DateTime.now().toISO() })
+      .updateMatch(Number(matchId), { status, closed_at: DateTime.now().toISO() })
       .then(verifySingleResult);
     const redisResult = await removeMatch(matchId);
     const deletedPubobotMatch = await cleanUpPubobotMatch(matchId);
