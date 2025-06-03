@@ -10,7 +10,8 @@ interface Props {
 }
 
 export default async function ChangeMapForm({ server }: Props) {
-  const { data: maps } = await supabase(cookies).getMaps();
+  const cookieStore = await cookies();
+  const { data: maps } = await supabase(cookieStore).getMaps();
 
   if (!maps) {
     return null;

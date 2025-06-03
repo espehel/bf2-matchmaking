@@ -7,7 +7,8 @@ import { api, compareStartedAt, verify } from '@bf2-matchmaking/utils';
 import LiveMatchCard from '@/components/LiveMatchCard';
 
 export default async function LiveMatchesList() {
-  const matches = await supabase(cookies)
+  const cookieStore = await cookies();
+  const matches = await supabase(cookieStore)
     .getMatchesWithStatus(MatchStatus.Ongoing)
     .then(verifyResult);
   const liveMatches = await api.v2.getMatches().then(verify);

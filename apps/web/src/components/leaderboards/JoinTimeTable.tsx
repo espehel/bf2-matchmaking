@@ -17,8 +17,9 @@ export default async function JoinTimeTable({
   length,
   concatHref,
 }: Props) {
-  const { data: players } = await supabase(cookies).getPlayersWithJoinTime();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: players } = await supabase(cookieStore).getPlayersWithJoinTime();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   const withJoinTime =
     players

@@ -11,7 +11,8 @@ export async function setAdminRole(
   user: string,
   value: boolean
 ) {
-  const res = await supabase(cookies).updateAdminRole(user, {
+  const cookieStore = await cookies();
+  const res = await supabase(cookieStore).updateAdminRole(user, {
     [role]: value,
   });
   if (res.error) {
@@ -22,8 +23,9 @@ export async function setAdminRole(
 }
 
 export async function deleteAdminRole(formData: FormData) {
+  const cookieStore = await cookies();
   const user = getValue(formData, 'user_id');
-  const res = await supabase(cookies).deleteAdminRole(user);
+  const res = await supabase(cookieStore).deleteAdminRole(user);
   if (res.error) {
     return toAsyncError(res.error);
   }
@@ -32,8 +34,9 @@ export async function deleteAdminRole(formData: FormData) {
 }
 
 export async function insertAdminRole(form: FormData) {
+  const cookieStore = await cookies();
   const user = getValue(form, 'player[user_id]');
-  const res = await supabase(cookies).insertAdminRole({ user_id: user });
+  const res = await supabase(cookieStore).insertAdminRole({ user_id: user });
   if (res.error) {
     return toAsyncError(res.error);
   }

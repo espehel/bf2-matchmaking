@@ -86,7 +86,7 @@ export default (client: SupabaseClient<Database>) => ({
       .or(
         `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
       ),
-  getMatch: (matchId: number | undefined) =>
+  getMatch: (matchId: number) =>
     client
       .from('matches')
       .select<typeof MATCHES_JOINED_QUERY, MatchesJoined>(MATCHES_JOINED_QUERY)
@@ -131,7 +131,7 @@ export default (client: SupabaseClient<Database>) => ({
       .or(
         `status.eq.${MatchStatus.Open},status.eq.${MatchStatus.Summoning},status.eq.${MatchStatus.Drafting}`
       ),
-  updateMatch: (matchId: number | string | undefined, values: MatchesUpdate) =>
+  updateMatch: (matchId: number, values: MatchesUpdate) =>
     client
       .from('matches')
       .update(values)
@@ -140,8 +140,7 @@ export default (client: SupabaseClient<Database>) => ({
       .single(),
   updateMatches: async (matches: Array<number>, values: Partial<MatchesUpdate>) =>
     await client.from('matches').update(values).in('id', matches).select(),
-  deleteMatch: (matchId: number | undefined) =>
-    client.from('matches').delete().eq('id', matchId),
+  deleteMatch: (matchId: number) => client.from('matches').delete().eq('id', matchId),
   createMatchPlayer: (
     match_id: number,
     player_id: string,
@@ -180,7 +179,7 @@ export default (client: SupabaseClient<Database>) => ({
       ),
   updateMatchPlayer: async (
     matchId: number,
-    playerId: string | undefined,
+    playerId: string,
     values: Partial<MatchPlayersRow>
   ) =>
     await client
@@ -278,7 +277,7 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('match_servers').delete().eq('id', id).select('*'),
   getMatchServers: (id: number) =>
     client.from('matches').select('id, servers(*)').eq('id', id).single<MatchServers>(),
-  updateMatchServer: (matchId: number | undefined, values: MatchServersUpdate) =>
+  updateMatchServer: (matchId: number, values: MatchServersUpdate) =>
     client
       .from('match_servers')
       .update(values)

@@ -4,7 +4,8 @@ import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 
 export default async function RoundsPage() {
-  const rounds = await supabase(cookies).getRounds(20).then(verifyResult);
+  const cookieStore = await cookies();
+  const rounds = await supabase(cookieStore).getRounds(20).then(verifyResult);
 
   return (
     <main className="main">

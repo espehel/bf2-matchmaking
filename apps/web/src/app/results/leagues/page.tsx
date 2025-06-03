@@ -4,7 +4,8 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
 
 export default async function LeaguesPage() {
-  const configs = await supabase(cookies).getMatchConfigs().then(verifyResult);
+  const cookieStore = await cookies();
+  const configs = await supabase(cookieStore).getMatchConfigs().then(verifyResult);
   const leagues = configs.filter((c) => c.type === 'League');
   return (
     <main className="main">

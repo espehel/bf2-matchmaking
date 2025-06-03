@@ -10,7 +10,8 @@ import { assertString } from '@bf2-matchmaking/utils';
 import { getDiscordUser } from '@bf2-matchmaking/discord';
 
 export async function setTeamCaptain(teamId: number, playerId: string, value: boolean) {
-  const result = await supabase(cookies).updateTeamPlayer(teamId, playerId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateTeamPlayer(teamId, playerId, {
     captain: value,
   });
 
@@ -21,7 +22,8 @@ export async function setTeamCaptain(teamId: number, playerId: string, value: bo
   return result;
 }
 export async function addTeamPlayer(playerId: string, teamId: number) {
-  const result = await supabase(cookies).createTeamPlayer({
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).createTeamPlayer({
     player_id: playerId,
     team_id: teamId,
   });
@@ -34,7 +36,8 @@ export async function addTeamPlayer(playerId: string, teamId: number) {
 }
 
 export async function removeTeamPlayer(teamId: number, playerId: string) {
-  const result = await supabase(cookies).deleteTeamPlayer(teamId, playerId);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).deleteTeamPlayer(teamId, playerId);
   if (!result.error) {
     revalidatePath(`/teams/${teamId}`);
   }
@@ -48,7 +51,8 @@ export async function updateTeam(teamId: number, data: FormData) {
   const owner = data.get('player[id]');
   if (isString(name) && isString(owner)) {
     const discord_role = isString(discordRole) ? discordRole : null;
-    const result = await supabase(cookies).updateTeam(teamId, {
+    const cookieStore = await cookies();
+    const result = await supabase(cookieStore).updateTeam(teamId, {
       name,
       owner,
       discord_role,
@@ -66,7 +70,8 @@ export async function createAndAddPlayer(teamId: number, data: FormData) {
   const id = data.get('playerId');
   assertString(id, 'No player id');
 
-  const { data: player } = await supabase(cookies).getPlayer(id);
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getPlayer(id);
   if (player) {
     return createTeamPlayer(teamId, player.id);
   }
@@ -75,7 +80,7 @@ export async function createAndAddPlayer(teamId: number, data: FormData) {
   if (!user) {
     return { error: { message: 'User not found' }, data: null };
   }
-  const newPlayer = await supabase(cookies)
+  const newPlayer = await supabase(cookieStore)
     .createPlayer({
       id,
       nick: user.username,
@@ -86,7 +91,8 @@ export async function createAndAddPlayer(teamId: number, data: FormData) {
 }
 
 async function createTeamPlayer(team_id: number, player_id: string) {
-  const result = await supabase(cookies).createTeamPlayer({
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).createTeamPlayer({
     team_id,
     player_id,
   });
@@ -97,7 +103,8 @@ async function createTeamPlayer(team_id: number, player_id: string) {
 }
 
 export async function activateTeam(teamId: number) {
-  const result = await supabase(cookies).updateTeam(teamId, { active: true });
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateTeam(teamId, { active: true });
   if (!result.error) {
     revalidatePath(`/teams`);
   }
@@ -105,7 +112,8 @@ export async function activateTeam(teamId: number) {
 }
 
 export async function deactivateTeam(teamId: number) {
-  const result = await supabase(cookies).updateTeam(teamId, { active: false });
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateTeam(teamId, { active: false });
   if (!result.error) {
     revalidatePath(`/teams`);
   }

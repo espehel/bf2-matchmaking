@@ -9,10 +9,11 @@ interface Props {
   player: PlayersRow;
 }
 export default async function ResultsSection({ player }: Props) {
-  const { data: playerResults } = await supabase(cookies).getJoinedPlayerResults(
+  const cookieStore = await cookies();
+  const { data: playerResults } = await supabase(cookieStore).getJoinedPlayerResults(
     player.id
   );
-  const { data: ratings } = await supabase(cookies).getPlayerRatings(player.id);
+  const { data: ratings } = await supabase(cookieStore).getPlayerRatings(player.id);
 
   if (!playerResults || !playerResults.length || !ratings || !ratings.length) {
     return null;

@@ -12,7 +12,8 @@ import { wait } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 
 export async function addGeneratedServer(values: GeneratedServersInsert) {
-  const result = await supabase(cookies).createGeneratedServer(values);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).createGeneratedServer(values);
 
   if (result.data) {
     revalidatePath(`/matches/${result.data.match_id}/server`);
@@ -44,7 +45,8 @@ export async function generateMatchServer(
   options: CreateServerOptions
 ) {
   const name = options.name;
-  const { data: server } = await supabase(cookies).getServerByName(name);
+  const cookieStore = await cookies();
+  const { data: server } = await supabase(cookieStore).getServerByName(name);
 
   if (server) {
     return { data: null, error: { message: 'Server already exists', code: 409 } };

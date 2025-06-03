@@ -21,9 +21,10 @@ interface Props {
   hasInstance: boolean;
 }
 export default async function GenerateServerForm({ match, hasInstance }: Props) {
-  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
-  const isMatchPlayer = await supabase(cookies).isMatchPlayer(match);
-  const { data: maps } = await supabase(cookies).getMaps();
+  const cookieStore = await cookies();
+  const isMatchOfficer = await supabase(cookieStore).isMatchOfficer(match);
+  const isMatchPlayer = await supabase(cookieStore).isMatchPlayer(match);
+  const { data: maps } = await supabase(cookieStore).getMaps();
   const { data: regions } = await api.platform().getRegions();
 
   async function generateServerSA(data: FormData) {

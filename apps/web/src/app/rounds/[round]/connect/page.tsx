@@ -7,13 +7,15 @@ import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
 import { LiveInfo } from '@bf2-matchmaking/types';
 
 interface Props {
-  params: { round: string };
+  params: Promise<{ round: string }>;
 }
-export default async function RoundClaimPage({ params }: Props) {
-  const round = await supabase(cookies)
+export default async function RoundClaimPage(props: Props) {
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const round = await supabase(cookieStore)
     .getRound(parseInt(params.round))
     .then(verifySingleResult);
-  const { data: session } = await supabase(cookies).auth.getSession();
+  const { data: session } = await supabase(cookieStore).auth.getSession();
 
   const info = parseJSON<LiveInfo>(round.info);
 

@@ -10,8 +10,9 @@ interface Props {
 }
 
 export default async function ServerManageActions({ address }: Props) {
-  const server = await supabase(cookies).getServer(address).then(verifySingleResult);
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const server = await supabase(cookieStore).getServer(address).then(verifySingleResult);
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   async function deleteServerSA() {
     'use server';
     return deleteServer(server.ip);

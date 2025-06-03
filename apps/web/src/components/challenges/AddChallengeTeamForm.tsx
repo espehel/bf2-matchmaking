@@ -9,7 +9,8 @@ interface Props {
 }
 
 export default async function AddChallengeTeamForm({ selectedTeam }: Props) {
-  const { data: ladderConfigs } = await supabase(cookies).getMatchConfigsWithType(
+  const cookieStore = await cookies();
+  const { data: ladderConfigs } = await supabase(cookieStore).getMatchConfigsWithType(
     'Ladder'
   );
   if (!ladderConfigs) {

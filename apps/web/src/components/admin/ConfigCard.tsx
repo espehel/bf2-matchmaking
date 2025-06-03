@@ -8,7 +8,8 @@ interface Props {
 }
 
 export default async function ConfigCard({ config }: Props) {
-  const { data: owner } = await supabase(cookies).getPlayer(config.owner);
+  const cookieStore = await cookies();
+  const { data: owner } = await supabase(cookieStore).getPlayer(config.owner);
   return (
     <div className="card w-96 bg-accent text-accent-content">
       <div className="card-body">

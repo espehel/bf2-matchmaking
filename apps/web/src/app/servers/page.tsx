@@ -17,7 +17,8 @@ import { cookies } from 'next/headers';
 
 export default async function Page() {
   const servers = await api.v2.getServers().then(verify).then(sortLiveServerByName);
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   const hasAdmin = Boolean(adminRoles?.server_admin);
 
   return (

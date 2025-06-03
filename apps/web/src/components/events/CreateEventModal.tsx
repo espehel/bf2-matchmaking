@@ -8,8 +8,9 @@ import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 
 export default async function CreateEventModal() {
-  const player = await supabase(cookies).getSessionPlayerOrThrow();
-  const configs = await supabase(cookies)
+  const cookieStore = await cookies();
+  const player = await supabase(cookieStore).getSessionPlayerOrThrow();
+  const configs = await supabase(cookieStore)
     .getMatchConfigsWithType('Cup')
     .then(verifyResult);
   return (

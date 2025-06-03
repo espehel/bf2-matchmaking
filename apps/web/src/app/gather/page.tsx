@@ -8,7 +8,8 @@ import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 
 export default async function Page() {
-  const config = await supabase(cookies).getMatchConfig(20).then(verifySingleResult);
+  const cookieStore = await cookies();
+  const config = await supabase(cookieStore).getMatchConfig(20).then(verifySingleResult);
   const { state, events, players } = await api.v2.getGather(config.id).then(verify);
 
   return (

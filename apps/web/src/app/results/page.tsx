@@ -7,8 +7,9 @@ import MatchResultCard from '@/components/MatchResultCard';
 import { toTuple } from '@bf2-matchmaking/utils';
 
 export default async function Results() {
-  const results = await supabase(cookies).getMatchResults().then(verifyResult);
-  const matches = await supabase(cookies)
+  const cookieStore = await cookies();
+  const results = await supabase(cookieStore).getMatchResults().then(verifyResult);
+  const matches = await supabase(cookieStore)
     .getMatchesInIdList(results.map((m) => m.match_id))
     .then(verifyResult);
 

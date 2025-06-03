@@ -16,11 +16,16 @@ export async function addRoundMatch(
   assertNumber(homeTeam, 'Missing home team');
   assertNumber(awayTeam, 'Missing away team');
 
-  const match = await supabase(cookies)
+  const cookieStore = await cookies();
+  const match = await supabase(cookieStore)
     .createScheduledMatch(event.config, homeTeam, awayTeam, round.start_at)
     .then(verifySingleResult);
 
-  const result = await supabase(cookies).createEventMatch(event.id, round.id, match.id);
+  const result = await supabase(cookieStore).createEventMatch(
+    event.id,
+    round.id,
+    match.id
+  );
 
   if (result.data) {
     revalidatePath(`/events/${event.id}`);
@@ -33,7 +38,8 @@ export async function addEventTeam(data: FormData) {
   const teamId = Number(getValue(data, 'team[id]'));
   const eventId = Number(getValue(data, 'event'));
 
-  const result = await supabase(cookies).createEventTeam(eventId, teamId);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).createEventTeam(eventId, teamId);
 
   if (result.data) {
     revalidatePath(`/events/${eventId}`);
@@ -48,7 +54,8 @@ export async function addEventRound(eventId: number, data: FormData) {
   assertString(label, 'Missing label');
   assertString(startAt, 'Missing startAt');
 
-  const result = await supabase(cookies).createEventRound(eventId, label, startAt);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).createEventRound(eventId, label, startAt);
 
   if (result.data) {
     revalidatePath(`/events/${eventId}`);
@@ -60,10 +67,11 @@ export async function addEventRound(eventId: number, data: FormData) {
 export async function deleteEventRound(
   round: EventRoundsRow & { matches: Array<EventMatchesRow> }
 ) {
-  const result = await supabase(cookies).deleteEventRound(round.id);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).deleteEventRound(round.id);
   if (result.data) {
     await Promise.all(
-      round.matches.map(({ match }) => supabase(cookies).deleteMatch(match))
+      round.matches.map(({ match }) => supabase(cookieStore).deleteMatch(match))
     );
     revalidatePath(`/events/${round.event}`);
   }
@@ -71,21 +79,23 @@ export async function deleteEventRound(
 }
 
 export async function deleteEventMatch({ match, event }: EventMatchesRow) {
-  const result = await supabase(cookies).deleteEventMatch(match);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).deleteEventMatch(match);
   if (result.data) {
-    await supabase(cookies).deleteMatch(match);
+    await supabase(cookieStore).deleteMatch(match);
     revalidatePath(`/events/${event}`);
   }
   return result;
 }
 
 export async function deleteEventTeam(event: EventsJoined, teamId: number) {
-  const result = await supabase(cookies).deleteEventTeam(event.id, teamId);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).deleteEventTeam(event.id, teamId);
   if (result.data) {
     await Promise.all(
       event.matches
         .filter((m) => m.home_team.id === teamId || m.away_team.id === teamId)
-        .map((m) => supabase(cookies).deleteMatch(m.id))
+        .map((m) => supabase(cookieStore).deleteMatch(m.id))
     );
     revalidatePath(`/events/${event.id}`);
   }
@@ -95,7 +105,10 @@ export async function deleteEventTeam(event: EventsJoined, teamId: number) {
 export async function setEventOpen(formData: FormData) {
   'use server';
   const { open, event } = getValues(formData, 'open', 'event');
-  const result = await supabase(cookies).updateEvent(event, { open: open === 'true' });
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateEvent(Number(event), {
+    open: open === 'true',
+  });
   if (!result.error) {
     revalidatePath(`/events/${event}`);
   }

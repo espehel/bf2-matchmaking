@@ -15,8 +15,9 @@ export default async function RatingTable({
   length,
   concatHref,
 }: Props) {
-  const { data: ratings } = await supabase(cookies).getPlayerRatingsByConfig(config);
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: ratings } = await supabase(cookieStore).getPlayerRatingsByConfig(config);
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   let sortedRatings =
     ratings?.sort((a, b) => {

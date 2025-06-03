@@ -5,9 +5,9 @@ import { revalidatePath } from 'next/cache';
 
 export async function createEvent(data: FormData) {
   'use server';
-
+  const cookieStore = await cookies();
   const { name, config, player } = getValues(data, 'name', 'config', 'player');
-  const result = await supabase(cookies).createEvent({
+  const result = await supabase(cookieStore).createEvent({
     name,
     config: Number(config),
     owner: player,

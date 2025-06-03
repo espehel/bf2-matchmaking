@@ -17,8 +17,9 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   return (
     <html lang="en">

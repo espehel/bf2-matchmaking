@@ -6,12 +6,19 @@ import JoinTimeTable from '@/components/leaderboards/JoinTimeTable';
 import Link from 'next/link';
 
 interface Props {
-  searchParams: { tab?: string; sortField?: string; sortOrder?: string; length?: string };
+  searchParams: Promise<{
+    tab?: string;
+    sortField?: string;
+    sortOrder?: string;
+    length?: string;
+  }>;
 }
 
-export default async function LeaderboardsPage({ searchParams }: Props) {
+export default async function LeaderboardsPage(props: Props) {
+  const searchParams = await props.searchParams;
   const { tab, sortField, sortOrder, length } = searchParams;
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   function concatHref(newParams: typeof searchParams) {
     const params = { ...searchParams, ...newParams };

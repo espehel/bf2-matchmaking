@@ -8,7 +8,8 @@ import { calculateWinner } from '@bf2-matchmaking/utils/src/results-utils';
 import { DateTime } from 'luxon';
 
 export async function closeMatch(matchId: number) {
-  const result = await supabase(cookies).updateMatch(matchId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateMatch(matchId, {
     status: MatchStatus.Closed,
     closed_at: DateTime.now().toISO(),
   });
@@ -21,7 +22,8 @@ export async function closeMatch(matchId: number) {
 }
 
 export async function reopenMatch(matchId: number) {
-  const result = await supabase(cookies).updateMatch(matchId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateMatch(matchId, {
     status: MatchStatus.Finished,
     closed_at: null,
   });
@@ -62,9 +64,9 @@ export async function addResult(match: MatchesJoined, data: FormData) {
     [homeMapsInput, homeRoundInput, homeTicketsInput],
     [awayMapsInput, awayRoundInput, awayTicketsInput]
   );
-
+  const cookieStore = await cookies();
   const [homeResult, awayResult] = await Promise.all([
-    supabase(cookies).createMatchResult({
+    supabase(cookieStore).createMatchResult({
       match_id: match.id,
       team: match.home_team.id,
       rounds: Number(homeRoundInput),
@@ -72,7 +74,7 @@ export async function addResult(match: MatchesJoined, data: FormData) {
       tickets: Number(homeTicketsInput),
       is_winner: isHomeWinner,
     }),
-    supabase(cookies).createMatchResult({
+    supabase(cookieStore).createMatchResult({
       match_id: match.id,
       team: match.away_team.id,
       rounds: Number(awayRoundInput),
@@ -89,7 +91,7 @@ export async function addResult(match: MatchesJoined, data: FormData) {
     return awayResult;
   }
 
-  await supabase(cookies).updateMatch(match.id, {
+  await supabase(cookieStore).updateMatch(match.id, {
     status: MatchStatus.Closed,
     closed_at: DateTime.now().toISO(),
   });

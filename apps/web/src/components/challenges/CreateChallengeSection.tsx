@@ -21,7 +21,8 @@ interface Props {
 }
 
 export default async function CreateChallengeSection({ selectedTeam }: Props) {
-  const configs = await supabase(cookies)
+  const cookieStore = await cookies();
+  const configs = await supabase(cookieStore)
     .getMatchConfigs()
     .then(verifyResult)
     .then(filterAvailableChallenge(selectedTeam));
@@ -34,14 +35,14 @@ export default async function CreateChallengeSection({ selectedTeam }: Props) {
     );
   }
 
-  const teams = await supabase(cookies)
+  const teams = await supabase(cookieStore)
     .getActiveTeams()
     .then(verifyResult)
     .then(filterNotSelectedTeam(selectedTeam))
     .then(filterAvailableTeams(configs));
 
   const servers = await api.live().getServers().then(verify).then(sortLiveServerByName);
-  const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
+  const maps = await supabase(cookieStore).getMaps().then(verifyResult).then(sortByName);
   return (
     <section className="section min-w-[600px] w-fit h-fit">
       <h2>Create challenge</h2>

@@ -9,7 +9,8 @@ interface Props {
 }
 
 export default async function ChallengeSection({ match }: Props) {
-  const { data: challenge } = await supabase(cookies).getChallengeByMatchId(match.id);
+  const cookieStore = await cookies();
+  const { data: challenge } = await supabase(cookieStore).getChallengeByMatchId(match.id);
   if (!isAcceptedChallenge(challenge)) {
     return null;
   }

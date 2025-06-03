@@ -10,14 +10,16 @@ import { isTeamOfficer } from '@bf2-matchmaking/utils';
 import Main from '@/components/commons/Main';
 
 interface Props {
-  searchParams: { edit?: string };
+  searchParams: Promise<{ edit?: string }>;
 }
 
-export default async function TeamsPage({ searchParams }: Props) {
-  const teams = await supabase(cookies).getActiveTeams().then(verifyResult);
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const playerTeamIds = await supabase(cookies).getSessionPlayerTeamIds();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+export default async function TeamsPage(props: Props) {
+  const searchParams = await props.searchParams;
+  const cookieStore = await cookies();
+  const teams = await supabase(cookieStore).getActiveTeams().then(verifyResult);
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const playerTeamIds = await supabase(cookieStore).getSessionPlayerTeamIds();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   function _isTeamOfficer(team: ActiveTeam) {
     return player ? adminRoles?.player_admin || isTeamOfficer(team, player.id) : false;
@@ -30,7 +32,7 @@ export default async function TeamsPage({ searchParams }: Props) {
     .filter((t) => !playerTeamIds.includes(t.id))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const hasEditPermission = await supabase(cookies).isTeamPlayerOfficer(
+  const hasEditPermission = await supabase(cookieStore).isTeamPlayerOfficer(
     ...myTeams.map((t) => t.id)
   );
   const edit = hasEditPermission && searchParams.edit === 'true';

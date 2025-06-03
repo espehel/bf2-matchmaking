@@ -8,14 +8,19 @@ import Link from 'next/link';
 
 interface Props {
   children: ReactNode;
-  params: { team: string };
+  params: Promise<{ team: string }>;
 }
 
-export default async function ChallengesTeamLayout({ children, params }: Props) {
-  const selectedTeam = await supabase(cookies)
+export default async function ChallengesTeamLayout(props: Props) {
+  const params = await props.params;
+
+  const { children } = props;
+
+  const cookieStore = await cookies();
+  const selectedTeam = await supabase(cookieStore)
     .getTeam(Number(params.team))
     .then(verifySingleResult);
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   const isNotPlayerTeam = player
     ? !selectedTeam.players.some((p) => p.id === player.id)
     : false;

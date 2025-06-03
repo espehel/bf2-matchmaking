@@ -13,7 +13,8 @@ interface Props {
 }
 
 export default async function MatchResultSection({ match }: Props) {
-  const matchResult = await supabase(cookies)
+  const cookieStore = await cookies();
+  const matchResult = await supabase(cookieStore)
     .getMatchResultsByMatchId(match.id)
     .then(verifyResult)
     .then(toTuple);
@@ -39,7 +40,7 @@ export default async function MatchResultSection({ match }: Props) {
     );
   }
 
-  const playerResults = await supabase(cookies)
+  const playerResults = await supabase(cookieStore)
     .getMatchPlayerResultsByMatchId(match.id)
     .then(verifyResult);
 

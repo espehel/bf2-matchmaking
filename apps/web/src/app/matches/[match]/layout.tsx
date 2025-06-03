@@ -4,19 +4,21 @@ import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { MatchProvider } from '@/state/MatchContext';
 
-export default async function MatchLayout({
-  children,
-  params,
-}: {
+export default async function MatchLayout(props: {
   children: ReactNode;
-  params: {
+  params: Promise<{
     match: string;
-  };
+  }>;
 }) {
+  const params = await props.params;
+
+  const { children } = props;
+
   const matchId = Number(params.match);
+  const cookieStore = await cookies();
   const [match, serverRes] = await Promise.all([
-    supabase(cookies).getMatch(matchId).then(verifySingleResult),
-    supabase(cookies).getMatchServers(matchId),
+    supabase(cookieStore).getMatch(matchId).then(verifySingleResult),
+    supabase(cookieStore).getMatchServers(matchId),
   ]);
 
   return (

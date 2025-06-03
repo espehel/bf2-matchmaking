@@ -13,7 +13,8 @@ import FormSubmitButton from '@/components/FormSubmitButton';
 import TransitionWrapper from '@/components/commons/TransitionWrapper';
 
 export default async function AdminRolesPage() {
-  const admins = await supabase(cookies).getAdmins().then(verifyResult);
+  const cookieStore = await cookies();
+  const admins = await supabase(cookieStore).getAdmins().then(verifyResult);
   const sortedAdmins = admins
     .filter(isAdminPlayer)
     .sort((a, b) => a.player.nick.localeCompare(b.player.nick));

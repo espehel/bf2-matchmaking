@@ -9,7 +9,7 @@ interface Props {
   playerList: Array<PlayerListItem>;
   registeredPlayers: Array<PlayersRow>;
   matchPlayers: Array<PlayersRow>;
-  registerPlayer: (
+  registerPlayerAction: (
     playerId: string,
     keyhash: string
   ) => PromiseLike<PostgrestSingleResponse<PlayersRow>>;
@@ -21,7 +21,7 @@ const compareScore = (playerA: PlayerListItem, playerB: PlayerListItem) =>
 export default function PlayersRegisterSection({
   playerList,
   registeredPlayers,
-  registerPlayer,
+  registerPlayerAction,
   matchPlayers,
 }: Props) {
   const sortedPlayers = [...playerList].sort(compareScore);
@@ -50,14 +50,14 @@ export default function PlayersRegisterSection({
       if (!selectedPlayer) {
         return toast.error('Select a player to register');
       }
-      const { error } = await registerPlayer(selectedPlayer.id, keyhash);
+      const { error } = await registerPlayerAction(selectedPlayer.id, keyhash);
       if (error) {
         toast.error(`Failed to register keyhash of ${selectedPlayer.nick}`);
       } else {
         toast.success(`Updated keyhash of ${selectedPlayer.nick}`);
       }
     },
-    [registerPlayer, selectedPlayer]
+    [registerPlayerAction, selectedPlayer]
   );
 
   return (

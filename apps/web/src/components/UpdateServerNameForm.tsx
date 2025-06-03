@@ -13,7 +13,8 @@ interface Props {
 export default function UpdateServerNameForm({ server, info }: Props) {
   async function update() {
     'use server';
-    await supabase(cookies).updateServer(server.ip, {
+    const cookieStore = await cookies();
+    await supabase(cookieStore).updateServer(server.ip, {
       name: info.serverName,
     });
     revalidatePath(`/servers/${server.ip}`);

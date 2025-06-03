@@ -22,7 +22,8 @@ export default async function MatchTimeForm({ match }: Props) {
     return <MatchTimeFallback match={match} />;
   }
 
-  const { data: eventMatch } = await supabase(cookies).getEventMatch(match.id);
+  const cookieStore = await cookies();
+  const { data: eventMatch } = await supabase(cookieStore).getEventMatch(match.id);
 
   async function updateMatchScheduledAtSA(data: FormData) {
     'use server';
@@ -49,7 +50,7 @@ export default async function MatchTimeForm({ match }: Props) {
       </div>
     );
   }
-  const isOfficer = await supabase(cookies).isMatchOfficer(match);
+  const isOfficer = await supabase(cookieStore).isMatchOfficer(match);
 
   const team = await getSessionPlayerTeam(match);
 
@@ -151,7 +152,8 @@ export function MatchTimeFallback({ match }: { match: MatchesJoined }) {
 }
 
 async function getSessionPlayerTeam(match: MatchesJoined) {
-  const { data: sessionPlayer } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: sessionPlayer } = await supabase(cookieStore).getSessionPlayer();
   if (match.home_team.players.some((p) => p.player_id === sessionPlayer?.id)) {
     return 'home';
   }

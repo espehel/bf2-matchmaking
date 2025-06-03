@@ -4,9 +4,10 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 
 export default async function Header() {
-  const { data: session } = await supabase(cookies).auth.getSession();
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: session } = await supabase(cookieStore).auth.getSession();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   return (
     <header className="navbar bg-primary text-primary-content h-header">
       <div className="navbar-start">

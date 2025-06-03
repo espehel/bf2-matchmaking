@@ -7,9 +7,10 @@ import { activateTeam } from '@/app/teams/[team]/actions';
 import Main from '@/components/commons/Main';
 
 export default async function TeamsPage() {
-  const teams = await supabase(cookies).getInactiveTeams().then(verifyResult);
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const teams = await supabase(cookieStore).getInactiveTeams().then(verifyResult);
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   const myTeams = player
     ? teams

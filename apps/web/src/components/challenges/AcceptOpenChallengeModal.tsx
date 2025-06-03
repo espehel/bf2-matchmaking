@@ -20,15 +20,16 @@ interface Props {
 }
 
 export default async function AcceptOpenChallengeModal({ challenge }: Props) {
-  const player = await supabase(cookies).getSessionPlayerOrThrow();
-  const teams = await supabase(cookies).getActiveTeams().then(verifyResult);
+  const cookieStore = await cookies();
+  const player = await supabase(cookieStore).getSessionPlayerOrThrow();
+  const teams = await supabase(cookieStore).getActiveTeams().then(verifyResult);
   const availableTeams = teams
     .filter(isPlayerTeam(player))
     .filter(isNotHomeTeam(challenge));
 
   const servers = await api.live().getServers().then(verify).then(sortLiveServerByName);
 
-  const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
+  const maps = await supabase(cookieStore).getMaps().then(verifyResult).then(sortByName);
   const availableMaps = maps.filter(isNotHomeMap(challenge));
 
   return (

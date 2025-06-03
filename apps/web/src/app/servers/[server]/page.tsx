@@ -9,15 +9,17 @@ import { isConnectedLiveServer } from '@bf2-matchmaking/types';
 import ServerLog from '@/components/servers/ServerLog';
 
 interface Props {
-  params: { server: string };
+  params: Promise<{ server: string }>;
 }
-export default async function ServerPage({ params }: Props) {
+export default async function ServerPage(props: Props) {
+  const params = await props.params;
   const liveServer = await api.v2.getServer(params.server).then(verify);
 
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   const hasAdmin = Boolean(adminRoles?.server_admin);
 
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   const isConnected =
     player && liveServer.live
       ? liveServer.live.players.some((p) => p.keyhash === player.keyhash)

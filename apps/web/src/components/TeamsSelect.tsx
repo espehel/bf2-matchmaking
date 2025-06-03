@@ -23,8 +23,9 @@ export async function TeamsSelect({
   filter,
   size,
 }: Props) {
-  const { data: teams } = await supabase(cookies).getActiveTeams();
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: teams } = await supabase(cookieStore).getActiveTeams();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
 
   const options =
     filterTeams(player, teams || [], filter).map<[number, string]>((team) => [

@@ -11,9 +11,10 @@ interface Props {
   match: MatchesJoined;
 }
 export default async function NoServer({ match }: Props) {
-  const { data: generatedServers } = await supabase(cookies).getGeneratedServersByMatchId(
-    match.id
-  );
+  const cookieStore = await cookies();
+  const { data: generatedServers } = await supabase(
+    cookieStore
+  ).getGeneratedServersByMatchId(match.id);
   const { data: regions } = await api.platform().getRegions();
   const cities = generatedServers
     ?.map((gs) => regions?.find((r) => r.id === gs.region)?.city)

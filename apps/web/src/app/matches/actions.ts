@@ -29,8 +29,8 @@ export async function createScheduledMatch(formData: FormData) {
     if (homeSelect === awaySelect) {
       return { data: null, error: { message: 'Home and away team cannot be the same.' } };
     }
-
-    const { data: player } = await supabase(cookies).getSessionPlayer();
+    const cookieStore = await cookies();
+    const { data: player } = await supabase(cookieStore).getSessionPlayer();
     const matchValues: MatchesInsert = {
       config: Number(configSelect),
       status: MatchStatus.Scheduled,
@@ -67,7 +67,8 @@ export async function createScheduledMatch(formData: FormData) {
       );
 
       if (event) {
-        await supabase(cookies).updateMatch(match.id, { events: [event.id] });
+        const cookieStore = await cookies();
+        await supabase(cookieStore).updateMatch(match.id, { events: [event.id] });
       } else {
         logErrorMessage('Failed to post scheduled event to discord', discordError, {
           match,
@@ -91,7 +92,8 @@ export async function createScheduledMatch(formData: FormData) {
 }
 
 export async function createMatchServers(matchId: number, servers: string[]) {
-  const res = await supabase(cookies).createMatchServers(
+  const cookieStore = await cookies();
+  const res = await supabase(cookieStore).createMatchServers(
     matchId,
     ...servers.map((server) => ({ server }))
   );

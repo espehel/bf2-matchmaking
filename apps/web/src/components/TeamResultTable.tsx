@@ -13,8 +13,9 @@ interface Props {
 }
 
 export default async function TeamResultTable({ playerResults, match }: Props) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   const showRatingCol =
     adminRoles?.player_admin ||
     playerResults.some(

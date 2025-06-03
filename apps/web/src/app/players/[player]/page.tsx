@@ -6,12 +6,14 @@ import Loading from '@/app/matches/[match]/loading';
 import { Suspense } from 'react';
 
 interface Props {
-  params: { player: string };
+  params: Promise<{ player: string }>;
 }
-export default async function PlayerPage({ params }: Props) {
-  const player = await supabase(cookies).getPlayer(params.player).then(verify);
-  const { data: sessionPlayer } = await supabase(cookies).getSessionPlayer();
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+export default async function PlayerPage(props: Props) {
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const player = await supabase(cookieStore).getPlayer(params.player).then(verify);
+  const { data: sessionPlayer } = await supabase(cookieStore).getSessionPlayer();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   const showResults = sessionPlayer?.id === player.id || adminRoles?.player_admin;
 

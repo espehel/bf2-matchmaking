@@ -12,7 +12,8 @@ interface Props {
 }
 
 export default async function MatchSection({ match }: Props) {
-  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
+  const cookieStore = await cookies();
+  const isMatchOfficer = await supabase(cookieStore).isMatchOfficer(match);
   return (
     <section className="section w-fit h-fit">
       <div>

@@ -13,10 +13,11 @@ interface Props {
 }
 
 export default async function ScheduledActionsSection({ match, matchServer }: Props) {
-  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
-  const { data: generatedServers } = await supabase(cookies).getGeneratedServersByMatchId(
-    match.id
-  );
+  const cookieStore = await cookies();
+  const isMatchOfficer = await supabase(cookieStore).isMatchOfficer(match);
+  const { data: generatedServers } = await supabase(
+    cookieStore
+  ).getGeneratedServersByMatchId(match.id);
   const { data: regions } = await api.platform().getRegions();
   const { data: instances } = await api.platform().getServers(match.id);
 

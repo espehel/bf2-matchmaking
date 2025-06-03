@@ -18,7 +18,8 @@ interface Props {
 }
 
 export default async function MatchActions({ match }: Props) {
-  const { data: maps } = await supabase(cookies).getMaps();
+  const cookieStore = await cookies();
+  const { data: maps } = await supabase(cookieStore).getMaps();
 
   const isScheduled = match.status === MatchStatus.Scheduled;
   const isOngoing = match.status === MatchStatus.Ongoing;

@@ -8,7 +8,8 @@ import React from 'react';
 const CONFIG_5v5 = 22;
 
 export default async function LeaderboardSection() {
-  const entries = await supabase(cookies)
+  const cookieStore = await cookies();
+  const entries = await supabase(cookieStore)
     .getChallengeTeamsByConfig(CONFIG_5v5)
     .then(verifyResult);
 

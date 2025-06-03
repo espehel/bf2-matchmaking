@@ -4,8 +4,11 @@ import { cookies } from 'next/headers';
 import { listGuildMembers } from '@bf2-matchmaking/discord';
 
 export async function addBetaPlayers(players: Array<string>) {
+  const cookieStore = await cookies();
   await Promise.all(
-    players.map((player) => supabase(cookies).updatePlayer(player, { beta_tester: true }))
+    players.map((player) =>
+      supabase(cookieStore).updatePlayer(player, { beta_tester: true })
+    )
   );
 }
 

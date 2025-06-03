@@ -10,13 +10,15 @@ import PendingChallengeCard from '@/components/challenges/PendingChallengeCard';
 import { hasTeam, isOpenChallenge, isSignedUp } from '@bf2-matchmaking/utils';
 
 interface Props {
-  params: { team: string };
+  params: Promise<{ team: string }>;
 }
-export default async function ChallengePage({ params }: Props) {
-  const selectedTeam = await supabase(cookies)
+export default async function ChallengePage(props: Props) {
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const selectedTeam = await supabase(cookieStore)
     .getTeam(Number(params.team))
     .then(verifySingleResult);
-  const challenges = await supabase(cookies).getChallenges().then(verifySingleResult);
+  const challenges = await supabase(cookieStore).getChallenges().then(verifySingleResult);
   const openChallenges = challenges
     .filter(isOpenChallenge)
     .filter(isSignedUp(selectedTeam));

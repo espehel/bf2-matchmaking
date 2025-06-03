@@ -8,11 +8,14 @@ import EditModeButton from '@/components/result/EditModeButton';
 import { Fragment } from 'react';
 
 interface Props {
-  params: { league: string };
-  searchParams: { edit?: string };
+  params: Promise<{ league: string }>;
+  searchParams: Promise<{ edit?: string }>;
 }
-export default async function LeaguePage({ params, searchParams }: Props) {
-  const config = await supabase(cookies)
+export default async function LeaguePage(props: Props) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const config = await supabase(cookieStore)
     .getMatchConfigResults(Number(params.league))
     .then(verifySingleResult);
   const groupedByWeeks = groupBy(config.matches, (m) =>

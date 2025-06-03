@@ -14,7 +14,8 @@ interface Props {
 }
 
 export default async function MatchServerList({ match }: Props) {
-  const { data: matchServers } = await supabase(cookies).getMatchServers(match.id);
+  const cookieStore = await cookies();
+  const { data: matchServers } = await supabase(cookieStore).getMatchServers(match.id);
   if (!matchServers) {
     return null;
   }

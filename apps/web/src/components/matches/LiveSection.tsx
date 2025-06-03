@@ -11,8 +11,9 @@ interface Props {
 }
 export default async function LiveSection({ match }: Props) {
   const { data: liveMatch } = await api.v2.getMatch(match.id);
-  const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
-  const isMatchOfficer = await supabase(cookies).isMatchOfficer(match);
+  const cookieStore = await cookies();
+  const { data: matchServer } = await supabase(cookieStore).getMatchServers(match.id);
+  const isMatchOfficer = await supabase(cookieStore).isMatchOfficer(match);
 
   //TODO: handle multiple match servers
   const server = matchServer?.servers?.at(0);

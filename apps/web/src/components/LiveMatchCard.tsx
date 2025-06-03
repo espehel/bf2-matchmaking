@@ -10,7 +10,8 @@ interface Props {
 }
 
 export default async function LiveMatchCard({ match, liveInfo, liveState }: Props) {
-  const { data: matchServer } = await supabase(cookies).getMatchServers(match.id);
+  const cookieStore = await cookies();
+  const { data: matchServer } = await supabase(cookieStore).getMatchServers(match.id);
   //TODO: handle multiple match servers
   const server = matchServer?.servers?.at(0);
   const date = match.scheduled_at || match.started_at || match.created_at;

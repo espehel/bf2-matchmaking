@@ -12,16 +12,19 @@ import { ChevronLeftIcon } from '@heroicons/react/16/solid';
 import Main from '@/components/commons/Main';
 
 interface Props {
-  params: { team: string };
-  searchParams: { edit?: string };
+  params: Promise<{ team: string }>;
+  searchParams: Promise<{ edit?: string }>;
 }
-export default async function TeamPage({ params, searchParams }: Props) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const team = await supabase(cookies)
+export default async function TeamPage(props: Props) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const team = await supabase(cookieStore)
     .getTeam(Number(params.team))
     .then(verifySingleResult);
 
-  const isTeamOfficer = await supabase(cookies).isTeamPlayerOfficer(team.id);
+  const isTeamOfficer = await supabase(cookieStore).isTeamPlayerOfficer(team.id);
   const isTeamPlayer = team.players.some((p) => p.id === player?.id);
 
   const edit = isTeamOfficer && searchParams.edit === 'true';

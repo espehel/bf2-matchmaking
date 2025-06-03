@@ -48,7 +48,7 @@ export default (client: SupabaseClient<Database>) => ({
   getServerRcons: () => client.from('server_rcons').select('*'),
   getServerRcon: (ip: string) =>
     client.from('server_rcons').select('*').eq('id', ip).single(),
-  getPlayerByUserId: (userId?: string) =>
+  getPlayerByUserId: (userId: string) =>
     client.from('players').select('*').eq('user_id', userId).single(),
   getPlayerByKeyhash: (keyhash: string) =>
     client.from('players').select('*').eq('keyhash', keyhash).single(),
@@ -98,7 +98,7 @@ export default (client: SupabaseClient<Database>) => ({
     client.from('player_ratings').upsert(playerRatings).select('*'),
   searchPlayers: (query: string) =>
     client.from('players').select('*').ilike('nick', `%${query}%`).limit(10),
-  getPlayer: (playerId: string | undefined) =>
+  getPlayer: (playerId: string) =>
     client.from('players').select('*').eq('id', playerId).single(),
   createPlayer: (player: PlayersInsert) =>
     client.from('players').insert([player]).select().single(),
@@ -237,7 +237,7 @@ export default (client: SupabaseClient<Database>) => ({
   getEvents: () => client.from('events').select('*'),
   getEvent: (id: number) =>
     client.from('events').select(EVENT_QUERY).eq('id', id).single<EventsJoined>(),
-  updateEvent: (eventId: number | string, values: EventsUpdate) =>
+  updateEvent: (eventId: number, values: EventsUpdate) =>
     client.from('events').update(values).eq('id', eventId).select('*'),
   getEventMatch: (match: number) =>
     client.from('event_matches').select('*').eq('match', match).single(),

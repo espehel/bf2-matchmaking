@@ -5,13 +5,14 @@ import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 
 export async function updatePlayerByUserId(userId: string, values: PlayersUpdate) {
-  const { data: player } = await supabase(cookies).getPlayerByUserId(userId);
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getPlayerByUserId(userId);
 
   if (!player) {
     return { data: null, error: 'No player match user id' };
   }
 
-  const { data, error } = await supabase(cookies).updatePlayer(player.id, values);
+  const { data, error } = await supabase(cookieStore).updatePlayer(player.id, values);
 
   if (error?.code === '23505') {
     return { data: null, error: 'Keyhash already exists on a player' };

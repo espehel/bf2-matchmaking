@@ -8,11 +8,13 @@ import { registerTeamspeakId } from '@/app/players/teamspeak/actions';
 import { PlayersRow } from '@bf2-matchmaking/types';
 
 interface Props {
-  searchParams: { tsid?: string };
+  searchParams: Promise<{ tsid?: string }>;
 }
 
-export default async function Page({ searchParams }: Props) {
-  const { data: sessionPlayer } = await supabase(cookies).getSessionPlayer();
+export default async function Page(props: Props) {
+  const searchParams = await props.searchParams;
+  const cookieStore = await cookies();
+  const { data: sessionPlayer } = await supabase(cookieStore).getSessionPlayer();
   const teamspeakPlayer = await getPlayerByTeamspeakId(searchParams.tsid);
   return (
     <main className="main">
@@ -57,6 +59,7 @@ async function getPlayerByTeamspeakId(tsid?: string): Promise<PlayersRow | null>
   if (!tsid) {
     return null;
   }
-  const { data } = await supabase(cookies).getPlayerByTeamspeakId(tsid);
+  const cookieStore = await cookies();
+  const { data } = await supabase(cookieStore).getPlayerByTeamspeakId(tsid);
   return data;
 }

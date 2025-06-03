@@ -10,13 +10,14 @@ import { toAsyncError } from '@bf2-matchmaking/utils/src/async-actions';
 export async function createTeam(data: FormData) {
   const nameInput = getValue(data, 'nameInput');
   const avatarInput = getOptionalValue(data, 'avatarInput');
-  const { data: owner, error } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: owner, error } = await supabase(cookieStore).getSessionPlayer();
 
   if (error) {
     return toAsyncError(error);
   }
 
-  const { data: team, error: teamError } = await supabase(cookies).createTeam({
+  const { data: team, error: teamError } = await supabase(cookieStore).createTeam({
     name: nameInput,
     avatar: isString(avatarInput) ? avatarInput : null,
     owner: owner.id,
@@ -26,7 +27,7 @@ export async function createTeam(data: FormData) {
     return toAsyncError('Failed to create team');
   }
 
-  await supabase(cookies).createTeamPlayer({
+  await supabase(cookieStore).createTeamPlayer({
     team_id: team.id,
     player_id: owner.id,
     captain: true,

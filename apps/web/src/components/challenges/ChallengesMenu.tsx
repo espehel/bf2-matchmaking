@@ -8,7 +8,8 @@ interface Props {
   selectedTeam: TeamsJoined;
 }
 export default async function ChallengesMenu({ player, selectedTeam }: Props) {
-  const { data: playerTeams } = await supabase(cookies).getTeamsByPlayerId(player.id);
+  const cookieStore = await cookies();
+  const { data: playerTeams } = await supabase(cookieStore).getTeamsByPlayerId(player.id);
 
   return (
     <div className="flex flex-col divide-y divide-primary gap-8">

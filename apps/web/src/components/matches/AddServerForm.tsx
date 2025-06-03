@@ -12,7 +12,8 @@ interface Props {
 
 export default async function AddServerForm({ match, defaultAddress }: Props) {
   const { data: servers } = await api.live().getServers();
-  const isMatchPlayer = await supabase(cookies).isMatchPlayer(match);
+  const cookieStore = await cookies();
+  const isMatchPlayer = await supabase(cookieStore).isMatchPlayer(match);
 
   if (!servers) {
     return null;

@@ -10,7 +10,8 @@ import ScheduleMatchForm, {
 import React, { Suspense } from 'react';
 
 export default async function ScheduledMatchesList() {
-  const matches = await supabase(cookies)
+  const cookieStore = await cookies();
+  const matches = await supabase(cookieStore)
     .getScheduledMatches(DateTime.now().set({ hour: 0, minute: 0 }).toISO())
     .then(verifyResult);
   const scheduledMatches = matches

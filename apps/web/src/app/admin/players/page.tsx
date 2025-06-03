@@ -3,12 +3,13 @@ import { cookies } from 'next/headers';
 import BetaPlayersForm from '@/components/players/BetaPlayersForm';
 
 export default async function AdminPlayersPage() {
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   if (!adminRoles?.player_admin) {
     return <div>You do not have permission to view this page</div>;
   }
 
-  const { data: betaPlayers } = await supabase(cookies).getBetaPlayers();
+  const { data: betaPlayers } = await supabase(cookieStore).getBetaPlayers();
 
   return (
     <main className="main flex flex-col items-center gap-8">

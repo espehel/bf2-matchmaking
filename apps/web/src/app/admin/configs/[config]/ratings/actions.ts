@@ -9,14 +9,15 @@ export async function upsertRatingsForConfig(
   configId: number,
   values: Array<Omit<PlayerRatingsInsert, 'config'>>
 ) {
-  const config = await supabase(cookies)
+  const cookieStore = await cookies();
+  const config = await supabase(cookieStore)
     .getMatchConfig(configId)
     .then(verifySingleResult);
   if (!config.fixed_ratings) {
     throw new Error('Ratings are not fixed');
   }
 
-  const result = await supabase(cookies).upsertPlayerRatings(
+  const result = await supabase(cookieStore).upsertPlayerRatings(
     values.map((value) => ({ ...value, config: configId }))
   );
   if (!result.error) {

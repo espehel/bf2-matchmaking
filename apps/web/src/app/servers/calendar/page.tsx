@@ -9,9 +9,10 @@ import Link from 'next/link';
 import Time from '@/components/commons/Time';
 
 interface Props {
-  searchParams: { month?: string; year?: string };
+  searchParams: Promise<{ month?: string; year?: string }>;
 }
-export default async function Page({ searchParams }: Props) {
+export default async function Page(props: Props) {
+  const searchParams = await props.searchParams;
   const servers = await api.live().getServers().then(verify);
 
   const startOfMonth = DateTime.fromObject({
@@ -20,7 +21,8 @@ export default async function Page({ searchParams }: Props) {
     day: 1,
   });
 
-  const matches = await supabase(cookies)
+  const cookieStore = await cookies();
+  const matches = await supabase(cookieStore)
     .getMatchServerSchedule(startOfMonth.toISO(), startOfMonth.endOf('month').toISO())
     .then(verifyResult);
 

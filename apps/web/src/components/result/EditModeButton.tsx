@@ -9,7 +9,8 @@ interface Props {
 }
 
 export default async function EditModeButton({ edit, config }: Props) {
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   if (!adminRoles?.match_admin) {
     return null;
   }

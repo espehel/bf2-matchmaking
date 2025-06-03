@@ -9,13 +9,15 @@ import { isScheduledMatch } from '@bf2-matchmaking/types';
 import LoadingSection from '@/components/commons/LoadingSection';
 
 interface Props {
-  params: { match: string };
+  params: Promise<{ match: string }>;
 }
-export default async function ResultsMatch({ params }: Props) {
-  const match = await supabase(cookies)
+export default async function ResultsMatch(props: Props) {
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const match = await supabase(cookieStore)
     .getMatch(Number(params.match))
     .then(verifySingleResult);
-  const { data: matchServers } = await supabase(cookies).getMatchServers(
+  const { data: matchServers } = await supabase(cookieStore).getMatchServers(
     Number(params.match)
   );
 

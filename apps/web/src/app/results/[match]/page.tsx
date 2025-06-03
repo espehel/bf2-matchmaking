@@ -10,10 +10,12 @@ import Time from '@/components/commons/Time';
 import React from 'react';
 
 interface Props {
-  params: { match: string };
+  params: Promise<{ match: string }>;
 }
-export default async function ResultsMatch({ params }: Props) {
-  const match = await supabase(cookies)
+export default async function ResultsMatch(props: Props) {
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const match = await supabase(cookieStore)
     .getMatch(Number(params.match))
     .then(verifySingleResult);
 

@@ -13,7 +13,8 @@ interface Props {
   instance: Instance;
 }
 export default async function InstanceTableActionsCell({ matchId, instance }: Props) {
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   const { data: dns } = await api.platform().getServerDns(instance.main_ip);
 
   async function deleteInstanceSA() {

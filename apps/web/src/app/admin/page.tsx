@@ -22,7 +22,8 @@ export default async function AdminPage() {
   const systemState = await hash('system')
     .getAll()
     .catch(() => null);
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   return (
     <main className="main">

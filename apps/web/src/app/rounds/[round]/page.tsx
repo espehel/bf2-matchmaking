@@ -10,25 +10,28 @@ import { updatePlayer } from '@/app/rounds/[round]/actions';
 import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
 
 interface Props {
-  params: { round: string };
-  searchParams: { tab?: string };
+  params: Promise<{ round: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
-export default async function RoundPage({ params, searchParams }: Props) {
-  const round = await supabase(cookies)
+export default async function RoundPage(props: Props) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const round = await supabase(cookieStore)
     .getRound(parseInt(params.round))
     .then(verifySingleResult);
 
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   const isPlayerAdmin = Boolean(adminRoles?.player_admin);
   const isRegisterTab = searchParams.tab === 'register' && isPlayerAdmin;
 
   const info = parseJSON<LiveInfo>(round.info);
 
-  const registeredPlayers = await supabase(cookies)
+  const registeredPlayers = await supabase(cookieStore)
     .getPlayersByKeyhashList(info.players.map(({ keyhash }) => keyhash).filter(isTruthy))
     .then(verifyResult);
   const matchPlayers = round.match
-    ? (await supabase(cookies).getPlayersByMatchId(round.match)).data?.players || []
+    ? (await supabase(cookieStore).getPlayersByMatchId(round.match)).data?.players || []
     : [];
 
   const roundTime =
@@ -99,7 +102,7 @@ export default async function RoundPage({ params, searchParams }: Props) {
         <PlayersRegisterSection
           playerList={info.players}
           registeredPlayers={registeredPlayers}
-          registerPlayer={registerPlayer}
+          registerPlayerAction={registerPlayer}
           matchPlayers={matchPlayers}
         />
       )}

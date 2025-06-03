@@ -5,7 +5,8 @@ import { cookies } from 'next/headers';
 interface Props {}
 
 export default async function CreateServerSection({}: Props) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
 
   if (!player) {
     return null;

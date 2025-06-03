@@ -15,5 +15,6 @@ export async function registerTeamspeakId(formData: FormData) {
     return { data: null, error: { message: 'Missing player id' } };
   }
 
-  return supabase(cookies).updatePlayer(player_id, { teamspeak_id: tsid });
+  const cookieStore = await cookies();
+  return supabase(cookieStore).updatePlayer(player_id, { teamspeak_id: tsid });
 }

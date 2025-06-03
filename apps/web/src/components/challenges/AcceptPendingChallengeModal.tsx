@@ -20,8 +20,9 @@ interface Props {
 }
 
 export default async function AcceptPendingChallengeModal({ challenge }: Props) {
+  const cookieStore = await cookies();
   const servers = await api.live().getServers().then(verify).then(sortLiveServerByName);
-  const maps = await supabase(cookies).getMaps().then(verifyResult).then(sortByName);
+  const maps = await supabase(cookieStore).getMaps().then(verifyResult).then(sortByName);
   const availableMaps = maps.filter(isNotHomeMap(challenge));
 
   return (

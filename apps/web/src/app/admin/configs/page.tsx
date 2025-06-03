@@ -4,7 +4,8 @@ import { cookies } from 'next/headers';
 import ConfigCard from '@/components/admin/ConfigCard';
 
 export default async function Page() {
-  const configs = await supabase(cookies).getMatchConfigs().then(verifyResult);
+  const cookieStore = await cookies();
+  const configs = await supabase(cookieStore).getMatchConfigs().then(verifyResult);
   return (
     <main className="main">
       <h1 className="text-3xl">Configs</h1>

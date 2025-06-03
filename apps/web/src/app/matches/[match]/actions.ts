@@ -15,7 +15,8 @@ import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
-  const result = await supabase(cookies).deleteMatchPlayer(matchId, playerId);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).deleteMatchPlayer(matchId, playerId);
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -30,8 +31,9 @@ export async function addMatchPlayer(
   team: number | undefined,
   config: number
 ) {
-  const { data } = await supabase(cookies).getPlayerRating(playerId, config);
-  const result = await supabase(cookies).createMatchPlayer(matchId, playerId, {
+  const cookieStore = await cookies();
+  const { data } = await supabase(cookieStore).getPlayerRating(playerId, config);
+  const result = await supabase(cookieStore).createMatchPlayer(matchId, playerId, {
     team,
     rating: data?.rating || 1500,
   });
@@ -46,7 +48,8 @@ export async function addMatchPlayer(
 }
 
 export async function reopenMatch(matchId: number) {
-  const result = await supabase(cookies).updateMatch(matchId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateMatch(matchId, {
     status: MatchStatus.Finished,
     closed_at: null,
   });
@@ -67,7 +70,8 @@ export async function createResults(matchId: number) {
   return result;
 }
 export async function finishMatch(matchId: number) {
-  const result = await supabase(cookies).updateMatch(matchId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateMatch(matchId, {
     status: MatchStatus.Finished,
   });
 
@@ -82,7 +86,8 @@ export async function finishMatch(matchId: number) {
 }
 
 export async function startMatch(matchId: number) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   const result = await api.v2.postMatchStart(matchId);
   logMessage(`Match ${matchId} started by ${player?.nick}`, { matchId, player, result });
 
@@ -94,7 +99,8 @@ export async function startMatch(matchId: number) {
 }
 
 export async function closeMatch(matchId: number) {
-  const result = await supabase(cookies).updateMatch(matchId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateMatch(matchId, {
     status: MatchStatus.Closed,
     closed_at: DateTime.now().toISO(),
   });
@@ -107,18 +113,19 @@ export async function closeMatch(matchId: number) {
 }
 
 export async function deleteMatch(matchId: number) {
-  const result = await supabase(cookies).updateMatch(matchId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateMatch(matchId, {
     status: MatchStatus.Deleted,
   });
 
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
 
   if (result.error) {
     logErrorMessage('Failed to delete match', result.error, { matchId, player });
     return result;
   }
 
-  await supabase(cookies).deleteAllMatchServers(matchId);
+  await supabase(cookieStore).deleteAllMatchServers(matchId);
 
   const match = result.data;
   const guild = match.config.guild;
@@ -140,7 +147,8 @@ export async function deleteMatch(matchId: number) {
 }
 
 export async function pauseRound(matchId: number, serverIp: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.postServerPause(serverIp, createToken(player));
 
@@ -152,7 +160,8 @@ export async function pauseRound(matchId: number, serverIp: string) {
 }
 
 export async function unpauseRound(matchId: number, serverIp: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.postServerUnpause(serverIp, createToken(player));
 
@@ -163,7 +172,8 @@ export async function unpauseRound(matchId: number, serverIp: string) {
 }
 
 export async function restartRound(matchId: number, serverIp: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.postServerExec(
     serverIp,
@@ -179,7 +189,8 @@ export async function restartRound(matchId: number, serverIp: string) {
 }
 
 export async function restartServer(matchId: number, serverIp: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.postServerExec(
     serverIp,
@@ -211,8 +222,9 @@ export async function setTeams(match: MatchesJoined, serverIp: string) {
 }
 
 export async function addServer(matchId: number, serverIp: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const result = await supabase(cookies).createMatchServers(matchId, {
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const result = await supabase(cookieStore).createMatchServers(matchId, {
     server: serverIp,
   });
 
@@ -220,8 +232,8 @@ export async function addServer(matchId: number, serverIp: string) {
     logErrorMessage('Failed to add server', result.error, { matchId, serverIp, player });
     return result;
   }
-  const match = await supabase(cookies).getMatch(matchId).then(verifySingleResult);
-  const { data: servers } = await supabase(cookies).getMatchServers(matchId);
+  const match = await supabase(cookieStore).getMatch(matchId).then(verifySingleResult);
+  const { data: servers } = await supabase(cookieStore).getMatchServers(matchId);
   const guild = match.config.guild;
 
   let events: unknown = null;
@@ -248,8 +260,9 @@ export async function addServer(matchId: number, serverIp: string) {
 }
 
 export async function setMaps(matchId: number, maps: Array<number>) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
-  const { error } = await supabase(cookies).deleteAllMatchMaps(matchId);
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+  const { error } = await supabase(cookieStore).deleteAllMatchMaps(matchId);
 
   if (error) {
     logErrorMessage('Failed to delete maps before setting new', error, {
@@ -260,15 +273,15 @@ export async function setMaps(matchId: number, maps: Array<number>) {
     return { data: null, error };
   }
 
-  const result = await supabase(cookies).createMatchMaps(matchId, ...maps);
+  const result = await supabase(cookieStore).createMatchMaps(matchId, ...maps);
 
   if (result.error) {
     logErrorMessage('Failed to set maps', result.error, { matchId, maps, player });
     return result;
   }
 
-  const { data: match } = await supabase(cookies).getMatch(matchId);
-  const { data: server } = await supabase(cookies).getMatchServers(matchId);
+  const { data: match } = await supabase(cookieStore).getMatch(matchId);
+  const { data: server } = await supabase(cookieStore).getMatchServers(matchId);
 
   const guild = match?.config.guild;
   let events: unknown = null;
@@ -301,7 +314,8 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
   const scheduled_at = DateTime.fromISO(dateInput, { zone: timezone }).toUTC().toISO();
   assertString(scheduled_at);
 
-  const result = await supabase(cookies).updateMatch(matchId, {
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateMatch(matchId, {
     scheduled_at,
   });
 
@@ -314,7 +328,8 @@ export async function updateMatchScheduledAt(matchId: number, formData: FormData
 }
 
 export async function changeServerMap(serverIp: string, mapId: number) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   return api.v2.postServerMaps(serverIp, mapId, createToken(player));
 }
@@ -335,7 +350,8 @@ export async function acceptMatchTime(
   if (team === 'away') {
     matchUpdate['away_accepted'] = true;
   }
-  const result = await supabase(cookies).updateEventMatch(match.id, matchUpdate);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).updateEventMatch(match.id, matchUpdate);
 
   if (result.data) {
     revalidatePath(`/matches/${match.id}`);
@@ -344,7 +360,8 @@ export async function acceptMatchTime(
 }
 
 export async function removeMatchServer(matchId: number, address: string) {
-  const result = await supabase(cookies).deleteMatchServer(matchId, address);
+  const cookieStore = await cookies();
+  const result = await supabase(cookieStore).deleteMatchServer(matchId, address);
   if (result.data) {
     revalidatePath(`/matches/${matchId}`);
   }

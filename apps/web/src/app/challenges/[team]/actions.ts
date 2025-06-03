@@ -36,7 +36,8 @@ export async function createChallenge(formData: FormData) {
 
   const awayTeam = getOptionalValue(formData, 'awayTeam');
 
-  const res = await supabase(cookies).createChallenge({
+  const cookieStore = await cookies();
+  const res = await supabase(cookieStore).createChallenge({
     config: Number(configSelect),
     home_team: Number(homeTeam),
     home_map: Number(homeMap),
@@ -100,7 +101,8 @@ export async function acceptChallenge(formData: FormData) {
 }
 
 export async function updateChallenge(challengeId: number, values: ChallengesUpdate) {
-  const res = await supabase(cookies).updateChallenge(challengeId, values);
+  const cookieStore = await cookies();
+  const res = await supabase(cookieStore).updateChallenge(challengeId, values);
   if (!res.error) {
     revalidatePath('/challenges');
   }

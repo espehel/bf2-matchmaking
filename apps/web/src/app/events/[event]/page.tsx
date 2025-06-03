@@ -8,15 +8,18 @@ import Link from 'next/link';
 import Main from '@/components/commons/Main';
 
 interface Props {
-  params: { event: string };
-  searchParams: { edit?: string };
+  params: Promise<{ event: string }>;
+  searchParams: Promise<{ edit?: string }>;
 }
 
-export default async function EventPage({ params, searchParams }: Props) {
-  const event = await supabase(cookies)
+export default async function EventPage(props: Props) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const event = await supabase(cookieStore)
     .getEvent(Number(params.event))
     .then(verifySingleResult);
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   const edit = adminRoles?.match_admin ? searchParams.edit === 'true' : false;
 

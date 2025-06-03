@@ -1,4 +1,3 @@
-'use client';
 import { ChangeEventHandler, useCallback } from 'react';
 import { assertObj } from '@bf2-matchmaking/utils';
 import { AsyncFileReader } from '@/lib/files/AsyncFileReader';

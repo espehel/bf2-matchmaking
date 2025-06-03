@@ -7,7 +7,8 @@ interface Props {
 }
 
 export default async function Layout({ children }: Props) {
-  const { data: adminRoles } = await supabase(cookies).getAdminRoles();
+  const cookieStore = await cookies();
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
 
   if (!adminRoles?.player_admin) {
     return (

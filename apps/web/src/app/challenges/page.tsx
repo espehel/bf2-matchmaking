@@ -10,16 +10,18 @@ import OpenChallengeCard from '@/components/challenges/OpenChallengeCard';
 import LeaderboardSection from '@/components/challenges/LeaderboardSection';
 
 async function getPlayerTeams(): Promise<Array<TeamsRow> | null> {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   if (!player) {
     return null;
   }
-  const { data: playerTeams } = await supabase(cookies).getTeamsByPlayerId(player.id);
+  const { data: playerTeams } = await supabase(cookieStore).getTeamsByPlayerId(player.id);
   return playerTeams;
 }
 
 export default async function ChallengePage() {
-  const challenges = await supabase(cookies).getChallenges().then(verifySingleResult);
+  const cookieStore = await cookies();
+  const challenges = await supabase(cookieStore).getChallenges().then(verifySingleResult);
   const openChallenges = challenges.filter(isOpenChallenge);
   const playerTeams = await getPlayerTeams();
 

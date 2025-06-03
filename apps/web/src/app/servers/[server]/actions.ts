@@ -14,7 +14,8 @@ import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { createToken } from '@bf2-matchmaking/auth/token';
 
 export async function pauseRound(address: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.postServerPause(address, createToken(player));
 
@@ -26,7 +27,8 @@ export async function pauseRound(address: string) {
 }
 
 export async function unpauseRound(address: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.postServerUnpause(address, createToken(player));
 
@@ -37,7 +39,8 @@ export async function unpauseRound(address: string) {
 }
 
 export async function restartRound(address: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.postServerExec(
     address,
@@ -78,14 +81,15 @@ export async function updateServer(ip: string, data: FormData) {
     serverValues.demos_path = demosInput;
   }
 
+  const cookieStore = await cookies();
   const serverUpdate =
     Object.keys(serverValues).length > 0
-      ? supabase(cookies).updateServer(ip, serverValues)
+      ? supabase(cookieStore).updateServer(ip, serverValues)
       : null;
 
   const rconValues = toRconUpdateValues(data);
   const rconUpdate = rconValues
-    ? supabase(cookies).updateServerRcon(ip, rconValues)
+    ? supabase(cookieStore).updateServerRcon(ip, rconValues)
     : null;
 
   const results = await Promise.all([serverUpdate, rconUpdate].filter(isNotNull));
@@ -117,7 +121,8 @@ const toRconUpdateValues = (data: FormData) => {
 };
 
 export async function deleteServer(address: string) {
-  const { data: player } = await supabase(cookies).getSessionPlayer();
+  const cookieStore = await cookies();
+  const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
   const result = await api.v2.deleteServer(address, createToken(player));
 

@@ -8,7 +8,8 @@ import { ArrowRightIcon } from '@heroicons/react/16/solid';
 
 const EVENT_TYPES = ['League', 'Cup'];
 export default async function LeaguesPage() {
-  const events = await supabase(cookies).getEvents().then(verifySingleResult);
+  const cookieStore = await cookies();
+  const events = await supabase(cookieStore).getEvents().then(verifySingleResult);
   return (
     <Main title="Events" relevantRoles={['match_admin']}>
       <div className="max-w-3xl">
