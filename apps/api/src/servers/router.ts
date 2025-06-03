@@ -201,10 +201,10 @@ serversRouter.delete('/:address', protect('server_admin'), async (ctx) => {
   const instance = await deleteInstance(address).catch((e) => e);
   const redis = await Server.delete(address).catch((e) => e);
   if (ctx.request.user) {
-    stream(`servers:${ctx.params.ip}:log`)
+    stream(`servers:${address}:log`)
       .log(`Server deleted by ${ctx.request.user.nick}`, 'info')
       .catch((e) =>
-        logErrorMessage(`Server ${ctx.params.ip}: Error logging server message`, e)
+        logErrorMessage(`Server ${address}: Error logging server message`, e)
       );
   }
   ctx.status = 200;
