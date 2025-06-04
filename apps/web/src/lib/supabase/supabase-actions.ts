@@ -1,31 +1,31 @@
-import { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseApi, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { MatchesJoined, PlayersRow } from '@bf2-matchmaking/types';
+import { MatchesJoined } from '@bf2-matchmaking/types';
 import { hasPlayer, isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
 
 export function getActions(client: SupabaseClient) {
   const api = getSupabaseApi(client);
 
   async function getSessionPlayerOrThrow() {
-    const { data, error } = await client.auth.getSession();
+    const { data, error } = await client.auth.getUser();
     if (error) {
       throw error;
     }
-    if (!data.session) {
+    if (!data) {
       throw new Error('Not logged in');
     }
-    return api.getPlayerByUserId(data.session.user.id).then(verifySingleResult);
+    return api.getPlayerByUserId(data.user.id).then(verifySingleResult);
   }
 
   async function getSessionPlayer() {
-    const { data, error } = await client.auth.getSession();
+    const { data, error } = await client.auth.getUser();
     if (error) {
       return { data: null, error };
     }
-    if (!data.session) {
+    if (!data.user) {
       return { data: null, error: { message: 'Not logged in' } };
     }
-    return api.getPlayerByUserId(data.session.user.id);
+    return api.getPlayerByUserId(data.user.id);
   }
   async function getSessionPlayerTeamIds() {
     const { data: player } = await getSessionPlayer();
@@ -36,9 +36,9 @@ export function getActions(client: SupabaseClient) {
     return teams ? teams.map((team) => team.id) : [];
   }
   async function getAdminRoles() {
-    const { data, error } = await client.auth.getSession();
-    if (data.session) {
-      return api.getAdminRoles(data.session.user.id);
+    const { data, error } = await client.auth.getUser();
+    if (data.user) {
+      return api.getAdminRoles(data.user.id);
     }
     return { data: null, error };
   }

@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 
 export default async function Header() {
   const cookieStore = await cookies();
-  const { data: session } = await supabase(cookieStore).auth.getSession();
+  const { data } = await supabase(cookieStore).auth.getUser();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   return (
@@ -23,7 +23,7 @@ export default async function Header() {
         <Link href="/servers">Servers</Link>
         {adminRoles?.system_admin && <Link href="/admin">Admin</Link>}
         {player && <Link href={`/players/${player.id}`}>{player.nick}</Link>}
-        <AuthButton className="btn btn-accent" session={session.session} />
+        <AuthButton className="btn btn-accent" user={data.user} />
       </div>
     </header>
   );

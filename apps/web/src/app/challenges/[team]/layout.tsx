@@ -39,7 +39,7 @@ export default async function ChallengesTeamLayout(props: Props) {
         {!player && (
           <section className="section w-fit">
             <h2>You are not logged in</h2>
-            <AuthButton className="btn btn-accent w-20" session={null} />
+            <AuthButton className="btn btn-accent w-20" user={null} />
           </section>
         )}
         {isNotPlayerTeam && (

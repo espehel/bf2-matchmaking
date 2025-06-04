@@ -1,14 +1,14 @@
 'use client';
-import { Database } from '@bf2-matchmaking/types';
-import { createClientComponentClient, Session } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
+import { User } from '@supabase/supabase-js';
+import { supabaseClient } from '@/lib/supabase/supabase-client';
 
 interface Props {
-  session: Session | null;
+  user: User | null;
   className?: string;
 }
-export default function AuthButton({ session, className }: Props) {
-  const supabase = createClientComponentClient<Database>();
+export default function AuthButton({ user, className }: Props) {
+  const supabase = supabaseClient();
   const router = useRouter();
   const handleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
@@ -25,7 +25,7 @@ export default function AuthButton({ session, className }: Props) {
     router.refresh();
   };
 
-  if (session) {
+  if (user) {
     return (
       <button className={className} onClick={handleSignOut}>
         Sign out

@@ -3,20 +3,20 @@ import { PlayerListItem } from '@bf2-matchmaking/types';
 import { publicIpv4 } from 'public-ip';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Session } from '@supabase/auth-helpers-nextjs';
 import AuthButton from '@/components/AuthButton';
 import { ClipboardIcon } from '@heroicons/react/24/solid';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid';
 import copy from 'copy-text-to-clipboard';
 import { updatePlayerByUserId } from '@/app/rounds/[round]/connect/actions';
 import { toast } from 'react-toastify';
+import { User } from '@supabase/supabase-js';
 
 interface Props {
   playerList: Array<PlayerListItem>;
-  session: Session | null;
+  user: User;
 }
 
-export default function PlayerConnectSection({ playerList, session }: Props) {
+export default function PlayerConnectSection({ playerList, user }: Props) {
   const [player, setPlayer] = useState<PlayerListItem | null | undefined>();
 
   const findAndSetPlayer = useCallback(
@@ -36,8 +36,8 @@ export default function PlayerConnectSection({ playerList, session }: Props) {
   }, [findAndSetPlayer]);
 
   const updatePlayerKeyHash = useCallback(
-    async (session: Session, rconPlayer: PlayerListItem) => {
-      const { data, error } = await updatePlayerByUserId(session.user.id, {
+    async (user: User, rconPlayer: PlayerListItem) => {
+      const { error } = await updatePlayerByUserId(user.id, {
         keyhash: rconPlayer.keyhash,
       });
       if (error) {
@@ -65,13 +65,13 @@ export default function PlayerConnectSection({ playerList, session }: Props) {
     );
   }
 
-  if (session) {
+  if (user) {
     return (
       <section className="mt-4">
         <h2 className="text-2xl bold mb-4">{player.getName}</h2>
         <p>We found a player matching with your public ip!</p>
         <button
-          onClick={() => updatePlayerKeyHash(session, player)}
+          onClick={() => updatePlayerKeyHash(user, player)}
           className="btn btn-primary mt-4"
         >
           Claim
@@ -86,7 +86,7 @@ export default function PlayerConnectSection({ playerList, session }: Props) {
       <div className="flex w-full justify-around gap-4">
         <div className="shrink flex flex-col gap-2">
           <p>Log in and claim player</p>
-          <AuthButton className="btn btn-primary" session={session} />
+          <AuthButton className="btn btn-primary" user={user} />
         </div>
         <div className="divider divider-horizontal">OR</div>
         <div className="shrink flex flex-col gap-2">

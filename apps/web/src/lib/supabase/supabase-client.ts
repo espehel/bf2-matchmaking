@@ -1,6 +1,7 @@
 'use client';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { getSupabaseApi, getSupabaseRealtimeApi } from '@bf2-matchmaking/supabase';
+import { createBrowserClient } from '@supabase/ssr';
+
 interface LoaderParams {
   src: string;
   width: number;
@@ -13,11 +14,17 @@ export const supabaseImageLoader = ({ src, width, quality }: LoaderParams) => {
 };
 
 export const supabaseClient = () => {
-  const client = createClientComponentClient();
-  return getSupabaseApi(client);
+  const client = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  return { ...getSupabaseApi(client), auth: client.auth };
 };
 
 export function supabaseRealtime() {
-  const client = createClientComponentClient();
+  const client = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   return getSupabaseRealtimeApi(client);
 }

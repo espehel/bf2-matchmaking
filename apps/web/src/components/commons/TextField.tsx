@@ -1,4 +1,5 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
+import { ChangeEvent } from 'react';
 
 interface Props {
   name: string;
@@ -6,6 +7,8 @@ interface Props {
   defaultValue?: string;
   className?: string;
   tooltip?: string;
+  value?: string;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function TextField({
@@ -14,6 +17,8 @@ export default function TextField({
   defaultValue,
   className,
   tooltip,
+  value,
+  onChange,
 }: Props) {
   return (
     <div className={className}>
@@ -31,6 +36,8 @@ export default function TextField({
         className="input input-bordered w-full"
         name={name}
         defaultValue={defaultValue}
+        value={value}
+        onChange={onChange}
       />
     </div>
   );

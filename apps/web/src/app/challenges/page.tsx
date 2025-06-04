@@ -34,7 +34,7 @@ export default async function ChallengePage() {
         ) : (
           <section className="section">
             <h2>You are not logged in</h2>
-            <AuthButton className="btn btn-accent w-20" session={null} />
+            <AuthButton className="btn btn-accent w-20" user={null} />
           </section>
         )}
         <LeaderboardSection />

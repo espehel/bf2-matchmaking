@@ -10,6 +10,7 @@ interface Props {
   readonly?: boolean;
   className?: string;
   onChange?: ChangeEventHandler<HTMLSelectElement>;
+  value?: string | number;
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 export default function Select({
@@ -22,6 +23,7 @@ export default function Select({
   readonly,
   className,
   onChange,
+  value,
   size = 'md',
 }: Props) {
   return (
@@ -39,6 +41,7 @@ export default function Select({
         defaultValue={defaultValue}
         disabled={disabled || readonly}
         onChange={onChange}
+        value={value}
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map(([value, name]) => (
