@@ -13,7 +13,7 @@ import { User } from '@supabase/supabase-js';
 
 interface Props {
   playerList: Array<PlayerListItem>;
-  user: User;
+  user: User | null;
 }
 
 export default function PlayerConnectSection({ playerList, user }: Props) {

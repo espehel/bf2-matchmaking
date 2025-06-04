@@ -15,7 +15,7 @@ export default async function RoundClaimPage(props: Props) {
   const round = await supabase(cookieStore)
     .getRound(parseInt(params.round))
     .then(verifySingleResult);
-  const { data: user } = await supabase(cookieStore).auth.getUser();
+  const { data } = await supabase(cookieStore).auth.getUser();
 
   const info = parseJSON<LiveInfo>(round.info);
 
@@ -28,7 +28,7 @@ export default async function RoundClaimPage(props: Props) {
           Your current public ip address will be used to match a player from the chosen
           round.
         </p>
-        <PlayerConnectSection playerList={info.players} user={user} />
+        <PlayerConnectSection playerList={info.players} user={data.user} />
         {round.match && (
           <Link className="link float-left" href={`/results/${round.match}`}>
             Back to match result
