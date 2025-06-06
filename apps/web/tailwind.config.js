@@ -33,12 +33,4 @@ module.exports = {
       },
     },
   },
-  daisyui: {
-    themes: ['coffee', 'bumblebee'],
-  },
-  plugins: [
-    require('@tailwindcss/typography'),
-    require('daisyui'),
-    require('@headlessui/tailwindcss'),
-  ],
 };
