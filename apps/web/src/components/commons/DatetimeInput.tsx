@@ -26,13 +26,13 @@ export default function DatetimeInput({ label, name, defaultValue, min, max }: P
     [localZone, max]
   );
   return (
-    <div className="form-control grow">
+    <div className=" flex flex-col grow">
       <label className="label" htmlFor={name}>
         <span className="label-text">{label}</span>
         <span className="label-text-alt">{`Timezone: ${localZone}`}</span>
       </label>
       <input
-        className="input input-bordered"
+        className="input  ed"
         type="datetime-local"
         name={name}
         defaultValue={localDefaultValue}

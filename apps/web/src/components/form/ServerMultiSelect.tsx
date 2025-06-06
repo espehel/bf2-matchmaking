@@ -60,7 +60,7 @@ export default function ServerMultiSelect({ servers }: Props) {
           ))}
         </div>
         <select
-          className="select select-bordered w-full"
+          className="select  ed w-full"
           id="serverSelect"
           onChange={handleServerSelected}
           onSelect={handleServerSelected}

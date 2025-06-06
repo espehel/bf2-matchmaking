@@ -22,7 +22,7 @@ export default function AddPlayerForm({ teamId, disabled }: Props) {
   );
 
   return (
-    <form action={handleFormAction} className="form-control">
+    <form action={handleFormAction} className=" flex flex-col">
       <div className="flex items-center gap-2">
         <PlayerCombobox placeholder="Add player" disabled={disabled} />
         {!disabled && (

@@ -9,19 +9,19 @@ export default function TeamCreateForm() {
       action={createTeam}
       successMessage="Added new team"
       errorMessage="Failed to add team"
-      className="form-control gap-4"
+      className=" flex flex-col gap-4"
     >
       <div>
         <label className="label" htmlFor="nameInput">
           <span className="label-text">Name</span>
         </label>
-        <input className="input input-bordered" name="nameInput" />
+        <input className="input  ed" name="nameInput" />
       </div>
       <div>
         <label className="label" htmlFor="avatarInput">
           <span className="label-text">Logo url</span>
         </label>
-        <input className="input input-bordered" name="avatarInput" />
+        <input className="input  ed" name="avatarInput" />
       </div>
       <FormSubmitButton>Add</FormSubmitButton>
     </ActionForm>

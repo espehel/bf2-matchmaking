@@ -42,7 +42,7 @@ export default async function LeaderboardsPage(props: Props) {
         </div>
       )}
       <section className="section w-fit">
-        <div role="tablist" className="tabs tabs-bordered">
+        <div role="tablist" className="tabs tabs-border">
           <Link
             role="tab"
             className={`tab ${

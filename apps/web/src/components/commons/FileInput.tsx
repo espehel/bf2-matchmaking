@@ -20,7 +20,7 @@ export default function FileInput({ onFileChange }: Props) {
   return (
     <input
       type="file"
-      className="file-input file-input-bordered file-input-secondary w-full max-w-xs"
+      className="file-input file- ed file-input-secondary w-full max-w-xs"
       onChange={handleOnChange}
       multiple={false}
     />

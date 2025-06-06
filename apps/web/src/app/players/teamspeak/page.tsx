@@ -24,7 +24,7 @@ export default async function Page(props: Props) {
           action={registerTeamspeakId}
           successMessage="Successfully registerd teamspeak id"
           errorMessage="Failed to register teamspeak id"
-          className="form-control gap-4"
+          className=" flex flex-col gap-4"
         >
           <TextField name="tsid" label="Teamspeak Id" defaultValue={searchParams.tsid} />
           <TextField

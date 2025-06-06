@@ -27,7 +27,7 @@ export default function AddRoundForm({ eventId }: Props) {
             type="text"
             name="label"
             placeholder="Round label"
-            className="input input-bordered input-sm"
+            className="input  ed input-sm"
           />
         </div>
         <label className="flex-col items-start">
@@ -36,7 +36,7 @@ export default function AddRoundForm({ eventId }: Props) {
             type="date"
             name="start-at"
             placeholder="Start date"
-            className="input input-bordered input-sm"
+            className="input  ed input-sm"
           />
         </label>
         <TransitionWrapper>

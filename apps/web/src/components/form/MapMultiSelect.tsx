@@ -57,7 +57,7 @@ export default function MapMultiSelect({ maps }: Props) {
           ))}
         </div>
         <select
-          className="select select-bordered w-full"
+          className="select  ed w-full"
           id="mapSelect"
           onChange={handleMapSelected}
           onSelect={handleMapSelected}

@@ -19,35 +19,27 @@ export default function ServerUpdateForm({ server }: Props) {
   };
 
   return (
-    <form action={handleFormAction} className="form-control">
+    <form action={handleFormAction} className=" flex flex-col">
       <label className="label" htmlFor="demosInput">
         Demos:
       </label>
       <input
-        className="input input-bordered"
+        className="input  ed"
         name="demosInput"
         defaultValue={server.demos_path || undefined}
       />
       <label className="label" htmlFor="portInput">
         Port:
       </label>
-      <input
-        className="input input-bordered"
-        name="portInput"
-        defaultValue={server.port}
-      />
+      <input className="input  ed" name="portInput" defaultValue={server.port} />
       <label className="label" htmlFor="rconPortInput">
         Rcon port:
       </label>
-      <input className="input input-bordered" name="rconPortInput" placeholder="*****" />
+      <input className="input  ed" name="rconPortInput" placeholder="*****" />
       <label className="label" htmlFor="rconPwInput">
         Rcon password:
       </label>
-      <input
-        className="input input-bordered mb-2"
-        name="rconPwInput"
-        placeholder="*****"
-      />
+      <input className="input  ed mb-2" name="rconPwInput" placeholder="*****" />
       <FormSubmitButton>Update</FormSubmitButton>
     </form>
   );

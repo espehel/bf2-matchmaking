@@ -1,29 +1,68 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../../tailwind.config.js';
 
-@layer components {
-  .main {
-    @apply w-5/6 p-4 m-auto mt-8;
+@plugin "daisyui" {
+  themes: coffee --default, bumblebee;
+}
+@plugin "@tailwindcss/typography";
+@plugin "@headlessui/tailwindcss";
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
   }
+}
 
-  .section {
-    @apply flex flex-col gap-6 p-6 border-4 border-primary rounded bg-base-100;
-  }
+@utility main {
+  @apply w-5/6 p-4 m-auto mt-8;
+}
 
-  .section h2 {
+@utility section {
+  @apply flex flex-col gap-6 p-6 border-4 border-primary rounded-sm bg-base-100;
+
+  & h2 {
     @apply font-bold text-xl;
   }
-  .section h3 {
+  & h3 {
     @apply text-lg;
   }
+}
 
-  .sheet {
-    @apply bg-base-100 p-4 rounded shadow-sm shadow-primary;
-  }
-  .list-item {
-    @apply bg-secondary text-secondary-content border-accent border rounded w-full flex;
-  }
+@utility sheet {
+  @apply bg-base-100 p-4 rounded-sm shadow-xs shadow-primary;
+}
+
+@utility list-item {
+  @apply bg-secondary text-secondary-content border-accent border rounded-sm w-full flex;
+}
+
+@utility mask-half-card {
+  @apply mask-half-1;
+  mask-size: 400%;
+}
+
+@utility h-header {
+  height: 4rem;
+}
+
+@utility h-main {
+  height: calc(100vh - 4rem);
+}
+
+@utility min-h-main {
+  min-height: calc(100vh - 4rem);
 }
 
 @layer base {
@@ -35,22 +74,6 @@
   }
   h1 {
     @apply text-4xl mb-4;
-  }
-}
-
-@layer utilities {
-  .mask-half-card {
-    @apply mask-half-1;
-    mask-size: 400%;
-  }
-  .h-header {
-    height: 4rem;
-  }
-  .h-main {
-    height: calc(100vh - 4rem);
-  }
-  .min-h-main {
-    min-height: calc(100vh - 4rem);
   }
 }
 

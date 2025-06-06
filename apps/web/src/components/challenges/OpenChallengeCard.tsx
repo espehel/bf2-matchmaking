@@ -11,7 +11,7 @@ interface Props {
 
 export default function OpenChallengeCard({ challenge, readOnly = false }: Props) {
   return (
-    <div className="card card-compact w-96 bg-base-100 shadow-md border border-primary shadow-primary image-full">
+    <div className="card card-sm w-96 bg-base-100 shadow-md border border-primary shadow-primary image-full">
       <figure>
         <Image
           className="rounded-box"

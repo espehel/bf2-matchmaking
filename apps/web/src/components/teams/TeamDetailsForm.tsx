@@ -33,7 +33,7 @@ export default function TeamDetailsForm({ team }: Props) {
             <input
               name="name"
               defaultValue={team.name}
-              className="input input-bordered input-xs"
+              className="input  ed input-xs"
               placeholder={team.name}
             />
           </div>
@@ -42,7 +42,7 @@ export default function TeamDetailsForm({ team }: Props) {
             <input
               name="discord_role"
               defaultValue={team.discord_role || ''}
-              className="input input-bordered input-xs"
+              className="input  ed input-xs"
               placeholder={team.discord_role || ''}
             />
           </div>

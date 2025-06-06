@@ -19,7 +19,7 @@ export default function SelectPlayerForm({ action }: Props) {
   );
 
   return (
-    <form action={handleFormAction} className="form-control">
+    <form action={handleFormAction} className=" flex flex-col">
       <label className="label">
         <span className="label-text">Select player</span>
       </label>
