@@ -25,8 +25,11 @@ export default async function CreateMatchFromDiscordForm() {
       className="flex flex-col gap-4"
     >
       <DiscordMessageInput />
-      <ServerMultiSelect servers={servers} />
-      <MapMultiSelect maps={maps} />
+      <div className="fieldset">
+        <legend className="fieldset-legend">Override message</legend>
+        <ServerMultiSelect servers={servers} />
+        <MapMultiSelect maps={maps} />
+      </div>
     </ActionFormModal>
   );
 }

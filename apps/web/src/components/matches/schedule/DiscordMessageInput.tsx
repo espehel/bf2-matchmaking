@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import useSWR from 'swr/mutation';
 import Select from '@/components/commons/Select';
 import { getDiscordMessage } from '@/app/matches/schedule/actions';
+import { formatDiscordMessageContentDateText } from '@bf2-matchmaking/utils';
 
 export function DiscordMessageInput() {
   const [messageId, setMessageId] = useState('');
@@ -18,7 +19,15 @@ export function DiscordMessageInput() {
       return 'No message content found';
     }
 
-    return data.content;
+    const time = formatDiscordMessageContentDateText(data.content);
+
+    const mapsMatch = data.content.match(/Maps:\s*(.+)/);
+    const maps = mapsMatch ? mapsMatch[1].trim() : null;
+
+    const serversMatch = data.content.match(/Servers:\s*(.+)/);
+    const servers = serversMatch ? serversMatch[1].trim() : null;
+
+    return `Time: ${time || 'N/A'}\nMaps: ${maps || 'N/A'}\nServers: ${servers || 'N/A'}`;
   }, [data]);
 
   return (

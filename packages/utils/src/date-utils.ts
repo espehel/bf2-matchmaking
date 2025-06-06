@@ -13,3 +13,21 @@ export const formatSecToMin = (seconds: string) => {
 export function toLocalISO(date: string | undefined | null, zone: string) {
   return date ? DateTime.fromISO(date).setZone(zone).toISO() || undefined : undefined;
 }
+
+export function formatDiscordMessageContentDateText(text: string) {
+  const timeMatch = text.match(/Date:\s*(.+)/);
+  const time = timeMatch ? timeMatch[1].trim() : null;
+  if (!time) {
+    return null;
+  }
+
+  //Thursday, June 12th / 2100 CEST
+  const cleaned = time
+    .replace(/(\d+)(st|nd|rd|th)/, '$1') // "12th" → "12"
+    .replace(/\s*[A-Z]{3,4}$/, ''); // remove trailing timezone like " CEST"
+  console.log(`Parsing date from Discord message: "${cleaned}"`);
+  const format = 'cccc, LLLL d / HHmm';
+  return DateTime.fromFormat(cleaned, format, { zone: 'Europe/Paris' }).set({
+    year: new Date().getFullYear(),
+  });
+}
