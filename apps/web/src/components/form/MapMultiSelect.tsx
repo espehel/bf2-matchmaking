@@ -6,10 +6,11 @@ import { sortByName } from '@bf2-matchmaking/utils';
 
 interface Props {
   maps: Array<MapsRow>;
+  defaultMaps?: Array<MapsRow>;
 }
 
-export default function MapMultiSelect({ maps }: Props) {
-  const [selectedMaps, setSelectedMaps] = useState<Array<MapsRow>>([]);
+export default function MapMultiSelect({ maps, defaultMaps = [] }: Props) {
+  const [selectedMaps, setSelectedMaps] = useState<Array<MapsRow>>(defaultMaps);
 
   const sortedMaps = useMemo(() => sortByName(maps), [maps]);
   const visibleMaps = useMemo(

@@ -71,7 +71,7 @@ export default function PlayerCombobox({
         name="player"
       >
         <ComboboxInput
-          className={`input  ed input-${size} w-full`}
+          className={`input input-${size} w-full`}
           placeholder={placeholder}
           name="player-select"
           onChange={handleInputChange}

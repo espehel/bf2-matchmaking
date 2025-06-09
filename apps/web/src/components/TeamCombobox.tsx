@@ -70,7 +70,7 @@ export default function TeamCombobox({
         name={name}
       >
         <Combobox.Input
-          className={`input  ed input-${size} w-full`}
+          className={`input input-${size} w-full`}
           placeholder={placeholder}
           name="team-select"
           onChange={handleInputChange}

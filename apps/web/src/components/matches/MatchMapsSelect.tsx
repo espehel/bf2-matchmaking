@@ -27,7 +27,7 @@ export default function MatchMapsSelect({ match, maps }: Props) {
     <div className="flex gap-2">
       <div className="dropdown dropdown-top min-w-[360px]">
         <Listbox value={selectedMaps} onChange={setSelectedMaps} multiple>
-          <Listbox.Button className="input  ed input-md w-full text-left font-bold">{`${selectedMaps.length} maps`}</Listbox.Button>
+          <Listbox.Button className="input input-md w-full text-left font-bold">{`${selectedMaps.length} maps`}</Listbox.Button>
           <Listbox.Options className="menu dropdown-content z-[1] shadow bg-base-100 border border-1 rounded-box p-0 w-full">
             {maps.map((map) => (
               <Listbox.Option

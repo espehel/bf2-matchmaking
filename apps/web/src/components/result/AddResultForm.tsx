@@ -24,13 +24,13 @@ export default function AddResultForm({ match }: Props) {
         <p>Maps</p>
         <p>Total tickets</p>
         <p>{match.home_team.name}</p>
-        <input className="input  ed" name="homeRoundInput" />
-        <input className="input  ed" name="homeMapsInput" />
-        <input className="input  ed" name="homeTicketsInput" />
+        <input className="input" name="homeRoundInput" />
+        <input className="input" name="homeMapsInput" />
+        <input className="input" name="homeTicketsInput" />
         <p>{match.away_team.name}</p>
-        <input className="input  ed" name="awayRoundInput" />
-        <input className="input  ed" name="awayMapsInput" />
-        <input className="input  ed" name="awayTicketsInput" />
+        <input className="input" name="awayRoundInput" />
+        <input className="input" name="awayMapsInput" />
+        <input className="input" name="awayTicketsInput" />
       </div>
       <FormSubmitButton>Add result</FormSubmitButton>
     </ActionForm>

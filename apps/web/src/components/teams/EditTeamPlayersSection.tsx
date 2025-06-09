@@ -38,7 +38,7 @@ export default function EditTeamPlayersSection({ team }: Props) {
         successMessage="Player added"
         errorMessage="Failed to add player"
       >
-        <input className="input  ed mr-2" name="playerId" />
+        <input className="input mr-2" name="playerId" />
         <FormSubmitButton>Add</FormSubmitButton>
       </ActionForm>
     </section>

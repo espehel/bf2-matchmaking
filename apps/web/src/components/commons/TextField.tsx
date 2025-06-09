@@ -33,7 +33,7 @@ export default function TextField({
         </span>
       </label>
       <input
-        className="input  ed w-full"
+        className="input w-full"
         name={name}
         defaultValue={defaultValue}
         value={value}

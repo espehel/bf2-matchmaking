@@ -4,15 +4,29 @@ import { verifyResult } from '@bf2-matchmaking/supabase';
 import { createScheduledMatch } from '@/app/matches/actions';
 import React from 'react';
 import ActionFormModal from '@/components/commons/ActionFormModal';
-import ServerMultiSelect from '@/components/form/ServerMultiSelect';
-import MapMultiSelect from '@/components/form/MapMultiSelect';
-import { DiscordMessageInput } from '@/components/matches/schedule/DiscordMessageInput';
+import { DiscordMessageFieldset } from '@/components/matches/schedule/DiscordMessageFieldset';
+import { DateTime } from 'luxon';
+import { MapsRow, ServersRow } from '@bf2-matchmaking/types';
+import Fieldset from '@/components/form/Fieldset';
+import MultiSelect from '@/components/form/fields/MultiSelect';
+import DatetimeInput from '@/components/form/fields/DatetimeInput';
 
-export default async function CreateMatchFromDiscordForm() {
+interface Props {
+  defaultTime?: string;
+  defaultServers?: Array<string>;
+  defaultMaps?: Array<number>;
+}
+
+export default async function CreateMatchFromDiscordForm({
+  defaultTime,
+  defaultServers,
+  defaultMaps,
+}: Props) {
   const cookieStore = await cookies();
   const servers = await supabase(cookieStore).getServers().then(verifyResult);
   const maps = await supabase(cookieStore).getMaps().then(verifyResult);
-
+  console.log(defaultMaps);
+  console.log(defaultServers);
   return (
     <ActionFormModal
       title="Create discord match"
@@ -24,20 +38,49 @@ export default async function CreateMatchFromDiscordForm() {
       errorMessage="Failed to create match"
       className="flex flex-col gap-4"
     >
-      <DiscordMessageInput />
-      <div className="fieldset">
-        <legend className="fieldset-legend">Override message</legend>
-        <ServerMultiSelect servers={servers} />
-        <MapMultiSelect maps={maps} />
-      </div>
+      <DiscordMessageFieldset
+        setSearchParamsOnParse={true}
+        servers={servers}
+        maps={maps}
+      />
+      <Fieldset legend="Override message">
+        <DatetimeInput
+          label="Match start"
+          name="scheduledInput"
+          defaultValue={
+            defaultTime ||
+            DateTime.utc().plus({ day: 1 }).set({ hour: 19, minute: 0 }).toISO()
+          }
+          min={DateTime.utc().toISO()}
+        />
+        <MultiSelect
+          name="serverSelect"
+          placeholder="Select servers"
+          options={servers.map(({ ip, name }) => [ip, name])}
+          defaultOptions={
+            defaultServers &&
+            servers
+              .filter(isDefaultServer(defaultServers))
+              .map(({ ip, name }) => [ip, name])
+          }
+        />
+        <MultiSelect
+          name="mapSelect"
+          placeholder="Select maps"
+          options={maps.map(({ id, name }) => [id, name])}
+          defaultOptions={
+            defaultMaps &&
+            maps.filter(isDefaultMap(defaultMaps)).map(({ id, name }) => [id, name])
+          }
+        />
+      </Fieldset>
     </ActionFormModal>
   );
 }
 
-function filterVisible<T extends { visible: boolean }>(array: Array<T>): Array<T> {
-  return array.filter((e) => e.visible);
+function isDefaultServer(defaultServers: Array<string>) {
+  return (server: ServersRow) => defaultServers.includes(server.ip);
 }
-
-function sortByName<T extends { name: string }>(array: Array<T>): Array<T> {
-  return [...array].sort((a, b) => a.name.localeCompare(b.name));
+function isDefaultMap(defaultMaps: Array<number>) {
+  return (map: MapsRow) => defaultMaps.includes(map.id);
 }

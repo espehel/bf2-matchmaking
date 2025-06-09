@@ -1,4 +1,5 @@
 import { MatchPlayersInsert, MatchPlayersRow, TeamPlayer } from '@bf2-matchmaking/types';
+import { Option } from 'web/src/lib/types/form';
 
 export const shuffleArray = <T = unknown>(array: Array<T>) => {
   const clonedArray = [...array];
@@ -62,4 +63,8 @@ export function hasEqualElements<T>(a: Array<T>, b: Array<T>) {
 
 export function sortByName<T extends { name: string }>(array: Array<T>): Array<T> {
   return [...array].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function sortOptions(array: Array<Option>): Array<Option> {
+  return [...array].sort(([, a], [, b]) => a.toString().localeCompare(b.toString()));
 }

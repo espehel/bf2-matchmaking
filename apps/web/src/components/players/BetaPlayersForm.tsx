@@ -32,7 +32,7 @@ export default function BetaPlayersForm({ betaPlayerIds }: Props) {
         </label>
         <input
           type="text"
-          className="input  ed"
+          className="input"
           onChange={(e) => setGuildId(e.target.value)}
           value={guildId}
         />
@@ -43,7 +43,7 @@ export default function BetaPlayersForm({ betaPlayerIds }: Props) {
         </label>
         <input
           type="text"
-          className="input  ed"
+          className="input"
           onChange={(e) => setRoleId(e.target.value)}
           value={roleId}
         />

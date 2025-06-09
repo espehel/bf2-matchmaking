@@ -6,7 +6,6 @@ interface Props {
   defaultValue?: string | null;
   min?: string | null;
   max?: string | null;
-
   label: string;
   name: string;
 }
@@ -26,11 +25,8 @@ export default function DatetimeInput({ label, name, defaultValue, min, max }: P
     [localZone, max]
   );
   return (
-    <div className=" flex flex-col grow">
-      <label className="label" htmlFor={name}>
-        <span className="label-text">{label}</span>
-        <span className="label-text-alt ml-auto">{`Timezone: ${localZone}`}</span>
-      </label>
+    <label className="floating-label">
+      <span>{label}</span>
       <input
         className="input"
         type="datetime-local"
@@ -45,6 +41,7 @@ export default function DatetimeInput({ label, name, defaultValue, min, max }: P
         name="timezone"
         value={Intl.DateTimeFormat().resolvedOptions().timeZone}
       />
-    </div>
+      <p className="label w-full">{`Timezone: ${localZone}`}</p>
+    </label>
   );
 }

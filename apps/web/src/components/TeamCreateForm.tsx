@@ -15,13 +15,13 @@ export default function TeamCreateForm() {
         <label className="label" htmlFor="nameInput">
           <span className="label-text">Name</span>
         </label>
-        <input className="input  ed" name="nameInput" />
+        <input className="input" name="nameInput" />
       </div>
       <div>
         <label className="label" htmlFor="avatarInput">
           <span className="label-text">Logo url</span>
         </label>
-        <input className="input  ed" name="avatarInput" />
+        <input className="input" name="avatarInput" />
       </div>
       <FormSubmitButton>Add</FormSubmitButton>
     </ActionForm>

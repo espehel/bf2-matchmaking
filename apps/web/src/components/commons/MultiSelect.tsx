@@ -33,7 +33,7 @@ export default function MultiSelect({
         <span className="label-text">{label}</span>
       </label>
       <Listbox name={name} multiple defaultValue={defaultValues}>
-        <Listbox.Button className="input  ed input-md w-full text-left font-bold">
+        <Listbox.Button className="input input-md w-full text-left font-bold">
           {({ value }) => (
             <div className="flex justify-between items-center">
               {value.length
