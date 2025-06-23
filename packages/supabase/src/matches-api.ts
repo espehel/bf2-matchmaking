@@ -270,7 +270,7 @@ export default (client: SupabaseClient<Database>) => ({
       .from('match_servers')
       .insert(servers.map((server) => ({ id: matchId, ...server })))
       .select('*, server(*)')
-      .returns<Array<{ id: number; server: ServersRow }>>(),
+      .overrideTypes<Array<{ id: number; server: ServersRow }>>(),
   deleteMatchServer: (id: number, address: string) =>
     client.from('match_servers').delete().eq('id', id).eq('server', address).select('*'),
   deleteAllMatchServers: (id: number) =>

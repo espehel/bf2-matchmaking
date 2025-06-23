@@ -1,5 +1,5 @@
 import {
-  DiscordConfig,
+  MatchDraftsInsert,
   MatchesInsert,
   MatchesUpdate,
   MatchPlayersInsert,
@@ -71,7 +71,9 @@ export const Match = {
 class MatchUpdater {
   maps: Array<number> | null = null;
   teams: Array<MatchPlayersInsert> | null = null;
+  servers: Array<string> | null = null;
   updateMatchPlayers: Array<MatchPlayersInsert> | null = null;
+  draft: MatchDraftsInsert | null = null;
   matchId: number;
 
   constructor(matchId: number | string) {
@@ -79,6 +81,10 @@ class MatchUpdater {
   }
   setMaps(maps: Array<number> | null) {
     this.maps = maps;
+    return this;
+  }
+  setServers(servers: Array<string> | null) {
+    this.servers = servers;
     return this;
   }
   setTeams(players: Array<MatchPlayersInsert> | null) {
@@ -89,10 +95,16 @@ class MatchUpdater {
     this.updateMatchPlayers = players;
     return this;
   }
+  setDraft(values: MatchDraftsInsert | null) {
+    this.draft = values;
+    return this;
+  }
   async commit(values?: MatchesUpdate) {
     const maps = await this.#createMatchMaps();
+    const servers = await this.#createMatchServers();
     const teams = await this.#createMatchPlayers();
     const updatedPlayers = await this.#upsertMatchPlayers();
+    const draft = await this.#createMatchDraft();
 
     const updatedMatch = values
       ? await client().updateMatch(this.matchId, values).then(verifySingleResult)
@@ -103,6 +115,7 @@ class MatchUpdater {
     logMessage(`Match ${this.matchId}: Updated with status ${updatedMatch.status}`, {
       values,
       maps,
+      servers,
       teams,
       updatedPlayers,
       updatedMatch,
@@ -137,5 +150,21 @@ class MatchUpdater {
     return client()
       .createMatchMaps(this.matchId, ...this.maps)
       .then(verifyResult);
+  }
+  async #createMatchServers() {
+    if (!this.servers || this.servers.length === 0) {
+      return null;
+    }
+    info('createMatchServers', `Creating match servers`);
+    return client()
+      .createMatchServers(this.matchId, ...this.servers.map((server) => ({ server })))
+      .then(verifyResult);
+  }
+  async #createMatchDraft() {
+    if (!this.draft) {
+      return null;
+    }
+    info('createMatchDraft', `Creating match draft`);
+    return client().matchDrafts.create(this.draft).then(verifySingleResult);
   }
 }

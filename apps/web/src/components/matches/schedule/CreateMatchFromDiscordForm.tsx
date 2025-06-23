@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { createScheduledMatch } from '@/app/matches/actions';
 import React from 'react';
 import ActionFormModal from '@/components/commons/ActionFormModal';
 import { DiscordMessageFieldset } from '@/components/matches/schedule/DiscordMessageFieldset';
@@ -10,6 +9,7 @@ import { MapsRow, ServersRow } from '@bf2-matchmaking/types';
 import Fieldset from '@/components/form/Fieldset';
 import MultiSelect from '@/components/form/fields/MultiSelect';
 import DatetimeInput from '@/components/form/fields/DatetimeInput';
+import { scheduleDiscordMatch } from '@/app/matches/schedule/actions';
 
 interface Props {
   defaultTime?: string;
@@ -25,16 +25,14 @@ export default async function CreateMatchFromDiscordForm({
   const cookieStore = await cookies();
   const servers = await supabase(cookieStore).getServers().then(verifyResult);
   const maps = await supabase(cookieStore).getMaps().then(verifyResult);
-  console.log(defaultMaps);
-  console.log(defaultServers);
   return (
     <ActionFormModal
       title="Create discord match"
       openBtnLabel="Create discord match"
       openBtnKind="btn-secondary"
       openBtnSize="btn-lg"
-      action={createScheduledMatch}
-      successMessage="Match scheduled."
+      action={scheduleDiscordMatch}
+      successMessage="Match created"
       errorMessage="Failed to create match"
       className="flex flex-col gap-4"
     >

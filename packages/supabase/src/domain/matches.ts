@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '@bf2-matchmaking/types';
+import { Database, MatchDraftsInsert } from '@bf2-matchmaking/types';
 
 async function resolveClient(
   client: SupabaseClient | (() => Promise<SupabaseClient>)
@@ -23,6 +23,23 @@ export function matches(
   }
   return {
     getAll,
+    get,
+  };
+}
+
+export function matchDrafts(
+  supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)
+) {
+  async function create(values: MatchDraftsInsert) {
+    const client = await resolveClient(supabaseClient);
+    return client.from('match_drafts').insert(values).select('*').single();
+  }
+  async function get(matchId: number) {
+    const client = await resolveClient(supabaseClient);
+    return client.from('match_drafts').select('*').eq('match_id', matchId).single();
+  }
+  return {
+    create,
     get,
   };
 }

@@ -8,10 +8,11 @@ import invariant from 'tiny-invariant';
 import { Database } from '@bf2-matchmaking/types';
 import supabaseApi from './supabase-api';
 import { realtime } from './realtime-api';
+import { matchDrafts, matches } from './domain/matches';
 
 export function getSupabaseApi(client: SupabaseClient<Database>) {
   const api = supabaseApi(client);
-  return { ...api };
+  return { ...api, matches: matches(client), matchDrafts: matchDrafts(client) };
 }
 export function client() {
   invariant(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');

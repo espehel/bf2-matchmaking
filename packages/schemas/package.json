@@ -1,0 +1,17 @@
+{
+  "name": "@bf2-matchmaking/schemas",
+  "exports": {
+    ".": "./src/supabase-schemas.ts",
+    "./types": "./src/supabase-schemas.d.ts"
+  },
+  "version": "1.0.0",
+  "scripts": {
+    "verify": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "zod": "^3.25.65"
+  }
+}
