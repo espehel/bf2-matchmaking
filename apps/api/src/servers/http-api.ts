@@ -1,6 +1,6 @@
 import { assertObj, assertString, postJSON } from '@bf2-matchmaking/utils';
 import { ServerInfo } from '@bf2-matchmaking/types/rcon';
-import { getServerInfo } from '@bf2-matchmaking/services/rcon';
+import { getServerLiveInfo, getServerDataSafe } from '@bf2-matchmaking/redis/servers';
 
 export async function restartWithInfantryMode(
   address: string,
@@ -9,12 +9,14 @@ export async function restartWithInfantryMode(
   serverName?: string
 ) {
   assertString(process.env.HTTP_API_KEY);
-  const { data: info } = await getServerInfo(address);
-  assertObj(info, `Connection to ${address} failed`);
+  const data = await getServerDataSafe(address);
+  const info = await getServerLiveInfo(address);
+  assertObj(data, `Failed to get ${address} data from redis`);
+  assertObj(info, `Failed to get ${address} info from redis`);
   const apiKey = process.env.HTTP_API_KEY;
   return postJSON(`http://${address}:1025/restart`, {
     mapName: getMapName(info, mapName),
-    serverName: serverName || info.serverName,
+    serverName: serverName || data.name,
     apiKey,
     usersxml,
     mode: 'infantry',
@@ -28,12 +30,14 @@ export async function restartWithVehicleMode(
   serverName?: string
 ) {
   assertString(process.env.HTTP_API_KEY);
-  const { data: info } = await getServerInfo(address);
-  assertObj(info, `Connection to ${address} failed`);
+  const data = await getServerDataSafe(address);
+  const info = await getServerLiveInfo(address);
+  assertObj(data, `Failed to get ${address} data from redis`);
+  assertObj(info, `Failed to get ${address} info from redis`);
   const apiKey = process.env.HTTP_API_KEY;
   return postJSON(`http://${address}:1025/restart`, {
     mapName: getMapName(info, mapName),
-    serverName: serverName || info.serverName,
+    serverName: serverName || data.name,
     apiKey,
     usersxml,
     mode: 'vehicles',
