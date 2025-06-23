@@ -1,6 +1,7 @@
 {
   "name": "@bf2-matchmaking/services",
   "exports": {
+    "./api": "./src/api.ts",
     "./config": "./src/config-service.ts",
     "./error": "./src/error.ts",
     "./gather": "./src/Gather.ts",
@@ -8,6 +9,7 @@
     "./matches/Match": "./src/Match.ts",
     "./players": "./src/player-service.ts",
     "./rcon": "./src/rcon/bf2-rcon-api.ts",
+    "./schemas/*": "./src/schemas/*",
     "./server": "./src/server-service.ts",
     "./server/Server": "./src/Server.ts",
     "./cache": "./src/cache-service.ts"
@@ -20,6 +22,7 @@
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/redis": "*",
     "@bf2-matchmaking/scheduler": "*",
+    "@bf2-matchmaking/schemas": "*",
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",

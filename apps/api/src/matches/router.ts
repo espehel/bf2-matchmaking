@@ -3,7 +3,6 @@ import { generateMatchUsersXml } from '../players/users-generator';
 import { client } from '@bf2-matchmaking/supabase';
 import { isConnectedLiveServer, isNotNull } from '@bf2-matchmaking/types/guards';
 import { MatchStatus } from '@bf2-matchmaking/types/supabase';
-import { PostMatchRequestBody } from '@bf2-matchmaking/types/api';
 import { info } from '@bf2-matchmaking/logging';
 import { getLiveServer, getLiveServerByMatchId } from '../servers/server-service';
 import { createPendingMatch, getMatch } from './match-service';
@@ -13,6 +12,7 @@ import { matchKeys } from '@bf2-matchmaking/redis/generic';
 import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { DateTime } from 'luxon';
+import { matchesPostRequestBodySchema } from '@bf2-matchmaking/services/schemas/matches.ts';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -32,7 +32,7 @@ matchesRouter.post('/close', async (ctx) => {
   ctx.body = openMatches;
 });
 
-matchesRouter.get('/:id/users.xml', async (ctx: Context) => {
+matchesRouter.get('/:id/users.xml', async (ctx: Context): Promise<void> => {
   const { data: match } = await client().getMatch(Number(ctx.params.id));
   ctx.assert(match, 404, 'Match not found.');
 
@@ -130,11 +130,14 @@ matchesRouter.get('/', async (ctx) => {
 });
 
 matchesRouter.post('/', async (ctx: Context) => {
-  const { matchValues, matchMaps, matchTeams } = ctx.request.body as PostMatchRequestBody;
+  const { matchValues, matchMaps, matchTeams, matchDraft, servers } =
+    matchesPostRequestBodySchema.parse(ctx.request.body);
   const match = await Match.create(matchValues);
   ctx.body = await Match.update(match.id)
     .setMaps(matchMaps)
     .setTeams(matchTeams)
+    .setDraft(matchDraft)
+    .setServers(servers)
     .commit();
   ctx.status = 201;
 });

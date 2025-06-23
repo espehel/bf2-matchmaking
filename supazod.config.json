@@ -1,0 +1,9 @@
+{
+  "namingConfig": {
+    "tableOperationPattern": "{table}_{operation}",
+    "enumPattern": "{name}_Enum",
+    "capitalizeSchema": true,
+    "capitalizeNames": true,
+    "separator": "_"
+  }
+}

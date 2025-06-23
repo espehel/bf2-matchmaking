@@ -10,7 +10,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "verify": "turbo run verify",
-    "generate-types": "supabase gen types typescript --project-id lprcjdlrakeamyeuydcr > packages/types/src/database-types.generated.ts"
+    "generate-types": "supabase gen types typescript --project-id lprcjdlrakeamyeuydcr > packages/types/src/database-types.generated.ts",
+    "generate-schemas": "supazod -i packages/types/src/database-types.generated.ts -o packages/schemas/src/supabase-schemas.ts -t packages/schemas/src/supabase-schemas.d.ts -s public"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
     "@types/node": "^18.11.18",
     "prettier": "^2.8.1",
     "supabase": "^1.27.10",
+    "supazod": "^2.0.0",
     "turbo": "^2.0.6"
   },
   "packageManager": "npm@10.2.3"

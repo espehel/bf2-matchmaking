@@ -1,7 +1,7 @@
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { getActions } from '@/lib/supabase/supabase-actions';
 import { createServerClient } from '@supabase/ssr';
-import { matches } from '@bf2-matchmaking/supabase/src/domain/matches';
+import { matchDrafts, matches } from '@bf2-matchmaking/supabase/src/domain/matches';
 import { cookies } from 'next/headers';
 
 export function createServerSupabaseClient(cookieStore: ReadonlyRequestCookies) {
@@ -62,4 +62,5 @@ export async function createClient() {
 
 export default {
   matches: matches(createClient),
+  matchDrafts: matchDrafts(createClient),
 };

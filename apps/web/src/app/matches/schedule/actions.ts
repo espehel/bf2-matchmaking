@@ -1,5 +1,54 @@
 'use server';
 import { getChannelMessage } from '@bf2-matchmaking/discord';
+import { getArray, getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { MatchesInsert, MatchStatus } from '@bf2-matchmaking/types';
+import { DateTime } from 'luxon';
+import { api } from '@bf2-matchmaking/services/api';
+
+function getConfigByChannel(channelId: string) {
+  return 12;
+}
+
+export async function scheduleDiscordMatch(formData: FormData) {
+  const { channelId, messageId, scheduledInput, timezone } = getValues(
+    formData,
+    'channelId',
+    'messageId',
+    'scheduledInput',
+    'timezone'
+  );
+  const serverSelect = getArray(formData, 'serverSelect');
+  const mapSelect = getArray(formData, 'mapSelect');
+  const scheduled_at = DateTime.fromISO(scheduledInput, { zone: timezone })
+    .toUTC()
+    .toISO();
+
+  const matchValues: MatchesInsert = {
+    config: getConfigByChannel(channelId),
+    status: MatchStatus.Scheduled,
+    scheduled_at,
+    home_team: 1,
+    away_team: 2,
+  };
+  const matchMaps = mapSelect.map(Number);
+  console.log(
+    JSON.stringify({
+      matchValues,
+      matchMaps,
+      matchTeams: null,
+      matchDraft: null,
+      servers: serverSelect,
+    })
+  );
+  const result = await api.postMatches({
+    matchValues,
+    matchMaps,
+    matchTeams: null,
+    matchDraft: null,
+    servers: serverSelect,
+  });
+  return result;
+}
 
 export async function getDiscordMessage(channelId: string, messageId: string) {
   return getChannelMessage(channelId, messageId);
