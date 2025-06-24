@@ -1,6 +1,6 @@
 import { LiveInfo } from '@bf2-matchmaking/types';
-import { info, logErrorMessage, warn } from '@bf2-matchmaking/logging';
-import { getPlayerList, getServerInfo } from './rcon/bf2-rcon-api';
+import { info, logErrorMessage, logWarnMessage, warn } from '@bf2-matchmaking/logging';
+import { getPlayerList, getServerInfo, verifyRconResult } from './rcon/bf2-rcon-api';
 import { getServer, setServerLiveInfo } from '@bf2-matchmaking/redis/servers';
 import { DateTime } from 'luxon';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
@@ -10,7 +10,7 @@ import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supab
 import { parseError } from '@bf2-matchmaking/utils';
 import { set } from '@bf2-matchmaking/redis/set';
 import { hash } from '@bf2-matchmaking/redis/hash';
-import { ApiErrorType, ServiceError } from './error';
+import { ServiceError } from './error';
 import { createRconsCache } from './cache-service';
 
 export async function createLiveInfo(
@@ -49,12 +49,11 @@ export async function updateLiveServer(
   const now = DateTime.now().toISO();
 
   const server = await getServer(address);
+  if (server.status === ServerStatus.RESTARTING) {
+    return null;
+  }
   try {
     const live = await createLiveInfo(address, shouldLog);
-    if (server.status === ServerStatus.RESTARTING) {
-      await client().getServer(address).then(verifySingleResult).then(Server.init);
-      return live;
-    }
 
     await Server.update(address, {
       errorAt: undefined,
@@ -143,4 +142,17 @@ export async function resetServers() {
     logErrorMessage('Failed to reset servers', e);
     throw ServiceError.BadGateway('Failed to reset servers');
   }
+}
+
+export async function reinitServer(address: string) {
+  info('reinitServer', `Reinitializing server ${address}`);
+  const server = await getServer(address);
+  if (server.status !== ServerStatus.RESTARTING) {
+    logWarnMessage(`Server ${address}: status is not RESTARTING, cannot reinitialize`, {
+      server,
+    });
+    return;
+  }
+  await getServerInfo(address).then(verifyRconResult);
+  return client().getServer(address).then(verifySingleResult).then(Server.init);
 }

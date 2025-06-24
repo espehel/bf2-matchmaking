@@ -8,7 +8,7 @@ import {
   RoundsInsert,
   LogContext,
 } from '@bf2-matchmaking/types';
-import { error, info } from './winston';
+import { error, info, warn } from './winston';
 
 invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
 invariant(process.env.LOGTAIL_HOST, 'LOGTAIL_HOST not defined in environment');
@@ -100,7 +100,7 @@ export const logMessage = (msg: string, context?: LogContext) => {
 export const logWarnMessage = (msg: string, context?: LogContext) => {
   logger
     .warn(msg, context)
-    .then((log) => info('logtail', log.message))
+    .then((log) => warn('logtail', log.message))
     .catch((e) => error('logtail', e))
     .finally(flush);
 };

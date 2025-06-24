@@ -1,4 +1,10 @@
-import { createLiveInfo, getJoinmeDirect, getJoinmeHref } from './server-service';
+import {
+  createLiveInfo,
+  getJoinmeDirect,
+  getJoinmeHref,
+  reinitServer,
+  updateLiveServer,
+} from './server-service';
 import {
   addActiveMatchServer,
   addServer,
@@ -29,6 +35,7 @@ import { DateTime } from 'luxon';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { parseError } from '@bf2-matchmaking/utils';
 import { client } from '@bf2-matchmaking/supabase';
+import { createJob, deleteJob } from '@bf2-matchmaking/scheduler';
 
 function logServerMessage(address: string, message: string, context?: LogContext) {
   logMessage(`Server ${address}: ${message}`, context);
@@ -127,6 +134,24 @@ export const Server = {
     });
     await del([`servers:${address}:info`, `servers:${address}:data`]);
     logServerMessage(address, 'Server restarting');
+    createJob('reinitialize-server', reinitServer)
+      .on('failed', (name, error) => {
+        logServerError(address, 'Server reinitialization failed', error);
+      })
+      .on('finished', (name, output) => {
+        deleteJob(name);
+        if (output && output.status === ServerStatus.IDLE) {
+          logServerMessage(address, 'Server reinitialized successfully', { output });
+        } else {
+          logServerMessage(address, 'Server reinitialized, but server is offline', {
+            output,
+          });
+        }
+      })
+      .schedule({
+        input: address,
+        interval: '10s',
+      });
     return getServer(address);
   },
   setOffline: async (address: string, reason: string) => {
