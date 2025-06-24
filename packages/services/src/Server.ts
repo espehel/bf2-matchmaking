@@ -25,6 +25,7 @@ import {
   logErrorMessage,
   logMessage,
   logWarnMessage,
+  warn,
 } from '@bf2-matchmaking/logging';
 import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
@@ -141,13 +142,12 @@ export const Server = {
       .on('finished', (name, output) => {
         deleteJob(name);
         if (output && output.status === ServerStatus.IDLE) {
-          logServerMessage(address, 'Server reinitialized successfully', { output });
+          info(address, 'Server reinitialized successfully');
         } else {
-          logServerMessage(address, 'Server reinitialized, but server is offline', {
-            output,
-          });
+          warn(address, 'Server reinitialized, but server is offline');
         }
       })
+      .debug()
       .schedule({
         input: address,
         interval: '10s',
