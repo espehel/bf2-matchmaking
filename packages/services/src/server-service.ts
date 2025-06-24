@@ -153,6 +153,9 @@ export async function reinitServer(address: string) {
     });
     return;
   }
-  await getServerInfo(address).then(verifyRconResult);
+  const { error } = await getServerInfo(address);
+  if (error) {
+    throw new Error(error.message);
+  }
   return client().getServer(address).then(verifySingleResult).then(Server.init);
 }

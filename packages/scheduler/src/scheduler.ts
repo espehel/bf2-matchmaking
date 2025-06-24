@@ -37,6 +37,8 @@ function getTimeoutMs({ cron, interval }: Omit<ScheduleOptions, 'input'>) {
 class Job<I = undefined, O = unknown> extends EventEmitter {
   timeout: NodeJS.Timeout | undefined;
   errorCount = 0;
+  stopped = false;
+
   constructor(public name: string, public task: Task<I, O>) {
     super();
   }
@@ -49,7 +51,7 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
     const timeoutMs = getTimeoutMs(options);
     const timeoutAt = Date.now() + timeoutMs;
     if (this.timeout) {
-      this.stop();
+      clearTimeout(this.timeout);
     }
     this.timeout = setTimeout(async () => {
       this.timeout = undefined;
@@ -66,7 +68,7 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
           this.emit('error', e);
         }
       } finally {
-        if (!this.hasFailed(options.retries)) {
+        if (!(this.stopped || this.hasFailed(options.retries))) {
           this.schedule(options);
         }
       }
@@ -76,6 +78,7 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
   }
   stop() {
     clearTimeout(this.timeout);
+    this.stopped = true;
     this.emit('stopped');
   }
   hasFailed(retries: number = 5) {
@@ -87,7 +90,7 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
     this.on('finished', (name, output) =>
       console.log(name, 'finished', outputFn ? outputFn(output) : output)
     );
-    this.on('error', (name, err) => console.log(name, 'error', this.errorCount, err));
+    //this.on('error', (name, err) => console.log(name, 'error', this.errorCount, err));
     this.on('failed', (name, err) => console.log(name, 'failed', err));
     this.on('stopped', (name) => console.log(name, 'stopped'));
     return this;
@@ -97,6 +100,8 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
 const jobs = new Map<string, Job<any, any>>();
 export function createJob<I = undefined, O = unknown>(name: string, task: Task<I, O>) {
   const job = new Job(name, task);
+  // If we don't listen to error events, they will be unhandled and crash the process
+  job.on('error', (name, err) => console.error(name, 'error', job.errorCount, err));
   jobs.set(name, job);
   return job;
 }

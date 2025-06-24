@@ -141,13 +141,12 @@ export const Server = {
       })
       .on('finished', (name, output) => {
         deleteJob(name);
-        if (output && output.status === ServerStatus.IDLE) {
-          info(address, 'Server reinitialized successfully');
-        } else {
-          warn(address, 'Server reinitialized, but server is offline');
+        if (!output) {
+          warn(address, 'Server reinitialized, but no output received');
+          return;
         }
+        info(address, `Server reinitialized with status ${output.status}`);
       })
-      .debug()
       .schedule({
         input: address,
         interval: '10s',
