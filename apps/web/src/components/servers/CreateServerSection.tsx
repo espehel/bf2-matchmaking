@@ -1,5 +1,5 @@
 import ServerCreateForm from '@/components/servers/ServerCreateForm';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {}

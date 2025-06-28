@@ -1,8 +1,8 @@
 import { Challenge } from '@bf2-matchmaking/types';
 import Time from '@/components/commons/Time';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Image from 'next/image';
 import AcceptOpenChallengeModal from '@/components/challenges/AcceptOpenChallengeModal';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
 
 interface Props {
   challenge: Challenge;

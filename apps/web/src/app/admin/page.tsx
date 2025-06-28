@@ -5,7 +5,7 @@ import { resetEngine, resetServers, resetSystem } from '@/app/admin/actions';
 import { api, engine } from '@bf2-matchmaking/utils';
 import { json } from '@bf2-matchmaking/redis/json';
 import { hash } from '@bf2-matchmaking/redis/hash';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 

@@ -1,5 +1,5 @@
 import { assertNumber, assertString } from '@bf2-matchmaking/utils';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { EventMatchesRow, EventRoundsRow, EventsJoined } from '@bf2-matchmaking/types';

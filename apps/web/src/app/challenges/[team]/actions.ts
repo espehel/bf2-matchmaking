@@ -4,7 +4,7 @@ import {
   getOptionalValues,
   getValues,
 } from '@bf2-matchmaking/utils/src/form-data';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { api, assertNumber, assertString, verify } from '@bf2-matchmaking/utils';

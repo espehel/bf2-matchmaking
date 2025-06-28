@@ -3,7 +3,7 @@ import RevalidateForm from '@/components/RevalidateForm';
 import ActionButton from '@/components/ActionButton';
 import { api } from '@bf2-matchmaking/utils';
 import { generateMatchServers } from '@/app/matches/[match]/server/actions';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import MatchServerList from '@/components/matches/MatchServerList';
 

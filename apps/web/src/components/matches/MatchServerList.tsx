@@ -1,7 +1,7 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import { ServerStackIcon } from '@heroicons/react/24/solid';
 import { cookies } from 'next/headers';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { api } from '@bf2-matchmaking/utils';
 import IconBtn from '@/components/commons/IconBtn';
 import { ArrowRightCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';

@@ -1,5 +1,5 @@
 import Main from '@/components/commons/Main';
-import { matches } from '@/lib/supabase/supabase';
+import { matches } from '@/lib/supabase/supabase-server';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import MatchLog from '@/components/matches/draft/MatchLog';
 interface Props {

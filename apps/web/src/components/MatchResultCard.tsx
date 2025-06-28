@@ -1,8 +1,8 @@
 import { MatchResultsJoined, RoundsJoined } from '@bf2-matchmaking/types';
 import { isUniqueObject } from '@bf2-matchmaking/utils';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Image from 'next/image';
 import Time from '@/components/commons/Time';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
 
 interface Props {
   matchResult: [MatchResultsJoined, MatchResultsJoined] | null;

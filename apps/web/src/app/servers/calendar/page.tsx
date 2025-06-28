@@ -1,7 +1,7 @@
 import { api, verify } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/16/solid';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { MatchConfigType } from '@bf2-matchmaking/types';

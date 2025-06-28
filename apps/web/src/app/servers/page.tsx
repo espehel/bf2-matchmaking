@@ -12,7 +12,7 @@ import {
   LiveServer,
   ServerStatus as ServerStatusEnum,
 } from '@bf2-matchmaking/types/server';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 export default async function Page() {

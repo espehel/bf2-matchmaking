@@ -1,6 +1,6 @@
 import { ActiveTeam, PlayersRow, TeamsRow } from '@bf2-matchmaking/types';
 import Select from '@/components/commons/Select';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {

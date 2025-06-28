@@ -2,7 +2,7 @@ import { TeamsJoined } from '@bf2-matchmaking/types';
 import { PencilSquareIcon } from '@heroicons/react/24/solid';
 import { TeamAvatar } from '@/components/TeamAvatar';
 import IconBtn from '@/components/commons/IconBtn';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {

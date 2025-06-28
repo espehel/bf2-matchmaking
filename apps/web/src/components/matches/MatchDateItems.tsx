@@ -2,7 +2,7 @@ import { ScheduledMatch } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import ScheduledMatchCard from '@/components/ScheduledMatchCard';
 import { DateTime } from 'luxon';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 

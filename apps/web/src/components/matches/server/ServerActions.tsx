@@ -3,7 +3,7 @@ import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/ac
 import ActionButton from '@/components/ActionButton';
 import ChangeMapForm from '@/components/matches/ChangeMapForm';
 import { RestartServerButton } from '@/components/matches/server/RestartServerButton';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { ConnectedLiveServer } from '@bf2-matchmaking/types/server';
 

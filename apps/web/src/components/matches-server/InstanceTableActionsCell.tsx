@@ -5,7 +5,7 @@ import IconBtn from '@/components/commons/IconBtn';
 import { deleteServer } from '@/app/servers/[server]/actions';
 import { api } from '@bf2-matchmaking/utils';
 import ActionWrapper from '@/components/commons/ActionWrapper';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {

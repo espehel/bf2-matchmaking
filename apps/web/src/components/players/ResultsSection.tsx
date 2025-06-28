@@ -1,6 +1,6 @@
 import { PlayerResultInfo, PlayersRow } from '@bf2-matchmaking/types';
 import { cookies } from 'next/headers';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import PlayerResultItem from '@/components/players/PlayerResultItem';
 import PlayerResultItemOld from '@/components/players/PlayerResultItemOld';
 import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';

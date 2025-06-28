@@ -2,7 +2,7 @@
 import { MapsRow, MatchesJoined } from '@bf2-matchmaking/types';
 import { useState } from 'react';
 import Image from 'next/image';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
 
 interface Props {
   match: MatchesJoined;

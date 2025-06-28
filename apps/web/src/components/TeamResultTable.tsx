@@ -3,7 +3,7 @@ import {
   MatchPlayerResultsJoined,
   PlayersRow,
 } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { DateTime } from 'luxon';
 

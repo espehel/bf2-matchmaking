@@ -3,7 +3,7 @@ import ManageServerActions from '@/components/servers/ServerManageActions';
 import ServerHeader from '@/components/servers/ServerHeader';
 import ServerActions from '@/components/servers/ServerActions';
 import ServerInGameActions from '@/components/servers/ServerInGameActions';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { isConnectedLiveServer } from '@bf2-matchmaking/types';
 import ServerLog from '@/components/servers/ServerLog';

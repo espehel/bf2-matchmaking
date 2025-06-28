@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import RatingTable from '@/components/leaderboards/RatingTable';

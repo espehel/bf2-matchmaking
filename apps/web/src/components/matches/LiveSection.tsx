@@ -3,7 +3,7 @@ import RoundTable from '@/components/RoundTable';
 import { api, assertObj } from '@bf2-matchmaking/utils';
 import ActionButton from '@/components/ActionButton';
 import { revalidatePath } from 'next/cache';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {

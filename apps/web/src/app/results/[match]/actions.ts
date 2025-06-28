@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { api, assertNumber, assertString } from '@bf2-matchmaking/utils';
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { calculateWinner } from '@bf2-matchmaking/utils/src/results-utils';
 import { DateTime } from 'luxon';

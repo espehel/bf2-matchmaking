@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { isTruthy, LiveInfo } from '@bf2-matchmaking/types';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';

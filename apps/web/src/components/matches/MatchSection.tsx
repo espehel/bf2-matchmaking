@@ -3,7 +3,7 @@ import MatchActions from '@/components/matches/MatchActions';
 import Link from 'next/link';
 import TeamSection from '@/components/matches/TeamSection';
 import { Suspense } from 'react';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import SummoningSection from '@/components/matches/SummoningSection';
 import { ArrowRightIcon } from '@heroicons/react/16/solid';

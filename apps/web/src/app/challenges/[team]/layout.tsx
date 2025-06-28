@@ -1,5 +1,5 @@
 import { ReactNode, Suspense } from 'react';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import AuthButton from '@/components/AuthButton';
 import ChallengesMenu from '@/components/challenges/ChallengesMenu';

@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import { PlayerProvider } from '@/state/PlayerContext';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import ThemeButton from '@/components/ThemeButton';
 

@@ -1,7 +1,7 @@
 'use server';
 
 import { PlayersUpdate } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 export async function updatePlayerByUserId(userId: string, values: PlayersUpdate) {

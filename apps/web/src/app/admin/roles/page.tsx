@@ -1,5 +1,5 @@
 import { verifyResult } from '@bf2-matchmaking/supabase';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { isAdminPlayer } from '@bf2-matchmaking/types';
 import ToggleAdminRolesInput from '@/components/admin/ToggleAdminRoleInput';

@@ -3,7 +3,7 @@ import ServerSection from '@/components/gather/ServerSection';
 import { Suspense } from 'react';
 import EventsSection from '@/components/gather/EventsSection';
 import PlayersSection from '@/components/gather/PlayersSection';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 

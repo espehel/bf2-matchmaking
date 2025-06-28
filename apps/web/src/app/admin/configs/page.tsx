@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { cookies } from 'next/headers';
 import ConfigCard from '@/components/admin/ConfigCard';

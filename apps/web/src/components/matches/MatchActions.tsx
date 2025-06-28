@@ -8,7 +8,7 @@ import {
   startMatch,
 } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import MatchMapsSelect from '@/components/matches/MatchMapsSelect';
 import OrganizerCommandCopyButton from '@/components/matches/OrganizerCommandCopyButton';

@@ -1,5 +1,5 @@
 import { isDefined, MatchServers, ScheduledMatch } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { api, assertObj } from '@bf2-matchmaking/utils';
 import RegionsSelectForm from '@/components/matches-server/RegionsSelectForm';

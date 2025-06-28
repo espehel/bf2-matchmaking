@@ -3,7 +3,7 @@ import React from 'react';
 import Select from '@/components/commons/Select';
 import { createEvent } from '@/app/events/actions';
 import TextField from '@/components/commons/TextField';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 

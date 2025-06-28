@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { api, assertString } from '@bf2-matchmaking/utils';
 import { isConnectedLiveServer, MatchesJoined } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import SelectActionForm from '@/components/SelectActionForm';
 import { addServer } from '@/app/matches/[match]/actions';
 

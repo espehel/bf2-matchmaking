@@ -4,7 +4,7 @@ import DatetimeInput from '@/components/commons/DatetimeInput';
 import { DateTime } from 'luxon';
 import SubmitActionFormButton from '@/components/form/SubmitActionFormButton';
 import React from 'react';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { api, sortByName, sortLiveServerByName, verify } from '@bf2-matchmaking/utils';

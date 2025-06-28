@@ -1,5 +1,5 @@
 import { isAcceptedChallenge, MatchesJoined } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import React from 'react';
 import ChallengeOrganizerCommandCopyButton from '@/components/matches/ChallengeOrganizerCommandCopyButton';

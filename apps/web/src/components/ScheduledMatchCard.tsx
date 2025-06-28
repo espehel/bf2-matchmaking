@@ -1,9 +1,9 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import moment from 'moment';
 import Image from 'next/image';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Time from '@/components/commons/Time';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
 import { cookies } from 'next/headers';
 import { api } from '@bf2-matchmaking/utils';
 

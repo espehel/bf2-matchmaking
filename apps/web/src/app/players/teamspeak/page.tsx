@@ -1,6 +1,6 @@
 import ActionForm from '@/components/form/ActionForm';
 import TextField from '@/components/commons/TextField';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import FormSubmitButton from '@/components/FormSubmitButton';
 import React from 'react';

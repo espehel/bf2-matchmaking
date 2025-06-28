@@ -1,19 +1,13 @@
 'use client';
-import { useMemo, useState } from 'react';
-import {
-  LiveInfo,
-  PlayerListItem,
-  RoundsJoined,
-  ServerInfo,
-} from '@bf2-matchmaking/types';
+import { useState } from 'react';
+import { LiveInfo, RoundsJoined } from '@bf2-matchmaking/types';
 import { UnmountClosed } from 'react-collapse';
 import RoundTable from './RoundTable';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Image from 'next/image';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Link from 'next/link';
-import { parseJSON, parseNullableJSON } from '@bf2-matchmaking/utils/src/json-utils';
-import Time from '@/components/commons/Time';
+import { parseNullableJSON } from '@bf2-matchmaking/utils/src/json-utils';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
 
 interface Props {
   round: RoundsJoined;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import ManageTeamsSection from '@/components/challenges/ManageTeamsSection';

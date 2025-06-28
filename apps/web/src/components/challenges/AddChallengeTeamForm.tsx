@@ -1,7 +1,7 @@
 import { MatchConfigsRow, TeamsJoined } from '@bf2-matchmaking/types';
 import { addChallengeTeam } from '@/app/challenges/actions';
 import SelectActionForm from '@/components/SelectActionForm';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {

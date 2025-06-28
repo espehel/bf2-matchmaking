@@ -1,6 +1,6 @@
 import IconBtn from '@/components/commons/IconBtn';
 import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {

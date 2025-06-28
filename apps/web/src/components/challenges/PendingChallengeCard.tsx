@@ -1,8 +1,8 @@
 import { PendingChallenge } from '@bf2-matchmaking/types';
 import Time from '@/components/commons/Time';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-client';
 import Image from 'next/image';
 import AcceptPendingChallengeModal from '@/components/challenges/AcceptPendingChallengeModal';
+import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
 
 interface Props {
   challenge: PendingChallenge;

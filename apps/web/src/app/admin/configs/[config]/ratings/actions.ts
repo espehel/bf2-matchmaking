@@ -1,6 +1,6 @@
 'use server';
 import { PlayerRatingsInsert } from '@bf2-matchmaking/types';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { revalidatePath } from 'next/cache';

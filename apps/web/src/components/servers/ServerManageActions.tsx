@@ -1,7 +1,7 @@
 import ServerUpdateForm from '@/components/servers/ServerUpdateForm';
 import ActionButton from '@/components/ActionButton';
 import { deleteServer } from '@/app/servers/[server]/actions';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 

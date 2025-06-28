@@ -1,6 +1,6 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import ServerActions from '@/components/matches/server/ServerActions';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import NoServer from '@/components/matches/server/NoServer';
 import ServerInfo from '@/components/matches/server/ServerInfo';

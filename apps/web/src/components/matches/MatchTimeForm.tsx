@@ -1,6 +1,6 @@
 import { EventMatchesRow, MatchesJoined } from '@bf2-matchmaking/types';
 import Time from '@/components/commons/Time';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import React from 'react';
 import { BellAlertIcon, InformationCircleIcon } from '@heroicons/react/24/outline';

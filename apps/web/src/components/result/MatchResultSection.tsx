@@ -1,7 +1,7 @@
 import { MatchesJoined, MatchPlayerResultsRow } from '@bf2-matchmaking/types';
 import TeamStats from '@/components/TeamStats';
 import TeamResultTable from '@/components/TeamResultTable';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { toTuple } from '@bf2-matchmaking/utils';

@@ -1,6 +1,6 @@
 import { MatchConfigsRow } from '@bf2-matchmaking/types';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {

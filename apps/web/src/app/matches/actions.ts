@@ -1,7 +1,7 @@
 'use server';
 import { api, assertString, toFetchError } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { isScheduledMatch, MatchesInsert, MatchStatus } from '@bf2-matchmaking/types';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';

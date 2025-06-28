@@ -2,7 +2,7 @@ import FormSubmitButton from '@/components/FormSubmitButton';
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import React from 'react';
 import ActionForm from '@/components/form/ActionForm';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import {
   api,

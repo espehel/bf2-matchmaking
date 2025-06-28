@@ -8,7 +8,7 @@ import {
 } from '@bf2-matchmaking/types';
 import PlayerItem from '@/components/matches/PlayerItem';
 import { api } from '@bf2-matchmaking/utils';
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 
 interface Props {
