@@ -183,7 +183,7 @@ export function Gather(configId: number) {
       connectedPlayers.some(hasEqualKeyhash(player))
     );
     await Match.update(match.id)
-      .updateTeams(match.teams.map(withReadyState(readyPlayers)))
+      .updateTeams(...match.teams.map(withReadyState(readyPlayers)))
       .commit();
 
     if (readyPlayers.length === config.size) {

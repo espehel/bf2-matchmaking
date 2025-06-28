@@ -5,7 +5,8 @@ import TeamSection from '@/components/matches/TeamSection';
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabase/supabase';
 import { cookies } from 'next/headers';
-import SummoningSection from '@/components/matches/DraftingSection';
+import SummoningSection from '@/components/matches/SummoningSection';
+import { ArrowRightIcon } from '@heroicons/react/16/solid';
 
 interface Props {
   match: MatchesJoined;
@@ -16,23 +17,8 @@ export default async function MatchSection({ match }: Props) {
   const isMatchOfficer = await supabase(cookieStore).isMatchOfficer(match);
   return (
     <section className="section w-fit h-fit">
-      <div>
-        <h2 className="text-xl">{`Match ${match.id} - ${match.status}`}</h2>
-        {match.status !== MatchStatus.Scheduled && (
-          <p className="text-sm text-gray font-bold">
-            {`Rounds played: ${match.rounds.length}`}
-          </p>
-        )}
-      </div>
-      {match.status === MatchStatus.Summoning ? (
-        <SummoningSection match={match} />
-      ) : (
-        <div className="flex justify-center gap-8">
-          <TeamSection match={match} team={match.home_team} />
-          <div className="divider divider-horizontal">vs</div>
-          <TeamSection match={match} team={match.away_team} />
-        </div>
-      )}
+      <h2 className="text-xl">{`Match ${match.id} - ${match.status}`}</h2>
+      <TeamsContent match={match} />
       {match.status === MatchStatus.Closed && (
         <Link className="btn btn-primary btn-lg btn-wide" href={`/results/${match.id}`}>
           Go to results
@@ -44,5 +30,40 @@ export default async function MatchSection({ match }: Props) {
         </Suspense>
       )}
     </section>
+  );
+}
+
+function TeamsContent({ match }: { match: MatchesJoined }) {
+  const isOpen =
+    match.status === MatchStatus.Open || match.status === MatchStatus.Scheduled;
+
+  if (match.config.type === 'Mix' && isOpen) {
+    return (
+      <div className="text-left">
+        <ul className="list bg-base-200 rounded-md shadow-md shadow-base-300 w-sm">
+          {match.players.map((player) => (
+            <li className="list-row" key={player.id}>
+              {player.nick}
+            </li>
+          ))}
+        </ul>
+        <Link href={`/matches/${match.id}/draft`} className="btn btn-secondary mt-2">
+          Manage draft
+          <ArrowRightIcon className="size-6" />
+        </Link>
+      </div>
+    );
+  }
+
+  if (match.status === MatchStatus.Summoning) {
+    return <SummoningSection match={match} />;
+  }
+
+  return (
+    <div className="flex justify-center gap-8">
+      <TeamSection match={match} team={match.home_team} />
+      <div className="divider divider-horizontal">vs</div>
+      <TeamSection match={match} team={match.away_team} />
+    </div>
   );
 }

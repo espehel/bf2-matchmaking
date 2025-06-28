@@ -1,5 +1,11 @@
-import { isScheduledMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  isNotNull,
+  isScheduledMatch,
+  MatchesJoined,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { info, warn } from '@bf2-matchmaking/logging';
+import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 import { set, sets } from '../core/set';
 import { del } from '../core/generic';
 import { getMultiple, json } from '../core/json';
@@ -143,4 +149,18 @@ export async function cleanUpPubobotMatch(matchId: number | string) {
   }
 
   return null;
+}
+
+export function setMatchDraft(draft: MatchdraftsRow) {
+  return json(`matches:${draft.match_id}:draft`).set(draft);
+}
+export async function getOpenMatchDrafts(): Promise<Array<MatchdraftsRow>> {
+  const ids = await sets([
+    toKey(MatchStatus.Scheduled),
+    toKey(MatchStatus.Open),
+  ]).members();
+  return getMultiple<MatchdraftsRow>(ids.map((id) => `matches:${id}:draft`));
+}
+export function getMatchDraft(matchId: string | number) {
+  return json<MatchdraftsRow>(`matches:${matchId}:draft`).get();
 }
