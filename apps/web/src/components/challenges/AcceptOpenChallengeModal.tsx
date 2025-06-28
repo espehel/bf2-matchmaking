@@ -13,7 +13,6 @@ import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { api, sortByName, sortLiveServerByName, verify } from '@bf2-matchmaking/utils';
 import { acceptChallenge } from '@/app/challenges/[team]/actions';
-import { LiveServer } from '@bf2-matchmaking/types/server';
 
 interface Props {
   challenge: Challenge;

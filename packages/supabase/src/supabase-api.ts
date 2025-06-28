@@ -71,7 +71,7 @@ export default (client: SupabaseClient<Database>) => ({
       .from('player_ratings')
       .select('*, config(id, name)')
       .eq('player_id', playerId)
-      .returns<Array<PlayerRatingsJoined>>(),
+      .overrideTypes<Array<PlayerRatingsJoined>, { merge: false }>(),
   getPlayerRating: (playerId: string, config: number) =>
     client
       .from('player_ratings')
@@ -135,7 +135,10 @@ export default (client: SupabaseClient<Database>) => ({
   deleteServerRcon: (ip: string) =>
     client.from('server_rcons').delete().eq('id', ip).select(),
   getServers: () =>
-    client.from('servers').select('*, rcon:server_rcons(*)').returns<Array<DbServer>>(),
+    client
+      .from('servers')
+      .select('*, rcon:server_rcons(*)')
+      .overrideTypes<Array<DbServer>, { merge: false }>(),
   getServer: (ip: string) => client.from('servers').select('*').eq('ip', ip).single(),
   getServerByName: (name: string) =>
     client.from('servers').select('*').eq('name', name).single(),
@@ -188,13 +191,13 @@ export default (client: SupabaseClient<Database>) => ({
       .from('teams')
       .select('*, owner(*)')
       .eq('active', false)
-      .returns<Array<InactiveTeam>>(),
+      .overrideTypes<Array<InactiveTeam>, { merge: false }>(),
   getActiveTeams: () =>
     client
       .from('teams')
       .select('*, owner(*), players:team_players(*),challenges:challenge_teams(*)')
       .eq('active', true)
-      .returns<Array<ActiveTeam>>(),
+      .overrideTypes<Array<ActiveTeam>, { merge: false }>(),
   getTeam: (id: number) =>
     client
       .from('teams')
@@ -214,7 +217,7 @@ export default (client: SupabaseClient<Database>) => ({
       .from('teams')
       .select('*, players!team_players!inner(id)')
       .eq('players.id', playerId)
-      .returns<Array<TeamsRow>>(),
+      .overrideTypes<Array<TeamsRow>, { merge: false }>(),
   updateTeam: (teamId: number, values: TeamsUpdate) =>
     client.from('teams').update(values).eq('id', teamId).select(),
   searchTeams: (query: string) =>
@@ -273,7 +276,7 @@ export default (client: SupabaseClient<Database>) => ({
       .select(
         '*, config(*), home_team(*), away_team(*), home_map(*), home_server(*), away_map(*), away_server(*)'
       )
-      .returns<Array<Challenge>>(),
+      .overrideTypes<Array<Challenge>, { merge: false }>(),
   getChallenge: (challengeId: number) =>
     client
       .from('challenges')

@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import CreateChallengeSection from '@/components/challenges/CreateChallengeSection';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
-import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import OpenChallengeCard from '@/components/challenges/OpenChallengeCard';
 import { isAcceptedChallenge, isPendingChallenge } from '@bf2-matchmaking/types';
 import AcceptedChallengeCard from '@/components/challenges/AcceptedChallengeCard';
@@ -18,7 +18,7 @@ export default async function ChallengePage(props: Props) {
   const selectedTeam = await supabase(cookieStore)
     .getTeam(Number(params.team))
     .then(verifySingleResult);
-  const challenges = await supabase(cookieStore).getChallenges().then(verifySingleResult);
+  const challenges = await supabase(cookieStore).getChallenges().then(verifyResult);
   const openChallenges = challenges
     .filter(isOpenChallenge)
     .filter(isSignedUp(selectedTeam));

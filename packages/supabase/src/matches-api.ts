@@ -72,7 +72,7 @@ export default (client: SupabaseClient<Database>) => ({
       .select('id, config(*), scheduled_at, servers(*)')
       .gte('scheduled_at', scheduledAfter)
       .lte('scheduled_at', scheduledBefore)
-      .returns<Array<MatchServerSchedule>>(),
+      .overrideTypes<Array<MatchServerSchedule>, { merge: false }>(),
   getMatchesInIdList: (idList: Array<number>) =>
     client
       .from('matches')
@@ -261,7 +261,7 @@ export default (client: SupabaseClient<Database>) => ({
       )
       .eq('player_id', playerId)
       .order('created_at', { ascending: false })
-      .returns<Array<PlayerResultsJoined>>(),
+      .overrideTypes<Array<PlayerResultsJoined>, { merge: false }>(),
   createMatchServers: (
     matchId: number,
     ...servers: Array<Omit<MatchServersInsert, 'id'>>
@@ -270,7 +270,7 @@ export default (client: SupabaseClient<Database>) => ({
       .from('match_servers')
       .insert(servers.map((server) => ({ id: matchId, ...server })))
       .select('*, server(*)')
-      .overrideTypes<Array<{ id: number; server: ServersRow }>>(),
+      .overrideTypes<Array<{ id: number; server: ServersRow }>, { merge: false }>(),
   deleteMatchServer: (id: number, address: string) =>
     client.from('match_servers').delete().eq('id', id).eq('server', address).select('*'),
   deleteAllMatchServers: (id: number) =>
