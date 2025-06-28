@@ -4,7 +4,6 @@ import {
   LiveMatch,
   PostRestartServerRequestBody,
   MatchesJoined,
-  PostMatchRequestBody,
   GetGatherResponse,
 } from '@bf2-matchmaking/types';
 import {
@@ -22,8 +21,9 @@ import {
   ServersLogs,
 } from '@bf2-matchmaking/types/server';
 import { StreamEventReply } from '@bf2-matchmaking/types/redis';
-import { MatchesPostRequestBody } from './schemas/matches';
+import { GetMatchLogsResponse, MatchesPostRequestBody } from './schemas/matches';
 
+//const basePath = 'http://localhost:5004';
 const basePath = 'https://api.bf2.top';
 const gathers = `${basePath}/gathers`;
 const matches = `${basePath}/matches`;
@@ -57,6 +57,8 @@ export const api = {
     postJSON<ConnectedLiveServer>(`${matches}/${matchId}/server?force=${force}`, {
       address,
     }),
+  getMatchLog: (matchId: number) =>
+    getJSON<GetMatchLogsResponse>(`${matches}/${matchId}/log`, { cache: 'no-store' }),
   getServers: () =>
     getJSON<Array<LiveServer>>(`${servers}`, {
       next: { revalidate: 60 },

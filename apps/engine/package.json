@@ -16,6 +16,7 @@
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/redis": "*",
     "@bf2-matchmaking/scheduler": "*",
+    "@bf2-matchmaking/schemas": "*",
     "@bf2-matchmaking/server": "*",
     "@bf2-matchmaking/services": "*",
     "@bf2-matchmaking/supabase": "*",

@@ -8,7 +8,7 @@ interface Props {
   match: MatchesJoined;
 }
 
-export default async function DraftingSection({ match }: Props) {
+export default async function SummoningSection({ match }: Props) {
   const players = match.teams.sort((a, b) => a.updated_at.localeCompare(b.updated_at));
 
   const captains = players.filter((mp) => mp.captain).map((mp) => mp.player_id);

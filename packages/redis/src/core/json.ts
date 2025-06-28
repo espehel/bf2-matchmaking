@@ -2,7 +2,7 @@ import { getClient } from '../client';
 import { del, exists } from './generic';
 import { jsonSchema } from '../schemas';
 import { z } from 'zod';
-import { isDefined } from '@bf2-matchmaking/types';
+import { isDefined, isNotNull } from '@bf2-matchmaking/types';
 
 interface JsonMSetItem {
   key: string;
@@ -70,5 +70,5 @@ export async function getMultiple<T = unknown>(keys: Array<string>): Promise<Arr
 
   const client = await getClient();
   const result = await client.json.MGET(keys, '$');
-  return result.flat().filter(isDefined) as Array<T>;
+  return result.flat().filter(isDefined).filter(isNotNull) as Array<T>;
 }

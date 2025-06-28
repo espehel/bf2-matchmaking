@@ -12,7 +12,11 @@ import { matchKeys } from '@bf2-matchmaking/redis/generic';
 import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { DateTime } from 'luxon';
-import { matchesPostRequestBodySchema } from '@bf2-matchmaking/services/schemas/matches.ts';
+import {
+  getMatchLogsResponseSchema,
+  matchesPostRequestBodySchema,
+} from '@bf2-matchmaking/services/schemas/matches.ts';
+import { stream } from '@bf2-matchmaking/redis/stream';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -140,4 +144,10 @@ matchesRouter.post('/', async (ctx: Context) => {
     .setServers(servers)
     .commit();
   ctx.status = 201;
+});
+
+matchesRouter.get('/:id/log', async (ctx: Context) => {
+  const streamMessages = await stream(`matches:${ctx.params.id}:log`).readAll(true);
+  ctx.body = streamMessages.map(({ message }) => message);
+  getMatchLogsResponseSchema.parse(ctx.body);
 });

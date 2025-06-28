@@ -1,14 +1,24 @@
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { error, info, logErrorMessage, logMessage, warn } from '@bf2-matchmaking/logging';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import {
+  error,
+  info,
+  logErrorMessage,
+  logMessage,
+  logWarnMessage,
+  warn,
+} from '@bf2-matchmaking/logging';
 import { User, APIUser, GuildMember } from 'discord.js';
 import {
   DiscordConfig,
+  isDefined,
   isNotNull,
   MatchStatus,
   PlayersRow,
 } from '@bf2-matchmaking/types';
 import { json } from '@bf2-matchmaking/redis/json';
 import { hash } from '@bf2-matchmaking/redis/hash';
+import { Z_ASCII } from 'node:zlib';
+import { Match } from '@bf2-matchmaking/services/matches/Match';
 
 export async function upsertMembers(members: Array<GuildMember>) {
   const { data } = await client().upsertPlayers(
@@ -143,4 +153,73 @@ export async function getConfigCached(channelId: string) {
     .then(verifySingleResult);
   await configCache.set(config);
   return config;
+}
+
+export async function getOrCreatePlayers(
+  users: Array<User | APIUser>
+): Promise<Array<PlayersRow>> {
+  const userIds = users.map((user) => user.id);
+  const { error, data } = await client().players.getAll(userIds);
+  if (error) {
+    logErrorMessage('getOrCreatePlayers', error, { users });
+    return [];
+  }
+
+  const notFoundPlayers = data
+    .map((player) => player.user_id)
+    .filter((id) => id && !userIds.includes(id))
+    .map((id) => users.find((user) => user.id === id))
+    .filter(isDefined);
+
+  const newPlayers = await Promise.all(
+    notFoundPlayers.map(async ({ id, username, avatar }) => {
+      const { data, error } = await client().players.create({
+        id,
+        nick: username,
+        avatar_url: avatar || '',
+      });
+      if (error) {
+        logErrorMessage('getOrCreatePlayers', error, { id, username, avatar });
+        return null;
+      }
+      return data;
+    })
+  );
+  info('getOrCreatePlayers', `Inserted ${newPlayers.length} new players`);
+
+  return [...data, ...newPlayers.filter(isNotNull)];
+}
+
+export async function setMatchPlayers(users: Array<User>, matchId: number) {
+  const players = await getOrCreatePlayers(users);
+  const match = await Match.update(matchId)
+    .setTeams(
+      players.map((player) => ({
+        match_id: matchId,
+        player_id: player.id,
+      }))
+    )
+    .commit();
+  logMessage(`Match ${match.id}: Set ${match.players.length} players`, {
+    users,
+    players,
+    match,
+  });
+  return players;
+}
+
+export async function addMatchPlayer(user: User, matchId: number) {
+  const player = await getOrCreatePlayer(user);
+  await Match.update(matchId)
+    .updateTeams({ match_id: matchId, player_id: player.id })
+    .commit();
+  Match.log(matchId, `${player.nick} joined`);
+  return player;
+}
+
+export async function removeMatchPlayer(user: User, matchId: number) {
+  const player = await getOrCreatePlayer(user);
+  await Match.update(matchId).removePlayers(player.id).commit();
+  Match.log(matchId, `${player.nick} left`);
+  return player;
 }

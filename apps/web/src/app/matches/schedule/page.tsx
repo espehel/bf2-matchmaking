@@ -10,8 +10,6 @@ interface Props {
 
 export default async function ScheduleMatchPage({ searchParams }: Props) {
   const { time, servers, maps } = await searchParams;
-  console.log(servers);
-  console.log(maps);
   return (
     <main className="main">
       <h1 className="text-3xl font-bold">Schedule Custom Match</h1>

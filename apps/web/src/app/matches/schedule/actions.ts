@@ -1,7 +1,7 @@
 'use server';
 import { getChannelMessage } from '@bf2-matchmaking/discord';
 import { getArray, getValues } from '@bf2-matchmaking/utils/src/form-data';
-import { MatchesInsert, MatchStatus } from '@bf2-matchmaking/types';
+import { MatchDraftsInsert, MatchesInsert, MatchStatus } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import { api } from '@bf2-matchmaking/services/api';
 
@@ -31,6 +31,13 @@ export async function scheduleDiscordMatch(formData: FormData) {
     away_team: 2,
   };
   const matchMaps = mapSelect.map(Number);
+  const matchDraft: MatchDraftsInsert = {
+    teams_draft: 'captain',
+    maps_draft: null,
+    sign_up_message: messageId,
+    sign_up_channel: channelId,
+    summoning_channel: null,
+  };
   console.log(
     JSON.stringify({
       matchValues,
@@ -44,7 +51,7 @@ export async function scheduleDiscordMatch(formData: FormData) {
     matchValues,
     matchMaps,
     matchTeams: null,
-    matchDraft: null,
+    matchDraft,
     servers: serverSelect,
   });
   return result;

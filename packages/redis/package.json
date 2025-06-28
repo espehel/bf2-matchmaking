@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@bf2-matchmaking/logging": "*",
+    "@bf2-matchmaking/schemas": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
     "msgpackr": "^1.11.2",

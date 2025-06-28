@@ -6,7 +6,7 @@ interface Props {
 
 export default function Breadcrumbs({ breadcrumbs }: Props) {
   return (
-    <div className="breadcrumbs text-sm">
+    <nav className="breadcrumbs text-sm">
       <ul>
         {breadcrumbs.map(({ href, label }) => (
           <li key={href || 'current'}>
@@ -14,6 +14,6 @@ export default function Breadcrumbs({ breadcrumbs }: Props) {
           </li>
         ))}
       </ul>
-    </div>
+    </nav>
   );
 }
