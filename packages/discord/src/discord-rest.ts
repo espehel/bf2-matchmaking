@@ -20,11 +20,11 @@ import {
   RESTGetAPIGuildMembersResult,
   RESTDeleteAPIChannelMessageResult,
 } from 'discord-api-types/v10';
-import invariant from 'tiny-invariant';
 import { error, logEditChannelMessage } from '@bf2-matchmaking/logging';
 import { logChannelMessage } from './message-utils';
+import { assertString } from '@bf2-matchmaking/utils';
 
-invariant(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
+assertString(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 export interface SuccessResponse<T> {

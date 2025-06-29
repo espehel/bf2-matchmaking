@@ -4,12 +4,12 @@ import {
   PostgrestSingleResponse,
   SupabaseClient,
 } from '@supabase/supabase-js';
-import invariant from 'tiny-invariant';
 import { Database } from '@bf2-matchmaking/types';
 import supabaseApi from './supabase-api';
 import { realtime } from './realtime-api';
 import { matchDrafts, matches } from './domain/matches';
 import { players } from './domain/players';
+import { assertString } from '@bf2-matchmaking/utils';
 
 export function getSupabaseApi(client: SupabaseClient<Database>) {
   const api = supabaseApi(client);
@@ -21,8 +21,8 @@ export function getSupabaseApi(client: SupabaseClient<Database>) {
   };
 }
 export function client() {
-  invariant(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
-  invariant(process.env.SUPABASE_SERVICE_KEY, 'SUPABASE_SERVICE_KEY not defined.');
+  assertString(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
+  assertString(process.env.SUPABASE_SERVICE_KEY, 'SUPABASE_SERVICE_KEY not defined.');
   const supabase = createClient<Database>(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY,
@@ -37,8 +37,8 @@ export function getSupabaseRealtimeApi(client: SupabaseClient<Database>) {
 }
 
 export function realtimeClient() {
-  invariant(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
-  invariant(process.env.SUPABASE_SERVICE_KEY, 'SUPABASE_SERVICE_KEY not defined.');
+  assertString(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
+  assertString(process.env.SUPABASE_SERVICE_KEY, 'SUPABASE_SERVICE_KEY not defined.');
   const supabase = createClient<Database>(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY,

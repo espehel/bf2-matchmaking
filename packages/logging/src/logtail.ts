@@ -1,5 +1,4 @@
 import { Node as Logtail } from '@logtail/js';
-import invariant from 'tiny-invariant';
 import {
   LiveServerState,
   MatchesJoined,
@@ -9,9 +8,10 @@ import {
   LogContext,
 } from '@bf2-matchmaking/types';
 import { error, info, warn } from './winston';
+import { assertString } from '@bf2-matchmaking/utils';
 
-invariant(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
-invariant(process.env.LOGTAIL_HOST, 'LOGTAIL_HOST not defined in environment');
+assertString(process.env.LOGTAIL_SOURCE, 'LOGTAIL_SOURCE not defined in environment');
+assertString(process.env.LOGTAIL_HOST, 'LOGTAIL_HOST not defined in environment');
 const logger = new Logtail(process.env.LOGTAIL_SOURCE, {
   contextObjectCircularRefWarn: false,
   endpoint: `https://${process.env.LOGTAIL_HOST}`,

@@ -37,7 +37,7 @@ export default function Select({
       <select
         key={defaultValue}
         name={name}
-        className={`select  ed select-${size} w-full`}
+        className={`select select-${size} w-full`}
         defaultValue={defaultValue}
         disabled={disabled || readonly}
         onChange={onChange}
