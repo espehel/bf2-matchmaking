@@ -1,11 +1,10 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import moment from 'moment';
-import Image from 'next/image';
 import Time from '@/components/commons/Time';
 import { supabase } from '@/lib/supabase/supabase-server';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
 import { cookies } from 'next/headers';
 import { api } from '@bf2-matchmaking/utils';
+import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {
   match: MatchesJoined;
@@ -41,9 +40,8 @@ export default async function ScheduledMatchCard({ match }: Props) {
       <div className="flex mr-4 ml-auto">
         {match.maps.map((map) => (
           <div key={map.id} className="relative -mr-16 w-44 h-28 overflow-hidden">
-            <Image
-              className="mask mask-parallelogram object-cover"
-              loader={supabaseImageLoader}
+            <SupabaseImage
+              className="mask mask-squircle object-cover"
               src={`map_images/${map.id}.webp`}
               fill={true}
               sizes="11rem"

@@ -4,10 +4,9 @@ import { LiveInfo, RoundsJoined } from '@bf2-matchmaking/types';
 import { UnmountClosed } from 'react-collapse';
 import RoundTable from './RoundTable';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
-import Image from 'next/image';
 import Link from 'next/link';
 import { parseNullableJSON } from '@bf2-matchmaking/utils/src/json-utils';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
+import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {
   round: RoundsJoined;
@@ -34,9 +33,8 @@ export default function RoundItem({ round }: Props) {
     <li>
       <div className="card card-side w-full bg-base-100 shadow-xl">
         <figure className="relative w-1/4 overflow-hidden">
-          <Image
+          <SupabaseImage
             className="object-cover"
-            loader={supabaseImageLoader}
             src={`map_images/${round.map.id}.webp`}
             fill={true}
             sizes="25%"

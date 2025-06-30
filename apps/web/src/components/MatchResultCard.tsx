@@ -1,8 +1,7 @@
 import { MatchResultsJoined, RoundsJoined } from '@bf2-matchmaking/types';
 import { isUniqueObject } from '@bf2-matchmaking/utils';
-import Image from 'next/image';
 import Time from '@/components/commons/Time';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
+import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {
   matchResult: [MatchResultsJoined, MatchResultsJoined] | null;
@@ -44,9 +43,8 @@ export default function MatchResultCard({ matchId, matchResult, rounds }: Props)
       <div className="flex mr-4 ml-auto">
         {maps.map((map) => (
           <div key={map.id} className="relative -mr-16 w-44 h-28 overflow-hidden">
-            <Image
+            <SupabaseImage
               className="mask mask-parallelogram object-cover"
-              loader={supabaseImageLoader}
               src={`map_images/${map.id}.webp`}
               fill={true}
               sizes="11rem"

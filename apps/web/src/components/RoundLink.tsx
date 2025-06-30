@@ -1,9 +1,8 @@
 import { LiveInfo, RoundsJoined } from '@bf2-matchmaking/types';
 import Link from 'next/link';
-import Image from 'next/image';
 import moment from 'moment';
 import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
+import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {
   round: RoundsJoined;
@@ -15,9 +14,8 @@ export default function RoundLink({ round }: Props) {
     <Link href={`/rounds/${round.id}`}>
       <div className="card card-side w-full bg-base-100 shadow-xl">
         <figure className="relative w-1/4 overflow-hidden">
-          <Image
+          <SupabaseImage
             className="object-cover"
-            loader={supabaseImageLoader}
             src={`map_images/${round.map.id}.webp`}
             fill={true}
             sizes="25%"

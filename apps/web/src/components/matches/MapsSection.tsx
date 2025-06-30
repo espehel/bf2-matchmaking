@@ -1,8 +1,7 @@
 'use client';
 import { MapsRow, MatchesJoined } from '@bf2-matchmaking/types';
 import { useState } from 'react';
-import Image from 'next/image';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
+import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {
   match: MatchesJoined;
@@ -32,9 +31,8 @@ export default function MapsSection({ match }: Props) {
       </div>
       <div className="card bg-base-100 shadow-xl image-full">
         <figure className="w-full h-full">
-          <Image
+          <SupabaseImage
             className="object-cover"
-            loader={supabaseImageLoader}
             src={`map_images/${currentMap.id}.webp`}
             fill={true}
             sizes="100%"

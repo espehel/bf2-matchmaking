@@ -1,8 +1,7 @@
 import { Challenge } from '@bf2-matchmaking/types';
 import Time from '@/components/commons/Time';
-import Image from 'next/image';
 import AcceptOpenChallengeModal from '@/components/challenges/AcceptOpenChallengeModal';
-import { supabaseImageLoader } from '@/lib/supabase/supabase-utils';
+import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {
   challenge: Challenge;
@@ -13,10 +12,9 @@ export default function OpenChallengeCard({ challenge, readOnly = false }: Props
   return (
     <div className="card card-sm w-96 bg-base-100 shadow-md border border-primary shadow-primary image-full">
       <figure>
-        <Image
+        <SupabaseImage
           className="rounded-box"
           fill={true}
-          loader={supabaseImageLoader}
           src={`map_images/${challenge.home_map.id}.webp`}
           alt={challenge.home_map.name}
         />
