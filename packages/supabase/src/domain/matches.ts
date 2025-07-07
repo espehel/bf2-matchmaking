@@ -5,6 +5,7 @@ import {
   MatchesJoined,
   MatchPlayersInsert,
 } from '@bf2-matchmaking/types';
+import { MatchplayersUpdate } from '@bf2-matchmaking/schemas/types';
 
 async function resolveClient(
   client: SupabaseClient | (() => Promise<SupabaseClient>)
@@ -41,6 +42,19 @@ function matchPlayers(supabaseClient: SupabaseClient | (() => Promise<SupabaseCl
     const client = await resolveClient(supabaseClient);
     return client.from('match_players').insert(values).select('*');
   }
+  async function update(
+    matchId: number | string,
+    playerIds: Array<string>,
+    values: Omit<MatchplayersUpdate, 'match_id' | 'player_id'>
+  ) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_players')
+      .update(values)
+      .eq('match_id', Number(matchId))
+      .in('player_id', playerIds)
+      .select('*');
+  }
   async function remove(matchId: number, ...playerIds: Array<string>) {
     const client = await resolveClient(supabaseClient);
     return client
@@ -55,8 +69,9 @@ function matchPlayers(supabaseClient: SupabaseClient | (() => Promise<SupabaseCl
     return client.from('match_players').delete().eq('match_id', matchId);
   }
   return {
-    get,
     add,
+    get,
+    update,
     remove,
     removeAll,
   };

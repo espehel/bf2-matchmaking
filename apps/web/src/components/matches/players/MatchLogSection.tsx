@@ -5,14 +5,14 @@ interface Props {
   matchId: number;
 }
 
-export default async function MatchLog({ matchId }: Props) {
+export default async function MatchLogSection({ matchId }: Props) {
   const { data: logs } = await api.getMatchLog(matchId);
   if (!logs) {
     return null;
   }
 
   return (
-    <section className="section max-h-96 w-full">
+    <section className="section max-h-96 col-span-2">
       <h2>Match events</h2>
       <code className="bg-base-300 p-4 rounded overflow-y-scroll">
         <ul>

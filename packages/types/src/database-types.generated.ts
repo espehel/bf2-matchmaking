@@ -619,6 +619,7 @@ export type Database = {
           player_id: string
           rating: number
           ready: boolean
+          role: Database["public"]["Enums"]["match_role"] | null
           team: number | null
           updated_at: string
         }
@@ -630,6 +631,7 @@ export type Database = {
           player_id: string
           rating?: number
           ready?: boolean
+          role?: Database["public"]["Enums"]["match_role"] | null
           team?: number | null
           updated_at?: string
         }
@@ -641,6 +643,7 @@ export type Database = {
           player_id?: string
           rating?: number
           ready?: boolean
+          role?: Database["public"]["Enums"]["match_role"] | null
           team?: number | null
           updated_at?: string
         }
@@ -1198,6 +1201,7 @@ export type Database = {
     Enums: {
       challenge_status: "open" | "pending" | "accepted" | "closed" | "expired"
       draft_type: "captain" | "random"
+      match_role: "inf" | "sl" | "tank" | "apc" | "cmd" | "heli"
       match_status:
         | "Open"
         | "Scheduled"
@@ -1325,6 +1329,7 @@ export const Constants = {
     Enums: {
       challenge_status: ["open", "pending", "accepted", "closed", "expired"],
       draft_type: ["captain", "random"],
+      match_role: ["inf", "sl", "tank", "apc", "cmd", "heli"],
       match_status: [
         "Open",
         "Scheduled",

@@ -25,9 +25,14 @@ export function formatDiscordMessageContentDateText(text: string) {
   const cleaned = time
     .replace(/(\d+)(st|nd|rd|th)/, '$1') // "12th" → "12"
     .replace(/\s*[A-Z]{3,4}$/, ''); // remove trailing timezone like " CEST"
-  console.log(`Parsing date from Discord message: "${cleaned}"`);
   const format = 'cccc, LLLL d / HHmm';
-  return DateTime.fromFormat(cleaned, format, { zone: 'Europe/Paris' }).set({
+  const date = DateTime.fromFormat(cleaned, format, { zone: 'Europe/Paris' }).set({
     year: new Date().getFullYear(),
   });
+
+  if (!date.isValid && date.invalidExplanation) {
+    throw new Error(date.invalidExplanation);
+  }
+
+  return date.toISO();
 }

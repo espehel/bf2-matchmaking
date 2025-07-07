@@ -10,22 +10,11 @@ import Fieldset from '@/components/form/Fieldset';
 import { toast } from 'react-toastify';
 
 interface Props {
-  onParse?: (
-    isoTime: string | null,
-    serverNames: Array<string> | null,
-    mapNames: Array<string> | null
-  ) => void;
-  setSearchParamsOnParse?: boolean;
   servers: Array<ServersRow>;
   maps: Array<MapsRow>;
 }
 
-export function DiscordMessageFieldset({
-  onParse,
-  setSearchParamsOnParse,
-  servers,
-  maps,
-}: Props) {
+export function DiscordMessageFieldset({ servers, maps }: Props) {
   const [messageId, setMessageId] = useState('');
   const [channelId, setChannelId] = useState('1372680394427858944');
   const router = useRouter();
@@ -45,6 +34,7 @@ export function DiscordMessageFieldset({
           params.set(key, value);
         }
       }
+      console.log(`${pathname}?${params.toString()}`);
       return `${pathname}?${params.toString()}`;
     },
     [searchParams, pathname]
@@ -74,21 +64,19 @@ export function DiscordMessageFieldset({
       toast.error('No message found');
       return;
     }
-
-    const time = formatDiscordMessageContentDateText(data.content)?.toISO() || null;
-    const extractedMaps = extractValues(data.content, 'Maps')
-      .map(toMapId)
-      .filter(isDefined);
-    const extractedServers = extractValues(data.content, 'Server')
-      .map(toServerAdress)
-      .filter(isDefined);
-    if (onParse) {
-      onParse(time, extractedServers, extractedMaps);
-    }
-    if (setSearchParamsOnParse) {
+    try {
+      const time = formatDiscordMessageContentDateText(data.content);
+      const extractedMaps = extractValues(data.content, 'Maps')
+        .map(toMapId)
+        .filter(isDefined);
+      const extractedServers = extractValues(data.content, 'Server')
+        .map(toServerAdress)
+        .filter(isDefined);
       router.push(createNewUrl({ time, maps: extractedMaps, servers: extractedServers }));
+    } catch (e) {
+      toast.error(parseError(e));
     }
-  }, [onParse, messageId, channelId, router, toMapId, toServerAdress, servers]);
+  }, [messageId, channelId, router, toMapId, toServerAdress, servers]);
 
   return (
     <Fieldset

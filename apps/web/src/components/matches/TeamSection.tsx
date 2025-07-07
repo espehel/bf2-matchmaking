@@ -25,7 +25,6 @@ export default async function TeamSection({ match, team }: Props) {
     <section>
       <h3 className="text-xl font-bold mb-2">{`Team ${team.name}`}</h3>
       <ul>
-        <div className="divider">Match players</div>
         <Suspense
           fallback={
             <PlayerListItemsLoading

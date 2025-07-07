@@ -13,6 +13,7 @@
     "@bf2-matchmaking/discord": "*",
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/redis": "*",
+    "@bf2-matchmaking/schemas": "*",
     "@bf2-matchmaking/server": "*",
     "@bf2-matchmaking/supabase": "*",
     "@bf2-matchmaking/types": "*",

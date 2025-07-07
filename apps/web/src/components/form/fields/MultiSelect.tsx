@@ -17,9 +17,11 @@ export default function MultiSelect({
   name,
   placeholder,
 }: Props) {
+  console.log(defaultOptions);
   const [selectedOptions, setSelectedOptions] = useState<Array<Option>>(
     () => defaultOptions
   );
+  console.log('s', selectedOptions);
 
   const sortedOptions = useMemo(() => sortOptions(options), [options]);
   const visibleOptions = useMemo(
@@ -75,7 +77,7 @@ export default function MultiSelect({
           className="select"
           onChange={handleOptionSelected}
           onSelect={handleOptionSelected}
-          value=""
+          defaultValue=""
         >
           {
             <option value="" disabled>

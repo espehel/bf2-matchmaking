@@ -47,8 +47,8 @@ function TeamsContent({ match }: { match: MatchesJoined }) {
             </li>
           ))}
         </ul>
-        <Link href={`/matches/${match.id}/draft`} className="btn btn-secondary mt-2">
-          Manage draft
+        <Link href={`/matches/${match.id}/players`} className="btn btn-secondary mt-2">
+          Manage players
           <ArrowRightIcon className="size-6" />
         </Link>
       </div>

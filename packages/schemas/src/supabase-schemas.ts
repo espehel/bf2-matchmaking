@@ -20,6 +20,15 @@ export const publicDraftTypeSchema = z.union([
   z.literal("random"),
 ]);
 
+export const publicMatchRoleSchema = z.union([
+  z.literal("inf"),
+  z.literal("sl"),
+  z.literal("tank"),
+  z.literal("apc"),
+  z.literal("cmd"),
+  z.literal("heli"),
+]);
+
 export const publicMatchStatusSchema = z.union([
   z.literal("Open"),
   z.literal("Scheduled"),
@@ -684,6 +693,7 @@ export const matchPlayersRowSchema = z.object({
   player_id: z.string(),
   rating: z.number(),
   ready: z.boolean(),
+  role: publicMatchRoleSchema.nullable(),
   team: z.number().nullable(),
   updated_at: z.string(),
 });
@@ -696,6 +706,7 @@ export const matchPlayersInsertSchema = z.object({
   player_id: z.string(),
   rating: z.number().optional(),
   ready: z.boolean().optional(),
+  role: publicMatchRoleSchema.optional().nullable(),
   team: z.number().optional().nullable(),
   updated_at: z.string().optional(),
 });
@@ -708,6 +719,7 @@ export const matchPlayersUpdateSchema = z.object({
   player_id: z.string().optional(),
   rating: z.number().optional(),
   ready: z.boolean().optional(),
+  role: publicMatchRoleSchema.optional().nullable(),
   team: z.number().optional().nullable(),
   updated_at: z.string().optional(),
 });

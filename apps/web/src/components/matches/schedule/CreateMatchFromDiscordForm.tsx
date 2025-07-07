@@ -36,11 +36,7 @@ export default async function CreateMatchFromDiscordForm({
       errorMessage="Failed to create match"
       className="flex flex-col gap-4"
     >
-      <DiscordMessageFieldset
-        setSearchParamsOnParse={true}
-        servers={servers}
-        maps={maps}
-      />
+      <DiscordMessageFieldset servers={servers} maps={maps} />
       <Fieldset legend="Override message">
         <DatetimeInput
           label="Match start"
@@ -52,6 +48,7 @@ export default async function CreateMatchFromDiscordForm({
           min={DateTime.utc().toISO()}
         />
         <MultiSelect
+          key={defaultServers?.length}
           name="serverSelect"
           placeholder="Select servers"
           options={servers.map(({ ip, name }) => [ip, name])}
@@ -63,6 +60,7 @@ export default async function CreateMatchFromDiscordForm({
           }
         />
         <MultiSelect
+          key={defaultMaps?.length}
           name="mapSelect"
           placeholder="Select maps"
           options={maps.map(({ id, name }) => [id, name])}

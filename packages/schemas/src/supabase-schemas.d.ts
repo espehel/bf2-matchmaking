@@ -10,6 +10,7 @@ export type PublicChallengeStatus = z.infer<
   typeof generated.publicChallengeStatusSchema
 >;
 export type PublicDraftType = z.infer<typeof generated.publicDraftTypeSchema>;
+export type PublicMatchRole = z.infer<typeof generated.publicMatchRoleSchema>;
 export type PublicMatchStatus = z.infer<
   typeof generated.publicMatchStatusSchema
 >;
