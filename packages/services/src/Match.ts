@@ -24,6 +24,8 @@ import {
 import { DateTime } from 'luxon';
 import { getDiff } from 'recursive-diff';
 import { stream } from '@bf2-matchmaking/redis/stream';
+import { topic } from '@bf2-matchmaking/redis/topic';
+import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 
 function logMatchMessage(
   matchId: string | number,
@@ -200,11 +202,12 @@ class MatchUpdater {
     const draft = await client().matchDrafts.create(this.#draft).then(verifySingleResult);
 
     const redisResult = await setMatchDraft(draft);
-    if (redisResult !== 'OK') {
-      logWarnMessage(`Match ${this.#matchId}: Failed to set match draft in Redis`, {
-        draft,
-      });
+    if (redisResult === 'OK') {
+      return await topic(`matchDrafts`).publish<MatchdraftsRow>(draft);
     }
+    logWarnMessage(`Match ${this.#matchId}: Failed to set match draft in Redis`, {
+      draft,
+    });
 
     return draft;
   }
