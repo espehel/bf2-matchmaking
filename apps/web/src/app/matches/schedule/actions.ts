@@ -4,12 +4,13 @@ import { getArray, getValues } from '@bf2-matchmaking/utils/src/form-data';
 import { MatchDraftsInsert, MatchesInsert, MatchStatus } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import { api } from '@bf2-matchmaking/services/api';
+import { ActionResult } from '@/lib/types/form';
 
 function getConfigByChannel(channelId: string) {
   return 12;
 }
 
-export async function scheduleDiscordMatch(formData: FormData) {
+export async function scheduleDiscordMatch(formData: FormData): Promise<ActionResult> {
   const { channelId, messageId, scheduledInput, timezone } = getValues(
     formData,
     'channelId',
@@ -38,15 +39,7 @@ export async function scheduleDiscordMatch(formData: FormData) {
     sign_up_channel: channelId,
     summoning_channel: null,
   };
-  console.log(
-    JSON.stringify({
-      matchValues,
-      matchMaps,
-      matchTeams: null,
-      matchDraft: null,
-      servers: serverSelect,
-    })
-  );
+
   const result = await api.postMatches({
     matchValues,
     matchMaps,
@@ -54,7 +47,15 @@ export async function scheduleDiscordMatch(formData: FormData) {
     matchDraft,
     servers: serverSelect,
   });
-  return result;
+  if (result.data) {
+    return {
+      success: 'Match scheduled',
+      ok: true,
+      redirect: `/matches/${result.data.id}`,
+      error: null,
+    };
+  }
+  return { success: null, ok: false, error: 'Failed to schedule match' };
 }
 
 export async function getDiscordMessage(channelId: string, messageId: string) {

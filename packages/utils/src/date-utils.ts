@@ -23,6 +23,7 @@ export function formatDiscordMessageContentDateText(text: string) {
 
   //Thursday, June 12th / 2100 CEST
   const cleaned = time
+    .replace(/\s+/g, ' ') // multiple spaces to single space
     .replace(/(\d+)(st|nd|rd|th)/, '$1') // "12th" → "12"
     .replace(/\s*[A-Z]{3,4}$/, ''); // remove trailing timezone like " CEST"
   const format = 'cccc, LLLL d / HHmm';

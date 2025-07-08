@@ -79,6 +79,10 @@ export class RealtimeMatch {
       },
     });
     return new Promise<RealtimeMatch>((resolve, reject) => {
+      if (room.state === 'joined') {
+        resolve(new RealtimeMatch(match, room));
+        return;
+      }
       room.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           const res = await room.track({});

@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import React from 'react';
-import ActionFormModal from '@/components/commons/ActionFormModal';
+import ActionModal from '@/components/commons/action/ActionModal';
 import { DiscordMessageFieldset } from '@/components/matches/schedule/DiscordMessageFieldset';
 import { DateTime } from 'luxon';
 import { MapsRow, ServersRow } from '@bf2-matchmaking/types';
@@ -26,14 +26,12 @@ export default async function CreateMatchFromDiscordForm({
   const servers = await supabase(cookieStore).getServers().then(verifyResult);
   const maps = await supabase(cookieStore).getMaps().then(verifyResult);
   return (
-    <ActionFormModal
+    <ActionModal
       title="Create discord match"
       openBtnLabel="Create discord match"
       openBtnKind="btn-secondary"
       openBtnSize="btn-lg"
       action={scheduleDiscordMatch}
-      successMessage="Match created"
-      errorMessage="Failed to create match"
       className="flex flex-col gap-4"
     >
       <DiscordMessageFieldset servers={servers} maps={maps} />
@@ -70,7 +68,7 @@ export default async function CreateMatchFromDiscordForm({
           }
         />
       </Fieldset>
-    </ActionFormModal>
+    </ActionModal>
   );
 }
 

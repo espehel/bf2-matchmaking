@@ -1,8 +1,9 @@
 'use client';
 import React, { PropsWithChildren, useCallback } from 'react';
 import { Colors, Sizes } from '@/lib/types/daisyui';
-import { ActionFunction, ActionInput, useAction } from '@/hooks/useAction';
+import { useAction } from '@/hooks/useAction';
 import classNames from 'classnames';
+import { ActionFunction, ActionInput } from '@/lib/types/form';
 
 interface Props extends PropsWithChildren {
   action: ActionFunction;

@@ -5,6 +5,7 @@ import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 import { MessageReaction, ReactionManager, User } from 'discord.js';
 import { addMatchPlayer, setMatchPlayers } from './services/supabase-service';
 import { error, info } from '@bf2-matchmaking/logging';
+import { topic } from '@bf2-matchmaking/redis/topic';
 
 interface MessageMatchDraft extends MatchdraftsRow {
   sign_up_message: string;
@@ -25,14 +26,36 @@ export function initDraftMessageListeners() {
   loadMessages().then((result) => {
     result.forEach(([matchId, status]) => {
       if (status === 'OK') {
-        console.log(`Listening to draft message for match ${matchId}`);
+        info(
+          'initDraftMessageListeners',
+          `Listening to draft message for match ${matchId}`
+        );
       } else {
-        console.error(
+        error(
+          'initDraftMessageListeners',
           `Failed to listen to draft message for match ${matchId}: ${status}`
         );
       }
     });
   });
+  topic('matchDrafts')
+    .subscribe<MatchdraftsRow>(async (draft) => {
+      if (isMessageMatchDraft(draft)) {
+        const [matchId, status] = await listenToMessage(draft);
+        if (status === 'OK') {
+          info(
+            'initDraftMessageListeners',
+            `Listening to draft message for match ${matchId}`
+          );
+        } else {
+          error(
+            'initDraftMessageListeners',
+            `Failed to listen to draft message for match ${matchId}: ${status}`
+          );
+        }
+      }
+    })
+    .catch((e) => error('initDraftMessageListeners', e));
 }
 
 export async function listenToMessage(draft: MessageMatchDraft) {
