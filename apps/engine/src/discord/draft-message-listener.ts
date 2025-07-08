@@ -3,7 +3,11 @@ import { discordClient } from './client';
 import { isTextBasedChannel } from './discord-utils';
 import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 import { MessageReaction, ReactionManager, User } from 'discord.js';
-import { addMatchPlayer, setMatchPlayers } from './services/supabase-service';
+import {
+  addMatchPlayer,
+  removeMatchPlayer,
+  setMatchPlayers,
+} from './services/supabase-service';
 import { error, info } from '@bf2-matchmaking/logging';
 import { topic } from '@bf2-matchmaking/redis/topic';
 
@@ -82,7 +86,7 @@ export async function listenToMessage(draft: MessageMatchDraft) {
       })
       .on('remove', async (reaction: MessageReaction, user: User) => {
         if (!user.bot && reaction.emoji.name === '✅') {
-          await addMatchPlayer(user, draft.match_id);
+          await removeMatchPlayer(user, draft.match_id);
         }
       });
     return [draft.match_id, 'OK'];

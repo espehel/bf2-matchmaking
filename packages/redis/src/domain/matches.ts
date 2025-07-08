@@ -97,6 +97,7 @@ export async function removeMatch(matchId: string | number) {
     `matches:${matchId}`,
     `matches:${matchId}:servers`,
     `matches:${matchId}:players`,
+    `matches:${matchId}:draft`,
   ]);
   info('removeMatch', `Match ${matchId} removed with status ${oldMatch.status}`);
   return { setRemoveRes, jsonDelRes };
