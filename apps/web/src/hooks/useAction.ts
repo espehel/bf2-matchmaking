@@ -25,6 +25,7 @@ export function useAction(action: ActionFunction, options: ActionOptions = {}) {
           toast.error(error);
         } else {
           toast.success(success);
+          router.refresh();
         }
         if (redirect) {
           router.push(redirect);

@@ -7,7 +7,7 @@ import { api } from '@bf2-matchmaking/services/api';
 import { ActionResult } from '@/lib/types/form';
 
 function getConfigByChannel(channelId: string) {
-  return 12;
+  return 28;
 }
 
 export async function scheduleDiscordMatch(formData: FormData): Promise<ActionResult> {

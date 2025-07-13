@@ -20,7 +20,8 @@ interface NewRating {
 }
 
 type PlayerTuple = [PlayersRow, number | undefined, number | undefined];
-
+//TODO filter players based on matchid
+// ADD rating stars to edit players directly
 export default function ManageRatingsSection({ ratings, config, players }: Props) {
   const [nextRatings, setNextRatings] = useState<NewRating[]>([]);
   const [sortBy, setSortBy] = useState('rating');

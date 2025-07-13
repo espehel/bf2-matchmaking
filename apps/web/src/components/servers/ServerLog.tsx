@@ -18,7 +18,7 @@ export default async function ServerLog({ address }: Props) {
       <code className="bg-base-300 p-4 rounded overflow-y-scroll">
         <ul>
           {logs.map((entry) => (
-            <li key={entry.timestamp}>
+            <li key={entry.message.concat(entry.timestamp)}>
               <span className="mr-1">
                 <Time date={Number(entry.timestamp)} format="LLL dd TT" />
               </span>

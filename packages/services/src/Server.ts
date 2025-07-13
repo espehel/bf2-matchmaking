@@ -3,7 +3,6 @@ import {
   getJoinmeDirect,
   getJoinmeHref,
   reinitServer,
-  updateLiveServer,
 } from './server-service';
 import {
   addActiveMatchServer,
@@ -34,7 +33,6 @@ import { del } from '@bf2-matchmaking/redis/generic';
 import { Server as RedisServer } from '@bf2-matchmaking/redis/types';
 import { DateTime } from 'luxon';
 import { stream } from '@bf2-matchmaking/redis/stream';
-import { parseError } from '@bf2-matchmaking/utils';
 import { client } from '@bf2-matchmaking/supabase';
 import { createJob, deleteJob } from '@bf2-matchmaking/scheduler';
 
@@ -55,7 +53,7 @@ function logServerError(
 ) {
   logWarnMessage(`Server ${address}: ${message}`, { ...context, error: e });
   stream(`servers:${address}:log`)
-    .log(parseError(e), 'error')
+    .log(message, 'error')
     .catch((e) =>
       logErrorMessage(`Server ${address}: Error logging server error`, e, context)
     );

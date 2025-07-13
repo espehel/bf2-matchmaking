@@ -11,6 +11,8 @@ import { matchDrafts, matches } from './domain/matches';
 import { players } from './domain/players';
 import { assertString } from '@bf2-matchmaking/utils';
 
+export * from './error-handling';
+
 export function getSupabaseApi(client: SupabaseClient<Database>) {
   const api = supabaseApi(client);
   return {

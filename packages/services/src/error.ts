@@ -1,3 +1,5 @@
+import { ZodError } from 'zod';
+
 export enum ApiErrorType {
   InvalidRequest = 'Invalid Request',
   NotFound = 'Not Found',
@@ -44,5 +46,18 @@ export class ServiceError extends Error {
   }
   static BadGateway(message: string) {
     return new ServiceError(ApiErrorType.BadGateway, message);
+  }
+}
+
+export function parseError(e: unknown): string {
+  if (e instanceof ZodError) {
+    return e.errors.map((err) => `${err.path.join('.')} - ${err.message}`).join(', ');
+  }
+  if (e instanceof Error) {
+    return e.message;
+  } else if (typeof e === 'string') {
+    return e;
+  } else {
+    return JSON.stringify(e);
   }
 }

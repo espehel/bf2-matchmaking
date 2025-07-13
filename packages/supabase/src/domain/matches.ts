@@ -44,16 +44,30 @@ function matchPlayers(supabaseClient: SupabaseClient | (() => Promise<SupabaseCl
   }
   async function update(
     matchId: number | string,
-    playerIds: Array<string>,
+    playerIds: Array<string> | null,
     values: Omit<MatchplayersUpdate, 'match_id' | 'player_id'>
   ) {
     const client = await resolveClient(supabaseClient);
+
+    if (playerIds) {
+      return client
+        .from('match_players')
+        .update(values)
+        .eq('match_id', Number(matchId))
+        .in('player_id', playerIds)
+        .select('*');
+    }
+
     return client
       .from('match_players')
       .update(values)
       .eq('match_id', Number(matchId))
-      .in('player_id', playerIds)
       .select('*');
+  }
+  async function upsert(values: Array<MatchPlayersInsert>) {
+    const client = await resolveClient(supabaseClient);
+
+    return client.from('match_players').upsert(values).select('*');
   }
   async function remove(matchId: number, ...playerIds: Array<string>) {
     const client = await resolveClient(supabaseClient);
@@ -72,6 +86,7 @@ function matchPlayers(supabaseClient: SupabaseClient | (() => Promise<SupabaseCl
     add,
     get,
     update,
+    upsert,
     remove,
     removeAll,
   };

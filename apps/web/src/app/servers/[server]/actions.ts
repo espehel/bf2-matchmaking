@@ -8,7 +8,7 @@ import {
   ServersUpdate,
 } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
-import { hasError } from '@bf2-matchmaking/supabase/src/error-handling';
+import { hasError } from '@bf2-matchmaking/supabase';
 import { api, assertObj } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { createToken } from '@bf2-matchmaking/auth/token';

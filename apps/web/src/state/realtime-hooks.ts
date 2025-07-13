@@ -23,7 +23,9 @@ export function useMatchRoom(
   const realtime = supabaseRealtime();
   const [activePlayers, setActivePlayers] = useState<Array<string>>([]);
 
-  const launchBF2 = useCallback(() => {
+  //TODO FIX giving errors for joining room multiple times, old code so maybe can be done easier
+  // TODO maybe redis?
+  /*const launchBF2 = useCallback(() => {
     if (server?.ip && player?.beta_tester) {
       api
         .live()
@@ -53,7 +55,7 @@ export function useMatchRoom(
     return () => {
       realtime.leaveRealtimeMatch(match);
     };
-  }, [match.id, launchBF2, playerId]);
+  }, [match.id, launchBF2, playerId]);*/
 
   return { activePlayers };
 }
