@@ -5,7 +5,11 @@ import {
   MatchesJoined,
   MatchPlayersInsert,
 } from '@bf2-matchmaking/types';
-import { MatchplayersUpdate } from '@bf2-matchmaking/schemas/types';
+import {
+  MatchplayersUpdate,
+  MatchrolesInsert,
+  PublicMatchRole,
+} from '@bf2-matchmaking/schemas/types';
 
 async function resolveClient(
   client: SupabaseClient | (() => Promise<SupabaseClient>)
@@ -92,6 +96,33 @@ function matchPlayers(supabaseClient: SupabaseClient | (() => Promise<SupabaseCl
   };
 }
 
+export function matchRoles(
+  supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)
+) {
+  async function get(matchId: number) {
+    const client = await resolveClient(supabaseClient);
+    return client.from('match_roles').select('*').eq('match_id', matchId);
+  }
+  async function add(values: MatchrolesInsert) {
+    const client = await resolveClient(supabaseClient);
+    return client.from('match_roles').insert(values).select('*').single();
+  }
+  async function del(matchId: number, role: PublicMatchRole) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_roles')
+      .delete()
+      .eq('match_id', matchId)
+      .eq('name', role)
+      .select('*');
+  }
+  return {
+    add,
+    get,
+    del,
+  };
+}
+
 export function matches(
   supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)
 ) {
@@ -118,5 +149,6 @@ export function matches(
     get,
     getJoined,
     players: matchPlayers(supabaseClient),
+    roles: matchRoles(supabaseClient),
   };
 }

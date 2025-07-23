@@ -6,7 +6,7 @@ import {
   PlayerListItem,
   PlayersRow,
 } from '@bf2-matchmaking/types';
-import PlayerItem from '@/components/matches/PlayerItem';
+import PlayerItem from '@/components/matches/team/PlayerItem';
 import { api } from '@bf2-matchmaking/utils';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';

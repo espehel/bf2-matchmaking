@@ -45,7 +45,7 @@ export const Match = {
     const match = await client().createMatch(values).then(verifySingleResult);
     const redisResult = await putMatch(match);
 
-    logMatchMessage(match.id, `Created with status ${match.status}`, {
+    logMatchMessage(match.id, `Match ${match.status}`, {
       match,
       values,
       redisResult,
@@ -75,7 +75,7 @@ export const Match = {
     const redisResult = await removeMatch(matchId);
     const deletedPubobotMatch = await cleanUpPubobotMatch(matchId);
 
-    logMatchMessage(matchId, `Removed with status ${removedMatch.status}`, {
+    logMatchMessage(matchId, `Match ${removedMatch.status}`, {
       removedMatch,
       redisResult,
       deletedPubobotMatch,

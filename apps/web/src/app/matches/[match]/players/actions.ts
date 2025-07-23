@@ -3,14 +3,10 @@ import { getOptionalValue, getValues } from '@bf2-matchmaking/utils/src/form-dat
 import { matches, players } from '@/lib/supabase/supabase-server';
 import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
 import { revalidatePath } from 'next/cache';
-import {
-  getTeamsByRandom,
-  getTeamsByRating,
-} from '@bf2-matchmaking/utils/src/draft-utils';
-import { MatchesJoined } from '@bf2-matchmaking/types';
 import { assertNumber, assertString, parseError } from '@bf2-matchmaking/utils';
 import { ActionResult, ActionInput } from '@/lib/types/form';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { buildTeams } from '@/lib/team-builder';
 
 export async function updateMatchPlayer(input: ActionInput): Promise<ActionResult> {
   try {
@@ -83,9 +79,8 @@ export async function setMatchPlayerTeams(input: ActionInput): Promise<ActionRes
     const { matchId, method } = input;
     assertNumber(matchId);
     assertString(method);
-    const match = await matches.getJoined(matchId).then(verifySingleResult);
 
-    const [teamA, teamB] = getTeams(match, method);
+    const [teamA, teamB] = await buildTeams(matchId, method);
 
     // TODO how to sync redis?
     await matches.players
@@ -107,15 +102,5 @@ export async function setMatchPlayerTeams(input: ActionInput): Promise<ActionRes
     return { success: 'Teams updated', error: null, ok: true };
   } catch (e) {
     return { success: null, error: parseError(e), ok: false };
-  }
-}
-function getTeams(match: MatchesJoined, method: 'random' | 'rating' | string) {
-  switch (method) {
-    case 'random':
-      return getTeamsByRandom(match.teams);
-    case 'rating':
-      return getTeamsByRating(match.teams);
-    default:
-      throw Error(`Unknown team method: ${method}`);
   }
 }

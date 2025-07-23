@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import ManageRatingsSection from '@/components/admin/ManageRatingsSection';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   params: Promise<{ config: string }>;
@@ -26,12 +27,13 @@ export default async function Page(props: Props) {
     <main className="main">
       <h1>{`${config.name} ratings`}</h1>
       {searchParams.match && (
-        <p>
-          Filtering players by match: {searchParams.match}.{' '}
-          <Link href={`/admin/configs/${params.config}/ratings`}>
+        <div role="alert" className="alert alert-info w-fit mb-2">
+          <InformationCircleIcon className="size-6" />
+          Filtering players by match {searchParams.match}.
+          <Link className="link" href={`/admin/configs/${params.config}/ratings`}>
             Click to remove filter
           </Link>
-        </p>
+        </div>
       )}
       <ManageRatingsSection
         players={data || []}

@@ -1,7 +1,7 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import MatchActions from '@/components/matches/MatchActions';
 import Link from 'next/link';
-import TeamSection from '@/components/matches/TeamSection';
+import TeamSection from '@/components/matches/team/TeamSection';
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';

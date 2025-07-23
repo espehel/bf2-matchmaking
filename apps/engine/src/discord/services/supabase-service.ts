@@ -192,7 +192,7 @@ export async function getOrCreatePlayers(
 
 export async function setMatchPlayers(users: Array<User>, matchId: number) {
   const players = await getOrCreatePlayers(users);
-  const match = await Match.update(matchId)
+  await Match.update(matchId)
     .setTeams(
       players.map((player) => ({
         match_id: matchId,
@@ -200,11 +200,7 @@ export async function setMatchPlayers(users: Array<User>, matchId: number) {
       }))
     )
     .commit();
-  logMessage(`Match ${match.id}: Set ${match.players.length} players`, {
-    users,
-    players,
-    match,
-  });
+  Match.log(matchId, `${players.map((p) => p.nick).join(', ')} joined`);
   return players;
 }
 

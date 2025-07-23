@@ -1,8 +1,8 @@
 import { MatchesJoined } from '@bf2-matchmaking/types';
 import AddPlayerForm from '@/components/matches/AddPlayerForm';
-import PlayerListItems from '@/components/matches/PlayerListItems';
+import PlayerListItems from '@/components/matches/team/PlayerListItems';
 import { Suspense } from 'react';
-import PlayerListItemsLoading from '@/components/matches/PlayerListItemsLoading';
+import PlayerListItemsLoading from '@/components/matches/team/PlayerListItemsLoading';
 
 interface Props {
   match: MatchesJoined;

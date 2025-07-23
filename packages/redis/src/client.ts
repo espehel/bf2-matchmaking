@@ -8,7 +8,23 @@ export function createNewClient(name: string) {
     .on('error', (err) => console.log('Redis Client Error', err));
 }
 
-const defaultClient = createNewClient('default_client');
+let defaultClient: ReturnType<typeof createClient>;
+
+if (process.env.NODE_ENV === 'development') {
+  // In development mode, use a global variable so that the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  let globalWithRedisClient = global as typeof globalThis & {
+    _redisClient?: ReturnType<typeof createClient>;
+  };
+
+  if (!globalWithRedisClient._redisClient) {
+    globalWithRedisClient._redisClient = createNewClient('default_client');
+  }
+  defaultClient = globalWithRedisClient._redisClient;
+} else {
+  // In production mode, it's best to not use a global variable.
+  defaultClient = createNewClient('default_client');
+}
 
 export function getClient() {
   return handleClientConnection(defaultClient);

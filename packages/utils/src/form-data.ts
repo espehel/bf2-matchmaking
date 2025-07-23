@@ -1,5 +1,5 @@
 import { isString, isTruthy } from '@bf2-matchmaking/types';
-import { assertTruthyString } from './assert';
+import { assertNumber, assertTruthyString } from './assert';
 
 export function getArray(formData: FormData, key: string) {
   return Array.from(formData.entries())
@@ -20,6 +20,24 @@ export function getOptionalValue(formData: FormData, key: string) {
     return value;
   }
   return null;
+}
+
+export function getOptionalValueAsNumber(formData: FormData, key: string) {
+  const value = getOptionalValue(formData, key);
+  if (value === null) {
+    return null;
+  }
+  const numValue = Number(value);
+  if (Number.isNaN(numValue)) {
+    throw new Error(`Invalid number for key ${key}: ${value}`);
+  }
+  return numValue;
+}
+
+export function getValueAsNumber(formData: FormData, key: string): number {
+  const value = getOptionalValueAsNumber(formData, key);
+  assertNumber(value, `Missing form data: ${key}`);
+  return value;
 }
 
 export function getValues<K extends string>(

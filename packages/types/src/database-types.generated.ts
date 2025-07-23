@@ -718,6 +718,38 @@ export type Database = {
           },
         ]
       }
+      match_roles: {
+        Row: {
+          count: number
+          created_at: string
+          match_id: number
+          name: Database["public"]["Enums"]["match_role"]
+          priority: number
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          match_id?: number
+          name: Database["public"]["Enums"]["match_role"]
+          priority?: number
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          match_id?: number
+          name?: Database["public"]["Enums"]["match_role"]
+          priority?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_roles_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_servers: {
         Row: {
           created_at: string

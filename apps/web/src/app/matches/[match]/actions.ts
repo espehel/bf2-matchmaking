@@ -1,5 +1,5 @@
 'use server';
-import { supabase } from '@/lib/supabase/supabase-server';
+import { matches, supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { EventMatchesUpdate, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
@@ -13,6 +13,14 @@ import { getMatchDescription } from '@bf2-matchmaking/discord/src/discord-schedu
 import { DateTime } from 'luxon';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
+import { ActionInput, ActionResult } from '@/lib/types/form';
+import {
+  getOptionalValueAsNumber,
+  getValue,
+  getValueAsNumber,
+  getValues,
+} from '@bf2-matchmaking/utils/src/form-data';
+import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const cookieStore = await cookies();
@@ -366,4 +374,34 @@ export async function removeMatchServer(matchId: number, address: string) {
     revalidatePath(`/matches/${matchId}`);
   }
   return result;
+}
+
+export async function addMatchRole(formData: FormData): Promise<ActionResult> {
+  const match_id = getValueAsNumber(formData, 'matchId');
+  const name = publicMatchRoleSchema.parse(formData.get('role'));
+  const count = getOptionalValueAsNumber(formData, 'count') ?? undefined;
+  const priority = getOptionalValueAsNumber(formData, 'priority') ?? undefined;
+  const result = await matches.roles.add({
+    match_id,
+    name,
+    count,
+    priority,
+  });
+  if (result.error) {
+    return { success: null, error: result.error.message, ok: false };
+  }
+  revalidatePath(`/matches/${match_id}`);
+  return { success: 'Role added', error: null, ok: true };
+}
+export async function removeMatchRole(input: ActionInput): Promise<ActionResult> {
+  const role = publicMatchRoleSchema.parse(input.role);
+  const matchId = Number(input.matchId);
+  const result = await matches.roles.del(matchId, role);
+
+  if (result.error) {
+    return { success: null, error: result.error.message, ok: false };
+  }
+
+  revalidatePath(`/matches/${matchId}`);
+  return { success: 'Role removed', error: null, ok: true };
 }

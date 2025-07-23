@@ -792,6 +792,40 @@ export const matchResultsRelationshipsSchema = z.tuple([
   }),
 ]);
 
+export const matchRolesRowSchema = z.object({
+  count: z.number(),
+  created_at: z.string(),
+  match_id: z.number(),
+  name: publicMatchRoleSchema,
+  priority: z.number(),
+});
+
+export const matchRolesInsertSchema = z.object({
+  count: z.number().optional(),
+  created_at: z.string().optional(),
+  match_id: z.number().optional(),
+  name: publicMatchRoleSchema,
+  priority: z.number().optional(),
+});
+
+export const matchRolesUpdateSchema = z.object({
+  count: z.number().optional(),
+  created_at: z.string().optional(),
+  match_id: z.number().optional(),
+  name: publicMatchRoleSchema.optional(),
+  priority: z.number().optional(),
+});
+
+export const matchRolesRelationshipsSchema = z.tuple([
+  z.object({
+    foreignKeyName: z.literal("match_roles_match_id_fkey"),
+    columns: z.tuple([z.literal("match_id")]),
+    isOneToOne: z.literal(false),
+    referencedRelation: z.literal("matches"),
+    referencedColumns: z.tuple([z.literal("id")]),
+  }),
+]);
+
 export const matchServersRowSchema = z.object({
   created_at: z.string(),
   id: z.number(),

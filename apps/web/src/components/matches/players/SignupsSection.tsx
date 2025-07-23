@@ -30,7 +30,7 @@ export default function SignupsSection({ match }: Props) {
           <MatchPlayerItem
             player={player}
             matchPlayer={matchPlayer}
-            key={`${player.id}${matchPlayer.team}`}
+            key={`${player.id}${matchPlayer.team}${matchPlayer.role}`}
             teams={[match.home_team, match.away_team]}
           />
         ))}

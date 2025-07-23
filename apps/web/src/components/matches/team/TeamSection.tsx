@@ -1,10 +1,11 @@
 import { MatchesJoined, MatchTeam } from '@bf2-matchmaking/types';
 import AddPlayerForm from '@/components/matches/AddPlayerForm';
-import PlayerListItems from '@/components/matches/PlayerListItems';
+import PlayerListItems from '@/components/matches/team/PlayerListItems';
 import { Suspense } from 'react';
-import PlayerListItemsLoading from '@/components/matches/PlayerListItemsLoading';
+import PlayerListItemsLoading from '@/components/matches/team/PlayerListItemsLoading';
 import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
-import TeamPlayersList from '@/components/matches/TeamPlayersList';
+import TeamPlayersList from '@/components/matches/team/TeamPlayersList';
+import UnfilledRolesListitems from './UnfilledRolesListitems';
 
 interface Props {
   match: MatchesJoined;
@@ -42,6 +43,7 @@ export default async function TeamSection({ match, team }: Props) {
             captains={captains}
           />
         </Suspense>
+        <UnfilledRolesListitems team={team} match={match} />
         <li className="flex items-center mb-1 w-52">
           <AddPlayerForm
             matchId={match.id}

@@ -145,6 +145,12 @@ export type MatchresultsUpdate = z.infer<
 export type MatchresultsRelationships = z.infer<
   typeof generated.matchResultsRelationshipsSchema
 >;
+export type MatchrolesRow = z.infer<typeof generated.matchRolesRowSchema>;
+export type MatchrolesInsert = z.infer<typeof generated.matchRolesInsertSchema>;
+export type MatchrolesUpdate = z.infer<typeof generated.matchRolesUpdateSchema>;
+export type MatchrolesRelationships = z.infer<
+  typeof generated.matchRolesRelationshipsSchema
+>;
 export type MatchserversRow = z.infer<typeof generated.matchServersRowSchema>;
 export type MatchserversInsert = z.infer<
   typeof generated.matchServersInsertSchema

@@ -4,7 +4,7 @@ import {
   MatchPlayersRow,
   PlayersRow,
 } from '@bf2-matchmaking/types';
-import PlayerItem from '@/components/matches/PlayerItem';
+import PlayerItem from '@/components/matches/team/PlayerItem';
 
 interface Props {
   match: MatchesJoined;
