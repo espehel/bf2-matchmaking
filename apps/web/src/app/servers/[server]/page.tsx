@@ -11,6 +11,9 @@ import ServerLog from '@/components/servers/ServerLog';
 interface Props {
   params: Promise<{ server: string }>;
 }
+
+export const dynamic = 'force-dynamic';
+
 export default async function ServerPage(props: Props) {
   const params = await props.params;
   const liveServer = await api.v2.getServer(params.server).then(verify);
