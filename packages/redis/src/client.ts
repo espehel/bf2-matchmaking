@@ -1,7 +1,7 @@
 import { createClient } from 'redis';
 
 export function createNewClient(name: string) {
-  return createClient({ url: process.env.REDIS_URL, name })
+  return createClient({ url: process.env.REDIS_URL, name: name || 'default_client' })
     .on('connect', () => console.log('Redis Client Connected'))
     .on('ready', () => console.log('Redis Client Ready'))
     .on('reconnecting', () => console.log('Redis Client Reconnecting'))
