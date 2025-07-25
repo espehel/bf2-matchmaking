@@ -6,7 +6,11 @@ import {
   MatchPlayersInsert,
   MatchStatus,
 } from '@bf2-matchmaking/types';
-import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import {
+  ResolvableSupabaseClient,
+  verifyResult,
+  verifySingleResult,
+} from '@bf2-matchmaking/supabase';
 import {
   info,
   logErrorMessage,
@@ -26,6 +30,7 @@ import { getDiff } from 'recursive-diff';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { topic } from '@bf2-matchmaking/redis/topic';
 import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
+import { matches } from '@bf2-matchmaking/supabase/matches';
 
 function logMatchMessage(
   matchId: string | number,
@@ -39,59 +44,62 @@ function logMatchMessage(
       logErrorMessage(`Match ${matchId}: Error logging match message`, e, context)
     );
 }
+export function createMatchApi(dbClient: ResolvableSupabaseClient) {
+  return {
+    create: async function (values: MatchesInsert) {
+      const match = await matches(dbClient).create(values).then(verifySingleResult);
+      const redisResult = await putMatch(match);
 
-export const Match = {
-  create: async function (values: MatchesInsert) {
-    const match = await client().createMatch(values).then(verifySingleResult);
-    const redisResult = await putMatch(match);
+      logMatchMessage(match.id, `Match ${match.status}`, {
+        match,
+        values,
+        redisResult,
+      });
 
-    logMatchMessage(match.id, `Match ${match.status}`, {
-      match,
-      values,
-      redisResult,
-    });
-
-    return match;
-  },
-  get: async function (matchId: number | string) {
-    const match = await getMatch(matchId);
-    if (match) {
       return match;
-    }
+    },
+    get: async function (matchId: number | string) {
+      const match = await getMatch(matchId);
+      if (match) {
+        return match;
+      }
 
-    warn('Match', `Match ${matchId} not found in redis, fetching from supabase`);
-    return client().getMatch(Number(matchId)).then(verifySingleResult);
-  },
-  update: function (matchId: number | string) {
-    return new MatchUpdater(matchId);
-  },
-  remove: async function (
-    matchId: number | string,
-    status: MatchStatus.Closed | MatchStatus.Deleted
-  ) {
-    const removedMatch = await client()
-      .updateMatch(Number(matchId), { status, closed_at: DateTime.now().toISO() })
-      .then(verifySingleResult);
-    const redisResult = await removeMatch(matchId);
-    const deletedPubobotMatch = await cleanUpPubobotMatch(matchId);
+      warn('Match', `Match ${matchId} not found in redis, fetching from supabase`);
+      return matches(dbClient).getJoined(matchId).then(verifySingleResult);
+    },
+    update: function (matchId: number | string) {
+      return new MatchUpdater(matchId, dbClient);
+    },
+    remove: async function (
+      matchId: number | string,
+      status: MatchStatus.Closed | MatchStatus.Deleted
+    ) {
+      const removedMatch = await matches(dbClient)
+        .update(matchId, { status, closed_at: DateTime.now().toISO() })
+        .then(verifySingleResult);
+      const redisResult = await removeMatch(matchId);
+      const deletedPubobotMatch = await cleanUpPubobotMatch(matchId);
 
-    logMatchMessage(matchId, `Match ${removedMatch.status}`, {
-      removedMatch,
-      redisResult,
-      deletedPubobotMatch,
-    });
-    return removedMatch;
-  },
-  sync: async function (matchId: number | string) {
-    const oldMatch = await getMatch(matchId);
-    const syncedMatch = await client().getMatch(Number(matchId)).then(verifySingleResult);
-    const redisResult = await putMatch(syncedMatch);
-    const diff = getDiff(oldMatch, syncedMatch);
-    logMatchMessage(matchId, `Synced`, { oldMatch, syncedMatch, diff, redisResult });
-    return syncedMatch;
-  },
-  log: logMatchMessage,
-};
+      logMatchMessage(matchId, `Match ${removedMatch.status}`, {
+        removedMatch,
+        redisResult,
+        deletedPubobotMatch,
+      });
+      return removedMatch;
+    },
+    sync: async function (matchId: number | string) {
+      const oldMatch = await getMatch(matchId);
+      const syncedMatch = await matches(dbClient)
+        .getJoined(matchId)
+        .then(verifySingleResult);
+      const redisResult = await putMatch(syncedMatch);
+      const diff = getDiff(oldMatch, syncedMatch);
+      logMatchMessage(matchId, `Synced`, { oldMatch, syncedMatch, diff, redisResult });
+      return syncedMatch;
+    },
+    log: logMatchMessage,
+  };
+}
 
 class MatchUpdater {
   #maps: Array<number> | null = null;
@@ -101,9 +109,11 @@ class MatchUpdater {
   #draft: MatchDraftsInsert | null = null;
   #matchId: number;
   #playersToRemove: Array<string> | null = null;
+  #dbClient: ResolvableSupabaseClient;
 
-  constructor(matchId: number | string) {
+  constructor(matchId: number | string, dbClient: ResolvableSupabaseClient) {
     this.#matchId = typeof matchId === 'string' ? Number(matchId) : matchId;
+    this.#dbClient = dbClient;
   }
   setMaps(maps: Array<number> | null) {
     this.#maps = maps;
@@ -138,8 +148,10 @@ class MatchUpdater {
     const removedPlayers = await this.removeMatchPlayers();
 
     const updatedMatch = values
-      ? await client().updateMatch(this.#matchId, values).then(verifySingleResult)
-      : await client().getMatch(this.#matchId).then(verifySingleResult);
+      ? await matches(this.#dbClient)
+          .update(this.#matchId, values)
+          .then(verifySingleResult)
+      : await matches(this.#dbClient).getJoined(this.#matchId).then(verifySingleResult);
 
     const redisResult = await putMatch(updatedMatch);
     if (values) {
@@ -164,8 +176,10 @@ class MatchUpdater {
       return null;
     }
     info('createMatchPlayers', `Creating match players`);
-    await client().deleteAllMatchPlayersForMatchId(this.#matchId);
-    return client().createMatchPlayers(this.#teams).then(verifyResult);
+    await matches(this.#dbClient).players.removeAll(this.#matchId);
+    return matches(this.#dbClient)
+      .players.add(...this.#teams)
+      .then(verifyResult);
   }
 
   async #upsertMatchPlayers() {
@@ -173,7 +187,9 @@ class MatchUpdater {
       return null;
     }
     info('updateMatchPlayers', `Updating match players`);
-    return client().upsertMatchPlayers(this.#updateMatchPlayers).then(verifyResult);
+    return matches(this.#dbClient)
+      .players.upsert(this.#updateMatchPlayers)
+      .then(verifyResult);
   }
 
   async #createMatchMaps() {
@@ -181,8 +197,8 @@ class MatchUpdater {
       return null;
     }
     info('createMatchMaps', `Creating match maps`);
-    return client()
-      .createMatchMaps(this.#matchId, ...this.#maps)
+    return matches(this.#dbClient)
+      .maps.add(this.#matchId, ...this.#maps)
       .then(verifyResult);
   }
   async #createMatchServers() {
@@ -190,8 +206,8 @@ class MatchUpdater {
       return null;
     }
     info('createMatchServers', `Creating match servers`);
-    return client()
-      .createMatchServers(this.#matchId, ...this.#servers.map((server) => ({ server })))
+    return matches(this.#dbClient)
+      .servers.add(this.#matchId, ...this.#servers.map((server) => ({ server })))
       .then(verifyResult);
   }
   async #createMatchDraft() {
@@ -199,7 +215,9 @@ class MatchUpdater {
       return null;
     }
     info('createMatchDraft', `Creating match draft`);
-    const draft = await client().matchDrafts.create(this.#draft).then(verifySingleResult);
+    const draft = await matches(this.#dbClient)
+      .drafts.create(this.#draft)
+      .then(verifySingleResult);
 
     const redisResult = await setMatchDraft(draft);
     if (redisResult === 'OK') {
@@ -216,8 +234,8 @@ class MatchUpdater {
       return null;
     }
     info('removeMatchPlayers', `Removing match players`);
-    return await client()
-      .matches.players.remove(this.#matchId, ...this.#playersToRemove)
+    return await matches(this.#dbClient)
+      .players.remove(this.#matchId, ...this.#playersToRemove)
       .then(verifyResult);
   }
 }

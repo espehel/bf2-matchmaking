@@ -4,15 +4,20 @@ import {
   MatchDraftsInsert,
   MatchesJoined,
   MatchPlayersInsert,
+  MatchServersInsert,
+  ServersRow,
 } from '@bf2-matchmaking/types';
 import {
+  MatchesInsert,
+  MatchesUpdate,
   MatchplayersUpdate,
   MatchrolesInsert,
   PublicMatchRole,
 } from '@bf2-matchmaking/schemas/types';
+import { ResolvableSupabaseClient } from '../index';
 
 async function resolveClient(
-  client: SupabaseClient | (() => Promise<SupabaseClient>)
+  client: ResolvableSupabaseClient
 ): Promise<SupabaseClient<Database>> {
   if (client instanceof SupabaseClient) {
     return client;
@@ -123,9 +128,86 @@ export function matchRoles(
   };
 }
 
+export function matchMaps(
+  supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)
+) {
+  async function get(matchId: number) {
+    const client = await resolveClient(supabaseClient);
+    return client.from('match_maps').select('*').eq('match_id', matchId);
+  }
+  async function add(matchId: number, ...maps: Array<number>) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_maps')
+      .insert(maps.map((mapId) => ({ match_id: matchId, map_id: mapId })))
+      .select('*');
+  }
+  async function remove(matchId: number, ...maps: Array<number>) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_maps')
+      .delete()
+      .eq('match_id', matchId)
+      .in('map_id', maps)
+      .select('*');
+  }
+  return {
+    get,
+    add,
+    remove,
+  };
+}
+
+export function matchServers(
+  supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)
+) {
+  async function get(matchId: number) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('matches')
+      .select('id, servers(*)')
+      .eq('id', matchId)
+      .overrideTypes<Array<{ id: number; server: ServersRow }>, { merge: false }>();
+  }
+  async function add(matchId: number, ...servers: Array<Omit<MatchServersInsert, 'id'>>) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_servers')
+      .insert(servers.map((server) => ({ id: matchId, ...server })))
+      .select('*, server(*)')
+      .overrideTypes<Array<{ id: number; server: ServersRow }>, { merge: false }>();
+  }
+  async function remove(matchId: number, ...servers: Array<string>) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_servers')
+      .delete()
+      .eq('match_id', matchId)
+      .in('server', servers)
+      .select('id, servers(*)')
+      .overrideTypes<Array<{ id: number; server: ServersRow }>, { merge: false }>();
+  }
+  return {
+    get,
+    add,
+    remove,
+  };
+}
+
+const MATCHES_JOINED_QUERY =
+  '*, players!match_players(*), maps(*), config!inner(*), teams:match_players(*), rounds(*, map(*), team1(*), team2(*)), home_team(*, players:team_players(*, player:players(*))), away_team(*, players:team_players(*, player:players(*)))';
+
 export function matches(
   supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)
 ) {
+  async function create(values: MatchesInsert) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('matches')
+      .insert(values)
+      .select(MATCHES_JOINED_QUERY)
+      .single<MatchesJoined>();
+  }
   async function getAll() {
     const client = await resolveClient(supabaseClient);
     return client.from('matches').select('*');
@@ -144,11 +226,25 @@ export function matches(
       .eq('id', Number(matchId))
       .single<MatchesJoined>();
   }
+  async function update(matchId: number | string, values: MatchesUpdate) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('matches')
+      .update(values)
+      .eq('id', Number(matchId))
+      .select(MATCHES_JOINED_QUERY)
+      .single<MatchesJoined>();
+  }
   return {
+    create,
     getAll,
     get,
     getJoined,
+    update,
     players: matchPlayers(supabaseClient),
     roles: matchRoles(supabaseClient),
+    maps: matchMaps(supabaseClient),
+    servers: matchServers(supabaseClient),
+    drafts: matchDrafts(supabaseClient),
   };
 }

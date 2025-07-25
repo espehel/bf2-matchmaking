@@ -7,7 +7,7 @@ import {
 import { Database } from '@bf2-matchmaking/types';
 import supabaseApi from './supabase-api';
 import { realtime } from './realtime-api';
-import { matchDrafts, matches } from './domain/matches';
+import { matches } from './domain/matches';
 import { players } from './domain/players';
 import { assertString } from '@bf2-matchmaking/utils';
 
@@ -18,7 +18,6 @@ export function getSupabaseApi(client: SupabaseClient<Database>) {
   return {
     ...api,
     matches: matches(client),
-    matchDrafts: matchDrafts(client),
     players: players(client),
   };
 }
@@ -62,3 +61,15 @@ export const verifySingleResult = <T>({ data, error }: PostgrestSingleResponse<T
   }
   return data;
 };
+
+export function createServiceClient() {
+  assertString(process.env.SUPABASE_URL, 'SUPABASE_URL not defined.');
+  assertString(process.env.SUPABASE_SERVICE_KEY, 'SUPABASE_SERVICE_KEY not defined.');
+  return createClient<Database>(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY,
+    { auth: { persistSession: false } }
+  );
+}
+
+export type ResolvableSupabaseClient = SupabaseClient | (() => Promise<SupabaseClient>);

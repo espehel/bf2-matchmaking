@@ -17,14 +17,14 @@ import { getConfigCached } from './supabase-service';
 import { DateTime } from 'luxon';
 import { getTextChannelFromConfig } from '../discord-utils';
 import { hash } from '@bf2-matchmaking/redis/hash';
-import { Match } from '@bf2-matchmaking/services/matches/Match';
+import { matchApi } from '../../lib/match';
 
 export async function createPubobotMatch(
   message: Message,
   id: number
 ): Promise<PubobotMatch> {
   const config = await getConfigCached(message.channelId);
-  const match = await Match.create({ config: config.id, status: MatchStatus.Open });
+  const match = await matchApi.create({ config: config.id, status: MatchStatus.Open });
   const pubobotMatch: PubobotMatch = {
     id,
     matchId: match.id,
@@ -46,7 +46,8 @@ export async function startPubobotMatch(message: Message, pubobotMatch: PubobotM
   );
   const maps = await buildMatchMaps(embed);
 
-  const updatedMatch = await Match.update(pubobotMatch.matchId)
+  const updatedMatch = await matchApi
+    .update(pubobotMatch.matchId)
     .setTeams(teams)
     .setMaps(maps)
     .commit({
@@ -67,7 +68,8 @@ export async function draftPubobotMatch(message: Message, pubobotMatch: PubobotM
   const maps = await buildMatchMaps(embed);
   const teams = await buildMatchPlayersFromDraftingEmbed(embed, pubobotMatch.matchId);
 
-  const updatedMatch = await Match.update(pubobotMatch.matchId)
+  const updatedMatch = await matchApi
+    .update(pubobotMatch.matchId)
     .setTeams(teams)
     .setMaps(maps)
     .commit({ status: MatchStatus.Drafting });

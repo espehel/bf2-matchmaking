@@ -6,7 +6,6 @@ import {
   StatusChange,
   SummoningStatusChange,
 } from '@bf2-matchmaking/types/gather';
-import { Match } from './Match';
 import { assertObj, hasEqualKeyhash } from '@bf2-matchmaking/utils';
 import {
   GatherPlayer,
@@ -24,21 +23,25 @@ import {
   getGatherState,
   popMatchPlayers,
   returnPlayers,
-  setGatherPlayer,
 } from '@bf2-matchmaking/redis/gather';
 import { DateTime } from 'luxon';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { list } from '@bf2-matchmaking/redis/list';
 import { json } from '@bf2-matchmaking/redis/json';
 import { getMatchConfig, syncConfig } from './config-service';
-import { createMatch } from './match-service';
 import { info, logMessage, logWarnMessage } from '@bf2-matchmaking/logging';
 import { stream } from '@bf2-matchmaking/redis/stream';
+import { createServiceClient } from '@bf2-matchmaking/supabase';
+import { createMatchApi } from './match/match-api';
+import { createMatchService } from './match/match-service';
 
 export function Gather(configId: number) {
   const configKey = `config:${configId}`;
   const stateKey = `gather:${configId}`;
   const queueKey = `gather:${configId}:queue`;
+
+  const matchApi = createMatchApi(createServiceClient());
+  const matchService = createMatchService(matchApi);
 
   const init = async (address: string, queueingPlayers: Array<GatherPlayer>) => {
     await syncConfig(configId);
@@ -99,7 +102,7 @@ export function Gather(configId: number) {
   const _getMatch = async () => {
     const matchId = await hash<GatherState>(stateKey).get('matchId');
     assertObj(matchId, `Match ID not found for gather with config ${configId}`);
-    return Match.get(matchId);
+    return matchApi.get(matchId);
   };
 
   const _syncPlayers = async (teamspeakPlayers: Array<string>) => {
@@ -155,7 +158,7 @@ export function Gather(configId: number) {
     const keyhashes = (
       await Promise.all(matchPlayers.map(getGatherPlayerKeyhash))
     ).filter(isNotNull);
-    await createMatch(keyhashes, config);
+    await matchService.createMatch(keyhashes, config);
 
     return _nextState(
       {
@@ -182,7 +185,8 @@ export function Gather(configId: number) {
     const readyPlayers = gatherPlayers.filter((player) =>
       connectedPlayers.some(hasEqualKeyhash(player))
     );
-    await Match.update(match.id)
+    await matchApi
+      .update(match.id)
       .updateTeams(...match.teams.map(withReadyState(readyPlayers)))
       .commit();
 
@@ -202,7 +206,7 @@ export function Gather(configId: number) {
   };
 
   const _play = async (match: MatchesJoined): Promise<PlayingStatusChange> => {
-    const updatedMatch = await Match.update(match.id).commit({
+    const updatedMatch = await matchApi.update(match.id).commit({
       status: MatchStatus.Ongoing,
     });
     return _nextState({ status: GatherStatus.Playing }, updatedMatch);
@@ -217,7 +221,7 @@ export function Gather(configId: number) {
       configId,
       connectedPlayers.map((p) => p.teamspeak_id)
     );
-    await Match.remove(match.id, MatchStatus.Deleted);
+    await matchApi.remove(match.id, MatchStatus.Deleted);
 
     const latePlayers = match.players
       .filter(isGatherPlayer)

@@ -1,9 +1,4 @@
-import {
-  isNotNull,
-  isScheduledMatch,
-  MatchesJoined,
-  MatchStatus,
-} from '@bf2-matchmaking/types';
+import { isScheduledMatch, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import { info, warn } from '@bf2-matchmaking/logging';
 import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 import { set, sets } from '../core/set';
@@ -14,6 +9,7 @@ import { hash } from '../core/hash';
 import { Match } from '../types';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
 import { getClient } from '../client';
+import { DateTime } from 'luxon';
 
 const validStatuses: string[] = [
   MatchStatus.Open,
@@ -50,7 +46,7 @@ export async function updatePlayers(matchId: string | number, liveInfo: LiveInfo
     .filter((player) => !player.getName.includes('STREAM'))
     .map((player) => [player.keyhash, now]);
   if (entries.length) {
-    hash(`matches:${matchId}:players`).setEntries(entries);
+    await hash(`matches:${matchId}:players`).setEntries(entries);
   }
 }
 
@@ -113,6 +109,15 @@ export async function getMatchLiveSafe(matchId: string | number) {
     return null;
   }
 }
+
+export async function initMatchLive(matchId: string | number) {
+  return hash(`matches:${matchId}:live`).set({
+    state: 'pending',
+    roundsPlayed: '0',
+    pendingSince: DateTime.now().toISO(),
+  });
+}
+
 export async function setMatchLive(matchId: string | number, values: Partial<Match>) {
   return hash(`matches:${matchId}:live`).set(values);
 }

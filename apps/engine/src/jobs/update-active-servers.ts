@@ -4,7 +4,6 @@ import { isStartedMatch, LiveInfo } from '@bf2-matchmaking/types';
 import { getActiveMatchServers } from '@bf2-matchmaking/redis/servers';
 import { removeLiveMatch } from '@bf2-matchmaking/redis/matches';
 import { saveMatchDemos } from '../services/demo-service';
-import { finishMatch } from '@bf2-matchmaking/services/matches';
 import { updateLiveServer } from '@bf2-matchmaking/services/server';
 import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
@@ -12,6 +11,7 @@ import { DateTime } from 'luxon';
 import { parseError } from '@bf2-matchmaking/utils';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { createJob } from '@bf2-matchmaking/scheduler';
+import { matchService } from '../lib/match';
 
 async function updateActiveServers() {
   const servers = await getActiveMatchServers().then(Object.entries<string>);
@@ -40,7 +40,7 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
     }
 
     if (match.state === 'finished') {
-      await finishMatch(matchId);
+      await matchService.finishMatch(matchId);
       await removeLiveMatch(matchId);
       await Server.reset(address);
 

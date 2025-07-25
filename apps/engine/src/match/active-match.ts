@@ -28,7 +28,7 @@ import {
   updatePlayers,
 } from '@bf2-matchmaking/redis/matches';
 import { MatchLive } from '@bf2-matchmaking/types/engine';
-import { Match } from '@bf2-matchmaking/services/matches/Match';
+import { matchApi } from '../lib/match';
 
 export async function updateMatch(
   cachedMatch: MatchesJoined,
@@ -107,7 +107,7 @@ async function addRound(cachedMatch: MatchesJoined, live: LiveInfo, address: str
   const round = await insertRound(cachedMatch, live, address);
   logAddMatchRound(round, cachedMatch, live);
   info('onLiveServerUpdate', `Created round ${round.id}`);
-  await Match.sync(cachedMatch.id);
+  await matchApi.sync(cachedMatch.id);
   return incMatchRoundsPlayed(cachedMatch.id);
 }
 
@@ -149,7 +149,7 @@ export async function updateMatchPlayers(
   matchId: string,
   live: LiveInfo
 ): Promise<MatchesJoined> {
-  let cachedMatch = await Match.get(matchId);
+  let cachedMatch = await matchApi.get(matchId);
   assertObj(cachedMatch, `Match ${matchId} not cached`);
 
   let isDirty = false;
@@ -188,7 +188,7 @@ export async function updateMatchPlayers(
   }
 
   if (isDirty) {
-    cachedMatch = await Match.sync(matchId);
+    cachedMatch = await matchApi.sync(matchId);
   }
   return cachedMatch;
 }

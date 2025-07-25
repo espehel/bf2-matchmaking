@@ -4,9 +4,8 @@ import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { getWithStatus } from '@bf2-matchmaking/redis/matches';
 import cron from 'node-cron';
-import { Match } from '@bf2-matchmaking/services/matches/Match';
-import { closeMatch } from '@bf2-matchmaking/services/matches';
 import { createJob } from '@bf2-matchmaking/scheduler';
+import { matchApi, matchService } from '../lib/match';
 
 const startedStatuses = [
   MatchStatus.Summoning,
@@ -20,7 +19,7 @@ async function closeOldMatches() {
   if (openMatches && openMatches.length > 0) {
     info('closeOldMatches', `Soft deleting ${openMatches.length} stale open matches`);
     for (const match of openMatches) {
-      await Match.remove(match.id, MatchStatus.Deleted);
+      await matchApi.remove(match.id, MatchStatus.Deleted);
     }
   }
 
@@ -49,14 +48,14 @@ function isOlderThan3Hours(match: MatchesJoined) {
 }
 
 async function close(match: MatchesJoined) {
-  const { errors } = await closeMatch(match);
+  const { errors } = await matchService.closeMatch(match);
   if (errors) {
     await forceClose(match);
   }
 }
 
 async function forceClose(match: MatchesJoined) {
-  const removedMatch = await Match.remove(match.id, MatchStatus.Closed);
+  const removedMatch = await matchApi.remove(match.id, MatchStatus.Closed);
   logMessage(`Match ${match.id} force closed`, { removedMatch });
 }
 

@@ -3,8 +3,8 @@ import { client } from '@bf2-matchmaking/supabase';
 import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { addMatchServer, getScheduled } from '@bf2-matchmaking/redis/matches';
-import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { createJob } from '@bf2-matchmaking/scheduler';
+import { matchApi } from '../lib/match';
 
 async function startScheduledMatches() {
   const scheduled = await getScheduled();
@@ -22,7 +22,7 @@ function isScheduledToStart(match: ScheduledMatch) {
 
 async function startMatch(match: ScheduledMatch) {
   try {
-    const updatedMatch = await Match.update(match.id).commit({
+    const updatedMatch = await matchApi.update(match.id).commit({
       status: MatchStatus.Ongoing,
       started_at: DateTime.now().toISO(),
     });

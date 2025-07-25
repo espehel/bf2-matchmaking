@@ -6,10 +6,8 @@ import { MatchStatus } from '@bf2-matchmaking/types/supabase';
 import { info } from '@bf2-matchmaking/logging';
 import { getLiveServer, getLiveServerByMatchId } from '../servers/server-service';
 import { createPendingMatch, getMatch } from './match-service';
-import { closeMatch } from '@bf2-matchmaking/services/matches';
 import { Context } from 'koa';
 import { matchKeys } from '@bf2-matchmaking/redis/generic';
-import { Match } from '@bf2-matchmaking/services/matches/Match';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { DateTime } from 'luxon';
 import {
@@ -17,6 +15,7 @@ import {
   matchesPostRequestBodySchema,
 } from '@bf2-matchmaking/services/schemas/matches.ts';
 import { stream } from '@bf2-matchmaking/redis/stream';
+import { matchApi, matchService } from '../lib/match';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -44,7 +43,7 @@ matchesRouter.get('/:id/users.xml', async (ctx: Context): Promise<void> => {
   ctx.body = generateMatchUsersXml(match);
 });
 
-matchesRouter.post('/:matchid/results', async (ctx: Context) => {
+matchesRouter.post('/:matchid/results', async (ctx: Context): Promise<void> => {
   const { data } = await client().getMatch(parseInt(ctx.params.matchid));
   ctx.assert(data, 404, 'Match not found.');
 
@@ -52,7 +51,7 @@ matchesRouter.post('/:matchid/results', async (ctx: Context) => {
     ctx.throw(400, 'Match is not finished.');
   }
 
-  const { results, errors } = await closeMatch(data);
+  const { results, errors } = await matchService.closeMatch(data);
 
   if (errors) {
     ctx.throw(400, errors.join(', '), errors);
@@ -62,7 +61,7 @@ matchesRouter.post('/:matchid/results', async (ctx: Context) => {
   ctx.body = results;
 });
 
-matchesRouter.post('/:matchid/server', async (ctx: Context) => {
+matchesRouter.post('/:matchid/server', async (ctx: Context): Promise<void> => {
   const force = `${ctx.query.force}`.toLowerCase() === 'true';
 
   const match = await getMatch(ctx.params.matchid);
@@ -100,7 +99,7 @@ matchesRouter.post('/:matchid/start', async (ctx: Context) => {
   ctx.assert(data, 404, 'Match does not exist.');
 
   if (data.status !== MatchStatus.Ongoing) {
-    await Match.update(matchid).commit({
+    await matchApi.update(matchid).commit({
       status: MatchStatus.Ongoing,
       started_at: DateTime.now().toISO(),
     });
@@ -136,8 +135,9 @@ matchesRouter.get('/', async (ctx) => {
 matchesRouter.post('/', async (ctx: Context) => {
   const { matchValues, matchMaps, matchTeams, matchDraft, servers } =
     matchesPostRequestBodySchema.parse(ctx.request.body);
-  const match = await Match.create(matchValues);
-  ctx.body = await Match.update(match.id)
+  const match = await matchApi.create(matchValues);
+  ctx.body = await matchApi
+    .update(match.id)
     .setMaps(matchMaps)
     .setTeams(matchTeams)
     .setDraft(matchDraft)

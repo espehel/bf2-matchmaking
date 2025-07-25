@@ -2,8 +2,8 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { Challenge } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import { error, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { finishMatch } from '@bf2-matchmaking/services/matches';
 import { createJob } from '@bf2-matchmaking/scheduler';
+import { matchService } from '../lib/match';
 
 async function closeOldChallenges() {
   try {
@@ -31,7 +31,7 @@ async function expireChallenge(challenge: Challenge) {
   }
   logMessage(`Challenge ${challenge.id} expired.`, { challenge });
   if (challenge.match) {
-    await finishMatch(challenge.match);
+    await matchService.finishMatch(challenge.match);
   }
 }
 
