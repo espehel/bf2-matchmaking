@@ -31,6 +31,7 @@ import { stream } from '@bf2-matchmaking/redis/stream';
 import { topic } from '@bf2-matchmaking/redis/topic';
 import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 import { matches } from '@bf2-matchmaking/supabase/matches';
+import { session } from '@bf2-matchmaking/supabase/session';
 
 function logMatchMessage(
   matchId: string | number,
@@ -50,7 +51,10 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
       const match = await matches(dbClient).create(values).then(verifySingleResult);
       const redisResult = await putMatch(match);
 
-      logMatchMessage(match.id, `Match ${match.status}`, {
+      const owner = await session(dbClient).getSessionPlayer();
+      const creator = owner ? owner.nick : 'system';
+
+      logMatchMessage(match.id, `Match ${match.status} created by ${creator}`, {
         match,
         values,
         redisResult,
@@ -80,7 +84,10 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
       const redisResult = await removeMatch(matchId);
       const deletedPubobotMatch = await cleanUpPubobotMatch(matchId);
 
-      logMatchMessage(matchId, `Match ${removedMatch.status}`, {
+      const owner = await session(dbClient).getSessionPlayer();
+      const creator = owner ? owner.nick : 'system';
+
+      logMatchMessage(matchId, `Match ${removedMatch.status} by ${creator}`, {
         removedMatch,
         redisResult,
         deletedPubobotMatch,

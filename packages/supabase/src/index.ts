@@ -73,3 +73,11 @@ export function createServiceClient() {
 }
 
 export type ResolvableSupabaseClient = SupabaseClient | (() => Promise<SupabaseClient>);
+export async function resolveClient(
+  client: ResolvableSupabaseClient
+): Promise<SupabaseClient<Database>> {
+  if (client instanceof SupabaseClient) {
+    return client;
+  }
+  return client();
+}

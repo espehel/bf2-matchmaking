@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./configs": "./src/domain/configs.ts",
     "./matches": "./src/domain/matches.ts",
-    "./players": "./src/domain/players.ts"
+    "./players": "./src/domain/players.ts",
+    "./session": "./src/domain/session.ts"
   },
   "dependencies": {
     "@bf2-matchmaking/schemas": "*",

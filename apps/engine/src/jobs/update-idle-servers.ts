@@ -113,10 +113,7 @@ export function scheduleIdleServersJob() {
     .on('scheduled', (name, time) =>
       info(name, `Scheduled at ${DateTime.fromMillis(time).toFormat('D, TT')}`)
     )
-    .on('started', (name, input) => info(name, `Started with input ${input}`))
     .on('failed', (name, err) => error(name, err))
-    .on('finished', (name, output) =>
-      info(name, `Finished with ${output} idle servers processed`)
-    )
+    .on('finished', (name, output) => verbose(name, `${output} idle servers processed`))
     .schedule({ interval: '30s' });
 }
