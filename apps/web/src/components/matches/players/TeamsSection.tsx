@@ -11,7 +11,7 @@ export default function TeamsSection({ match }: Props) {
   return (
     <section className="section col-span-2 xl:col-span-1">
       <h2>Teams</h2>
-      <fieldset className="fieldset flex bg-base-200 border-base-300 rounded-box border p-4">
+      <fieldset className="fieldset flex bg-base-200 border-base-300 rounded-2xl border p-4 w-fit">
         <legend className="fieldset-legend">Mix teams</legend>
         <ActionButton
           className="btn btn-secondary btn-lg"
@@ -35,7 +35,7 @@ export default function TeamsSection({ match }: Props) {
           Rating and roles
         </ActionButton>
       </fieldset>
-      <div className="flex gap-6">
+      <div className="flex gap-6 bg-base-200 rounded-2xl w-fit">
         <TeamList match={match} team={match.home_team} />
         <div className="divider divider-horizontal">vs</div>
         <TeamList match={match} team={match.away_team} />

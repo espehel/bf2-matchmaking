@@ -11,7 +11,7 @@ type Props = PropsWithChildren<{
 
 export default function Fieldset({ legend, children, size, helpText }: Props) {
   const classes = classNames(
-    'fieldset bg-base-200 border-base-300 rounded-box border p-4',
+    'fieldset bg-base-200 border-base-300 rounded-box border p-4 gap-2',
     { [`fieldset-${size}`]: size }
   );
   return (

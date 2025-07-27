@@ -46,9 +46,11 @@ export default async function TeamList({ match, team }: Props) {
           </li>
         );
       })}
-      <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">{`Avg rating: ${
-        matchTeam.reduce(sumRating, 0) / matchTeam.length
-      }`}</li>
+      {matchTeam.length > 0 && (
+        <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">{`Avg rating: ${
+          matchTeam.reduce(sumRating, 0) / matchTeam.length
+        }`}</li>
+      )}
     </ul>
   );
 }

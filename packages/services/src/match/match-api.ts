@@ -54,7 +54,7 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
       const owner = await session(dbClient).getSessionPlayer();
       const creator = owner ? owner.nick : 'system';
 
-      logMatchMessage(match.id, `Match ${match.status} created by ${creator}`, {
+      logMatchMessage(match.id, `Match ${match.status} by ${creator}`, {
         match,
         values,
         redisResult,

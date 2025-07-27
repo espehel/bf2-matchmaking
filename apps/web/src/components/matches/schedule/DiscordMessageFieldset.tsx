@@ -1,13 +1,18 @@
 'use client';
 import { useCallback, useState } from 'react';
 import { getDiscordMessage } from '@/app/matches/schedule/actions';
-import { formatDiscordMessageContentDateText, parseError } from '@bf2-matchmaking/utils';
+import {
+  formatDiscordMessageContentDateText,
+  getFormatTooltip,
+  parseError,
+} from '@bf2-matchmaking/utils';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { isDefined, MapsRow, ServersRow } from '@bf2-matchmaking/types';
 import InputField from '@/components/form/fields/InputField';
 import SelectField from '@/components/form/fields/SelectField';
 import Fieldset from '@/components/form/Fieldset';
 import { toast } from 'react-toastify';
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 
 interface Props {
   servers: Array<ServersRow>;
@@ -17,6 +22,7 @@ interface Props {
 export function DiscordMessageFieldset({ servers, maps }: Props) {
   const [messageId, setMessageId] = useState('');
   const [channelId, setChannelId] = useState('1372680394427858944');
+  const [format, setFormat] = useState('cccc, LLLL d / HHmm');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -34,7 +40,6 @@ export function DiscordMessageFieldset({ servers, maps }: Props) {
           params.set(key, value);
         }
       }
-      console.log(`${pathname}?${params.toString()}`);
       return `${pathname}?${params.toString()}`;
     },
     [searchParams, pathname]
@@ -65,7 +70,7 @@ export function DiscordMessageFieldset({ servers, maps }: Props) {
       return;
     }
     try {
-      const time = formatDiscordMessageContentDateText(data.content);
+      const time = formatDiscordMessageContentDateText(extractTime(data.content), format);
       const extractedMaps = extractValues(data.content, 'Maps')
         .map(toMapId)
         .filter(isDefined);
@@ -76,7 +81,16 @@ export function DiscordMessageFieldset({ servers, maps }: Props) {
     } catch (e) {
       toast.error(parseError(e));
     }
-  }, [messageId, channelId, router, toMapId, toServerAdress, servers]);
+  }, [
+    messageId,
+    channelId,
+    router,
+    toMapId,
+    toServerAdress,
+    servers,
+    format,
+    createNewUrl,
+  ]);
 
   return (
     <Fieldset
@@ -99,6 +113,13 @@ export function DiscordMessageFieldset({ servers, maps }: Props) {
         value={messageId}
         onChange={(e) => setMessageId(e.target.value)}
       />
+      <InputField
+        name="format"
+        label="Date format"
+        value={format}
+        onChange={(e) => setFormat(e.target.value)}
+        tooltip={getFormatTooltip()}
+      />
       <button
         type="button"
         className="btn btn-secondary w-min"
@@ -117,4 +138,13 @@ function extractValues(text: string, type: 'Server' | 'Maps'): Array<string> {
     return [];
   }
   return match[1].split(',').map((value) => value.trim());
+}
+
+function extractTime(text: string) {
+  if (text.includes('Date:')) {
+    const datePrefixMatch = text.match(/Date:\s*(.+)/);
+    return (datePrefixMatch && datePrefixMatch[1].trim()) ?? null;
+  }
+  const boldMatch = text.match(/\*\*([\s\S]*?)\*\*/);
+  return (boldMatch && boldMatch[1].trim()) ?? null;
 }

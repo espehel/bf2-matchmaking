@@ -1,17 +1,13 @@
-import React, {
-  ChangeEvent,
-  ForwardRefExoticComponent,
-  PropsWithoutRef,
-  SVGProps,
-} from 'react';
+import React, { ChangeEvent } from 'react';
 import { Colors, Sizes } from '@/lib/types/daisyui';
 import classNames from 'classnames';
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   name: string;
   label?: string;
   placeholder?: string;
-  Icon?: ForwardRefExoticComponent<PropsWithoutRef<SVGProps<SVGSVGElement>>>;
+  //Icon?: ForwardRefExoticComponent<PropsWithoutRef<SVGProps<SVGSVGElement>>>;
   defaultValue?: string | number;
   className?: string;
   tooltip?: string;
@@ -29,13 +25,13 @@ export default function InputField({
   defaultValue,
   className,
   placeholder,
-  Icon,
   value,
   onChange,
   size,
   kind,
   type,
   required,
+  tooltip,
 }: Props) {
   const classes = classNames(
     'input floating-label',
@@ -45,7 +41,6 @@ export default function InputField({
   return (
     <label className={classes}>
       {label && <span>{label}</span>}
-      {Icon && <Icon />}
       <input
         className="grow"
         name={name}
@@ -56,6 +51,11 @@ export default function InputField({
         type={type}
         required={required}
       />
+      {tooltip && (
+        <div className="tooltip tooltip-info" data-tip={tooltip}>
+          <QuestionMarkCircleIcon className="text-base-content size-5 rounded-full opacity-50" />
+        </div>
+      )}
     </label>
   );
 }
