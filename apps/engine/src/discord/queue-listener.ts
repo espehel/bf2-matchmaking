@@ -48,7 +48,7 @@ class ChannelQueueListener {
     this.label = label;
     this.originalName = originalName;
     this.updateNameJob = Job.create(
-      'channel-queue-update-name',
+      `${originalName}-queue-update-name`,
       async (input: string) => {
         await this.setName(input);
       }
