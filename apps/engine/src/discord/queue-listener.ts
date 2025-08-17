@@ -12,27 +12,23 @@ interface QueueConfig {
 }
 
 export function initQueueListeners() {
-  try {
-    [
-      {
-        channelId: '597415520337133571',
-        label: '4v4',
-        channelName: 'join-4v4-queue',
-      },
-      {
-        channelId: '597428419617095680',
-        label: '5v5',
-        channelName: 'join-5v5-queue',
-      },
-      {
-        channelId: '1045376644422045706',
-        label: '2100',
-        channelName: 'join-8v8-queue',
-      },
-    ].map(ChannelQueueListener.init);
-  } catch (e) {
-    error('initQueueListeners', e);
-  }
+  [
+    {
+      channelId: '597415520337133571',
+      label: '4v4',
+      channelName: 'join-4v4-queue',
+    },
+    {
+      channelId: '597428419617095680',
+      label: '5v5',
+      channelName: 'join-5v5-queue',
+    },
+    {
+      channelId: '1045376644422045706',
+      label: '2100',
+      channelName: 'join-8v8-queue',
+    },
+  ].map(ChannelQueueListener.init);
 }
 
 class ChannelQueueListener {
@@ -96,6 +92,7 @@ class ChannelQueueListener {
     collector.on('collect', this.handleQueueCollect);
     collector.on('end', this.handleQueueEnd);
     info('ChannelQueueListener', `Listening to queue ${this.label}`);
+    return this;
   }
 
   handleQueueEnd = (
@@ -134,8 +131,13 @@ class ChannelQueueListener {
   };
 
   static async init(config: QueueConfig) {
-    const channel = await getTextChannel('597415520337133571');
-    return new ChannelQueueListener(channel, config.label, config.channelName).start();
+    try {
+      const channel = await getTextChannel('597415520337133571');
+      return new ChannelQueueListener(channel, config.label, config.channelName).start();
+    } catch (e) {
+      error('ChannelQueueListener.init', e);
+      return null;
+    }
   }
 }
 
