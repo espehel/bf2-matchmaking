@@ -16,7 +16,7 @@ import { DateTime } from 'luxon';
 import { Match } from '@bf2-matchmaking/redis/types';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
-import { createJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 
 async function updateIdleServers() {
   verbose('updateIdleServers', 'Updating idle servers');
@@ -109,7 +109,7 @@ async function hasMatchPlayers(address: string, match: MatchesJoined, live: Live
 }
 
 export function scheduleIdleServersJob() {
-  createJob('idleServers', updateIdleServers)
+  Job.create('idleServers', updateIdleServers)
     .on('scheduled', (name, time) =>
       info(name, `Scheduled at ${DateTime.fromMillis(time).toFormat('D, TT')}`)
     )

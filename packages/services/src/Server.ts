@@ -34,7 +34,7 @@ import { Server as RedisServer } from '@bf2-matchmaking/redis/types';
 import { DateTime } from 'luxon';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { client } from '@bf2-matchmaking/supabase';
-import { createJob, deleteJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 
 function logServerMessage(address: string, message: string, context?: LogContext) {
   logMessage(`Server ${address}: ${message}`, context);
@@ -133,12 +133,11 @@ export const Server = {
     });
     await del([`servers:${address}:info`, `servers:${address}:data`]);
     logServerMessage(address, 'Server restarting');
-    createJob('reinitialize-server', reinitServer)
+    Job.create('reinitialize-server', reinitServer)
       .on('failed', (name, error) => {
         logServerError(address, 'Server reinitialization failed', error);
       })
       .on('finished', (name, output) => {
-        deleteJob(name);
         if (!output) {
           warn(address, 'Server reinitialized, but no output received');
           return;
@@ -148,6 +147,7 @@ export const Server = {
       .schedule({
         input: address,
         interval: '10s',
+        singeRun: true,
       });
     return getServer(address);
   },

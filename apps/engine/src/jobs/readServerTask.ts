@@ -1,6 +1,6 @@
 import { getPlayerList, getServerInfo } from '@bf2-matchmaking/services/rcon';
 import { warn } from '@bf2-matchmaking/logging';
-import { createJob, deleteJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 import { LiveInfo } from '@bf2-matchmaking/types/engine';
 
 async function readServerTask(address: string): Promise<LiveInfo> {
@@ -21,12 +21,12 @@ async function readServerTask(address: string): Promise<LiveInfo> {
 }
 
 export function scheduleReadServerJob(address: string) {
-  return createJob(`readServer:${address}`, readServerTask).schedule({
+  return Job.create(`readServer:${address}`, readServerTask).schedule({
     input: address,
     interval: '1s',
   });
 }
 
 export function stopReadServerJob(address: string) {
-  deleteJob(`readServer:${address}`);
+  Job.get(`readServer:${address}`).delete();
 }

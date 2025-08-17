@@ -4,7 +4,7 @@ import { error, info, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { getWithStatus } from '@bf2-matchmaking/redis/matches';
 import cron from 'node-cron';
-import { createJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 import { matchApi, matchService } from '../lib/match';
 
 const startedStatuses = [
@@ -64,7 +64,7 @@ export const closeOldMatchesTask = cron.schedule('0 0,8,16 * * *', closeOldMatch
 });
 
 export function scheduleCloseOldMatchesJob() {
-  createJob('closeOldMatches', closeOldMatches)
+  Job.create('closeOldMatches', closeOldMatches)
     .on('scheduled', (name, time) =>
       info(name, `Scheduled at ${DateTime.fromMillis(time).toFormat('D, TT')}`)
     )

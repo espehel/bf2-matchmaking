@@ -3,7 +3,7 @@ import { client } from '@bf2-matchmaking/supabase';
 import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { DateTime } from 'luxon';
 import { addMatchServer, getScheduled } from '@bf2-matchmaking/redis/matches';
-import { createJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 import { matchApi } from '../lib/match';
 
 async function startScheduledMatches() {
@@ -44,7 +44,7 @@ async function startMatch(match: ScheduledMatch) {
 }
 
 export function scheduleStartScheduledMatchesJob() {
-  createJob('startScheduledMatches', startScheduledMatches)
+  Job.create('startScheduledMatches', startScheduledMatches)
     .on('failed', (name, err) => error(name, err))
     .on('finished', (name, output) => {
       if (output) {

@@ -1,4 +1,4 @@
-import { MatchPlayersInsert, MatchPlayersRow, TeamPlayer } from '@bf2-matchmaking/types';
+import { MatchPlayersInsert, TeamPlayer } from '@bf2-matchmaking/types';
 import { Option } from 'web/src/lib/types/form';
 
 export const shuffleArray = <T = unknown>(array: Array<T>) => {

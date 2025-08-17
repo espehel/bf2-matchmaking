@@ -12,6 +12,9 @@ export const discordClient = new Client({
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildScheduledEvents,
   ],
+  rest: {
+    rejectOnRateLimit: ['/channels'],
+  },
 });
 discordClient.setMaxListeners(10);
 discordClient.on('ready', () => {

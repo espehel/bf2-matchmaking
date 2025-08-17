@@ -2,7 +2,7 @@ import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { Challenge } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import { error, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { createJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 import { matchService } from '../lib/match';
 
 async function closeOldChallenges() {
@@ -36,7 +36,7 @@ async function expireChallenge(challenge: Challenge) {
 }
 
 export function scheduleCloseOldChallengesJob() {
-  createJob('closeOldChallenges', closeOldChallenges)
+  Job.create('closeOldChallenges', closeOldChallenges)
     .on('failed', (name, err) => error(name, err))
     .schedule({ cron: '5 0 * * *' });
 }

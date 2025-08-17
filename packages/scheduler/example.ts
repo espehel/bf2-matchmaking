@@ -1,4 +1,4 @@
-import { createJob } from './src/scheduler';
+import { Job } from './src/scheduler';
 
 export async function testTask(input: number) {
   console.log('starting task');
@@ -8,7 +8,7 @@ export async function testTask(input: number) {
 }
 
 function scheduleTestTask() {
-  createJob('closeOldMatches', testTask)
+  Job.create('closeOldMatches', testTask)
     .on('scheduled', (name, time) => console.log(name, `Scheduled at ${new Date(time)}`))
     .on('started', (name, input) => console.log(name, `Started with input ${input}`))
     .on('failed', (name, err) => console.log(name, err))

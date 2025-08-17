@@ -10,7 +10,7 @@ import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
 import { parseError } from '@bf2-matchmaking/utils';
 import { Server } from '@bf2-matchmaking/services/server/Server';
-import { createJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 import { matchService } from '../lib/match';
 
 async function updateActiveServers() {
@@ -70,7 +70,7 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
 }
 
 export function scheduleActiveServersJob() {
-  createJob('activeServers', updateActiveServers)
+  Job.create('activeServers', updateActiveServers)
     .on('failed', (name, err) => error(name, err))
     .on('finished', (name, output) => {
       if (output) {

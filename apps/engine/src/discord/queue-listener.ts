@@ -1,54 +1,157 @@
-import { Message, MessageCollector } from 'discord.js';
-import { error, info } from '@bf2-matchmaking/logging';
-import { json } from '@bf2-matchmaking/redis/json';
-import { MatchConfigsRow } from '@bf2-matchmaking/types';
-import { assertObj } from '@bf2-matchmaking/utils';
+import { Message, RateLimitError, ReadonlyCollection, TextChannel } from 'discord.js';
+import { error, info, warn } from '@bf2-matchmaking/logging';
+import { assertObj, assertString } from '@bf2-matchmaking/utils';
 import { getTextChannel } from './services/message-service';
-import { set } from '@bf2-matchmaking/redis/set';
-import { CHANNEL_ID_8v8 } from '@bf2-matchmaking/discord';
+import { Duration } from 'luxon';
+import { Job } from '@bf2-matchmaking/scheduler';
 
-export async function listenTo8v8Channel() {
+interface QueueConfig {
+  channelId: string;
+  label: string;
+  channelName: string;
+}
+
+export function initQueueListeners() {
   try {
-    const channel = await getTextChannel(CHANNEL_ID_8v8);
-    const collector = channel.createMessageCollector();
-    await addQueueListener(collector);
+    [
+      {
+        channelId: '597415520337133571',
+        label: '4v4',
+        channelName: 'join-4v4-queue',
+      },
+      {
+        channelId: '597428419617095680',
+        label: '5v5',
+        channelName: 'join-5v5-queue',
+      },
+      {
+        channelId: '1045376644422045706',
+        label: '2100',
+        channelName: 'join-8v8-queue',
+      },
+    ].map(ChannelQueueListener.init);
   } catch (e) {
-    error('listenTo8v8Channel', e);
+    error('initQueueListeners', e);
   }
 }
 
-async function addQueueListener(collector: MessageCollector) {
-  const config = await json<MatchConfigsRow>(`config:${CHANNEL_ID_8v8}`).get();
-  assertObj(config, '8v8 config not found');
+class ChannelQueueListener {
+  originalName: string;
+  currentName: string;
+  channel: TextChannel;
+  label: string;
+  updateNameJob: Job<string>;
 
-  collector.filter = queueFilter;
-  collector.on('collect', handleQueueCollect);
-  collector.on('end', (collected, reason) => {
+  constructor(channel: TextChannel, label: string, originalName: string) {
+    this.channel = channel;
+    this.currentName = channel.name;
+    this.label = label;
+    this.originalName = originalName;
+    this.updateNameJob = Job.create(
+      'channel-queue-update-name',
+      async (input: string) => {
+        await this.setName(input);
+      }
+    );
+  }
+  async updateCount(current: number, max: number) {
+    await this.setName(`${this.originalName}_${current}of${max}`);
+  }
+  async setName(name: string) {
+    if (this.currentName === name) {
+      warn(
+        'ChannelQueueListener',
+        `Channel ${this.currentName} already has name ${name}`
+      );
+      return;
+    }
+    try {
+      const channel = await this.channel.setName(name);
+      info('ChannelQueueListener', `Renamed channel to ${channel.name}`);
+      this.currentName = channel.name;
+    } catch (e) {
+      if (e instanceof RateLimitError) {
+        warn(
+          'ChannelQueueListener',
+          `Rate limit hit! Retrying in ${Duration.fromMillis(e.retryAfter).toFormat(
+            'mm:ss'
+          )}`
+        );
+        this.updateNameJob.schedule({
+          input: name,
+          singeRun: true,
+          interval: `${e.retryAfter}ms`,
+        });
+      } else {
+        error('ChannelQueueListener', e);
+      }
+    }
+  }
+
+  start() {
+    const collector = this.channel.createMessageCollector();
+    collector.filter = (message) =>
+      message.content.startsWith(`> **${this.label}** (`) ||
+      message.content.startsWith(`> no players`);
+    collector.on('collect', this.handleQueueCollect);
+    collector.on('end', this.handleQueueEnd);
+    info('ChannelQueueListener', `Listening to queue ${this.label}`);
+  }
+
+  handleQueueEnd = (
+    collected: ReadonlyCollection<string, Message<boolean>>,
+    reason: string
+  ) => {
     info(
       'addQueueListener',
-      `Stopped listening to ${config.name}, after collecting ${collected.size} messages, because ${reason}.`
+      `Stopped listening to ${this.label}, after collecting ${collected.size} messages, because ${reason}.`
     );
-  });
-  info('addQueueListener', `Listening to ${config.name}`);
+  };
+
+  handleQueueCollect = async (message: Message) => {
+    if (!message.inGuild()) {
+      return;
+    }
+    info('handleQueueCollect', `<${this.channel.name}>: ${message.content}`);
+
+    if (message.content.startsWith(`> no players |`)) {
+      info('handleQueueCollect', `Queue ${this.label} has no players, resetting name`);
+      await this.setName(this.originalName);
+      return;
+    }
+
+    const line = message.content
+      .split('\n')
+      .find((line) => line.startsWith(`> **${this.label}** (`));
+    assertString(line, `Queue line not found for ${this.label}`);
+
+    const [current, max] = extractPlayerCount(this.label, line);
+    info(
+      'handleQueueCollect',
+      `Queue ${this.label} has ${current}/${max} players, updating name`
+    );
+    await this.updateCount(current, max);
+  };
+
+  static async init(config: QueueConfig) {
+    const channel = await getTextChannel('597415520337133571');
+    return new ChannelQueueListener(channel, config.label, config.channelName).start();
+  }
 }
 
-export function queueFilter(message: Message) {
-  return message.content.includes('> **2100** (');
-}
+function extractPlayerCount(label: string, input: string): [number, number] {
+  const regex = new RegExp(`\\*\\*${label}\\*\\*\\s\\((\\d+)/(\\d+)\\)`);
+  const match = input.match(regex);
+  assertObj(
+    match,
+    `Failed to extract player count for mode ${label} from input: ${input}`
+  );
 
-async function handleQueueCollect(message: Message) {
-  if (!message.inGuild()) {
-    return;
+  const current = parseInt(match[1], 10);
+  const max = parseInt(match[2], 10);
+  if (isNaN(current) || isNaN(max)) {
+    throw new Error(`Invalid player count extracted for mode ${label}: ${input}`);
   }
-  const line = message.content
-    .split('\n')
-    .find((line) => line.startsWith('> **2100** ('));
-  const players = line?.matchAll(/(?<=[`])[^\`/]+(?=[\`]|$)/g);
-  assertObj(players, '8v8 players not found');
-  const playerList = Array.from(players, (m) => m[0]);
-  console.log(playerList);
-  await set('pubobot:2100:players').del();
-  if (playerList.length > 0) {
-    await set('pubobot:2100:players').add(...playerList);
-  }
+
+  return [current, max];
 }

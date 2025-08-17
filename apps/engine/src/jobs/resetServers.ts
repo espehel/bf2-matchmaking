@@ -1,6 +1,6 @@
 import { resetServers } from '@bf2-matchmaking/services/server';
 import { error, info } from '@bf2-matchmaking/logging';
-import { createJob } from '@bf2-matchmaking/scheduler';
+import { Job } from '@bf2-matchmaking/scheduler';
 
 async function _resetServers() {
   try {
@@ -17,7 +17,7 @@ async function _resetServers() {
 }
 
 export function scheduleResetServersJob() {
-  createJob('resetServers', _resetServers)
+  Job.create('resetServers', _resetServers)
     .on('failed', (name, err) => error(name, err))
     .schedule({ cron: '30 7 * * *' });
 }

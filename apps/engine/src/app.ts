@@ -18,6 +18,7 @@ import { DateTime } from 'luxon';
 import { initGatherQueue } from './gather/gather-service';
 import { scheduleResetServersJob } from './jobs/resetServers';
 import { initDraftMessageListeners } from './discord/draft-message-listener';
+import { initQueueListeners } from './discord/queue-listener';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5006;
 
@@ -37,6 +38,7 @@ discordClient
       initChannelListener(),
       initGatherQueue(20),
     ]);
+    initQueueListeners();
     initDraftMessageListeners();
     initScheduledEventsListener();
 

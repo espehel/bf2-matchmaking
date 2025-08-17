@@ -19,13 +19,17 @@ import {
   RESTGetAPIUserResult,
   RESTGetAPIGuildMembersResult,
   RESTDeleteAPIChannelMessageResult,
+  RESTPatchAPIChannelJSONBody,
+  RESTPatchAPIChannelResult,
 } from 'discord-api-types/v10';
 import { error, logEditChannelMessage } from '@bf2-matchmaking/logging';
 import { logChannelMessage } from './message-utils';
 import { assertString } from '@bf2-matchmaking/utils';
 
 assertString(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST({ version: '10', rejectOnRateLimit: ['/channels'] }).setToken(
+  process.env.DISCORD_TOKEN
+);
 
 export interface SuccessResponse<T> {
   data: T;
@@ -100,6 +104,15 @@ const patchDiscordRoute = async <T>(
     error(`PATCH ${route}`, e);
     return { data: null, error: e };
   }
+};
+
+export const editChannel = async (
+  channelId: string,
+  body: RESTPatchAPIChannelJSONBody
+) => {
+  return patchDiscordRoute<RESTPatchAPIChannelResult>(Routes.channel(channelId), {
+    body,
+  });
 };
 
 export const getChannelMessages = (channelId: string) =>

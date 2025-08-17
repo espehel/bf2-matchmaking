@@ -1,10 +1,10 @@
 import ms, { StringValue } from 'ms';
 import { CronExpressionParser } from 'cron-parser';
-import { assertObj } from '@bf2-matchmaking/utils';
 import { EventEmitter } from 'node:events';
+import { assertObj } from '@bf2-matchmaking/utils';
 
 type EventName = 'scheduled' | 'started' | 'finished' | 'error' | 'failed' | 'stopped';
-declare interface Job<I, O> {
+export declare interface Job<I, O> {
   on(event: 'scheduled', listener: (name: string, timeoutAt: number) => void): this;
   on(event: 'started', listener: (name: string, input: I) => void): this;
   on(event: 'finished', listener: (name: string, output: O) => void): this;
@@ -18,6 +18,7 @@ export interface ScheduleOptions<I = undefined> {
   interval?: StringValue;
   input: I;
   retries?: number;
+  singeRun?: boolean;
 }
 function getTimeoutMs({ cron, interval }: Omit<ScheduleOptions, 'input'>) {
   const cronMs = cron
@@ -34,7 +35,9 @@ function getTimeoutMs({ cron, interval }: Omit<ScheduleOptions, 'input'>) {
   }
   return Math.min(cronMs, intervalMs);
 }
-class Job<I = undefined, O = unknown> extends EventEmitter {
+
+const jobs = new Map<string, Job<any, any>>();
+export class Job<I = undefined, O = unknown> extends EventEmitter {
   timeout: NodeJS.Timeout | undefined;
   errorCount = 0;
   stopped = false;
@@ -68,7 +71,7 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
           this.emit('error', e);
         }
       } finally {
-        if (!(this.stopped || this.hasFailed(options.retries))) {
+        if (!(this.stopped || this.hasFailed(options.retries) || options.singeRun)) {
           this.schedule(options);
         }
       }
@@ -76,10 +79,12 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
     this.emit('scheduled', timeoutAt);
     return this;
   }
-  stop() {
+  delete() {
     clearTimeout(this.timeout);
     this.stopped = true;
+    jobs.delete(this.name);
     this.emit('stopped');
+    return this;
   }
   hasFailed(retries: number = 5) {
     return this.errorCount > retries;
@@ -95,24 +100,25 @@ class Job<I = undefined, O = unknown> extends EventEmitter {
     this.on('stopped', (name) => console.log(name, 'stopped'));
     return this;
   }
-}
-
-const jobs = new Map<string, Job<any, any>>();
-export function createJob<I = undefined, O = unknown>(name: string, task: Task<I, O>) {
-  const job = new Job(name, task);
-  // If we don't listen to error events, they will be unhandled and crash the process
-  job.on('error', (name, err) => console.error(name, 'error', job.errorCount, err));
-  jobs.set(name, job);
-  return job;
-}
-export function getJob(name: string) {
-  const job = jobs.get(name);
-  assertObj(job, `Cron Job ${name} not found`);
-  return job;
-}
-export function deleteJob(name: string) {
-  const job = getJob(name);
-  job.stop();
-  jobs.delete(name);
-  return 'OK';
+  static create<I = undefined, O = unknown>(name: string, task: Task<I, O>) {
+    if (jobs.has(name)) {
+      throw new Error(`Cron Job ${name} already exists`);
+    }
+    const job = new Job(name, task);
+    // If we don't listen to error events, they will be unhandled and crash the process
+    job.on('error', (name, err) => console.error(name, 'error', job.errorCount, err));
+    jobs.set(name, job);
+    return job;
+  }
+  static exists(name: string) {
+    return jobs.has(name);
+  }
+  static get(name: string) {
+    const job = jobs.get(name);
+    assertObj(job, `Job ${name} not found`);
+    return job;
+  }
+  static getSafe(name: string) {
+    return jobs.get(name) ?? null;
+  }
 }
