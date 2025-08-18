@@ -33,14 +33,12 @@ export function initQueueListeners() {
 
 class ChannelQueueListener {
   originalName: string;
-  currentName: string;
   channel: TextChannel;
   label: string;
   updateNameJob: Job<string>;
 
   constructor(channel: TextChannel, label: string, originalName: string) {
     this.channel = channel;
-    this.currentName = channel.name;
     this.label = label;
     this.originalName = originalName;
     this.updateNameJob = Job.create(
@@ -54,24 +52,23 @@ class ChannelQueueListener {
     await this.setName(`${this.originalName}_${current}of${max}`);
   }
   async setName(name: string) {
-    if (this.currentName === name) {
+    if (this.channel.name === name) {
       warn(
         'ChannelQueueListener',
-        `Channel ${this.currentName} already has name ${name}`
+        `Channel ${this.channel.name} already has name ${name}`
       );
       return;
     }
     try {
-      const channel = await this.channel.setName(name);
-      info('ChannelQueueListener', `Renamed channel to ${channel.name}`);
-      this.currentName = channel.name;
+      this.channel = await this.channel.setName(name);
+      info('ChannelQueueListener', `Renamed channel to ${this.channel.name}`);
     } catch (e) {
       if (e instanceof RateLimitError) {
         warn(
           'ChannelQueueListener',
-          `Rate limit hit! Retrying in ${Duration.fromMillis(e.retryAfter).toFormat(
-            'mm:ss'
-          )}`
+          `Rate limit hit for ${this.channel.name}! Retrying in ${Duration.fromMillis(
+            e.retryAfter
+          ).toFormat('mm:ss')}`
         );
         this.updateNameJob.schedule({
           input: name,
@@ -132,7 +129,7 @@ class ChannelQueueListener {
 
   static async init(config: QueueConfig) {
     try {
-      const channel = await getTextChannel('597415520337133571');
+      const channel = await getTextChannel(config.channelId);
       return new ChannelQueueListener(channel, config.label, config.channelName).start();
     } catch (e) {
       error('ChannelQueueListener.init', e);

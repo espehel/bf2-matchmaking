@@ -110,9 +110,6 @@ async function hasMatchPlayers(address: string, match: MatchesJoined, live: Live
 
 export function scheduleIdleServersJob() {
   Job.create('idleServers', updateIdleServers)
-    .on('scheduled', (name, time) =>
-      info(name, `Scheduled at ${DateTime.fromMillis(time).toFormat('D, TT')}`)
-    )
     .on('failed', (name, err) => error(name, err))
     .on('finished', (name, output) => verbose(name, `${output} idle servers processed`))
     .schedule({ interval: '30s' });
