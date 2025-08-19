@@ -73,6 +73,8 @@ export class Job<I = undefined, O = unknown> extends EventEmitter {
       } finally {
         if (!(this.stopped || this.hasFailed(options.retries) || options.singeRun)) {
           this.schedule(options);
+        } else if (options.singeRun) {
+          this.delete();
         }
       }
     }, timeoutMs);
@@ -81,9 +83,13 @@ export class Job<I = undefined, O = unknown> extends EventEmitter {
   }
   delete() {
     clearTimeout(this.timeout);
-    this.stopped = true;
     jobs.delete(this.name);
-    this.emit('stopped');
+
+    if (!this.stopped) {
+      this.stopped = true;
+      this.emit('stopped');
+    }
+
     return this;
   }
   hasFailed(retries: number = 5) {
