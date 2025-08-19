@@ -1,6 +1,6 @@
 import { LiveMatch, MatchesJoined, MatchesRow } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
-import { getMatchLive, setMatchLive } from '@bf2-matchmaking/redis/matches';
+import { getMatchLiveSafe, setMatchLive } from '@bf2-matchmaking/redis/matches';
 import { getLiveServerByMatchId } from '../servers/server-service';
 
 export async function createPendingMatch(match: MatchesRow | MatchesJoined) {
@@ -14,7 +14,7 @@ export async function createPendingMatch(match: MatchesRow | MatchesJoined) {
 
 export async function getMatch(matchId: string): Promise<LiveMatch | null> {
   const server = await getLiveServerByMatchId(matchId);
-  const match = await getMatchLive(matchId);
+  const match = await getMatchLiveSafe(matchId);
 
   if (!match) {
     return null;
