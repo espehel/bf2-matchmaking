@@ -1,5 +1,5 @@
 import { Message, RateLimitError, ReadonlyCollection, TextChannel } from 'discord.js';
-import { error, info, warn } from '@bf2-matchmaking/logging';
+import { error, info, verbose, warn } from '@bf2-matchmaking/logging';
 import { assertObj, assertString } from '@bf2-matchmaking/utils';
 import { getTextChannel } from './services/message-service';
 import { Duration } from 'luxon';
@@ -61,7 +61,7 @@ class ChannelQueueListener {
     }
     try {
       this.channel = await this.channel.setName(name);
-      info('ChannelQueueListener', `Renamed channel to ${this.channel.name}`);
+      verbose('ChannelQueueListener', `Renamed channel to ${this.channel.name}`);
     } catch (e) {
       if (e instanceof RateLimitError) {
         warn(
@@ -106,9 +106,9 @@ class ChannelQueueListener {
     if (!message.inGuild()) {
       return;
     }
-    info('handleQueueCollect', `<${this.channel.name}>: ${message.content}`);
+    verbose('ChannelQueueListener', `<${this.channel.name}>: ${message.content}`);
 
-    if (message.content.startsWith(`> no players |`)) {
+    if (message.content.startsWith(`> no players`)) {
       info('handleQueueCollect', `Queue ${this.label} has no players, resetting name`);
       await this.setName(this.originalName);
       return;
@@ -117,14 +117,21 @@ class ChannelQueueListener {
     const line = message.content
       .split('\n')
       .find((line) => line.startsWith(`> **${this.label}** (`));
-    assertString(line, `Queue line not found for ${this.label}`);
+    if (!line) {
+      warn('handleQueueCollect', `Queue line not found for ${this.label}`);
+      return;
+    }
 
-    const [current, max] = extractPlayerCount(this.label, line);
-    info(
-      'handleQueueCollect',
-      `Queue ${this.label} has ${current}/${max} players, updating name`
-    );
-    await this.updateCount(current, max);
+    try {
+      const [current, max] = extractPlayerCount(this.label, line);
+      verbose(
+        'ChannelQueueListener',
+        `Queue ${this.label} has ${current}/${max} players, updating name`
+      );
+      await this.updateCount(current, max);
+    } catch (e) {
+      error('ChannelQueueListener', e);
+    }
   };
 
   static async init(config: QueueConfig) {
