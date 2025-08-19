@@ -133,7 +133,7 @@ export const Server = {
     });
     await del([`servers:${address}:info`, `servers:${address}:data`]);
     logServerMessage(address, 'Server restarting');
-    Job.create('reinitialize-server', reinitServer)
+    Job.create(`reinitialize-${address}`, reinitServer)
       .on('failed', (name, error) => {
         logServerError(address, 'Server reinitialization failed', error);
       })
