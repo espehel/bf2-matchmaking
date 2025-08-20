@@ -1,0 +1,21 @@
+{
+  "name": "@bf2-matchmaking/teamspeak",
+  "exports": {
+    ".": "./src/constants.ts",
+    "./api": "./src/teamspeak-api.ts",
+    "./events": "./src/teamspeak-events.ts"
+  },
+  "version": "1.0.0",
+  "scripts": {
+    "verify": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bf2-matchmaking/logging": "*",
+    "@bf2-matchmaking/redis": "*",
+    "@bf2-matchmaking/utils": "*",
+    "ts3-nodejs-library": "^3.5.1"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}

@@ -6,6 +6,10 @@
   "engines": {
     "node": ">=18"
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./rest": "./src/discord-rest.ts"
+  },
   "scripts": {
     "verify": "tsc --noEmit"
   },

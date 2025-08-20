@@ -51,7 +51,7 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
       const match = await matches(dbClient).create(values).then(verifySingleResult);
       const redisResult = await putMatch(match);
 
-      const owner = await session(dbClient).getSessionPlayer();
+      const owner = await session(dbClient).getSessionPlayerSafe();
       const creator = owner ? owner.nick : 'system';
 
       logMatchMessage(match.id, `Match ${match.status} by ${creator}`, {
@@ -84,7 +84,7 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
       const redisResult = await removeMatch(matchId);
       const deletedPubobotMatch = await cleanUpPubobotMatch(matchId);
 
-      const owner = await session(dbClient).getSessionPlayer();
+      const owner = await session(dbClient).getSessionPlayerSafe();
       const creator = owner ? owner.nick : 'system';
 
       logMatchMessage(matchId, `Match ${removedMatch.status} by ${creator}`, {

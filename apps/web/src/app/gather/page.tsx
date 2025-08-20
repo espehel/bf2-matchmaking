@@ -6,10 +6,21 @@ import PlayersSection from '@/components/gather/PlayersSection';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import ConnectionsSection from '@/components/gather/ConnectionsSection';
+import SectionFallback from '@/components/commons/SectionFallback';
 
-export default async function Page() {
+const GATHER_CONFIG = 20;
+
+interface Props {
+  searchParams: Promise<{ auto?: string }>;
+}
+
+export default async function Page(props: Props) {
+  const searchParams = await props.searchParams;
   const cookieStore = await cookies();
-  const config = await supabase(cookieStore).getMatchConfig(20).then(verifySingleResult);
+  const config = await supabase(cookieStore)
+    .getMatchConfig(GATHER_CONFIG)
+    .then(verifySingleResult);
   const { state, events, players } = await api.v2.getGather(config.id).then(verify);
 
   return (
@@ -19,8 +30,11 @@ export default async function Page() {
         Status: {state.status} ({players.length}/{config.size})
       </p>
       <div className="flex gap-8  mt-8">
+        <Suspense fallback={<SectionFallback title="Connections" />}>
+          <ConnectionsSection config={config} serverAddress={state.address} />
+        </Suspense>
         <PlayersSection players={players} />
-        <Suspense fallback={null}>
+        <Suspense fallback={<SectionFallback title="No server selected" />}>
           <ServerSection
             address={state.address}
             configId={config.id}

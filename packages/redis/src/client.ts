@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+import { wait } from '@bf2-matchmaking/utils';
 
 export function createNewClient(name: string) {
   return createClient({ url: process.env.REDIS_URL, name: name || 'default_client' })
@@ -30,6 +31,7 @@ export function getClient() {
   return handleClientConnection(defaultClient);
 }
 
+let retries = 0;
 export async function handleClientConnection(client: ReturnType<typeof createClient>) {
   if (client && client.isReady) {
     return client;
@@ -39,13 +41,19 @@ export async function handleClientConnection(client: ReturnType<typeof createCli
     const promise = new Promise<typeof client>((resolve, reject) => {
       client
         .on('ready', () => {
+          retries = 0;
           resolve(client);
         })
         .on('error', (err) => {
+          retries++;
           reject(err);
         });
     });
     return promise;
+  }
+
+  if (retries > 0) {
+    await wait(1);
   }
 
   return client.connect();

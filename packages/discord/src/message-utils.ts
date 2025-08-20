@@ -1,4 +1,4 @@
-import { logMessage } from '@bf2-matchmaking/logging';
+import { logMessage } from '@bf2-matchmaking/logging/logtail';
 import { LogContext } from '@bf2-matchmaking/types';
 
 interface MessageLike {

@@ -9,13 +9,14 @@
     "verify": "tsc --noEmit"
   },
   "dependencies": {
-    "@bf2-matchmaking/auth": "^1.0.0",
+    "@bf2-matchmaking/auth": "*",
     "@bf2-matchmaking/discord": "*",
     "@bf2-matchmaking/logging": "*",
     "@bf2-matchmaking/redis": "*",
     "@bf2-matchmaking/schemas": "*",
     "@bf2-matchmaking/server": "*",
     "@bf2-matchmaking/supabase": "*",
+    "@bf2-matchmaking/teamspeak": "*",
     "@bf2-matchmaking/types": "*",
     "@bf2-matchmaking/utils": "*",
     "@headlessui/react": "^2.1.8",

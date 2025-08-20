@@ -21,10 +21,11 @@ import {
   RESTDeleteAPIChannelMessageResult,
   RESTPatchAPIChannelJSONBody,
   RESTPatchAPIChannelResult,
+  RESTGetAPIGuildMemberResult,
 } from 'discord-api-types/v10';
-import { error, logEditChannelMessage } from '@bf2-matchmaking/logging';
 import { logChannelMessage } from './message-utils';
 import { assertString } from '@bf2-matchmaking/utils';
+import { error } from '@bf2-matchmaking/logging/winston';
 
 assertString(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
 const rest = new REST({ version: '10', rejectOnRateLimit: ['/channels'] }).setToken(
@@ -163,12 +164,10 @@ export const editChannelMessage = async (
   messageId: string,
   body: RESTPatchAPIChannelMessageJSONBody
 ) => {
-  const res = await patchDiscordRoute<RESTPatchAPIChannelMessageResult>(
+  return patchDiscordRoute<RESTPatchAPIChannelMessageResult>(
     Routes.channelMessage(channelId, messageId),
     { body }
   );
-  logEditChannelMessage(channelId, messageId, body.content, body.embeds);
-  return res;
 };
 
 export const removeChannelMessage = (channelId: string, messageId: string) =>
@@ -252,5 +251,10 @@ export function getDiscordUser(userId: string) {
 export function listGuildMembers(guildId: string) {
   return getDiscordRoute<RESTGetAPIGuildMembersResult>(
     `${Routes.guildMembers(guildId)}?limit=1000`
+  );
+}
+export function getGuildMember(guildId: string, userId: string) {
+  return getDiscordRoute<RESTGetAPIGuildMemberResult>(
+    `${Routes.guildMember(guildId, userId)}`
   );
 }

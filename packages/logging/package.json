@@ -3,6 +3,11 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "version": "1.0.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./logtail": "./src/logtail.ts",
+    "./winston": "./src/winston.ts"
+  },
   "scripts": {
     "verify": "tsc --noEmit"
   },

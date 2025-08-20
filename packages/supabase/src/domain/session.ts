@@ -1,4 +1,4 @@
-import { ResolvableSupabaseClient, resolveClient } from '../index';
+import { ResolvableSupabaseClient, resolveClient, verifySingleResult } from '../index';
 import { warn } from '@bf2-matchmaking/logging';
 
 export function session(supabaseClient: ResolvableSupabaseClient) {
@@ -12,6 +12,22 @@ export function session(supabaseClient: ResolvableSupabaseClient) {
     return data.session;
   }
   async function getSessionPlayer() {
+    const client = await resolveClient(supabaseClient);
+    const { data, error } = await client.auth.getUser();
+    if (error) {
+      throw error;
+    }
+    if (!data) {
+      throw new Error('Not logged in');
+    }
+    return await client
+      .from('players')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single()
+      .then(verifySingleResult);
+  }
+  async function getSessionPlayerSafe() {
     const client = await resolveClient(supabaseClient);
     const {
       data: { user },
@@ -34,5 +50,6 @@ export function session(supabaseClient: ResolvableSupabaseClient) {
   return {
     getSession,
     getSessionPlayer,
+    getSessionPlayerSafe,
   };
 }

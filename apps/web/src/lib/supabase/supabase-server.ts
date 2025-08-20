@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { matches as m } from '@bf2-matchmaking/supabase/matches';
 import { configs as c } from '@bf2-matchmaking/supabase/configs';
 import { players as p } from '@bf2-matchmaking/supabase/players';
+import { session as s } from '@bf2-matchmaking/supabase/session';
 import { cookies } from 'next/headers';
 
 export function createServerSupabaseClient(cookieStore: ReadonlyRequestCookies) {
@@ -65,3 +66,4 @@ export async function createClient() {
 export const configs = c(createClient);
 export const matches = m(createClient);
 export const players = p(createClient);
+export const session = s(createClient);
