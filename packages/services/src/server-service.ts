@@ -12,6 +12,7 @@ import { set } from '@bf2-matchmaking/redis/set';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { ServiceError } from './error';
 import { createRconsCache } from './cache-service';
+import { del, matchKeys } from '@bf2-matchmaking/redis/generic';
 
 export async function createLiveInfo(
   address: string,
@@ -107,12 +108,15 @@ export async function resetServers() {
   try {
     await createRconsCache();
     const servers = await client().getServers().then(verifyResult);
+    const serverData = await matchKeys('servers:*', (key) => !key.endsWith(':log'));
     const [
+      deletedServerData,
       deletedIdleServers,
       deletedOfflineServers,
       deletedRestartingServers,
       deletedActiveServers,
     ] = await Promise.all([
+      del(serverData),
       set('servers:idle').del(),
       set('servers:offline').del(),
       set('servers:restarting').del(),
@@ -131,6 +135,7 @@ export async function resetServers() {
     }
 
     return {
+      deletedServerData,
       idleServers,
       offlineServers,
       deletedIdleServers,

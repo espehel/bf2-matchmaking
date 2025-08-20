@@ -32,11 +32,15 @@ export async function save() {
   return client.save();
 }
 
-export async function matchKeys(pattern: string) {
+type ArrayFilterPredicate<T> = (value: T, index: number, array: T[]) => boolean;
+export async function matchKeys(pattern: string, filter?: ArrayFilterPredicate<string>) {
   const client = await getClient();
   const res = [];
   for await (const value of client.scanIterator({ MATCH: pattern })) {
     res.push(value);
+  }
+  if (filter) {
+    return res.filter(filter);
   }
   return res;
 }
