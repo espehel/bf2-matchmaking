@@ -72,9 +72,6 @@ export async function saveMatchDemos(
 
 async function fetchDemos(location: string, fromDate?: string) {
   const { data } = await getText(location);
-
-  info('fetchDemos', `Server ${location}: {"from": "${fromDate}", "data": "${data}"}`);
-
   return data
     ? getHrefs(data)
         .filter((t) => t.startsWith('auto_') && t.endsWith('.bf2demo'))
