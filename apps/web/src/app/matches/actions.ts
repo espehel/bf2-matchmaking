@@ -5,8 +5,10 @@ import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { isScheduledMatch, MatchesInsert, MatchStatus } from '@bf2-matchmaking/types';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
-import { postGuildScheduledEvent } from '@bf2-matchmaking/discord';
-import { createScheduledMatchEvent } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
+import {
+  postGuildScheduledEvent,
+  createScheduledMatchEvent,
+} from '@bf2-matchmaking/discord';
 import { revalidatePath } from 'next/cache';
 import { getArray } from '@bf2-matchmaking/utils/src/form-data';
 export async function createScheduledMatch(formData: FormData) {

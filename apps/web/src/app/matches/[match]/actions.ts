@@ -7,18 +7,16 @@ import { api, assertObj, assertString, getPlayersToSwitch } from '@bf2-matchmaki
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   deleteGuildScheduledEvent,
+  getMatchDescription,
   patchGuildScheduledEvent,
 } from '@bf2-matchmaking/discord';
-import { getMatchDescription } from '@bf2-matchmaking/discord/src/discord-scheduled-events';
 import { DateTime } from 'luxon';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
 import { ActionInput, ActionResult } from '@/lib/types/form';
 import {
   getOptionalValueAsNumber,
-  getValue,
   getValueAsNumber,
-  getValues,
 } from '@bf2-matchmaking/utils/src/form-data';
 import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
 

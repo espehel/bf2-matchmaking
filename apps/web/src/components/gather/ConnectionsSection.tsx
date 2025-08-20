@@ -46,7 +46,7 @@ export default async function ConnectionsSection({ config, serverAddress }: Prop
       <h3>Teamspeak</h3>
       <p>Link to setup teamspeak id</p>
       {teamspeak ? (
-        <p>{teamspeak.channelGroupId}</p>
+        <p>{/*teamspeak.channelGroupId*/}not happening</p>
       ) : (
         <Link className="link" href={TEAMSPEAK_SERVER_URI}>
           Connect
