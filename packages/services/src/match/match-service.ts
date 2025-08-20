@@ -1,9 +1,4 @@
-import {
-  client,
-  createServiceClient,
-  ResolvableSupabaseClient,
-  verifyResult,
-} from '@bf2-matchmaking/supabase';
+import { client, verifyResult } from '@bf2-matchmaking/supabase';
 import {
   isDiscordMatch,
   isNotNull,

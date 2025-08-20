@@ -89,14 +89,16 @@ export async function removeMatch(matchId: string | number) {
   }
 
   const setRemoveRes = await set(`matches:${oldMatch.status}`).remove(matchId.toString());
-  const jsonDelRes = await del([
+  const keysDelRes = await del([
     `matches:${matchId}`,
     `matches:${matchId}:servers`,
     `matches:${matchId}:players`,
     `matches:${matchId}:draft`,
+    `matches:${matchId}:live`,
+    `matches:${matchId}:log`,
   ]);
   info('removeMatch', `Match ${matchId} removed with status ${oldMatch.status}`);
-  return { setRemoveRes, jsonDelRes };
+  return { setRemoveRes, jsonDelRes: keysDelRes };
 }
 
 export async function getMatchLive(matchId: string | number) {
