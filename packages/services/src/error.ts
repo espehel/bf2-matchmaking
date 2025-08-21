@@ -51,7 +51,7 @@ export class ServiceError extends Error {
 
 export function parseError(e: unknown): string {
   if (e instanceof ZodError) {
-    return e.errors.map((err) => `${err.path.join('.')} - ${err.message}`).join(', ');
+    return e.issues.map((err) => `${err.path.join('.')} - ${err.message}`).join(', ');
   }
   if (e instanceof Error) {
     return e.message;

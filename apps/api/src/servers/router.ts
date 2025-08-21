@@ -31,6 +31,8 @@ import { Server } from '@bf2-matchmaking/services/server/Server';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { getAllServers } from '@bf2-matchmaking/redis/servers';
 import { ServerLogEntry } from '@bf2-matchmaking/types/server';
+import { serverGetProfileXmlQueriesSchema } from '@bf2-matchmaking/services/schemas/servers.ts';
+import { generateProfileXml } from './profile-generator';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -267,4 +269,14 @@ serversRouter.get('/:ip', async (ctx: Context) => {
 
 serversRouter.get('/', async (ctx) => {
   ctx.body = await getLiveServers();
+});
+
+serversRouter.get('/:address/profile.xml', async (ctx: Context): Promise<void> => {
+  const options = serverGetProfileXmlQueriesSchema.safeParse(ctx.query);
+  if (!options.success) {
+    ctx.throw('Invalid query parameters', 400, options.error.message);
+  }
+
+  ctx.set('Content-Type', 'text/xml');
+  ctx.body = generateProfileXml(options.data);
 });
