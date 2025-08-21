@@ -20,6 +20,7 @@ export async function restartWithInfantryMode(
     serverName: serverName || data.name,
     apiKey,
     usersxml,
+    profilexml: null,
     mode: 'infantry',
   });
 }
@@ -41,6 +42,7 @@ export async function restartWithVehicleMode(
     serverName: serverName || data.name,
     apiKey,
     usersxml,
+    profilexml: null,
     mode: 'vehicles',
   });
 }
