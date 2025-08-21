@@ -3,12 +3,12 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "moduleResolution": "nodenext",
+    "moduleResolution": "NodeNext",
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "noEmit": true,
     "strict": true,
-    "module": "ES2022"
+    "module": "NodeNext"
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]
