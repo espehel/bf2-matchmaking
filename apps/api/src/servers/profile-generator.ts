@@ -96,332 +96,318 @@ export function generateProfileXml({
     <VotingEnableTeamOnly>false</VotingEnableTeamOnly>
     <InfantryOnly>${InfantryOnly.toString()}</InfantryOnly>
   </GameInfo>
-  <RunningMaps>
+    <RunningMaps>
     <RunningMapID>1</RunningMapID>
-    <Order>0</Order>
-    <MapName>strike_at_karkand</MapName>
+    <Order>1</Order>
+    <MapName>Strike At Karkand</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>2</RunningMapID>
-    <Order>1</Order>
-    <MapName>olesko_keep</MapName>
+    <Order>2</Order>
+    <MapName>Operation Blue Pearl</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>3</RunningMapID>
-    <Order>2</Order>
-    <MapName>gulf_of_oman</MapName>
+    <Order>3</Order>
+    <MapName>Dalian Plant</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>4</RunningMapID>
-    <Order>3</Order>
-    <MapName>dalian_plant</MapName>
+    <Order>4</Order>
+    <MapName>Daqing Oilfields</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>5</RunningMapID>
-    <Order>4</Order>
-    <MapName>daqing_oilfields</MapName>
+    <Order>5</Order>
+    <MapName>Dragon Valley</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>6</RunningMapID>
-    <Order>5</Order>
-    <MapName>dragon_valley</MapName>
+    <Order>6</Order>
+    <MapName>Fushe Pass</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>7</RunningMapID>
-    <Order>6</Order>
-    <MapName>fushe_pass</MapName>
+    <Order>7</Order>
+    <MapName>Gulf Of Oman</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>8</RunningMapID>
-    <Order>7</Order>
-    <MapName>highway_tampa</MapName>
+    <Order>8</Order>
+    <MapName>Highway Tampa</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>9</RunningMapID>
-    <Order>8</Order>
-    <MapName>kubra_dam</MapName>
+    <Order>9</Order>
+    <MapName>Kubra Dam</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>10</RunningMapID>
-    <Order>9</Order>
-    <MapName>mashtuur_city</MapName>
+    <Order>10</Order>
+    <MapName>Mashtuur City</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>11</RunningMapID>
-    <Order>10</Order>
-    <MapName>midnight_sun</MapName>
+    <Order>11</Order>
+    <MapName>Midnight Sun</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>12</RunningMapID>
-    <Order>11</Order>
-    <MapName>operation_blue_pearl</MapName>
+    <Order>12</Order>
+    <MapName>Operation Clean Sweep</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>13</RunningMapID>
-    <Order>12</Order>
-    <MapName>operation_clean_sweep</MapName>
+    <Order>13</Order>
+    <MapName>Operation Harvest</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>14</RunningMapID>
-    <Order>13</Order>
-    <MapName>operationharvest</MapName>
+    <Order>14</Order>
+    <MapName>Operation Road Rage</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>15</RunningMapID>
-    <Order>14</Order>
-    <MapName>operationroadrage</MapName>
+    <Order>15</Order>
+    <MapName>Operation Smoke Screen</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>16</RunningMapID>
-    <Order>15</Order>
-    <MapName>operationsmokescreen</MapName>
+    <Order>16</Order>
+    <MapName>Road To Jalalabad</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>0</RunningMapID>
+    <Order>0</Order>
+    <MapName>Sharqi Peninsula</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>17</RunningMapID>
-    <Order>16</Order>
-    <MapName>road_to_jalalabad</MapName>
+    <Order>17</Order>
+    <MapName>Songhua Stalemate</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>18</RunningMapID>
-    <Order>17</Order>
-    <MapName>sharqi_peninsula</MapName>
+    <Order>18</Order>
+    <MapName>Taraba Quarry</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>19</RunningMapID>
-    <Order>18</Order>
-    <MapName>songhua_stalemate</MapName>
+    <Order>19</Order>
+    <MapName>Wake Island 2007</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>20</RunningMapID>
-    <Order>19</Order>
-    <MapName>taraba_quarry</MapName>
+    <Order>20</Order>
+    <MapName>Zatar Wetlands</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>21</RunningMapID>
-    <Order>20</Order>
-    <MapName>wake_island_2007</MapName>
+    <Order>21</Order>
+    <MapName>Great Wall</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>22</RunningMapID>
-    <Order>21</Order>
-    <MapName>zatar_wetlands</MapName>
+    <Order>22</Order>
+    <MapName>Twl Inf East Side</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>23</RunningMapID>
-    <Order>22</Order>
-    <MapName>greatwall</MapName>
+    <Order>23</Order>
+    <MapName>Karkandfu</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>24</RunningMapID>
-    <Order>23</Order>
-    <MapName>twl_inf_east_side</MapName>
+    <Order>24</Order>
+    <MapName>Jungle Stream</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>25</RunningMapID>
-    <Order>24</Order>
-    <MapName>karkandfu</MapName>
+    <Order>25</Order>
+    <MapName>Hue</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>26</RunningMapID>
-    <Order>25</Order>
-    <MapName>jungle_stream</MapName>
+    <Order>26</Order>
+    <MapName>Goods Station</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>27</RunningMapID>
-    <Order>26</Order>
-    <MapName>hue</MapName>
+    <Order>27</Order>
+    <MapName>Frostbite Night</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>28</RunningMapID>
-    <Order>27</Order>
-    <MapName>goods_station</MapName>
+    <Order>28</Order>
+    <MapName>Dines City</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>29</RunningMapID>
-    <Order>28</Order>
-    <MapName>frostbite_night</MapName>
+    <Order>29</Order>
+    <MapName>City Park</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>30</RunningMapID>
-    <Order>29</Order>
-    <MapName>dines_city</MapName>
+    <Order>30</Order>
+    <MapName>Sharqi West</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>31</RunningMapID>
-    <Order>30</Order>
-    <MapName>city_park</MapName>
+    <Order>31</Order>
+    <MapName>City Of The Dead</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>32</RunningMapID>
-    <Order>31</Order>
-    <MapName>sharqi_west</MapName>
+    <Order>32</Order>
+    <MapName>Basrah Streets</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>33</RunningMapID>
-    <Order>32</Order>
-    <MapName>city_of_the_dead</MapName>
+    <Order>33</Order>
+    <MapName>Aces High</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>34</RunningMapID>
-    <Order>33</Order>
-    <MapName>basrah_streets</MapName>
+    <Order>34</Order>
+    <MapName>Anctoville 1944</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>35</RunningMapID>
-    <Order>34</Order>
-    <MapName>aces_high</MapName>
+    <Order>35</Order>
+    <MapName>De Dust2</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>36</RunningMapID>
-    <Order>35</Order>
-    <MapName>anctoville_1944</MapName>
+    <Order>36</Order>
+    <MapName>Olesko Keep</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>37</RunningMapID>
-    <Order>36</Order>
-    <MapName>de_dust2</MapName>
+    <Order>37</Order>
+    <MapName>Opk Code Bravo</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>38</RunningMapID>
-    <Order>37</Order>
-    <MapName>jungle_city</MapName>
+    <Order>38</Order>
+    <MapName>Opk Village</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>39</RunningMapID>
-    <Order>38</Order>
-    <MapName>opk_code_bravo</MapName>
+    <Order>39</Order>
+    <MapName>The Battle For Sfakia</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>40</RunningMapID>
-    <Order>39</Order>
-    <MapName>opk_village</MapName>
+    <Order>40</Order>
+    <MapName>Tunis 1943</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>41</RunningMapID>
-    <Order>40</Order>
-    <MapName>the_battle_for_sfakia</MapName>
+    <Order>41</Order>
+    <MapName>Jungle City</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>42</RunningMapID>
-    <Order>41</Order>
-    <MapName>tunis_1943</MapName>
+    <Order>42</Order>
+    <MapName>Alcazar</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>43</RunningMapID>
-    <Order>42</Order>
-    <MapName>street</MapName>
+    <Order>43</Order>
+    <MapName>Street</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
   <RunningMaps>
     <RunningMapID>44</RunningMapID>
-    <Order>43</Order>
-    <MapName>waterfront</MapName>
-    <GameMode>gpm_cq</GameMode>
-    <MaxPlayers>16</MaxPlayers>
-  </RunningMaps>
-  <RunningMaps>
-    <RunningMapID>45</RunningMapID>
     <Order>44</Order>
-    <MapName>alcazar</MapName>
-    <GameMode>gpm_cq</GameMode>
-    <MaxPlayers>16</MaxPlayers>
-  </RunningMaps>
-  <RunningMaps>
-    <RunningMapID>46</RunningMapID>
-    <Order>45</Order>
-    <MapName>street</MapName>
-    <GameMode>gpm_cq</GameMode>
-    <MaxPlayers>16</MaxPlayers>
-  </RunningMaps>
-  <RunningMaps>
-    <RunningMapID>47</RunningMapID>
-    <Order>46</Order>
-    <MapName>waterfront</MapName>
+    <MapName>Waterfront</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
