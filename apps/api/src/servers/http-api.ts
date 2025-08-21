@@ -1,6 +1,7 @@
 import { assertObj, assertString, postJSON } from '@bf2-matchmaking/utils';
 import { ServerInfo } from '@bf2-matchmaking/types/rcon';
 import { getServerLiveInfo, getServerDataSafe } from '@bf2-matchmaking/redis/servers';
+import { RestartBF2ServerData } from '@bf2-matchmaking/types/server';
 
 export async function restartWithInfantryMode(
   address: string,
@@ -41,6 +42,22 @@ export async function restartWithVehicleMode(
     apiKey,
     usersxml,
     mode: 'vehicles',
+  });
+}
+
+export async function restartWithProfile(
+  address: string,
+  data: RestartBF2ServerData,
+  usersxml: string | null
+) {
+  assertString(process.env.HTTP_API_KEY);
+  const info = await getServerLiveInfo(address);
+  assertObj(info, `Failed to get ${address} info from redis`);
+  const apiKey = process.env.HTTP_API_KEY;
+  return postJSON(`http://${address}:1025/restart`, {
+    apiKey,
+    usersxml,
+    ...data,
   });
 }
 

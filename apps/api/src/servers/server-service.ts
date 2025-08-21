@@ -1,20 +1,29 @@
 import {
   getAllServers,
   getServer,
+  getServerData,
   getServerDataSafe,
   getServerLiveInfo,
 } from '@bf2-matchmaking/redis/servers';
 import { error, info, logErrorMessage, logMessage, warn } from '@bf2-matchmaking/logging';
-import { isNotNull, PendingServer, ServerInfo, ServersRow } from '@bf2-matchmaking/types';
+import {
+  isNotNull,
+  PendingServer,
+  PubobotMatch,
+  ServerInfo,
+  ServersRow,
+} from '@bf2-matchmaking/types';
 import { createSocket, getServerInfo } from '@bf2-matchmaking/services/rcon';
-import { assertObj, wait } from '@bf2-matchmaking/utils';
+import { assertObj, assertString, wait } from '@bf2-matchmaking/utils';
 import { getDnsByIp } from '../platform/cloudflare';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
-import { ServiceError } from '@bf2-matchmaking/services/error';
+import { parseError, ServiceError } from '@bf2-matchmaking/services/error';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { Server } from '@bf2-matchmaking/services/server/Server';
-import { LiveServer } from '@bf2-matchmaking/types/server';
+import { LiveServer, RestartBF2ServerData } from '@bf2-matchmaking/types/server';
 import { generateUsersXml } from '../players/users-generator';
+import { matchApi } from '../lib/match';
+import { generateProfileXml } from './profile-generator';
 
 export async function getLiveServerByMatchId(matchId: string) {
   const address = await Server.findByMatch(matchId);
@@ -137,4 +146,49 @@ export async function getAdmins(admins: 'all' | 'none' | number) {
     return null;
   }
   return null;
+}
+
+export async function buildServerProfile(
+  address: string,
+  pubobotMatchId: string | undefined
+): Promise<RestartBF2ServerData | null> {
+  if (!pubobotMatchId) {
+    return null;
+  }
+  try {
+    const matchId = await hash<PubobotMatch>(`pubobot:${pubobotMatchId}`).get('matchId');
+    assertObj(matchId, `No matchId found for pubobotMatchId=${pubobotMatchId}`);
+    const match = await matchApi.get(matchId);
+    const mapName =
+      match.maps
+        .at(0)
+        ?.name.split(' ')
+        .map((w) => w[0].toUpperCase().concat(w.slice(1)))
+        .join(' ') || 'Strike At Karkand';
+
+    const rcon = await hash('cache:rcons').get(address);
+    assertString(rcon);
+
+    const server = await Server.getData(address);
+    const serverName = `${server.name} bf2.top Match ${matchId}`;
+
+    const profilexml = Buffer.from(
+      generateProfileXml({
+        RCONPassword: rcon,
+        ServerName: serverName,
+        InfantryOnly: !match.config.vehicles,
+        MaxPlayers: match.config.size,
+        DemoIndexURL: server.demos_path,
+        DemoDownloadURL: server.demos_path,
+      })
+    ).toString('base64');
+    return {
+      profilexml,
+      serverName,
+      mapName,
+    };
+  } catch (e) {
+    warn('buildServerProfile', parseError(e));
+    return null;
+  }
 }

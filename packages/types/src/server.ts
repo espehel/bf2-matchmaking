@@ -65,3 +65,9 @@ export interface ServerLogEntry {
 }
 
 export type ServersLogs = Array<[string, Array<ServerLogEntry>]>;
+
+export interface RestartBF2ServerData {
+  profilexml: string;
+  serverName: string;
+  mapName: string;
+}

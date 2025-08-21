@@ -11,9 +11,14 @@ import {
   unpauseRound,
   verifyRconResult,
 } from '@bf2-matchmaking/services/rcon';
-import { restartWithInfantryMode, restartWithVehicleMode } from './http-api';
+import {
+  restartWithInfantryMode,
+  restartWithProfile,
+  restartWithVehicleMode,
+} from './http-api';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import {
+  buildServerProfile,
   createPendingServer,
   getAddress,
   getAdmins,
@@ -68,12 +73,19 @@ serversRouter.get('/:address/log', async (ctx: Context) => {
 });
 
 serversRouter.post('/:ip/restart', protect('server_admin'), async (ctx: Context) => {
-  const { mode, mapName, serverName, admins } = ctx.request
+  const { mode, mapName, serverName, admins, pubobotMatchId } = ctx.request
     .body as PostRestartServerRequestBody;
 
   const usersxml = await getAdmins(admins);
 
-  if (mode === 'infantry') {
+  const serverProfile = await buildServerProfile(ctx.params.ip, pubobotMatchId);
+  if (serverProfile) {
+    const result = await restartWithProfile(ctx.params.ip, serverProfile, usersxml);
+    if (result.error && result.error.message !== 'Unexpected end of JSON input') {
+      error('api/servers/:ip/restart', result.error);
+      ctx.throw(502, 'Could not restart server with infantry mode', { result });
+    }
+  } else if (mode === 'infantry') {
     const result = await restartWithInfantryMode(
       ctx.params.ip,
       usersxml,
@@ -84,8 +96,7 @@ serversRouter.post('/:ip/restart', protect('server_admin'), async (ctx: Context)
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with infantry mode', { result });
     }
-  }
-  if (mode === 'vehicles') {
+  } else if (mode === 'vehicles') {
     const result = await restartWithVehicleMode(
       ctx.params.ip,
       usersxml,
@@ -96,8 +107,7 @@ serversRouter.post('/:ip/restart', protect('server_admin'), async (ctx: Context)
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with vehicles mode', { result });
     }
-  }
-  if (!mode) {
+  } else {
     const result = await restartServer(ctx.params.ip);
     if (result.error && result.error.message !== 'Unexpected end of JSON input') {
       error('api/servers/:ip/restart', result.error);
