@@ -2,6 +2,9 @@ import { getClient } from '../client';
 import { RedisFlushModes } from 'redis';
 
 export async function del(keys: Array<string> | string) {
+  if (Array.isArray(keys) && keys.length === 0) {
+    return 0;
+  }
   const client = await getClient();
   return client.DEL(keys);
 }
