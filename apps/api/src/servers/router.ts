@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   createSocket,
   exec,
@@ -81,6 +81,11 @@ serversRouter.post('/:ip/restart', protect('server_admin'), async (ctx: Context)
   const serverProfile = await buildServerProfile(ctx.params.ip, pubobotMatchId);
   if (serverProfile) {
     const result = await restartWithProfile(ctx.params.ip, serverProfile, usersxml);
+    logMessage(`Server ${ctx.params.ip}: Restarting with server profile`, {
+      body: ctx.request.body,
+      serverProfile,
+      result,
+    });
     if (result.error && result.error.message !== 'Unexpected end of JSON input') {
       error('api/servers/:ip/restart', result.error);
       ctx.throw(502, 'Could not restart server with infantry mode', { result });
