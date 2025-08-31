@@ -21,6 +21,7 @@ import {
 import {
   cleanUpPubobotMatch,
   getMatch,
+  getMatchStatus,
   putMatch,
   removeMatch,
   setMatchDraft,
@@ -32,6 +33,8 @@ import { topic } from '@bf2-matchmaking/redis/topic';
 import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 import { matches } from '@bf2-matchmaking/supabase/matches';
 import { session } from '@bf2-matchmaking/supabase/session';
+import { Match } from '@bf2-matchmaking/redis/types';
+import { pubobotHash } from '@bf2-matchmaking/redis/pubobot';
 
 function logMatchMessage(
   matchId: string | number,
@@ -69,7 +72,12 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
       }
 
       warn('Match', `Match ${matchId} not found in redis, fetching from supabase`);
-      return matches(dbClient).getJoined(matchId).then(verifySingleResult);
+      const dbMatch = await matches(dbClient).getJoined(matchId).then(verifySingleResult);
+      await putMatch(dbMatch);
+      return dbMatch;
+    },
+    getStatus(matchId: number | string): Promise<MatchStatus | null> {
+      return getMatchStatus(matchId);
     },
     update: function (matchId: number | string) {
       return new MatchUpdater(matchId, dbClient);
@@ -82,7 +90,7 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
         .update(matchId, { status, closed_at: DateTime.now().toISO() })
         .then(verifySingleResult);
       const redisResult = await removeMatch(matchId);
-      const deletedPubobotMatch = await cleanUpPubobotMatch(matchId);
+      await pubobotHash.delByValue(matchId.toString());
 
       const owner = await session(dbClient).getSessionPlayerSafe();
       const creator = owner ? owner.nick : 'system';
@@ -90,7 +98,6 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
       logMatchMessage(matchId, `Match ${removedMatch.status} by ${creator}`, {
         removedMatch,
         redisResult,
-        deletedPubobotMatch,
       });
       return removedMatch;
     },

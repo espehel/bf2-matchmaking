@@ -36,6 +36,9 @@ export async function getScheduled() {
 export async function getMatch(matchId: string | number) {
   return json<MatchesJoined>(`matches:${matchId}`).get();
 }
+export async function getMatchStatus(matchId: string | number) {
+  return json<MatchesJoined>(`matches:${matchId}`).getProperty('status');
+}
 export async function getPlayers(matchId: string | number) {
   return hash<Record<string, string>>(`matches:${matchId}:players`).getAll();
 }
@@ -143,20 +146,6 @@ export function getMatchServers(matchId: string | number) {
 }
 export function isMatchServer(matchId: string | number, address: string) {
   return set(`matches:${matchId}:servers`).isMember(address);
-}
-
-export async function cleanUpPubobotMatch(matchId: number | string) {
-  const client = await getClient();
-
-  for await (const key of client.scanIterator({ MATCH: 'pubobot:*' })) {
-    const mid = await hash(key).get('matchId');
-    if (matchId == mid) {
-      await del(key);
-      return key;
-    }
-  }
-
-  return null;
 }
 
 export function setMatchDraft(draft: MatchdraftsRow) {

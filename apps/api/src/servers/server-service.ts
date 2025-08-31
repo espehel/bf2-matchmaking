@@ -24,6 +24,7 @@ import { LiveServer, RestartBF2ServerData } from '@bf2-matchmaking/types/server'
 import { generateUsersXml } from '../players/users-generator';
 import { matchApi } from '../lib/match';
 import { generateProfileXml } from './profile-generator';
+import { pubobotHash } from '@bf2-matchmaking/redis/pubobot';
 
 export async function getLiveServerByMatchId(matchId: string) {
   const address = await Server.findByMatch(matchId);
@@ -156,8 +157,7 @@ export async function buildServerProfile(
     return null;
   }
   try {
-    const matchId = await hash<PubobotMatch>(`pubobot:${pubobotMatchId}`).get('matchId');
-    assertObj(matchId, `No matchId found for pubobotMatchId=${pubobotMatchId}`);
+    const matchId = await pubobotHash.get('matchId');
     const match = await matchApi.get(matchId);
     const mapName =
       match.maps

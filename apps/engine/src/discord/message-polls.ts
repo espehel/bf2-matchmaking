@@ -44,7 +44,7 @@ function removePolls(matchId: number) {
 export async function createDraftPoll(
   channel: TextChannel,
   message: Message,
-  pubobotMatch: PubobotMatch,
+  pubobotId: string,
   match: MatchesJoined,
   configOption?: MatchConfigsRow
 ) {
@@ -77,7 +77,7 @@ export async function createDraftPoll(
     .setEndtime(pollEndTime)
     .setValidUsers(new Set(pickList.map((p) => p.player_id)))
     .onReaction(handleDraftPollReaction(pickList, match, pollEndTime))
-    .onPollEnd(handlePollEnd(channel, pickList, unpickList, pubobotMatch, match, config))
+    .onPollEnd(handlePollEnd(channel, pickList, unpickList, pubobotId, match, config))
     .startPoll();
   info('createDraftPoll', `Match ${match.id} Poll started`);
 
@@ -107,7 +107,7 @@ function handlePollEnd(
   channel: TextChannel,
   pickList: Array<PickedMatchPlayer>,
   unpickList: Array<string>,
-  pubobotMatch: PubobotMatch,
+  pubobotId: string,
   match: MatchesJoined,
   config: MatchConfigsRow
 ) {
@@ -120,7 +120,7 @@ function handlePollEnd(
     });
 
     if (isAccepted) {
-      await handleDraftAccepted(channel, pubobotMatch, match, pickList, unpickList);
+      await handleDraftAccepted(channel, pubobotId, match, pickList, unpickList);
       info('createDraftPoll', `Match ${match.id} Draft executed`);
     }
 
@@ -165,27 +165,27 @@ function isDraftPollResolvedWithAccept(
 
 export async function handleDraftAccepted(
   channel: TextChannel,
-  pubobotMatch: PubobotMatch,
+  pubobotId: string,
   match: MatchesJoined,
   pickList: Array<PickedMatchPlayer>,
   unpickList: Array<string>
 ) {
   logMessage(`Match ${match.id}: Executing suggested draft`, {
-    pubobotMatch,
+    pubobotId,
     match,
     unpickList,
     pickList,
   });
 
   for (const playerId of unpickList) {
-    await sendMessage(channel, `!put <@${playerId}> Unpicked ${pubobotMatch.id}`);
+    await sendMessage(channel, `!put <@${playerId}> Unpicked ${pubobotId}`);
     await wait(1);
   }
 
   for (const mp of pickList) {
     await sendMessage(
       channel,
-      `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubobotMatch.id}`
+      `!put <@${mp.player_id}> ${mp.team === 1 ? 'USMC' : 'MEC/PLA'} ${pubobotId}`
     );
     await wait(1);
   }

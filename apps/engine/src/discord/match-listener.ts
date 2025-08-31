@@ -9,11 +9,10 @@ import { Message, MessageCollector } from 'discord.js';
 import {
   createPubobotMatch,
   draftPubobotMatch,
-  findPubobotMatch,
   getPubobotId,
   startPubobotMatch,
 } from './services/pubobot-service';
-import { hash } from '@bf2-matchmaking/redis/hash';
+import { pubobotHash } from '@bf2-matchmaking/redis/pubobot';
 
 export function addMatchListener(collector: MessageCollector, config: DiscordConfig) {
   collector.filter = matchFilter;
@@ -68,42 +67,20 @@ async function handleMatchCollect(message: Message) {
     `<${message.channel.name}>: Received embed with title "${message.embeds[0]?.title}"`
   );
   try {
-    let pubobotMatch = await findPubobotMatch(pubobotId);
+    let matchId = await pubobotHash.getSafe(pubobotId);
 
-    if (!pubobotMatch && isPubobotMatchCheckIn(message)) {
-      pubobotMatch = await createPubobotMatch(message, pubobotId);
-      logMessage(`Match ${pubobotMatch.matchId}: Created from pubobot checkin`, {
-        pubobotMatch,
+    if (!matchId) {
+      matchId = await createPubobotMatch(message, pubobotId);
+      logMessage(`Match ${matchId}: Created from pubobotid ${pubobotId}`, {
         embed: message.embeds[0],
-        pubobotId,
       });
-      return;
     }
 
     if (!isPubobotMatchStarted(message)) {
       return;
     }
 
-    if (!pubobotMatch) {
-      pubobotMatch = await createPubobotMatch(message, pubobotId);
-      logMessage(`Match ${pubobotMatch.matchId}: Created from pubobot match started`, {
-        pubobotMatch,
-        embed: message.embeds[0],
-        pubobotId,
-      });
-    }
-
-    if (pubobotMatch.status === MatchStatus.Ongoing) {
-      return;
-    }
-
-    await hash<PubobotMatch>(`pubobot:${pubobotId}`).set({
-      status: MatchStatus.Ongoing,
-    });
-
-    await startPubobotMatch(message, pubobotMatch);
-
-    await hash(`pubobot:${pubobotId}`).del();
+    await startPubobotMatch(message, matchId);
   } catch (e) {
     logErrorMessage(
       `PubobotMatch ${pubobotId} failed to handle embed "${message.embeds[0]?.title}"`,
@@ -120,13 +97,10 @@ async function handleDraftCollect(message: Message) {
   if (!pubobotId) {
     return;
   }
-  const pubobotMatch = await findPubobotMatch(pubobotId);
+  const matchId = await pubobotHash.getSafe(pubobotId);
 
-  if (!pubobotMatch) {
-    info('handleDraftCollect', 'pubobotMatch match not found');
-    return;
-  }
-  if (pubobotMatch.status !== MatchStatus.Open) {
+  if (!matchId) {
+    info('handleDraftCollect', 'pubobot matchId not found');
     return;
   }
 
@@ -135,10 +109,7 @@ async function handleDraftCollect(message: Message) {
     `<${message.channel.name}>: Received embed with title "${message.embeds[0]?.title}"`
   );
   try {
-    await hash<PubobotMatch>(`pubobot:${pubobotId}`).set({
-      status: MatchStatus.Drafting,
-    });
-    await draftPubobotMatch(message, pubobotMatch);
+    await draftPubobotMatch(message, pubobotId, Number(matchId));
   } catch (e) {
     logErrorMessage(
       `PubobotMatch ${pubobotId} failed to handle embed "${message.embeds[0]?.title}"`,
