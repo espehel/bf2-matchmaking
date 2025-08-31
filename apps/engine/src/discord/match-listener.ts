@@ -1,5 +1,5 @@
 import { DiscordConfig, MatchStatus, PubobotMatch } from '@bf2-matchmaking/types';
-import { info, logErrorMessage } from '@bf2-matchmaking/logging';
+import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   isPubobotMatchCheckIn,
   isPubobotMatchDrafting,
@@ -71,7 +71,12 @@ async function handleMatchCollect(message: Message) {
     let pubobotMatch = await findPubobotMatch(pubobotId);
 
     if (!pubobotMatch && isPubobotMatchCheckIn(message)) {
-      await createPubobotMatch(message, pubobotId);
+      pubobotMatch = await createPubobotMatch(message, pubobotId);
+      logMessage(`Match ${pubobotMatch.matchId}: Created from pubobot checkin`, {
+        pubobotMatch,
+        embed: message.embeds[0],
+        pubobotId,
+      });
       return;
     }
 
@@ -81,6 +86,11 @@ async function handleMatchCollect(message: Message) {
 
     if (!pubobotMatch) {
       pubobotMatch = await createPubobotMatch(message, pubobotId);
+      logMessage(`Match ${pubobotMatch.matchId}: Created from pubobot match started`, {
+        pubobotMatch,
+        embed: message.embeds[0],
+        pubobotId,
+      });
     }
 
     if (pubobotMatch.status === MatchStatus.Ongoing) {
