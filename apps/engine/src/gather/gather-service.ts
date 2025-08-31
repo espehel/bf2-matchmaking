@@ -1,5 +1,5 @@
 import { TeamspeakBot } from './TeamspeakBot';
-import { error, info, logErrorMessage } from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage, warn } from '@bf2-matchmaking/logging';
 import { TeamSpeakClient } from 'ts3-nodejs-library';
 import { getTeamspeakPlayer } from '@bf2-matchmaking/services/players';
 import { isGatherPlayer, isNotNull } from '@bf2-matchmaking/types';
@@ -8,10 +8,102 @@ import { LiveInfo } from '@bf2-matchmaking/types/engine';
 import { Gather } from '@bf2-matchmaking/services/gather';
 import { GatherStatus } from '@bf2-matchmaking/types/gather';
 import { Server } from '@bf2-matchmaking/services/server/Server';
-import { assertString } from '@bf2-matchmaking/utils';
-import { getGatherPlayer, setGatherPlayer } from '@bf2-matchmaking/redis/gather';
+import { assertObj, assertString } from '@bf2-matchmaking/utils';
+import { gather, setGatherPlayer } from '@bf2-matchmaking/redis/gather';
+import {
+  PlayersSummonedListener,
+  TeamSpeakGatherEvents,
+} from '@bf2-matchmaking/teamspeak/events';
+import { syncConfig } from '@bf2-matchmaking/services/config';
+import { getPlayerList, verifyRconResult } from '@bf2-matchmaking/services/rcon';
+import { players } from '../lib/supabase';
+import { parseError } from '@bf2-matchmaking/services/error';
 
-export async function initGatherQueue(configId: number) {
+export async function initGather(configId: number) {
+  try {
+    const config = await syncConfig(configId);
+    // TODO mark server as used for gather somehow
+    const address = await Server.findIdle();
+    assertString(address, 'No idle server found');
+
+    const gather = new TeamSpeakGatherEvents(config);
+    await gather
+      .on('playerJoining', handlePlayerJoining)
+      .on('playersSummoned', handlePlayersSummoned)
+      .on('summonComplete', handleSummonComplete)
+      .on('error', (e) => {
+        logErrorMessage(`Gather ${configId}: Error`, e);
+      })
+      .init(address);
+  } catch (e) {
+    logErrorMessage(`Gather ${configId}: Failed to initialize`, e);
+  }
+}
+
+const handlePlayerJoining = async (clientUId: string, gather: TeamSpeakGatherEvents) => {
+  const { data: player, error } = await players.getByTeamspeakId(clientUId);
+  if (error) {
+    warn(
+      'handlePlayerJoining',
+      `Failed to fetch player ${clientUId} from database: ${error.message}`
+    );
+  }
+  if (!player) {
+    await gather.rejectPlayer(clientUId, 'tsid');
+  } else if (!isGatherPlayer(player)) {
+    await gather.rejectPlayer(clientUId, 'keyhash');
+  } else {
+    await gather.acceptPlayer(clientUId);
+  }
+};
+const handlePlayersSummoned: PlayersSummonedListener = async (
+  server,
+  clientUIds,
+  gather
+) => {
+  const serverPlayers = await getPlayerList(server).then(verifyRconResult);
+  const gatherPlayers = await Promise.all(clientUIds.map(getGatherPlayer));
+
+  const connectedClientUIdList = gatherPlayers
+    .filter((gp) => serverPlayers.some((sp) => sp.keyhash === gp.keyhash))
+    .map((p) => p.teamspeak_id);
+
+  await gather.verifySummon(connectedClientUIdList);
+};
+const handleSummonComplete = async (
+  clientUIds: Array<string>,
+  gather: TeamSpeakGatherEvents
+) => {
+  const players = await Promise.all(clientUIds.map(getGatherPlayer));
+};
+
+async function getGatherPlayer(clientUId: string) {
+  const cachedPlayer = await gather.getPlayer(clientUId);
+  if (cachedPlayer) {
+    return cachedPlayer;
+  }
+  info('getGatherPlayerCached', `Cache miss for player ${clientUId}`);
+
+  const { data: player } = await players.getByTeamspeakId(clientUId);
+  assertObj(player, `Player ${clientUId} not found in database`);
+
+  if (isGatherPlayer(player)) {
+    await gather.setPlayer(player);
+    return player;
+  }
+  throw new Error(`Player ${clientUId} is not a valid GatherPlayer`);
+}
+
+async function getGatherPlayerSafe(clientUId: string) {
+  try {
+    return await getGatherPlayer(clientUId);
+  } catch (e) {
+    warn('getGatherPlayerSafe', parseError(e));
+    return null;
+  }
+}
+
+/*export async function initGatherQueue(configId: number) {
   try {
     info('initGatherQueue', `Initializing gather queue for config ${configId}`);
     const ts = await TeamspeakBot.connect();
@@ -122,4 +214,8 @@ async function verifyPlayer(identifier: string, ts: TeamspeakBot) {
   }
   await setGatherPlayer(player);
   return player;
+}*/
+
+function addEventLogging(ts: TeamSpeakGatherEvents) {
+  ts.on('initiated', () => {});
 }

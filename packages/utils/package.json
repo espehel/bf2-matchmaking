@@ -1,8 +1,11 @@
 {
   "name": "@bf2-matchmaking/utils",
   "version": "1.0.0",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./form": "./src/form-data.ts",
+    "./assert": "./src/assert.ts"
+  },
   "scripts": {
     "verify": "tsc --noEmit"
   },

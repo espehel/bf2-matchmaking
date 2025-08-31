@@ -29,7 +29,7 @@ import {
   replaceDiscordGG,
 } from './embed-utils';
 import { DateTime } from 'luxon';
-import { isTeam } from '@bf2-matchmaking/utils/src/team-utils';
+import { isTeam } from '@bf2-matchmaking/utils';
 import {
   ConnectedLiveServer,
   LiveServer,

@@ -1,5 +1,5 @@
 'use server';
-import { getOptionalValue, getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { getOptionalValue, getValues } from '@bf2-matchmaking/utils/form';
 import { matches, players } from '@/lib/supabase/supabase-server';
 import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
 import { revalidatePath } from 'next/cache';

@@ -20,6 +20,10 @@ export function list(key: string) {
     const client = await getClient();
     return client.LPOP(key);
   };
+  const popBulk = async (count: number): Promise<Array<string> | null> => {
+    const client = await getClient();
+    return client.lPopCount(key, count);
+  };
   const rpop = async (): Promise<string | null> => {
     const client = await getClient();
     return client.RPOP(key);
@@ -32,9 +36,9 @@ export function list(key: string) {
     const client = await getClient();
     return client.LREM(key, 0, value);
   };
-  const range = async (): Promise<Array<string>> => {
+  const range = async (start: number = 0, stop: number = -1): Promise<Array<string>> => {
     const client = await getClient();
-    return client.LRANGE(key, 0, -1);
+    return client.LRANGE(key, start, stop);
   };
   const has = async (value: string): Promise<boolean> => {
     const client = await getClient();
@@ -49,6 +53,7 @@ export function list(key: string) {
     push,
     rpush,
     pop,
+    popBulk,
     rpop,
     rpopBulk,
     remove,

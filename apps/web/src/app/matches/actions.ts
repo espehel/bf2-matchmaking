@@ -10,7 +10,7 @@ import {
   createScheduledMatchEvent,
 } from '@bf2-matchmaking/discord';
 import { revalidatePath } from 'next/cache';
-import { getArray } from '@bf2-matchmaking/utils/src/form-data';
+import { getArray } from '@bf2-matchmaking/utils/form';
 export async function createScheduledMatch(formData: FormData) {
   try {
     const { configSelect, scheduledInput, homeSelect, awaySelect, timezone } =

@@ -5,7 +5,7 @@ import { error, warn } from '@bf2-matchmaking/logging/winston';
 let client: TeamSpeak | null = null;
 let isConnected = false;
 
-async function createClient() {
+export async function createClient() {
   assertString(process.env.TEAMSPEAK_PASSWORD, 'TEAMSPEAK_PASSWORD not defined');
   const ts = await TeamSpeak.connect({
     host: 'oslo21.spillvert.no',

@@ -3,11 +3,10 @@ import { initChannelListener } from './discord/channel-manager';
 import { discordClient } from './discord/client';
 import { info, warn } from '@bf2-matchmaking/logging';
 import { initScheduledEventsListener } from './discord/scheduled-events-listener';
-import { assertString } from '@bf2-matchmaking/utils';
+import { assertString, isDevelopment } from '@bf2-matchmaking/utils';
 import { createServer } from 'node:http';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { json } from '@bf2-matchmaking/redis/json';
-import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
 import { scheduleCloseOldMatchesJob } from './jobs/closeOldMatches';
 import { scheduleStartScheduledMatchesJob } from './jobs/startScheduledMatches';
 import { scheduleActiveServersJob } from './jobs/update-active-servers';
@@ -15,7 +14,6 @@ import { scheduleIdleServersJob } from './jobs/update-idle-servers';
 import { scheduleCloseOldChallengesJob } from './jobs/closeOldChallenges';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { DateTime } from 'luxon';
-import { initGatherQueue } from './gather/gather-service';
 import { scheduleResetServersJob } from './jobs/resetServers';
 import { initDraftMessageListeners } from './discord/draft-message-listener';
 import { initQueueListeners } from './discord/queue-listener';
@@ -33,11 +31,7 @@ discordClient
     }
 
     await hash('system').set({ engineStartedAt: DateTime.now().toISO() });
-    await Promise.all([
-      json('app:engine:state').set({}),
-      initChannelListener(),
-      initGatherQueue(20),
-    ]);
+    await Promise.all([json('app:engine:state').set({}), initChannelListener()]);
     initQueueListeners();
     initDraftMessageListeners();
     initScheduledEventsListener();

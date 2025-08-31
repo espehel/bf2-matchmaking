@@ -38,7 +38,13 @@ const web = () => {
     basePath,
     matchPage: (matchId: number | string, playerId?: string) =>
       `${basePath}/matches/${matchId}${playerId ? `?player=${playerId}` : ''}`,
-    teamspeakPage: (id: string) => encodeURI(`${basePath}/players/teamspeak/?tsid=${id}`),
+    teamspeakPage: (id?: string) => {
+      const url = new URL(`${basePath}/gather/register`);
+      if (id) {
+        url.searchParams.append('tsid', encodeURIComponent(id));
+      }
+      return url;
+    },
   };
 };
 const live = () => {

@@ -1,5 +1,5 @@
 import { MatchesJoined, MatchProcessError } from '@bf2-matchmaking/types';
-import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
+import { mapToKeyhashes } from '@bf2-matchmaking/utils';
 
 export function validateMatch(match: MatchesJoined): Array<MatchProcessError> {
   const errors: Array<MatchProcessError> = [];

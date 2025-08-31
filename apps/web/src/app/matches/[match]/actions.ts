@@ -14,10 +14,7 @@ import { DateTime } from 'luxon';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
 import { ActionInput, ActionResult } from '@/lib/types/form';
-import {
-  getOptionalValueAsNumber,
-  getValueAsNumber,
-} from '@bf2-matchmaking/utils/src/form-data';
+import { getOptionalValueAsNumber, getValueAsNumber } from '@bf2-matchmaking/utils/form';
 import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {

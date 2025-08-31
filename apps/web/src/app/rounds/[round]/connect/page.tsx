@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import PlayerConnectSection from '@/components/PlayerConnectSection';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
-import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
+import { parseJSON } from '@bf2-matchmaking/utils';
 import { LiveInfo } from '@bf2-matchmaking/types';
 
 interface Props {

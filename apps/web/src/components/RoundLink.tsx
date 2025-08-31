@@ -1,7 +1,7 @@
 import { LiveInfo, RoundsJoined } from '@bf2-matchmaking/types';
 import Link from 'next/link';
 import moment from 'moment';
-import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
+import { parseJSON } from '@bf2-matchmaking/utils';
 import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {

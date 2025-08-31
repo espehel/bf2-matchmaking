@@ -1,6 +1,6 @@
 'use server';
 import { api } from '@bf2-matchmaking/utils';
-import { getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { getValues } from '@bf2-matchmaking/utils/form';
 import { revalidatePath } from 'next/cache';
 
 export async function setGatherServer(data: FormData) {

@@ -1,5 +1,5 @@
 import RevalidateForm from '@/components/RevalidateForm';
-import { getKey } from '@bf2-matchmaking/utils/src/object-utils';
+import { getKey } from '@bf2-matchmaking/utils';
 import { GameStatus, MatchesJoined } from '@bf2-matchmaking/types';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Link from 'next/link';

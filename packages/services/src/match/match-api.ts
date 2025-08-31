@@ -19,7 +19,6 @@ import {
   warn,
 } from '@bf2-matchmaking/logging';
 import {
-  cleanUpPubobotMatch,
   getMatch,
   getMatchStatus,
   putMatch,
@@ -33,7 +32,6 @@ import { topic } from '@bf2-matchmaking/redis/topic';
 import { MatchdraftsRow } from '@bf2-matchmaking/schemas/types';
 import { matches } from '@bf2-matchmaking/supabase/matches';
 import { session } from '@bf2-matchmaking/supabase/session';
-import { Match } from '@bf2-matchmaking/redis/types';
 import { pubobotHash } from '@bf2-matchmaking/redis/pubobot';
 
 function logMatchMessage(

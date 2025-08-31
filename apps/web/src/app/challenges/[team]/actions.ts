@@ -3,7 +3,7 @@ import {
   getOptionalValue,
   getOptionalValues,
   getValues,
-} from '@bf2-matchmaking/utils/src/form-data';
+} from '@bf2-matchmaking/utils/form';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';

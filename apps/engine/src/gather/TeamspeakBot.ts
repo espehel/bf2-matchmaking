@@ -1,5 +1,5 @@
 import { QueryProtocol, TeamSpeak, TeamSpeakClient } from 'ts3-nodejs-library';
-import { info, logErrorMessage, warn } from '@bf2-matchmaking/logging';
+import { error, info, logErrorMessage, warn } from '@bf2-matchmaking/logging';
 import { ClientDisconnect, ClientMoved } from 'ts3-nodejs-library/lib/types/Events';
 import { api, assertString, teamIncludes } from '@bf2-matchmaking/utils';
 import { isGatherPlayer, MatchesJoined, TeamspeakPlayer } from '@bf2-matchmaking/types';

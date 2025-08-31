@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database, PlayersInsert } from '@bf2-matchmaking/types';
+import { Database, PlayersInsert, TeamspeakPlayer } from '@bf2-matchmaking/types';
+import { PlayersUpdate } from '@bf2-matchmaking/schemas/types';
 
 async function resolveClient(
   client: SupabaseClient | (() => Promise<SupabaseClient>)
@@ -70,6 +71,18 @@ export function players(
     const client = await resolveClient(supabaseClient);
     return client.from('players').select('*').eq('user_id', userId).single();
   }
+  async function getByTeamspeakId(tsUId: string) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('players')
+      .select('*')
+      .eq('teamspeak_id', tsUId)
+      .single<TeamspeakPlayer>();
+  }
+  async function update(playerId: string, values: Omit<PlayersUpdate, 'id'>) {
+    const client = await resolveClient(supabaseClient);
+    return client.from('players').update(values).eq('id', playerId).select('*').single();
+  }
 
   return {
     create,
@@ -77,6 +90,8 @@ export function players(
     getAll,
     getByMatchId,
     getByUserId,
+    getByTeamspeakId,
+    update,
     ratings: playerRatings(supabaseClient),
   };
 }

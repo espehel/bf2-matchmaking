@@ -5,31 +5,26 @@ import { stream } from '@bf2-matchmaking/redis/stream';
 import { isString } from '@bf2-matchmaking/types';
 import { waitForEvent } from './event-stream';
 import { error, info } from '@bf2-matchmaking/logging';
-import {
-  getGatherPlayers,
-  getGatherQueue,
-  getGatherState,
-} from '@bf2-matchmaking/redis/gather';
-import { hash } from '@bf2-matchmaking/redis/hash';
+import { gather, getGatherPlayers } from '@bf2-matchmaking/redis/gather';
 
 export const gathersRouter = new Router({
   prefix: '/gathers',
 });
 
-gathersRouter.get('/:config', async (ctx: Context) => {
-  const state = await getGatherState(ctx.params.config);
-  const queue = await getGatherQueue(ctx.params.config);
+gathersRouter.get('/:config', async (ctx: Context): Promise<void> => {
+  const state = await gather.getState(ctx.params.config).getAll();
+  const queue = await gather.getQueue(ctx.params.config).range();
   const players = await getGatherPlayers(queue);
   const events = await stream(`gather:${ctx.params.config}:events`).readEvents(true);
   ctx.body = { state, players, events };
 });
 
 gathersRouter.post('/:config/address', async (ctx: Context) => {
-  const state = await getGatherState(ctx.params.config);
-  if (state.status !== 'Queueing') {
+  const state = gather.getState(ctx.params.config);
+  if ((await state.get('status')) !== 'Queueing') {
     ctx.throw(400, 'Gather is not in queueing state');
   }
-  ctx.body = await hash(`gather:${ctx.params.config}`).set({
+  ctx.body = await state.set({
     address: ctx.request.body.address,
   });
 });

@@ -1,5 +1,4 @@
 import {
-  DiscordConfig,
   isNotNull,
   isTeamspeakPlayer,
   MatchesJoined,
@@ -10,11 +9,12 @@ import {
   TeamspeakPlayer,
 } from '@bf2-matchmaking/types';
 import { client, verifyResult } from '@bf2-matchmaking/supabase';
-import { toPlayerRatingUpdate } from '@bf2-matchmaking/utils/src/results-utils';
-import { mapToKeyhashes } from '@bf2-matchmaking/utils/src/round-utils';
-import { assertObj, hasNotKeyhash } from '@bf2-matchmaking/utils';
+import {
+  hasNotKeyhash,
+  mapToKeyhashes,
+  toPlayerRatingUpdate,
+} from '@bf2-matchmaking/utils';
 import { logMessage, warn } from '@bf2-matchmaking/logging';
-import { json } from '@bf2-matchmaking/redis/json';
 
 export async function updatePlayerRatings(
   playerResults: Array<MatchPlayerResultsInsert>,

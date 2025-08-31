@@ -1,5 +1,5 @@
 import { MatchResultsRow, PlayerResultsJoined } from '@bf2-matchmaking/types';
-import { calculateMatchTeamRating } from '@bf2-matchmaking/utils/src/results-utils';
+import { calculateMatchTeamRating } from '@bf2-matchmaking/utils';
 import CardListItem from '@/components/commons/CardListItem';
 import classNames from 'classnames';
 import { DateTime } from 'luxon';

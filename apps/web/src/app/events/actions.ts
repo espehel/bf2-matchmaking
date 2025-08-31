@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
-import { getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { getValues } from '@bf2-matchmaking/utils/form';
 import { revalidatePath } from 'next/cache';
 
 export async function createEvent(data: FormData) {

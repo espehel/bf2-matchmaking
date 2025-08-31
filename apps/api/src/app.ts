@@ -12,7 +12,7 @@ import { serversRouter } from './servers/router';
 import { adminRouter } from './admin/router';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { DateTime } from 'luxon';
-import { isDevelopment } from '@bf2-matchmaking/utils/src/process-utils';
+import { isDevelopment } from '@bf2-matchmaking/utils';
 import { playersRouter } from './players/router';
 import { gathersRouter } from './gather/router';
 import { bearerToken } from './auth';

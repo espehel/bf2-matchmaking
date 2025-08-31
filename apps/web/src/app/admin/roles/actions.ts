@@ -3,7 +3,7 @@ import { AdminRolesRow } from '@bf2-matchmaking/types';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { getValue } from '@bf2-matchmaking/utils/src/form-data';
+import { getValue } from '@bf2-matchmaking/utils/form';
 import { toAsyncError } from '@bf2-matchmaking/utils';
 
 export async function setAdminRole(

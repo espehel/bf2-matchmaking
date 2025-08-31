@@ -1,9 +1,19 @@
 import { list } from '../core/list';
 import { getMultiple, json } from '../core/json';
 import { GatherPlayer, MatchConfigsRow } from '@bf2-matchmaking/types';
-import { hash } from '../core/hash';
 import { GatherState } from '@bf2-matchmaking/types/gather';
 import { GatherStateSchema } from '../schemas';
+import { hash } from '../core/hash2';
+import { hash as oldHash } from '../core/hash';
+
+export const gather = {
+  getQueue: (configId: number) => list(`gather:${configId}:queue`),
+  getState: (configId: number) =>
+    hash<'status' | 'address' | 'summonedAt' | 'failReason'>(`gather:${configId}`),
+  getPlayer: (id: string) => json<GatherPlayer>(`gather:players:${id}`).get(),
+  setPlayer: (player: GatherPlayer) =>
+    json<GatherPlayer>(`gather:players:${player.teamspeak_id}`).set(player),
+};
 
 export function popMatchPlayers(configId: number, matchSize: number) {
   return list(`gather:${configId}:queue`).rpopBulk(matchSize);
@@ -34,7 +44,9 @@ export async function setGatherPlayer(player: GatherPlayer) {
   return json<GatherPlayer>(`gather:players:${player.teamspeak_id}`).set(player);
 }
 export async function getGatherState(configId: number) {
-  return GatherStateSchema.parse(await hash<GatherState>(`gather:${configId}`).getAll());
+  return GatherStateSchema.parse(
+    await oldHash<GatherState>(`gather:${configId}`).getAll()
+  );
 }
 export function getGatherConfig(configId: number) {
   return json<MatchConfigsRow>(`config:${configId}`).get();

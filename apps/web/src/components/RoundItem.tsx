@@ -5,7 +5,7 @@ import { UnmountClosed } from 'react-collapse';
 import RoundTable from './RoundTable';
 import { formatSecToMin } from '@bf2-matchmaking/utils';
 import Link from 'next/link';
-import { parseNullableJSON } from '@bf2-matchmaking/utils/src/json-utils';
+import { parseNullableJSON } from '@bf2-matchmaking/utils';
 import { SupabaseImage } from '@/components/commons/SupabaseImage';
 
 interface Props {

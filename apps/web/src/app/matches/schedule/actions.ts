@@ -1,6 +1,6 @@
 'use server';
 import { getChannelMessage } from '@bf2-matchmaking/discord';
-import { getArray, getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { getArray, getValues } from '@bf2-matchmaking/utils/form';
 import { MatchDraftsInsert, MatchStatus } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
 import { ActionResult } from '@/lib/types/form';

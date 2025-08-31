@@ -9,12 +9,6 @@ import {
 } from '@bf2-matchmaking/types';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
-  calculateMatchResults,
-  calculatePlayerResults,
-  withJoinTime,
-  withMixRatingIncrement,
-} from '@bf2-matchmaking/utils/src/results-utils';
-import {
   getDebugMatchResultsEmbed,
   getMatchResultsEmbed,
   LOG_CHANNEL_ID,
@@ -23,7 +17,13 @@ import {
 import { fixMissingMatchPlayers, updatePlayerRatings } from '../player-service';
 import { getGatherPlayer } from '@bf2-matchmaking/redis/gather';
 import { buildDraftWithConfig } from '../draft-service';
-import { toMatchPlayer } from '@bf2-matchmaking/utils';
+import {
+  toMatchPlayer,
+  calculateMatchResults,
+  calculatePlayerResults,
+  withJoinTime,
+  withMixRatingIncrement,
+} from '@bf2-matchmaking/utils';
 import { validateMatch } from './match-utilities';
 import { createMatchApi } from './match-api';
 

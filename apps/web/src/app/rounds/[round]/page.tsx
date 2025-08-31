@@ -2,12 +2,11 @@ import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { isTruthy, LiveInfo } from '@bf2-matchmaking/types';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { formatSecToMin } from '@bf2-matchmaking/utils';
+import { formatSecToMin, parseJSON } from '@bf2-matchmaking/utils';
 import Link from 'next/link';
 import RoundTable from '@/components/RoundTable';
 import PlayersRegisterSection from '@/components/PlayersRegisterSection';
 import { updatePlayer } from '@/app/rounds/[round]/actions';
-import { parseJSON } from '@bf2-matchmaking/utils/src/json-utils';
 
 interface Props {
   params: Promise<{ round: string }>;

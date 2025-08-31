@@ -4,7 +4,7 @@ import copy from 'copy-text-to-clipboard';
 import { ClipboardIcon } from '@heroicons/react/24/outline';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import { buildRaidOrganizerCommand } from '@bf2-matchmaking/utils/src/challenge-utils';
+import { buildRaidOrganizerCommand } from '@bf2-matchmaking/utils';
 
 interface Props {
   match: MatchesJoined;

@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { EventMatchesRow, EventRoundsRow, EventsJoined } from '@bf2-matchmaking/types';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
-import { getValue, getValues } from '@bf2-matchmaking/utils/src/form-data';
+import { getValue, getValues } from '@bf2-matchmaking/utils/form';
 
 export async function addRoundMatch(
   event: EventsJoined,
