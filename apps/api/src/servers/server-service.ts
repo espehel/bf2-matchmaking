@@ -157,7 +157,7 @@ export async function buildServerProfile(
     return null;
   }
   try {
-    const matchId = await pubobotHash.get('matchId');
+    const matchId = await pubobotHash.get(pubobotMatchId);
     const match = await matchApi.get(matchId);
     const mapName =
       match.maps
