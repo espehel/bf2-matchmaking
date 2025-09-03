@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  bf2-api:
+    build: .
+    container_name: bf2-api
+    restart: unless-stopped
+    
+    # Network configuration
+    ports:
+      - "127.0.0.1:8080:8080"
+    
+    # Volume mounts
+    volumes:
+      # Configuration file (customize this)
+      - ./config.toml:/etc/bf2-api/config.toml:ro
+      - ./environment:/etc/bf2-api/environment:ro
+      
+      # BF2 server files (adjust paths as needed)
+      - /home/bf2/server:/home/bf2/server:rw
+      - /opt/bf2/scripts:/opt/bf2/scripts:ro
+      
+      # Logs
+      - bf2-api-logs:/var/log/bf2-api
+    
+    # Environment variables
+    environment:
+      - CONFIG_PATH=/etc/bf2-api/config.toml
+      - RUST_LOG=bf2_api=info,tower_http=info
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Security
+    user: "1000:1000"  # Adjust to match your user ID
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # Only if binding to privileged ports
+    
+    # Temporary filesystems
+    tmpfs:
+      - /tmp:size=64M,noexec,nosuid,nodev
+
+# Named volumes
+volumes:
+  bf2-api-logs:
+    driver: local
+
+# Optional: Reverse proxy with Nginx
+# Uncomment the following if you want to run behind a reverse proxy
+#
+#  nginx:
+#    image: nginx:alpine
+#    container_name: bf2-api-proxy
+#    restart: unless-stopped
+#    ports:
+#      - "443:443"
+#      - "80:80"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./ssl:/etc/nginx/ssl:ro
+#    depends_on:
+#      - bf2-api
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost/health"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3

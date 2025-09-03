@@ -1,0 +1,67 @@
+[Unit]
+Description=BF2 Server Management API
+Documentation=https://github.com/your-org/bf2-api
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=bf2api
+Group=bf2api
+ExecStart=/opt/bf2-api/bf2-api
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Environment
+Environment=RUST_LOG=bf2_api=info,tower_http=info
+EnvironmentFile=-/etc/bf2-api/environment
+WorkingDirectory=/opt/bf2-api
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RemoveIPC=yes
+PrivateMounts=yes
+
+# Network restrictions
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressAllow=localhost
+IPAddressDeny=any
+
+# Capability restrictions
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# File system access
+ReadOnlyPaths=/
+ReadWritePaths=/home/bf2/server-configs
+ReadWritePaths=/var/log/bf2-api
+ExecPaths=/opt/bf2-api
+ExecPaths=/opt/bf2/scripts
+
+# Additional restrictions
+SystemCallFilter=@system-service
+SystemCallFilter=~@debug @mount @cpu-emulation @obsolete @privileged @reboot @swap
+SystemCallErrorNumber=EPERM
+
+# Resource limits
+LimitNOFILE=1024
+LimitNPROC=64
+
+[Install]
+WantedBy=multi-user.target

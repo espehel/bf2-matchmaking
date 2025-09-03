@@ -1,0 +1,12 @@
+# Environment variables for BF2 API service
+# Copy this file to /etc/bf2-api/environment and customize as needed
+
+# Configuration file path
+CONFIG_PATH=/etc/bf2-api/config.toml
+
+# Logging configuration
+RUST_LOG=bf2_api=info,tower_http=info,tower_governor=warn
+
+# Additional environment variables that might be needed by the restart script
+BF2SERVERUSER=bf2
+BF2_HOME=/home/bf2

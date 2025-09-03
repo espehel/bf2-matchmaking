@@ -1,0 +1,17 @@
+[api]
+bind = "127.0.0.1:8080"
+
+[security]
+token = "your-secret-bf2-api-token-change-this"
+# Optional IP allowlist (CIDR format)
+# allowlist = ["10.0.0.0/24", "192.168.1.0/24"]
+
+[rcon]
+host = "127.0.0.1"
+port = 4711
+password = "your-rcon-password"
+timeout_secs = 10
+
+[paths]
+restart_script = "/opt/bf2/scripts/restart-bf2.sh"
+config_dir = "/home/bf2/server"
