@@ -78,8 +78,11 @@ export async function draftPubobotMatch(
   matchId: number
 ) {
   const matchStatus = await matchApi.getStatus(matchId);
+  if (matchStatus === MatchStatus.Drafting) {
+    return;
+  }
   if (matchStatus !== MatchStatus.Open) {
-    warn('draftPubobotMatch', `Match ${matchId} is not open`);
+    warn('draftPubobotMatch', `Match ${matchId} is not open. Status: ${matchStatus}`);
     return;
   }
 

@@ -113,7 +113,8 @@ async function handleDraftCollect(message: Message) {
   } catch (e) {
     logErrorMessage(
       `PubobotMatch ${pubobotId} failed to handle embed "${message.embeds[0]?.title}"`,
-      e
+      e,
+      { pubobotId, matchId }
     );
   }
 }

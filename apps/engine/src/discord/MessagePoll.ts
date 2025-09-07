@@ -111,7 +111,16 @@ export class MessagePoll {
       dispose: true,
       time: this.endTime.diffNow().toMillis(),
     });
-    await Promise.all(this.getReactions().map((r) => this.message.react(r)));
+    info(
+      'MessagePoll',
+      `Collector for message ${
+        this.collector.message.id
+      } created, ending in ${this.endTime.diffNow().toMillis()}`
+    );
+    for (const reaction of this.reactions) {
+      const res = await this.message.react(reaction);
+      info('MessagePoll', `Reacted with ${reaction} - ${res.emoji.name}`);
+    }
 
     this.collector.on('collect', this.collectListener);
     this.collector.on('end', this.endListener);
