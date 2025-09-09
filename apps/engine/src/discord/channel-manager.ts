@@ -19,7 +19,8 @@ async function loadChannels() {
       channelListenerMap.set(listener.channel.id, listener);
     }
   }
-  await listenToDebugChannel();
+  // Disablesd debug channel listener for now, which only handles drafting messages
+  // await listenToDebugChannel();
 }
 export function hasChannelListener(channel: string) {
   return channelListenerMap.has(channel);
