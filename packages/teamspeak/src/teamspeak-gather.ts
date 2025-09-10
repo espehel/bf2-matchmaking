@@ -15,36 +15,24 @@ import { GatherStatus } from '@bf2-matchmaking/types/gather';
 
 export type GatherInitiatedListener = (
   clientUIds: Array<string>,
-  gather: TeamSpeakGatherEvents
+  gather: TeamSpeakGather
 ) => void;
-export type PlayerJoiningListener = (
-  clientUId: string,
-  gather: TeamSpeakGatherEvents
-) => void;
-export type PlayerJoinedListener = (
-  clientUId: string,
-  gather: TeamSpeakGatherEvents
-) => void;
-export type PlayerRejectedListener = (
-  clientUId: string,
-  gather: TeamSpeakGatherEvents
-) => void;
-export type PlayerLeftListener = (
-  clientUId: string,
-  gather: TeamSpeakGatherEvents
-) => void;
+export type PlayerJoiningListener = (clientUId: string, gather: TeamSpeakGather) => void;
+export type PlayerJoinedListener = (clientUId: string, gather: TeamSpeakGather) => void;
+export type PlayerRejectedListener = (clientUId: string, gather: TeamSpeakGather) => void;
+export type PlayerLeftListener = (clientUId: string, gather: TeamSpeakGather) => void;
 export type PlayersSummonedListener = (
   server: string,
   clientUIds: Array<string>,
-  gather: TeamSpeakGatherEvents
+  gather: TeamSpeakGather
 ) => void;
 export type SummonCompleteListener = (
   clientUIds: Array<string>,
-  gather: TeamSpeakGatherEvents
+  gather: TeamSpeakGather
 ) => void;
 export type SummonFailListener = (
   clientUIds: Array<string>,
-  gather: TeamSpeakGatherEvents
+  gather: TeamSpeakGather
 ) => void;
 export interface TeamSpeakGatherEvents extends EventEmitter {
   on(event: 'initiated', listener: GatherInitiatedListener): this;
@@ -58,7 +46,7 @@ export interface TeamSpeakGatherEvents extends EventEmitter {
   on(event: 'error', listener: (e: Error) => void): this;
 }
 
-export class TeamSpeakGatherEvents extends EventEmitter {
+export class TeamSpeakGather extends EventEmitter {
   ts: TeamSpeak;
   config: MatchConfigsRow;
   queue: ReturnType<typeof list>;

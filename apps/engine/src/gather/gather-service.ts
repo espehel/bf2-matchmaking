@@ -12,8 +12,8 @@ import { assertObj, assertString } from '@bf2-matchmaking/utils';
 import { gather, setGatherPlayer } from '@bf2-matchmaking/redis/gather';
 import {
   PlayersSummonedListener,
-  TeamSpeakGatherEvents,
-} from '@bf2-matchmaking/teamspeak/events';
+  TeamSpeakGather,
+} from '@bf2-matchmaking/teamspeak/gather';
 import { syncConfig } from '@bf2-matchmaking/services/config';
 import { getPlayerList, verifyRconResult } from '@bf2-matchmaking/services/rcon';
 import { players } from '../lib/supabase';
@@ -26,7 +26,7 @@ export async function initGather(configId: number) {
     const address = await Server.findIdle();
     assertString(address, 'No idle server found');
 
-    const gather = new TeamSpeakGatherEvents(config);
+    const gather = new TeamSpeakGather(config);
     await gather
       .on('playerJoining', handlePlayerJoining)
       .on('playersSummoned', handlePlayersSummoned)
@@ -40,7 +40,7 @@ export async function initGather(configId: number) {
   }
 }
 
-const handlePlayerJoining = async (clientUId: string, gather: TeamSpeakGatherEvents) => {
+const handlePlayerJoining = async (clientUId: string, gather: TeamSpeakGather) => {
   const { data: player, error } = await players.getByTeamspeakId(clientUId);
   if (error) {
     warn(
@@ -72,7 +72,7 @@ const handlePlayersSummoned: PlayersSummonedListener = async (
 };
 const handleSummonComplete = async (
   clientUIds: Array<string>,
-  gather: TeamSpeakGatherEvents
+  gather: TeamSpeakGather
 ) => {
   const players = await Promise.all(clientUIds.map(getGatherPlayer));
 };
@@ -216,6 +216,6 @@ async function verifyPlayer(identifier: string, ts: TeamspeakBot) {
   return player;
 }*/
 
-function addEventLogging(ts: TeamSpeakGatherEvents) {
+function addEventLogging(ts: TeamSpeakGather) {
   ts.on('initiated', () => {});
 }

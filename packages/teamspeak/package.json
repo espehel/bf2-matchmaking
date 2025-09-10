@@ -3,7 +3,7 @@
   "exports": {
     ".": "./src/constants.ts",
     "./api": "./src/teamspeak-api.ts",
-    "./events": "./src/teamspeak-events.ts"
+    "./gather": "./src/teamspeak-gather.ts"
   },
   "version": "1.0.0",
   "scripts": {
