@@ -12,7 +12,7 @@ interface Props {
 export default function AddRoleForm({ matchId }: Props) {
   return (
     <ActionForm
-      action={addMatchRole}
+      formAction={addMatchRole}
       extras={{ matchId: matchId.toString() }}
       className="join w-md"
     >

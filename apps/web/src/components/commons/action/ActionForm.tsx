@@ -6,13 +6,13 @@ import { FormActionFunction } from '@/lib/types/form';
 
 export interface Props
   extends DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> {
-  action: FormActionFunction;
+  formAction: FormActionFunction;
   disabled?: boolean;
   extras?: Record<string, string>;
 }
 
 export default function ActionForm({
-  action,
+  formAction,
   children,
   extras,
   disabled,
@@ -20,7 +20,7 @@ export default function ActionForm({
 }: Props) {
   const ref = useRef<HTMLFormElement>(null);
 
-  const { onSubmit, isPending } = useFormAction(action, { disabled });
+  const { onSubmit, isPending } = useFormAction(formAction, { disabled });
   return (
     <form action={onSubmit} ref={ref} {...props}>
       {extras &&

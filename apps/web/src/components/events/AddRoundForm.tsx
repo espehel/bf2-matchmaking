@@ -16,7 +16,7 @@ export default function AddRoundForm({ eventId }: Props) {
 
   return (
     <ActionForm
-      action={addEventRoundSA}
+      formAction={addEventRoundSA}
       successMessage="Successfully aded team"
       errorMessage="Failed to add team"
     >

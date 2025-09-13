@@ -57,7 +57,7 @@ export default async function ScheduledActionsSection({ match, matchServer }: Pr
       </p>
       <RegionsSelectForm regions={regions} matchId={match.id} />
       <ActionButton
-        action={generateMatchServerInstanceSA}
+        formAction={generateMatchServerInstanceSA}
         successMessage="Generating servers"
         errorMessage="Failed to generate servers"
         kind="btn-secondary"

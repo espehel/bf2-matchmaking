@@ -31,7 +31,7 @@ export default async function LiveServerSelectAction({
 
   return (
     <ActionForm
-      action={serverAction}
+      formAction={serverAction}
       successMessage="Gather server selected"
       errorMessage="Failed to select Gather server"
       className="flex items-end gap-2"

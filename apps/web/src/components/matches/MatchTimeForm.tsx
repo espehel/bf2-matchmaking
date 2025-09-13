@@ -37,7 +37,7 @@ export default async function MatchTimeForm({ match }: Props) {
         <ActionFormModal
           title="Change time"
           openBtnLabel="Change time"
-          action={updateMatchScheduledAtSA}
+          formAction={updateMatchScheduledAtSA}
           errorMessage="Something went wrong"
           successMessage="Time changed"
         >
@@ -111,7 +111,7 @@ function Alert({
       <ActionButton
         kind="btn-primary"
         size="btn-sm"
-        action={acceptMatchTimeSA}
+        formAction={acceptMatchTimeSA}
         successMessage="Match time accepted"
         errorMessage="Failed to accept match time"
       >
@@ -120,7 +120,7 @@ function Alert({
       <ActionFormModal
         title="Propose new time"
         openBtnLabel="Propose time"
-        action={updateMatchScheduledAtSA}
+        formAction={updateMatchScheduledAtSA}
         errorMessage="Something went wrong"
         successMessage="New time proposed"
       >

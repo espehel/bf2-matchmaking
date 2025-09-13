@@ -19,7 +19,7 @@ export function MatchPlayerItem({ player, matchPlayer, teams }: Props) {
       <SingleSelectActionForm
         name="role"
         label="Role"
-        action={setMatchPlayerRole}
+        formAction={setMatchPlayerRole}
         successMessage="Role updated"
         errorMessage="Failed to update role"
         extras={{
@@ -41,7 +41,7 @@ export function MatchPlayerItem({ player, matchPlayer, teams }: Props) {
       <SingleSelectActionForm
         name="team"
         label="Team"
-        action={setMatchPlayerTeam}
+        formAction={setMatchPlayerTeam}
         successMessage="Team updated"
         errorMessage="Failed to update team"
         extras={{

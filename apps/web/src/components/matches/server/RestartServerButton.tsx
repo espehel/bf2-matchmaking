@@ -14,7 +14,7 @@ export function RestartServerButton({ matchId, server }: Props) {
 
   return (
     <ActionButton
-      action={handleRestartServerAction}
+      formAction={handleRestartServerAction}
       errorMessage="Failed to restart server"
       successMessage="Restarting server"
       disabled={isRestarting}

@@ -18,7 +18,7 @@ export default function TeamDetailsForm({ team }: Props) {
 
   return (
     <ActionForm
-      action={updateTeamSA}
+      formAction={updateTeamSA}
       successMessage="Team updated"
       errorMessage="Failed to update team"
       className="section flex-row"

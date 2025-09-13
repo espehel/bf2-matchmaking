@@ -57,7 +57,7 @@ export default async function LiveSection({ match }: Props) {
         <div className="flex gap-2">
           {!liveMatch && isMatchOfficer && (
             <ActionButton
-              action={startLiveMatch}
+              formAction={startLiveMatch}
               successMessage="Live match started"
               errorMessage="Failed to start live match"
               kind="btn-primary"
@@ -67,7 +67,7 @@ export default async function LiveSection({ match }: Props) {
           )}
           {server && server.name != liveMatch?.server?.data?.name && isMatchOfficer && (
             <ActionButton
-              action={setLiveMatchServer}
+              formAction={setLiveMatchServer}
               successMessage={`Server ${server.name} is now tracking live match`}
               errorMessage="Failed to set live match server"
               kind="btn-primary"

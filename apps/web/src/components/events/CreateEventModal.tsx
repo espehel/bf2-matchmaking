@@ -18,7 +18,7 @@ export default async function CreateEventModal() {
       <ActionFormModal
         title="Create event"
         openBtnLabel="Create event"
-        action={createEvent}
+        formAction={createEvent}
         errorMessage="Something went wrong"
         successMessage="Event created"
         extras={{ player: player.id }}

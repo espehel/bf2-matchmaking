@@ -35,7 +35,7 @@ export default async function CreateMatchForm() {
       openBtnLabel="Create match"
       openBtnKind="btn-secondary"
       openBtnSize="btn-lg"
-      action={createScheduledMatch}
+      formAction={createScheduledMatch}
       successMessage="Match scheduled."
       errorMessage="Failed to schedule match"
       className="flex flex-col gap-4"

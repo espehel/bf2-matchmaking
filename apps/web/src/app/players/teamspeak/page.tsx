@@ -21,7 +21,7 @@ export default async function Page(props: Props) {
       <h1>Register Teamspeak Id</h1>
       <section className="section max-w-2xl">
         <ActionForm
-          action={registerTeamspeakId}
+          formAction={registerTeamspeakId}
           successMessage="Successfully registerd teamspeak id"
           errorMessage="Failed to register teamspeak id"
           className=" flex flex-col gap-4"

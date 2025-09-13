@@ -37,7 +37,7 @@ export default async function AcceptOpenChallengeModal({ challenge }: Props) {
       openBtnLabel="Accept"
       openBtnKind="btn-primary"
       openBtnSize="btn-md"
-      action={acceptChallenge}
+      formAction={acceptChallenge}
       errorMessage="Failed to accept challenge"
       successMessage="Challenge accepted"
       extras={{ challengeId: challenge.id.toString() }}

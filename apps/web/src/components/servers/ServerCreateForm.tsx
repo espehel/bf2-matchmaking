@@ -5,7 +5,7 @@ import ActionForm from '@/components/form/ActionForm';
 export default function ServerCreateForm() {
   return (
     <ActionForm
-      action={createServer}
+      formAction={createServer}
       successMessage="Added new Server"
       errorMessage="Failed to add server"
       className="grid grid-cols-2 gap-4"

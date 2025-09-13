@@ -47,7 +47,7 @@ export default async function CreateChallengeSection({ selectedTeam }: Props) {
     <section className="section min-w-[600px] w-fit h-fit">
       <h2>Create challenge</h2>
       <ActionForm
-        action={createChallenge}
+        formAction={createChallenge}
         successMessage="Match scheduled."
         errorMessage="Failed to schedule match"
         className="flex flex-col gap-4"

@@ -1,16 +1,10 @@
-import { TeamspeakBot } from './TeamspeakBot';
-import { error, info, logErrorMessage, warn } from '@bf2-matchmaking/logging';
-import { TeamSpeakClient } from 'ts3-nodejs-library';
-import { getTeamspeakPlayer } from '@bf2-matchmaking/services/players';
-import { isGatherPlayer, isNotNull } from '@bf2-matchmaking/types';
-import { scheduleReadServerJob, stopReadServerJob } from '../jobs/readServerTask';
-import { LiveInfo } from '@bf2-matchmaking/types/engine';
-import { Gather } from '@bf2-matchmaking/services/gather';
-import { GatherStatus } from '@bf2-matchmaking/types/gather';
+import { info, logErrorMessage, verbose, warn } from '@bf2-matchmaking/logging';
+import { isGatherPlayer } from '@bf2-matchmaking/types';
 import { Server } from '@bf2-matchmaking/services/server/Server';
 import { assertObj, assertString } from '@bf2-matchmaking/utils';
-import { gather, setGatherPlayer } from '@bf2-matchmaking/redis/gather';
+import { gather } from '@bf2-matchmaking/redis/gather';
 import {
+  GatherStartedListener,
   PlayersSummonedListener,
   TeamSpeakGather,
 } from '@bf2-matchmaking/teamspeak/gather';
@@ -18,23 +12,26 @@ import { syncConfig } from '@bf2-matchmaking/services/config';
 import { getPlayerList, verifyRconResult } from '@bf2-matchmaking/services/rcon';
 import { players } from '../lib/supabase';
 import { parseError } from '@bf2-matchmaking/services/error';
+import { matchService } from '../lib/match';
+import { getMatchTeam } from './gather-utils';
 
 export async function initGather(configId: number) {
   try {
     const config = await syncConfig(configId);
-    // TODO mark server as used for gather somehow
     const address = await Server.findIdle();
     assertString(address, 'No idle server found');
 
-    const gather = new TeamSpeakGather(config);
+    const gather = await TeamSpeakGather.init(config);
+    addEventLogging(gather);
     await gather
       .on('playerJoining', handlePlayerJoining)
       .on('playersSummoned', handlePlayersSummoned)
       .on('summonComplete', handleSummonComplete)
+      .on('gatherStarted', handleGatherStarted)
       .on('error', (e) => {
         logErrorMessage(`Gather ${configId}: Error`, e);
       })
-      .init(address);
+      .initQueue(address);
   } catch (e) {
     logErrorMessage(`Gather ${configId}: Failed to initialize`, e);
   }
@@ -75,6 +72,21 @@ const handleSummonComplete = async (
   gather: TeamSpeakGather
 ) => {
   const players = await Promise.all(clientUIds.map(getGatherPlayer));
+  const match = await matchService.createMatch(players, gather.config);
+  const team1 = getMatchTeam(match, 1);
+  const team2 = getMatchTeam(match, 2);
+  await gather.initiateMatchChannels(match.id, team1, team2);
+};
+
+const handleGatherStarted: GatherStartedListener = async (
+  matchId,
+  team1,
+  team2,
+  gather
+) => {
+  const address = await Server.findIdle();
+  assertString(address, 'No idle server found');
+  await gather.nextQueue(address);
 };
 
 async function getGatherPlayer(clientUId: string) {
@@ -217,5 +229,43 @@ async function verifyPlayer(identifier: string, ts: TeamspeakBot) {
 }*/
 
 function addEventLogging(ts: TeamSpeakGather) {
-  ts.on('initiated', () => {});
+  ts.on('initiated', (clientUIds, address) => {
+    verbose(
+      'Gather',
+      `Gather initiated on ${address} with players: ${clientUIds.join(', ')}`
+    );
+  });
+  ts.on('playerJoining', (clientUId) => {
+    verbose('Gather', `Player joining gather: ${clientUId}`);
+  });
+  ts.on('playerJoined', (clientUId) => {
+    verbose('Gather', `Player joined gather: ${clientUId}`);
+  });
+  ts.on('playerRejected', (clientUId, reason) => {
+    verbose('Gather', `Player ${clientUId} rejected from gather: ${reason}`);
+  });
+  ts.on('playerLeft', (clientUId) => {
+    verbose('Gather', `Player left gather: ${clientUId}`);
+  });
+  ts.on('playersSummoned', (server, clientUIds) => {
+    verbose('Gather', `Players summoned to server ${server}: ${clientUIds.join(', ')}`);
+  });
+  ts.on('summonComplete', (clientUIds) => {
+    verbose('Gather', `Summon complete with players: ${clientUIds.join(', ')}`);
+  });
+  ts.on('playerMoved', (clientUId, toChannel) => {
+    verbose('Gather', `Player ${clientUId} moved to ${toChannel}`);
+  });
+  ts.on('gatherStarted', (matchId) => {
+    verbose('Gather', `Gather started for match ${matchId}`);
+  });
+  ts.on('nextQueue', (clientUIds, address, gather) => {
+    verbose(
+      'Gather',
+      `Next queue initiated on ${address} with players: ${clientUIds.join(', ')}`
+    );
+  });
+  ts.on('summonFail', (missingClientUIds) => {
+    verbose('Gather', `Summon failed, missing players: ${missingClientUIds.join(', ')}`);
+  });
 }

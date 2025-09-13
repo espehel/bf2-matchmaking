@@ -31,7 +31,7 @@ import { ConnectedLiveServer, LiveServer, OfflineServer, ServerStatus } from './
 import {
   AbortingStatusChange,
   GatherStatus,
-  PlayingStatusChange,
+  StartingStatusChange,
   StatusChange,
   SummoningStatusChange,
 } from './gather';
@@ -142,8 +142,10 @@ export function isStatusChange(value: unknown): value is StatusChange {
   return Boolean(value && (value as StatusChange).status);
 }
 
-export function isPlayingStatusChange(value: unknown): value is PlayingStatusChange {
-  return Boolean(value && (value as PlayingStatusChange).status === GatherStatus.Playing);
+export function isStartingStatusChange(value: unknown): value is StartingStatusChange {
+  return Boolean(
+    value && (value as StartingStatusChange).status === GatherStatus.Starting
+  );
 }
 export function isAbortingStatusChange(value: unknown): value is AbortingStatusChange {
   return Boolean(

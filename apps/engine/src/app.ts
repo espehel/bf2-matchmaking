@@ -17,6 +17,7 @@ import { DateTime } from 'luxon';
 import { scheduleResetServersJob } from './jobs/resetServers';
 import { initDraftMessageListeners } from './discord/draft-message-listener';
 import { initQueueListeners } from './discord/queue-listener';
+import { initGather } from './gather/gather-service';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5006;
 
@@ -27,6 +28,7 @@ discordClient
   .then(async () => {
     if (isDevelopment()) {
       warn('app', 'Starting in development mode');
+      await initGather(20);
       return;
     }
 

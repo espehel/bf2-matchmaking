@@ -40,7 +40,7 @@ export default async function ServerInGameActions({
         <div className="flex flex-col gap-2">
           <JoinMeButton server={server} disabled={isConnected} />
           <ActionButton
-            action={restartRoundSA}
+            formAction={restartRoundSA}
             errorMessage="Failed to restart round"
             successMessage="Round restarted"
             disabled={!isInGameAdmin}
@@ -49,7 +49,7 @@ export default async function ServerInGameActions({
             Restart round
           </ActionButton>
           <ActionButton
-            action={pauseRoundSA}
+            formAction={pauseRoundSA}
             errorMessage="Failed to pause round"
             successMessage="Round paused"
             disabled={!isInGameAdmin || isPaused}
@@ -58,7 +58,7 @@ export default async function ServerInGameActions({
             Pause
           </ActionButton>
           <ActionButton
-            action={unpauseRoundSA}
+            formAction={unpauseRoundSA}
             errorMessage="Failed to unpause round"
             successMessage="Round unpaused"
             disabled={!isInGameAdmin || !isPaused}

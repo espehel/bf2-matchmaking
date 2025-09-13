@@ -23,7 +23,7 @@ export default function MatchFinishedSection({ match }: Props) {
       </p>
       <div className="flex gap-4">
         <ActionButton
-          action={closeMatchSA}
+          formAction={closeMatchSA}
           successMessage="Match closed without results"
           errorMessage="Failed to create results"
           kind="btn-primary"

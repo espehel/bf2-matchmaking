@@ -60,7 +60,7 @@ export default async function MatchActions({ match }: Props) {
         {isScheduled && (
           <div className=" flex gap-2 text-left">
             <ActionButton
-              action={startMatchSA}
+              formAction={startMatchSA}
               successMessage="Match started."
               errorMessage="Failed to start match"
             >
@@ -68,7 +68,7 @@ export default async function MatchActions({ match }: Props) {
             </ActionButton>
             <OrganizerCommandCopyButton match={match} />
             <ActionButton
-              action={deleteMatchSA}
+              formAction={deleteMatchSA}
               successMessage="Match deleted."
               errorMessage="Failed to delete match"
               kind="btn-error"
@@ -79,7 +79,7 @@ export default async function MatchActions({ match }: Props) {
         )}
         {isOngoing && (
           <ActionButton
-            action={finishMatchSA}
+            formAction={finishMatchSA}
             successMessage="Match closed and results created."
             errorMessage="Match set to finished but results not created"
           >
@@ -89,14 +89,14 @@ export default async function MatchActions({ match }: Props) {
         {isFinished && (
           <div className="flex gap-4">
             <ActionButton
-              action={closeMatchSA}
+              formAction={closeMatchSA}
               successMessage="Match closed without results."
               errorMessage="Failed to close match"
             >
               Close match
             </ActionButton>
             <ActionButton
-              action={createResultsSA}
+              formAction={createResultsSA}
               successMessage="Match closed and results created."
               errorMessage="Failed to create results"
               errorRedirect={`/results/${match.id}`}
@@ -107,7 +107,7 @@ export default async function MatchActions({ match }: Props) {
         )}
         {isClosed && (
           <ActionButton
-            action={reopenMatchSA}
+            formAction={reopenMatchSA}
             successMessage="Match reopened."
             errorMessage="Failed to reopen match"
           >

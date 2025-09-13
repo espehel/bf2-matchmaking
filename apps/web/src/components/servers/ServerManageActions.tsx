@@ -27,7 +27,7 @@ export default async function ServerManageActions({ address }: Props) {
       <h2>Manage server</h2>
       <div>
         <ActionButton
-          action={deleteServerSA}
+          formAction={deleteServerSA}
           successMessage={`Deleted server ${server.name}`}
           errorMessage={'Failed to delete server'}
           kind="btn-error"

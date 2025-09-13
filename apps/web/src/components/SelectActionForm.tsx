@@ -34,7 +34,7 @@ export default function SelectActionForm({
 }: Props) {
   return (
     <ActionForm
-      action={action}
+      formAction={action}
       successMessage={successMessage}
       errorMessage={errorMessage}
       resetOnSuccess={false}

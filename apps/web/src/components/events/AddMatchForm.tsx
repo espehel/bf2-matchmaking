@@ -21,7 +21,7 @@ export default function AddMatchForm({ event, round }: Props) {
 
   return (
     <ActionForm
-      action={addEventTeamSA}
+      formAction={addEventTeamSA}
       successMessage="Successfully aded team"
       errorMessage="Failed to add team"
     >

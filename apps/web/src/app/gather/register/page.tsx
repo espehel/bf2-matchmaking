@@ -34,7 +34,7 @@ export default async function GatherRegisterPage(props: Props) {
         <h2>Register keyhash</h2>
         <ActionForm
           className="flex flex-col gap-2"
-          action={registerKeyhash}
+          formAction={registerKeyhash}
           extras={{ playerId: player.id }}
         >
           {serverPlayers && <ServerplayerSelect players={serverPlayers} />}
@@ -57,7 +57,7 @@ export default async function GatherRegisterPage(props: Props) {
       </section>
       <section className="section">
         <h2>Register teamspeak id</h2>
-        <ActionForm action={registerTeamspeakId} extras={{ playerId: player.id }}>
+        <ActionForm formAction={registerTeamspeakId} extras={{ playerId: player.id }}>
           <InputField
             key={searchParams.tsid}
             name="tsid"

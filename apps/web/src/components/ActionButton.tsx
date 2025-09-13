@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
 interface Props extends PropsWithChildren {
-  action: () => Promise<{ data: unknown; error: { message: string } | null }>;
+  formAction: () => Promise<{ data: unknown; error: { message: string } | null }>;
   successMessage: string;
   errorMessage: string;
   kind?: 'btn-primary' | 'btn-secondary' | 'btn-error';
@@ -17,7 +17,7 @@ interface Props extends PropsWithChildren {
 
 export default function ActionButton({
   children,
-  action,
+  formAction,
   successMessage,
   errorMessage,
   kind = 'btn-secondary',
@@ -33,7 +33,7 @@ export default function ActionButton({
   const handleAction = useCallback(
     () =>
       startTransition(async () => {
-        const result = await action();
+        const result = await formAction();
         if (result.error) {
           toast.error(`${errorMessage}: ${result.error.message}`);
           if (errorRedirect) {
@@ -47,7 +47,7 @@ export default function ActionButton({
         }
       }),
     [
-      action,
+      formAction,
       errorMessage,
       successMessage,
       startTransition,

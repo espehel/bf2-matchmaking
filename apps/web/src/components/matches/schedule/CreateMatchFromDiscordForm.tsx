@@ -31,7 +31,7 @@ export default async function CreateMatchFromDiscordForm({
       openBtnLabel="Create discord match"
       openBtnKind="btn-secondary"
       openBtnSize="btn-lg"
-      action={scheduleDiscordMatch}
+      formAction={scheduleDiscordMatch}
       className="flex flex-col gap-4"
     >
       <DiscordMessageFieldset servers={servers} maps={maps} />

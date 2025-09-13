@@ -33,7 +33,7 @@ export default async function ServerActions({ server, hasAdmin }: Props) {
           label="Restart to infantry"
           guard={server.live ? server.live.players.length > 0 : false}
           guardLabel="Server is populated, are you sure you want to restart?"
-          action={restartServerInfantrySA}
+          formAction={restartServerInfantrySA}
           successMessage="Server restarting with infantry mode"
           errorMessage="Failed to restart server with infantry mode"
           disabled={!hasAdmin}
@@ -42,7 +42,7 @@ export default async function ServerActions({ server, hasAdmin }: Props) {
           label="Restart to vehicles"
           guard={server.live ? server.live.players.length > 0 : false}
           guardLabel="Server is populated, are you sure you want to restart?"
-          action={restartServerVehiclesSA}
+          formAction={restartServerVehiclesSA}
           successMessage="Server restarting with vehicles mode"
           errorMessage="Failed to restart server with vehicles mode"
           disabled={!hasAdmin}

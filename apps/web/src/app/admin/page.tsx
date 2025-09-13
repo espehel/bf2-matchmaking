@@ -46,7 +46,7 @@ export default async function AdminPage() {
         <p>{`Last reset: ${systemState?.resetAt}`}</p>
         <div className="flex gap-4">
           <ActionButton
-            action={resetSystem}
+            formAction={resetSystem}
             successMessage="System reset, services restarting..."
             errorMessage="Failed to reset system"
             disabled={!adminRoles?.system_admin}
@@ -54,7 +54,7 @@ export default async function AdminPage() {
             Reset
           </ActionButton>
           <ActionButton
-            action={resetEngine}
+            formAction={resetEngine}
             successMessage="Engine reset"
             errorMessage="Failed to reset Engine"
             disabled={!adminRoles?.system_admin}
@@ -62,7 +62,7 @@ export default async function AdminPage() {
             Reset Engine
           </ActionButton>
           <ActionButton
-            action={resetServers}
+            formAction={resetServers}
             successMessage="Servers reset"
             errorMessage="Failed to reset servers"
             disabled={!adminRoles?.system_admin}

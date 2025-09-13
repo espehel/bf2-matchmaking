@@ -29,7 +29,7 @@ export default async function MatchResultSection({ match }: Props) {
       <section className="section text-left">
         <h2 className="text-xl">Match closed without results</h2>
         <ActionButton
-          action={reopenMatchSA}
+          formAction={reopenMatchSA}
           kind="btn-primary"
           successMessage="Match reopened"
           errorMessage="Failed to reopen match"

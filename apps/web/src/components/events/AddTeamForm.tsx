@@ -17,7 +17,7 @@ export default function AddTeamForm({ eventId, edit, open }: Props) {
   if (edit) {
     return (
       <ActionForm
-        action={addEventTeam}
+        formAction={addEventTeam}
         successMessage="Successfully added team"
         errorMessage="Failed to add team"
         extras={{ event: eventId.toString() }}
@@ -39,7 +39,7 @@ export default function AddTeamForm({ eventId, edit, open }: Props) {
   if (open) {
     return (
       <ActionForm
-        action={addEventTeam}
+        formAction={addEventTeam}
         successMessage="Successfully added team"
         errorMessage="Failed to add team"
         extras={{ event: eventId.toString() }}

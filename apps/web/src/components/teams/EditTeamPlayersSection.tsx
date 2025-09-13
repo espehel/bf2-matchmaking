@@ -34,7 +34,7 @@ export default function EditTeamPlayersSection({ team }: Props) {
         </li>
       </ul>
       <ActionForm
-        action={createAndAddPlayerSA}
+        formAction={createAndAddPlayerSA}
         successMessage="Player added"
         errorMessage="Failed to add player"
       >

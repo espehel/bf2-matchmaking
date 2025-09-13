@@ -6,7 +6,7 @@ import ActionForm from '@/components/form/ActionForm';
 export default function TeamCreateForm() {
   return (
     <ActionForm
-      action={createTeam}
+      formAction={createTeam}
       successMessage="Added new team"
       errorMessage="Failed to add team"
       className=" flex flex-col gap-4"

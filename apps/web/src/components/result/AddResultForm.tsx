@@ -14,7 +14,7 @@ export default function AddResultForm({ match }: Props) {
   }
   return (
     <ActionForm
-      action={addResultSA}
+      formAction={addResultSA}
       successMessage="Result added"
       errorMessage="Failed to add result"
     >

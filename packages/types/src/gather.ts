@@ -3,7 +3,7 @@ import { GatherPlayer, MatchesJoined } from './database-types';
 export enum GatherStatus {
   Queueing = 'Queueing',
   Summoning = 'Summoning',
-  Playing = 'Playing',
+  Starting = 'Starting',
   Aborting = 'Aborting',
   Failed = 'Failed',
 }
@@ -25,8 +25,8 @@ export interface SummoningStatusChange extends StatusChange {
   status: GatherStatus.Summoning;
   payload: { address: string };
 }
-export interface PlayingStatusChange extends StatusChange {
-  status: GatherStatus.Playing;
+export interface StartingStatusChange extends StatusChange {
+  status: GatherStatus.Starting;
   payload: MatchesJoined;
 }
 export interface AbortingStatusChange extends StatusChange {

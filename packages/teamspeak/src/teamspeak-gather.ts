@@ -5,7 +5,7 @@ import {
   TeamSpeakClient,
 } from 'ts3-nodejs-library';
 import { EventEmitter } from 'node:events';
-import { LOBBY_CHANNEL, QUEUE_CHANNEL } from './constants';
+import { BOT_CHANNEL, LOBBY_CHANNEL, QUEUE_CHANNEL } from './constants';
 import { error, info } from '@bf2-matchmaking/logging';
 import { api, assertObj, assertString, parseError } from '@bf2-matchmaking/utils';
 import { MatchConfigsRow } from '@bf2-matchmaking/types';
@@ -15,6 +15,7 @@ import { GatherStatus } from '@bf2-matchmaking/types/gather';
 
 export type GatherInitiatedListener = (
   clientUIds: Array<string>,
+  address: string,
   gather: TeamSpeakGather
 ) => void;
 export type PlayerJoiningListener = (clientUId: string, gather: TeamSpeakGather) => void;
@@ -30,18 +31,37 @@ export type SummonCompleteListener = (
   clientUIds: Array<string>,
   gather: TeamSpeakGather
 ) => void;
+export type PlayerMovedListener = (
+  clientUId: string,
+  channel: string,
+  gather: TeamSpeakGather
+) => void;
+export type GatherStartedListener = (
+  matchId: number,
+  team1: Array<string>,
+  team2: Array<string>,
+  gather: TeamSpeakGather
+) => void;
+export type NextQueueListener = (
+  clientUIds: Array<string>,
+  address: string,
+  gather: TeamSpeakGather
+) => void;
 export type SummonFailListener = (
   clientUIds: Array<string>,
   gather: TeamSpeakGather
 ) => void;
-export interface TeamSpeakGatherEvents extends EventEmitter {
+export interface TeamSpeakGather extends EventEmitter {
   on(event: 'initiated', listener: GatherInitiatedListener): this;
   on(event: 'playerJoining', listener: PlayerJoiningListener): this;
   on(event: 'playerJoined', listener: PlayerJoinedListener): this;
   on(event: 'playerRejected', listener: PlayerRejectedListener): this;
   on(event: 'playerLeft', listener: PlayerLeftListener): this;
   on(event: 'playersSummoned', listener: PlayersSummonedListener): this;
+  on(event: 'playerMoved', listener: PlayerMovedListener): this;
   on(event: 'summonComplete', listener: SummonCompleteListener): this;
+  on(event: 'gatherStarted', listener: GatherStartedListener): this;
+  on(event: 'nextQueue', listener: NextQueueListener): this;
   on(event: 'summonFail', listener: SummonFailListener): this;
   on(event: 'error', listener: (e: Error) => void): this;
 }
@@ -51,22 +71,15 @@ export class TeamSpeakGather extends EventEmitter {
   config: MatchConfigsRow;
   queue: ReturnType<typeof list>;
   state: ReturnType<typeof gather.getState>;
-  constructor(config: MatchConfigsRow) {
+  constructor(config: MatchConfigsRow, ts: TeamSpeak) {
     super();
     this.config = config;
     this.queue = gather.getQueue(config.id);
     this.state = gather.getState(config.id);
-    assertString(process.env.TEAMSPEAK_PASSWORD, 'TEAMSPEAK_PASSWORD not defined');
-    this.ts = new TeamSpeak({
-      host: 'oslo21.spillvert.no',
-      queryport: 10022,
-      protocol: QueryProtocol.SSH,
-      serverport: 10014,
-      username: 'bf2.gg',
-      password: process.env.TEAMSPEAK_PASSWORD,
-      nickname: 'bf2.gg',
-      autoConnect: false,
-    });
+    this.ts = ts;
+    this.ts.on('clientmoved', this.#handleClientMoved);
+    this.ts.on('close', this.#handleClose);
+    this.ts.on('error', this.#handleError);
   }
   async hasTimedOut() {
     const summonedAt = await this.state.getSafe('summonedAt');
@@ -75,12 +88,14 @@ export class TeamSpeakGather extends EventEmitter {
     }
     return Date.now() - Number(summonedAt) > 2 * 60 * 1000; // 2 minutes
   }
-  #handleReady = async () => {
+  async initQueue(address: string) {
     const queueClients = await this.ts.clientList({ cid: QUEUE_CHANNEL });
     const clientUIDs = queueClients.map((client) => client.uniqueIdentifier);
+    await this.reset(address);
     await this.queue.rpush(...clientUIDs);
     this.emit('initiated', clientUIDs, this);
-  };
+    return this;
+  }
   #handleClientMoved = async ({ channel, client }: ClientMovedEvent) => {
     if (channel.cid === QUEUE_CHANNEL) {
       this.emit('playerJoining', client.uniqueIdentifier, this);
@@ -114,22 +129,37 @@ export class TeamSpeakGather extends EventEmitter {
       failReason: e.message,
     });
   };
-  async init(address: string) {
-    this.ts.removeAllListeners();
-    this.ts.forceQuit();
+  async nextQueue(address: string) {
+    await this.state.del();
+    await this.state.set({
+      status: 'Queueing',
+      address,
+    });
+    const queueClients = await this.queue.range();
+    this.emit('nextQueue', queueClients, this);
+  }
+  async reset(address: string) {
     await this.state.del();
     await this.state.set({
       status: 'Queueing',
       address,
     });
     await this.queue.del();
+  }
+  static async init(config: MatchConfigsRow) {
+    assertString(process.env.TEAMSPEAK_PASSWORD, 'TEAMSPEAK_PASSWORD not defined');
+    const ts = await TeamSpeak.connect({
+      host: 'oslo21.spillvert.no',
+      queryport: 10022,
+      protocol: QueryProtocol.SSH,
+      serverport: 10014,
+      username: 'bf2.gg',
+      password: process.env.TEAMSPEAK_PASSWORD,
+      nickname: 'bf2.gg',
+      autoConnect: false,
+    });
 
-    this.ts.on('ready', this.#handleReady);
-    this.ts.on('clientmoved', this.#handleClientMoved);
-    this.ts.on('close', this.#handleClose);
-    this.ts.on('error', this.#handleError);
-
-    return await this.ts.connect();
+    return new TeamSpeakGather(config, ts);
   }
   async acceptPlayer(clientUId: string) {
     const queueLength = await this.queue.rpush(clientUId);
@@ -168,10 +198,8 @@ export class TeamSpeakGather extends EventEmitter {
     const missingClients = summonedClients.filter((id) => !clientUIds.includes(id));
 
     if (missingClients.length === 0) {
-      const matchClients = await this.queue.popBulk(this.config.size);
-      assertObj(matchClients, 'Failed to pop match clients from queue');
-      this.emit('summonComplete', matchClients, this);
-      await this.state.set({ status: 'Queueing', summonedAt: null });
+      this.emit('summonComplete', summonedClients, this);
+      await this.state.set({ status: 'Starting', summonedAt: null });
       return 'OK';
     }
 
@@ -188,6 +216,46 @@ export class TeamSpeakGather extends EventEmitter {
     }
 
     return null;
+  }
+  async movePlayer(channelId: string, clientUId: string) {
+    const client = await this.ts.getClientByUid(clientUId);
+    assertObj(client, `Client ${clientUId} not found in teamspeak client list`);
+    await this.ts.clientMove(client, channelId);
+    this.emit('playerMoved', clientUId, channelId, this);
+  }
+  async initiateMatchChannels(
+    matchId: number,
+    team1: Array<string>,
+    team2: Array<string>
+  ) {
+    const channel1 = await this.ts.channelCreate(`Match ${matchId} Team 1`, {
+      cpid: BOT_CHANNEL,
+      channelFlagTemporary: false,
+      channelFlagSemiPermanent: true,
+    });
+    const channel2 = await this.ts.channelCreate(`Match ${matchId} Team 2`, {
+      cpid: BOT_CHANNEL,
+      channelFlagTemporary: false,
+      channelFlagSemiPermanent: true,
+    });
+
+    await this.queue.popBulk(this.config.size);
+    for (const player of team1) {
+      await this.movePlayer(channel1.cid, player);
+    }
+    for (const player of team2) {
+      await this.movePlayer(channel2.cid, player);
+    }
+
+    await channel1.edit({
+      channelFlagTemporary: true,
+      channelFlagSemiPermanent: false,
+    });
+    await channel2.edit({
+      channelFlagTemporary: true,
+      channelFlagSemiPermanent: false,
+    });
+    this.emit('gatherStarted', matchId, team1, team2, this);
   }
   async kickClient(clientUId: string, reason: string) {
     const client = await this.ts.getClientByUid(clientUId);

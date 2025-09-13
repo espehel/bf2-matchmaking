@@ -5,7 +5,7 @@ interface Props {
   label: string;
   guard: boolean;
   guardLabel: string;
-  action: () => Promise<{ data: unknown; error: { message: string } | null }>;
+  formAction: () => Promise<{ data: unknown; error: { message: string } | null }>;
   successMessage: string;
   errorMessage: string;
   disabled?: boolean;

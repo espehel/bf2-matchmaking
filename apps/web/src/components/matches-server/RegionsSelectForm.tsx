@@ -27,7 +27,7 @@ export default function RegionsSelectForm({ regions, matchId, locations }: Props
 
   return (
     <ActionForm
-      action={setRegionsSA}
+      formAction={setRegionsSA}
       successMessage={'Set new regions'}
       errorMessage={'Failed to set regions'}
     >

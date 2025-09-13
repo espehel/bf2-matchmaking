@@ -1,7 +1,7 @@
 import {
   GatherState,
   GatherStatus,
-  PlayingStatusChange,
+  StartingStatusChange,
   AbortingStatusChange,
   StatusChange,
   SummoningStatusChange,
@@ -155,10 +155,10 @@ export function Gather(configId: number) {
     const matchPlayers = await popMatchPlayers(configId, config.size);
     assertObj(matchPlayers, 'Match players not found');
 
-    const keyhashes = (
-      await Promise.all(matchPlayers.map(getGatherPlayerKeyhash))
-    ).filter(isNotNull);
-    await matchService.createMatch(keyhashes, config);
+    const players = (await Promise.all(matchPlayers.map(getGatherPlayer))).filter(
+      isNotNull
+    );
+    await matchService.createMatch(players, config);
 
     return _nextState(
       {
@@ -205,11 +205,11 @@ export function Gather(configId: number) {
     return null;
   };
 
-  const _play = async (match: MatchesJoined): Promise<PlayingStatusChange> => {
+  const _play = async (match: MatchesJoined): Promise<StartingStatusChange> => {
     const updatedMatch = await matchApi.update(match.id).commit({
       status: MatchStatus.Ongoing,
     });
-    return _nextState({ status: GatherStatus.Playing }, updatedMatch);
+    return _nextState({ status: GatherStatus.Starting }, updatedMatch);
   };
 
   const _abort = async (

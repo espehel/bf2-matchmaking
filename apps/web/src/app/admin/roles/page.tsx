@@ -24,7 +24,7 @@ export default async function AdminRolesPage() {
       <h1>Admin Roles</h1>
       <p className="mb-8">You must be system admin to be able to change roles</p>
       <ActionForm
-        action={insertAdminRole}
+        formAction={insertAdminRole}
         successMessage="Admin added"
         errorMessage="Failed to add admin"
         className="mb-4"
@@ -52,7 +52,7 @@ export default async function AdminRolesPage() {
             <ToggleAdminRolesInput role="system_admin" user={admin} />
             <ActionForm
               className="group-hover:bg-base-300 p-2"
-              action={deleteAdminRole}
+              formAction={deleteAdminRole}
               successMessage="Admin deleted"
               errorMessage="Failed to delete admin"
               extras={{ user_id: admin.user_id }}

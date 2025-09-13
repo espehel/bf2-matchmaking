@@ -68,7 +68,7 @@ export default async function GenerateServerForm({ match, hasInstance }: Props) 
   if (isMatchOfficer) {
     return (
       <ActionForm
-        action={generateServerSA}
+        formAction={generateServerSA}
         successMessage="New server is starting up"
         errorMessage="Failed to generate server"
       >
@@ -94,7 +94,7 @@ export default async function GenerateServerForm({ match, hasInstance }: Props) 
   if (isMatchPlayer && !hasInstance) {
     return (
       <ActionForm
-        action={generateQuickServerSA}
+        formAction={generateQuickServerSA}
         successMessage="New server is starting up"
         errorMessage="Failed to generate server"
       >

@@ -13,7 +13,7 @@ import { parseError } from '@bf2-matchmaking/utils';
 
 export interface Props
   extends DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> {
-  action: (
+  formAction: (
     formData: FormData
   ) => Promise<{ data: unknown; error: { message: string } | null } | undefined>;
   successMessage: string;
@@ -27,7 +27,7 @@ export interface Props
 }
 
 export default function ActionForm({
-  action,
+  formAction,
   onSuccess,
   successMessage,
   errorMessage,
@@ -45,7 +45,7 @@ export default function ActionForm({
     (formData: FormData) =>
       startTransition(async () => {
         try {
-          const result = await action(formData);
+          const result = await formAction(formData);
           if (!result) {
             return;
           }
@@ -67,7 +67,7 @@ export default function ActionForm({
           toast.error(`${errorMessage}: ${parseError(e)}`);
         }
       }),
-    [action, errorMessage, successMessage, startTransition, redirect, router]
+    [formAction, errorMessage, successMessage, startTransition, redirect, router]
   );
   return (
     <form action={handleAction} ref={ref} {...props}>

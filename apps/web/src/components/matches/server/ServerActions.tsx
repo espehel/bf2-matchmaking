@@ -40,7 +40,7 @@ export default async function ServerActions({ server, match }: Props) {
       <div className="flex flex-wrap gap-2 mt-4">
         <RestartServerButton server={server} matchId={match.id} />
         <ActionButton
-          action={restartRoundSA}
+          formAction={restartRoundSA}
           errorMessage="Failed to restart round"
           successMessage="Round restarted"
         >
@@ -48,7 +48,7 @@ export default async function ServerActions({ server, match }: Props) {
         </ActionButton>
         {server.live.currentGameStatus === GameStatus.Playing && (
           <ActionButton
-            action={pauseRoundSA}
+            formAction={pauseRoundSA}
             errorMessage="Failed to pause round"
             successMessage="Round paused"
           >
@@ -57,7 +57,7 @@ export default async function ServerActions({ server, match }: Props) {
         )}
         {server.live.currentGameStatus === GameStatus.Paused && (
           <ActionButton
-            action={unpauseRoundSA}
+            formAction={unpauseRoundSA}
             errorMessage="Failed to unpause round"
             successMessage="Round unpaused"
           >

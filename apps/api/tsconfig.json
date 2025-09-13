@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "useUnknownInCatchVariables": true,
     "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
     "moduleResolution": "nodenext",
     "lib": ["ESNext", "DOM"]
   }

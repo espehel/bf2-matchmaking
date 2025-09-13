@@ -46,7 +46,7 @@ export default async function NoServer({ match }: Props) {
           <RevalidateForm path={`/matches/${match.id}`} />
         </div>
         <ActionButton
-          action={generateMatchServerInstanceSA}
+          formAction={generateMatchServerInstanceSA}
           successMessage="Generating server"
           errorMessage="Failed to generate server"
           kind="btn-primary"
