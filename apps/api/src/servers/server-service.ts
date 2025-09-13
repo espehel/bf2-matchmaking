@@ -1,22 +1,15 @@
 import {
   getAllServers,
   getServer,
-  getServerData,
   getServerDataSafe,
   getServerLiveInfo,
 } from '@bf2-matchmaking/redis/servers';
 import { error, info, logErrorMessage, logMessage, warn } from '@bf2-matchmaking/logging';
-import {
-  isNotNull,
-  PendingServer,
-  PubobotMatch,
-  ServerInfo,
-  ServersRow,
-} from '@bf2-matchmaking/types';
+import { isNotNull, PendingServer, ServerInfo, ServersRow } from '@bf2-matchmaking/types';
 import { createSocket, getServerInfo } from '@bf2-matchmaking/services/rcon';
 import { assertObj, assertString, wait } from '@bf2-matchmaking/utils';
 import { getDnsByIp } from '../platform/cloudflare';
-import { client, verifyResult } from '@bf2-matchmaking/supabase';
+import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { parseError, ServiceError } from '@bf2-matchmaking/services/error';
 import { hash } from '@bf2-matchmaking/redis/hash';
 import { Server } from '@bf2-matchmaking/services/server/Server';
@@ -35,16 +28,26 @@ export async function getLiveServerByMatchId(matchId: string) {
   return null;
 }
 
+async function getServerName(address: string) {
+  const data = await getServerDataSafe(address);
+  if (data) {
+    return data.name;
+  }
+  const server = await client().getServer(address).then(verifySingleResult);
+  return server.name;
+}
+
 export async function getLiveServer(address: string): Promise<LiveServer | null> {
   try {
     const data = await getServerDataSafe(address);
     const values = await getServer(address);
     const live = await getServerLiveInfo(address);
+    const name = await getServerName(address);
 
     return {
       address,
       ...values,
-      name: data?.name || 'offline',
+      name,
       data,
       live,
     };
