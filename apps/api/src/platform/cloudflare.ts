@@ -13,7 +13,7 @@ export async function getDnsByName(name: string) {
     : `${name}.${CLOUDFLARE.zone_name}`;
   const response = await client.dns.records.list({
     zone_id: CLOUDFLARE.zone_id,
-    name: hostname,
+    name: { exact: hostname },
     type: 'A',
   });
   return (response.result?.at(0) as ARecord | undefined) || null;
@@ -22,7 +22,7 @@ export async function getDnsByName(name: string) {
 export async function getDnsByIp(ip: string) {
   const response = await client.dns.records.list({
     zone_id: CLOUDFLARE.zone_id,
-    content: ip,
+    content: { exact: ip },
     type: 'A',
   });
   return (response.result?.at(0) as ARecord | undefined) || null;
