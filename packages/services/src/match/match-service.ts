@@ -44,9 +44,9 @@ export function createMatchService(matchApi: ReturnType<typeof createMatchApi>) 
     try {
       const match = await matchApi.get(matchId);
       if (match.rounds.length === 0) {
-        const removedMatch = await matchApi.remove(matchId, MatchStatus.Closed);
+        const removedMatch = await matchApi.remove(matchId, MatchStatus.Deleted);
         logMessage(
-          `Match ${match.id} has no rounds, closing match without creating results.`,
+          `Match ${match.id} has no rounds, deleting match without creating results.`,
           {
             removedMatch,
           }

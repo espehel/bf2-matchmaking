@@ -97,6 +97,9 @@ export function createMatchApi(dbClient: ResolvableSupabaseClient) {
         removedMatch,
         redisResult,
       });
+      if (status === MatchStatus.Deleted) {
+        await stream(`matches:${matchId}:log`).del();
+      }
       return removedMatch;
     },
     sync: async function (matchId: number | string) {
