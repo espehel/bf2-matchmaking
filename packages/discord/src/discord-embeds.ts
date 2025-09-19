@@ -420,15 +420,17 @@ export const getMatchServerField = (match: MatchesJoined) => ({
   value: `${api.web().basePath}/matches/${match.id}/server`,
 });
 
-export function getServerFields(servers: Array<ConnectedLiveServer>) {
+export function getServerFields(servers: Array<LiveServer>) {
   return servers
     .filter((server) => !getMatchIdFromDnsName(server.address))
     .map((server) => ({
-      name: server.live.serverName.concat(
+      name: server.name.concat(
         server.live
           ? ` (${server.live.connectedPlayers}/${server.live.maxPlayers})`
-          : ' (offline)'
+          : ` (${server.status})`
       ),
-      value: `[${server.address}:${server.data.port}](${server.data.joinmeHref})`,
+      value: server.data
+        ? `[${server.address}:${server.data.port}](${server.data.joinmeHref})`
+        : server.address,
     }));
 }

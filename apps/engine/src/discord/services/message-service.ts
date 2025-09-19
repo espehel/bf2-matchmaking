@@ -158,16 +158,15 @@ export async function sendServersMessage(
     throw new Error(`Can't send message to channel ${channel.id}`);
   }
   const { data: servers } = await api.live().getServers();
-  const connectedServers = servers?.filter(isConnectedLiveServer);
 
-  if (!connectedServers?.length) {
+  if (!servers || servers.length === 0) {
     return;
   }
   const serversMessage = await channel.send({
     embeds: [
       {
         fields: [
-          ...getServerFields(connectedServers),
+          ...getServerFields(servers),
           getMatchServerField(match),
           getMatchField(match),
         ],
