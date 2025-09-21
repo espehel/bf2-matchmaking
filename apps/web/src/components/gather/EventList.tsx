@@ -74,7 +74,7 @@ function getText({ message }: GatherEvent): string {
     case 'playerJoined':
       return `${message.payload.nick} joined.`;
     case 'playerRejected':
-      return `${message.payload.nick} was rejected: ${message.payload.reason}`;
+      return `${message.payload.nick} was rejected: Missing ${message.payload.reason}`;
     case 'playerLeft':
       return `${message.payload.nick} left.`;
     case 'playersSummoned':
