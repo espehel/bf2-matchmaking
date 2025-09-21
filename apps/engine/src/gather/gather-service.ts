@@ -14,6 +14,7 @@ import { players } from '../lib/supabase';
 import { parseError } from '@bf2-matchmaking/services/error';
 import { matchService } from '../lib/match';
 import { getMatchTeam } from './gather-utils';
+import { stream } from '@bf2-matchmaking/redis/stream';
 
 export async function initGather(configId: number) {
   try {
@@ -23,6 +24,7 @@ export async function initGather(configId: number) {
 
     const gather = await TeamSpeakGather.init(config);
     addEventLogging(gather);
+    await addEventStream(gather);
     await gather
       .on('playerJoining', handlePlayerJoining)
       .on('playersSummoned', handlePlayersSummoned)
@@ -227,6 +229,67 @@ async function verifyPlayer(identifier: string, ts: TeamspeakBot) {
   await setGatherPlayer(player);
   return player;
 }*/
+
+async function addEventStream(ts: TeamSpeakGather) {
+  const events = await stream(`gather:${ts.config.id}:events`);
+  ts.on('initiated', async (clientUIds, address) => {
+    await events.addEvent('initiated', { clientUIds, address });
+  });
+  ts.on('playerJoining', async (clientUId) => {
+    const player = await getGatherPlayerSafe(clientUId);
+    await events.addEvent('playerJoining', {
+      clientUId,
+      nick: player?.nick || clientUId,
+    });
+  });
+  ts.on('playerJoined', async (clientUId) => {
+    const player = await getGatherPlayerSafe(clientUId);
+    await events.addEvent('playerJoined', { clientUId, nick: player?.nick || clientUId });
+  });
+  ts.on('playerRejected', async (clientUId, reason) => {
+    const player = await getGatherPlayerSafe(clientUId);
+    await events.addEvent('playerRejected', {
+      clientUId,
+      reason,
+      nick: player?.nick || clientUId,
+    });
+  });
+  ts.on('playerLeft', async (clientUId) => {
+    const player = await getGatherPlayerSafe(clientUId);
+    await events.addEvent('playerLeft', { clientUId, nick: player?.nick || clientUId });
+  });
+  ts.on('playersSummoned', async (address, clientUIds) => {
+    await events.addEvent('playersSummoned', { address, clientUIds });
+  });
+  ts.on('playerKicked', async (clientUId, reason) => {
+    const player = await getGatherPlayerSafe(clientUId);
+    await events.addEvent('playerKicked', {
+      clientUId,
+      reason,
+      nick: player?.nick || clientUId,
+    });
+  });
+  ts.on('summonComplete', async (clientUIds) => {
+    await events.addEvent('summonComplete', { clientUIds });
+  });
+  ts.on('playerMoved', async (clientUId, toChannel) => {
+    const player = await getGatherPlayerSafe(clientUId);
+    await events.addEvent('playerMoved', {
+      clientUId,
+      toChannel,
+      nick: player?.nick || clientUId,
+    });
+  });
+  ts.on('gatherStarted', async (matchId) => {
+    await events.addEvent('gatherStarted', { matchId });
+  });
+  ts.on('nextQueue', async (clientUIds, address, gather) => {
+    await events.addEvent('nextQueue', { clientUIds, address });
+  });
+  ts.on('summonFail', async (missingClientUIds) => {
+    await events.addEvent('summonFail', { missingClientUIds });
+  });
+}
 
 function addEventLogging(ts: TeamSpeakGather) {
   ts.on('initiated', (clientUIds, address) => {

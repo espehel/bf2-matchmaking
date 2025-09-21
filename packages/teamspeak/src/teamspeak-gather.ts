@@ -20,11 +20,20 @@ export type GatherInitiatedListener = (
 ) => void;
 export type PlayerJoiningListener = (clientUId: string, gather: TeamSpeakGather) => void;
 export type PlayerJoinedListener = (clientUId: string, gather: TeamSpeakGather) => void;
-export type PlayerRejectedListener = (clientUId: string, gather: TeamSpeakGather) => void;
+export type PlayerRejectedListener = (
+  clientUId: string,
+  reason: string,
+  gather: TeamSpeakGather
+) => void;
 export type PlayerLeftListener = (clientUId: string, gather: TeamSpeakGather) => void;
 export type PlayersSummonedListener = (
-  server: string,
+  address: string,
   clientUIds: Array<string>,
+  gather: TeamSpeakGather
+) => void;
+export type PlayerKickedListener = (
+  clientUId: string,
+  reason: string,
   gather: TeamSpeakGather
 ) => void;
 export type SummonCompleteListener = (
@@ -58,6 +67,7 @@ export interface TeamSpeakGather extends EventEmitter {
   on(event: 'playerRejected', listener: PlayerRejectedListener): this;
   on(event: 'playerLeft', listener: PlayerLeftListener): this;
   on(event: 'playersSummoned', listener: PlayersSummonedListener): this;
+  on(event: 'playerKicked', listener: PlayerKickedListener): this;
   on(event: 'playerMoved', listener: PlayerMovedListener): this;
   on(event: 'summonComplete', listener: SummonCompleteListener): this;
   on(event: 'gatherStarted', listener: GatherStartedListener): this;
@@ -177,7 +187,7 @@ export class TeamSpeakGather extends EventEmitter {
       reason === 'tsid' ? getRegisterTsIdPoke(clientUId) : getRegisterKeyhashPoke();
 
     await this.messageClient(clientUId, message, poke);
-    this.emit('playerRejected', clientUId, this);
+    this.emit('playerRejected', clientUId, reason, this);
   }
   async #summonPlayers() {
     await this.state.set({
@@ -262,6 +272,7 @@ export class TeamSpeakGather extends EventEmitter {
     assertObj(client, `Client ${clientUId} not found in teamspeak client list`);
     await this.messageClient(client, reason);
     await client.move(LOBBY_CHANNEL);
+    this.emit('playerKicked', clientUId, reason, this);
   }
   async messageClient(
     client: string | TeamSpeakClient | undefined,

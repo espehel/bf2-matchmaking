@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { StreamEventReply } from '@bf2-matchmaking/types/redis';
 import { api } from '@bf2-matchmaking/utils';
 import Time from '@/components/commons/Time';
-import { isStatusChange } from '@bf2-matchmaking/types';
 import { useRouter } from 'next/navigation';
+import { GatherEvent } from '@bf2-matchmaking/types/gather';
 
 interface Props {
   defaultEvents: Array<StreamEventReply>;
@@ -52,7 +52,7 @@ export default function EventList({ defaultEvents, config }: Props) {
             <span className="inline-block mr-1 text-accent min-w-32">
               [{entry.message.event}]
             </span>
-            <span className="text-info">{getText(entry)}</span>
+            <span className="text-info">{getText(entry as GatherEvent)}</span>
           </li>
         ))}
       </ul>
@@ -65,25 +65,31 @@ export default function EventList({ defaultEvents, config }: Props) {
   );
 }
 
-function getText({ message }: StreamEventReply) {
-  if (isStatusChange(message.payload)) {
-    return `Status change: ${message.payload.prevStatus} -> ${message.payload.status}`;
+function getText({ message }: GatherEvent): string {
+  switch (message.event) {
+    case 'initiated':
+      return `Gather initiated at ${message.payload.address} with ${message.payload.clientUIds.length} players`;
+    case 'playerJoining':
+      return `${message.payload.nick} is joining...`;
+    case 'playerJoined':
+      return `${message.payload.nick} joined.`;
+    case 'playerRejected':
+      return `${message.payload.nick} was rejected: ${message.payload.reason}`;
+    case 'playerLeft':
+      return `${message.payload.nick} left.`;
+    case 'playersSummoned':
+      return `Summoning ${message.payload.clientUIds.length} players to ${message.payload.address}`;
+    case 'playerKicked':
+      return `${message.payload.nick} was kicked: ${message.payload.reason}`;
+    case 'summonComplete':
+      return `Summon complete for ${message.payload.clientUIds.length} players.`;
+    case 'playerMoved':
+      return `${message.payload.nick} moved to ${message.payload.toChannel}.`;
+    case 'gatherStarted':
+      return `Gather started with match ${message.payload.matchId}.`;
+    case 'nextQueue':
+      return `Starting next queue at ${message.payload.address} with ${message.payload.clientUIds.length} players.`;
+    case 'summonFail':
+      return `Summon failed with ${message.payload.missingClientUIds.length} players not joining server.`;
   }
-  if (message.event === 'playerJoin') {
-    // @ts-ignore
-    return `Player ${message.payload.nick} joined the queue`;
-  }
-  if (message.event === 'playerLeave') {
-    // @ts-ignore
-    return `Player ${message.payload.nick} left the queue`;
-  }
-  if (message.event === 'initiated') {
-    // @ts-ignore
-    return `Gather initiated at ${message.payload.address} with ${message.payload.playerCount} players`;
-  }
-  if (message.event === 'deleted') {
-    // @ts-ignore
-    return `Gather deleted state and player queue`;
-  }
-  return '';
 }

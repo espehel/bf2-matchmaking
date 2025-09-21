@@ -3,11 +3,11 @@ export interface StreamMessageReply {
   message: Record<string, string>;
 }
 
-export interface StreamEventReply {
+export interface StreamEventReply<E = string, P = unknown> {
   id: string;
   message: {
-    event: string;
-    payload: unknown;
+    event: E;
+    payload: P;
     timestamp: string;
   };
 }
