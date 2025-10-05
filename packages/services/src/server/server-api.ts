@@ -15,8 +15,8 @@ import {
   setServer,
   setServerData,
 } from '@bf2-matchmaking/redis/servers';
-import { disconnect, hasNoVehicles } from './rcon/bf2-rcon-api';
-import { getServerLocation } from './external-service';
+import { disconnect, hasNoVehicles } from '../rcon/bf2-rcon-api';
+import { getServerLocation } from '../external-service';
 import { isNotNull, LogContext, ServersRow } from '@bf2-matchmaking/types';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 import {
@@ -182,6 +182,7 @@ export const Server = {
   },
 };
 
+//TODO: make this hash, only noVehicles can change. Dont delete everything at restarrt
 async function createServerData(server: ServersRow) {
   const { ip, port, demos_path, name } = server;
   const joinmeHref = await getJoinmeHref(ip, port);

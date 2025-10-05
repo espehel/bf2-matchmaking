@@ -1,7 +1,8 @@
 import { MatchesJoined, LiveInfo, RoundsInsert } from '@bf2-matchmaking/types';
 import { logSupabaseError } from '@bf2-matchmaking/logging';
 import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { getCachedValue, setCachedValue, getTeamTuple } from '@bf2-matchmaking/utils';
+import { getCachedValue, setCachedValue } from '@bf2-matchmaking/utils/cache';
+import { getTeamTuple } from '@bf2-matchmaking/utils';
 
 export async function insertRound(
   match: MatchesJoined,

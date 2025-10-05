@@ -1,5 +1,5 @@
 'use server';
-import { api, assertString, toFetchError } from '@bf2-matchmaking/utils';
+import { assertString, toFetchError } from '@bf2-matchmaking/utils';
 import { DateTime } from 'luxon';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
@@ -11,6 +11,7 @@ import {
 } from '@bf2-matchmaking/discord';
 import { revalidatePath } from 'next/cache';
 import { getArray } from '@bf2-matchmaking/utils/form';
+import { api } from '@bf2-matchmaking/services/api';
 export async function createScheduledMatch(formData: FormData) {
   try {
     const { configSelect, scheduledInput, homeSelect, awaySelect, timezone } =
@@ -41,7 +42,13 @@ export async function createScheduledMatch(formData: FormData) {
       away_team: Number(awaySelect),
     };
     const matchMaps = mapSelect.map(Number);
-    const result = await api.v2.postMatch({ matchValues, matchMaps, matchTeams: null });
+    const result = await api.postMatches({
+      matchValues,
+      matchMaps,
+      matchTeams: null,
+      matchDraft: null,
+      servers: null,
+    });
 
     if (result.error) {
       logErrorMessage('Failed to schedule match', result.error, {

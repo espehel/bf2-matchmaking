@@ -23,7 +23,7 @@ import {
   withJoinTime,
   withMixRatingIncrement,
 } from '@bf2-matchmaking/utils';
-import { validateMatch } from './match-utilities';
+import { validateMatch } from './match-utils';
 import { createMatchApi } from './match-api';
 
 export function createMatchService(matchApi: ReturnType<typeof createMatchApi>) {

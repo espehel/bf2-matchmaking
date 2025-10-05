@@ -18,7 +18,6 @@ import {
   setMatchLiveNow,
 } from './match-manager';
 import { insertRound } from './rounds-manager';
-import { isActiveMatchServer } from '../server/server-manager';
 import { DateTime } from 'luxon';
 import {
   getMatchLive,
@@ -29,6 +28,7 @@ import {
 } from '@bf2-matchmaking/redis/matches';
 import { MatchLive } from '@bf2-matchmaking/types/engine';
 import { matchApi } from '../lib/match';
+import { isActiveMatchServer } from '@bf2-matchmaking/services/server/utils';
 
 export async function updateMatch(
   cachedMatch: MatchesJoined,

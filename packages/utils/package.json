@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "exports": {
     ".": "./src/index.ts",
-    "./form": "./src/form-data.ts",
-    "./assert": "./src/assert.ts"
+    "./assert": "./src/assert.ts",
+    "./cache": "./src/cache.ts",
+    "./form": "./src/form-data.ts"
   },
   "scripts": {
     "verify": "tsc --noEmit"

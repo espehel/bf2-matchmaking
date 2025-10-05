@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { AdminRolesRow, PlayersRow } from '@bf2-matchmaking/types';
-import { assertObj } from '@bf2-matchmaking/utils';
+import { assertObj } from '@bf2-matchmaking/utils/assert';
 
 type ContextValue = {
   isMatchAdmin: boolean;
