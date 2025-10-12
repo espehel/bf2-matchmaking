@@ -2,6 +2,7 @@ import Link from 'next/link';
 import AuthButton from '@/components/AuthButton';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
+import { isDevelopment } from '@bf2-matchmaking/utils';
 
 export default async function Header() {
   const cookieStore = await cookies();
@@ -16,7 +17,8 @@ export default async function Header() {
         </Link>
       </div>
       <div className="navbar-end gap-4">
-        <Link href="/challenges">Challenges</Link>
+        {isDevelopment() && (<Link href="/challenges">Challenges</Link>)}
+        {isDevelopment() && (<Link href="/events">Events</Link>)}
         <Link href="/matches">Matches</Link>
         <Link href="/results">Results</Link>
         <Link href="/teams">Teams</Link>

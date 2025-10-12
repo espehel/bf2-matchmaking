@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/20/solid';
+import { isDevelopment } from '@bf2-matchmaking/utils';
 
 export default function Home() {
   return (
@@ -14,9 +15,9 @@ export default function Home() {
               stats and rankings, as well as a tool for managing leagues and cups.
             </p>
             <div className="flex flex-col gap-4">
-              <Link className="btn btn-primary" href="/challenges">
+              {isDevelopment() && <Link className="btn btn-primary" href="/challenges">
                 Challenge a team
-              </Link>
+              </Link>}
               <Link className="btn btn-primary" href="/matches">
                 Schedule and see matches
               </Link>

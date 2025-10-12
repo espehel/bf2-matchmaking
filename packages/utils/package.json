@@ -5,7 +5,8 @@
     ".": "./src/index.ts",
     "./assert": "./src/assert.ts",
     "./cache": "./src/cache.ts",
-    "./form": "./src/form-data.ts"
+    "./form": "./src/form-data.ts",
+    "./url-builder": "./src/url-builder.ts"
   },
   "scripts": {
     "verify": "tsc --noEmit"

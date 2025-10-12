@@ -11,7 +11,7 @@ export default async function CreateEventModal() {
   const cookieStore = await cookies();
   const player = await supabase(cookieStore).getSessionPlayerOrThrow();
   const configs = await supabase(cookieStore)
-    .getMatchConfigsWithType('Cup')
+    .getMatchConfigsWithType('Cup', 'League')
     .then(verifyResult);
   return (
     <div className="ml-auto w-fit">

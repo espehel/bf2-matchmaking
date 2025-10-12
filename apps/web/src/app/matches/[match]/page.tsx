@@ -10,28 +10,59 @@ import ServerSectionLoading from '@/components/matches/server/ServerSectionLoadi
 import MatchTimeForm, { MatchTimeFallback } from '@/components/matches/MatchTimeForm';
 import { isActiveMatch } from '@bf2-matchmaking/utils';
 import ChallengeSection from '@/components/matches/ChallengeSection';
+import Main from '@/components/commons/Main';
+import { Metadata, ResolvingMetadata } from 'next/types';
 
 interface Props {
   params: Promise<{ match: string }>;
 }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const matchId = (await params).match;
+
+  const cookieStore = await cookies();
+  const match = await supabase(cookieStore)
+    .getMatch(Number(matchId))
+    .then(verifySingleResult);
+  const { data: eventMatch } = await supabase(cookieStore).getEventMatch(match.id);
+  const title = `${match.config.type} Match ${match.id}`;
+  const description =
+    match.config.type === 'Mix'
+      ? match.config.name
+      : `${eventMatch?.event.name || match.config.name}: ${match.home_team.name} v ${match.away_team.name}`;
+  return {
+    title,
+    description,
+  };
+}
+
 export default async function ResultsMatch(props: Props) {
   const params = await props.params;
   const cookieStore = await cookies();
   const match = await supabase(cookieStore)
     .getMatch(Number(params.match))
     .then(verifySingleResult);
+  const { data: eventMatch } = await supabase(cookieStore).getEventMatch(match.id);
 
   //TODO: add server restart to match server view
-
+  const breadcrumbs = eventMatch
+    ? [
+        { href: '/events', label: 'Events' },
+        { href: `/events/${eventMatch.event.id}`, label: eventMatch.event.name },
+      ]
+    : [{ href: '/matches', label: 'Matches' }];
   return (
-    <main className="main flex flex-col items-center text-center">
-      <div className="mb-8">
-        <h1 className="text-accent font-bold">{`${match.config.name}`}</h1>
+    <Main
+      title={match.config.name}
+      breadcrumbs={breadcrumbs}
+      relevantRoles={['match_admin']}
+    >
+      <div className="mb-4">
         <Suspense fallback={<MatchTimeFallback match={match} />}>
-          <MatchTimeForm match={match} />
+          <MatchTimeForm match={match} eventMatch={eventMatch} />
         </Suspense>
       </div>
-      <div className="flex flex-wrap gap-8 justify-center w-full">
+      <div className="flex flex-wrap gap-8 w-full p-4">
         <MatchSection match={match} />
         <div className="flex flex-col gap-2">
           {match.config.type === 'Ladder' && <ChallengeSection match={match} />}
@@ -52,6 +83,6 @@ export default async function ResultsMatch(props: Props) {
           )}
         />
       </div>
-    </main>
+    </Main>
   );
 }

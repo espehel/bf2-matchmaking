@@ -1,21 +1,30 @@
 'use server';
 import { matches, supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
-import { EventMatchesUpdate, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
+import {
+  EventMatchesUpdate,
+  isDiscordMatch,
+  MatchesJoined,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { api, assertObj, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   deleteGuildScheduledEvent,
-  getMatchDescription,
   patchGuildScheduledEvent,
-} from '@bf2-matchmaking/discord';
+} from '@bf2-matchmaking/discord/rest';
+import { getMatchDescription } from '@bf2-matchmaking/discord';
 import { DateTime } from 'luxon';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
 import { ActionInput, ActionResult } from '@/lib/types/form';
 import { getOptionalValueAsNumber, getValueAsNumber } from '@bf2-matchmaking/utils/form';
 import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
+import {
+  sendMatchTimeAcceptedMessage,
+  sendMatchTimeProposedMessage,
+} from '@/lib/discord/channel-message';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const cookieStore = await cookies();
@@ -356,9 +365,22 @@ export async function acceptMatchTime(
   const cookieStore = await cookies();
   const result = await supabase(cookieStore).updateEventMatch(match.id, matchUpdate);
 
-  if (result.data) {
-    revalidatePath(`/matches/${match.id}`);
+  if (!result.data) {
+    return result;
   }
+  revalidatePath(`/matches/${match.id}`);
+
+  if (!isDiscordMatch(match)) {
+    return result;
+  }
+
+  if (clear) {
+    const teamName = team === 'home' ? match.home_team.name : match.away_team.name;
+    await sendMatchTimeProposedMessage(match, teamName);
+  } else {
+    await sendMatchTimeAcceptedMessage(match);
+  }
+
   return result;
 }
 

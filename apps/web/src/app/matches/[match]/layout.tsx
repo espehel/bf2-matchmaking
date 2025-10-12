@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { MatchProvider } from '@/state/MatchContext';
+import { notFound } from 'next/navigation';
 
 export default async function MatchLayout(props: {
   children: ReactNode;
@@ -16,13 +17,16 @@ export default async function MatchLayout(props: {
 
   const matchId = Number(params.match);
   const cookieStore = await cookies();
-  const [match, serverRes] = await Promise.all([
-    supabase(cookieStore).getMatch(matchId).then(verifySingleResult),
+  const [matchRes, serverRes] = await Promise.all([
+    supabase(cookieStore).getMatch(matchId),
     supabase(cookieStore).getMatchServers(matchId),
   ]);
+  if(!matchRes.data) {
+    notFound();
+  }
 
   return (
-    <MatchProvider match={match} servers={serverRes.data?.servers || []}>
+    <MatchProvider match={matchRes.data} servers={serverRes.data?.servers || []}>
       {children}
     </MatchProvider>
   );

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { EventMatchesRow, EventRoundsRow, EventsJoined } from '@bf2-matchmaking/types';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { getValue, getValues } from '@bf2-matchmaking/utils/form';
+import { DateTime } from 'luxon';
 
 export async function addRoundMatch(
   event: EventsJoined,
@@ -54,8 +55,11 @@ export async function addEventRound(eventId: number, data: FormData) {
   assertString(label, 'Missing label');
   assertString(startAt, 'Missing startAt');
 
+  const startDateTime = DateTime.fromISO(startAt).set({'hour': 21}).setZone("Europe/Paris").toISO();
+  assertString(startDateTime, 'Failed to set start time and zone');
+
   const cookieStore = await cookies();
-  const result = await supabase(cookieStore).createEventRound(eventId, label, startAt);
+  const result = await supabase(cookieStore).createEventRound(eventId, label, startDateTime);
 
   if (result.data) {
     revalidatePath(`/events/${eventId}`);

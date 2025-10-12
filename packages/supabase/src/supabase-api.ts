@@ -37,6 +37,7 @@ import {
   InactiveTeam,
   EventsInsert,
   EventsUpdate,
+  EventsMatchJoined,
 } from '@bf2-matchmaking/types';
 
 const ROUNDS_JOINED_QUERY = '*, map(*), server(*), team1(*), team2(*)';
@@ -154,8 +155,8 @@ export default (client: SupabaseClient<Database>) => ({
       .eq('channel', channelId)
       .single(),
   getMatchConfigs: () => client.from('match_configs').select<'*', MatchConfigsRow>('*'),
-  getMatchConfigsWithType: (configType: MatchConfigType) =>
-    client.from('match_configs').select<'*', MatchConfigsRow>('*').eq('type', configType),
+  getMatchConfigsWithType: (...configType: Array<MatchConfigType>) =>
+    client.from('match_configs').select<'*', MatchConfigsRow>('*').in('type', configType),
   getMatchConfig: (id: number) =>
     client.from('match_configs').select('*').eq('id', id).single<MatchConfigsRow>(),
   getMatchConfigResults: (id: number) =>
@@ -243,7 +244,17 @@ export default (client: SupabaseClient<Database>) => ({
   updateEvent: (eventId: number, values: EventsUpdate) =>
     client.from('events').update(values).eq('id', eventId).select('*'),
   getEventMatch: (match: number) =>
-    client.from('event_matches').select('*').eq('match', match).single(),
+    client
+      .from('event_matches')
+      .select('*, event(*), round(*)')
+      .eq('match', match)
+      .single<EventsMatchJoined>(), // TODO: fix these request to not contain so much data
+  getEventRoundByMatchId: (matchId: number) =>
+    client
+      .from('event_rounds')
+      .select('*, matches:event_matches(*)')
+      .eq('matches.match', matchId)
+      .single(),
   createEventTeam: (event: number, team: number) =>
     client.from('event_teams').insert({ event, team }).select('*').single(),
   createEventRound: (event: number, label: string, start_at: string) =>

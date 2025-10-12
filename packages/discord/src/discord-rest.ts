@@ -29,13 +29,14 @@ import { error } from '@bf2-matchmaking/logging/winston';
 
 assertString(process.env.DISCORD_TOKEN, 'process.env.DISCORD_TOKEN not defined');
 const rest = new REST({ version: '10', rejectOnRateLimit: ['/channels'] }).setToken(
-  process.env.DISCORD_TOKEN
+  process.env.DISCORD_TOKEN,
 );
 
 export interface SuccessResponse<T> {
   data: T;
   error: null;
 }
+
 export interface ErrorResponse {
   data: null;
   error: unknown;
@@ -44,7 +45,7 @@ export interface ErrorResponse {
 export type DiscordRestResponse<T> = SuccessResponse<T> | ErrorResponse;
 const postDiscordRoute = async <T>(
   route: `/${string}`,
-  options?: RequestData
+  options?: RequestData,
 ): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.post(route, options)) as T;
@@ -57,7 +58,7 @@ const postDiscordRoute = async <T>(
 
 const putDiscordRoute = async <T>(
   route: `/${string}`,
-  options?: RequestData
+  options?: RequestData,
 ): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.put(route, options)) as T;
@@ -70,7 +71,7 @@ const putDiscordRoute = async <T>(
 
 const getDiscordRoute = async <T>(
   route: `/${string}`,
-  options?: RequestData
+  options?: RequestData,
 ): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.get(route, options)) as T;
@@ -83,7 +84,7 @@ const getDiscordRoute = async <T>(
 
 const deleteDiscordRoute = async <T>(
   route: `/${string}`,
-  options?: RequestData
+  options?: RequestData,
 ): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.delete(route, options)) as T;
@@ -96,7 +97,7 @@ const deleteDiscordRoute = async <T>(
 
 const patchDiscordRoute = async <T>(
   route: `/${string}`,
-  options?: RequestData
+  options?: RequestData,
 ): Promise<DiscordRestResponse<T>> => {
   try {
     const data = (await rest.patch(route, options)) as T;
@@ -109,7 +110,7 @@ const patchDiscordRoute = async <T>(
 
 export const editChannel = async (
   channelId: string,
-  body: RESTPatchAPIChannelJSONBody
+  body: RESTPatchAPIChannelJSONBody,
 ) => {
   return patchDiscordRoute<RESTPatchAPIChannelResult>(Routes.channel(channelId), {
     body,
@@ -118,23 +119,23 @@ export const editChannel = async (
 
 export const getChannelMessages = (channelId: string) =>
   getDiscordRoute<RESTGetAPIChannelMessagesResult>(
-    `${Routes.channelMessages(channelId)}?limit=50`
+    `${Routes.channelMessages(channelId)}?limit=50`,
   );
 
 export const getChannelMessage = (channelId: string, messageId: string) =>
   getDiscordRoute<RESTGetAPIChannelMessageResult>(
-    `${Routes.channelMessage(channelId, messageId)}`
+    `${Routes.channelMessage(channelId, messageId)}`,
   );
 
 export const sendChannelMessage = async (
   channelId: string,
-  body: RESTPostAPIChannelMessageJSONBody
+  body: RESTPostAPIChannelMessageJSONBody,
 ) => {
   const res = await postDiscordRoute<RESTPostAPIChannelMessageResult>(
     Routes.channelMessages(channelId),
     {
       body,
-    }
+    },
   );
   if (res.data) {
     logChannelMessage(res.data, { body });
@@ -144,14 +145,14 @@ export const sendChannelMessage = async (
 
 export const sendDirectMessage = async (
   playerId: string,
-  body: RESTPostAPIChannelMessageJSONBody
+  body: RESTPostAPIChannelMessageJSONBody,
 ) => {
   const { data: dmChannel, error } =
     await postDiscordRoute<RESTPostAPICurrentUserCreateDMChannelResult>(
       Routes.userChannels(),
       {
         body: { recipient_id: playerId },
-      }
+      },
     );
   if (dmChannel) {
     return sendChannelMessage(dmChannel.id, body);
@@ -162,31 +163,31 @@ export const sendDirectMessage = async (
 export const editChannelMessage = async (
   channelId: string,
   messageId: string,
-  body: RESTPatchAPIChannelMessageJSONBody
+  body: RESTPatchAPIChannelMessageJSONBody,
 ) => {
   return patchDiscordRoute<RESTPatchAPIChannelMessageResult>(
     Routes.channelMessage(channelId, messageId),
-    { body }
+    { body },
   );
 };
 
 export const removeChannelMessage = (channelId: string, messageId: string) =>
   deleteDiscordRoute<RESTDeleteAPIChannelMessageResult>(
-    Routes.channelMessage(channelId, messageId)
+    Routes.channelMessage(channelId, messageId),
   );
 
 export const createMessageReaction = (
   channelId: string,
   messageId: string,
-  emoji: string
+  emoji: string,
 ) =>
   putDiscordRoute<RESTPutAPIChannelMessageReactionResult>(
-    Routes.channelMessageOwnReaction(channelId, messageId, emoji)
+    Routes.channelMessageOwnReaction(channelId, messageId, emoji),
   );
 
 export const deleteAllReactions = (channelId: string, messageId: string) =>
   deleteDiscordRoute<RESTDeleteAPIChannelAllMessageReactionsResult>(
-    Routes.channelMessageAllReactions(channelId, messageId)
+    Routes.channelMessageAllReactions(channelId, messageId),
   );
 
 export const postCommand = (appId: string, command: Partial<APIApplicationCommand>) =>
@@ -203,45 +204,45 @@ export const getCommands = (appId: string) =>
 export const postGuildCommand = (
   appId: string,
   guildId: string,
-  command: Partial<APIApplicationCommand>
+  command: Partial<APIApplicationCommand>,
 ) =>
   postDiscordRoute<APIApplicationCommand>(
     Routes.applicationGuildCommands(appId, guildId),
-    { body: command }
+    { body: command },
   );
 
 export const deleteGuildCommand = (appId: string, guildId: string, commandId: string) =>
   deleteDiscordRoute<APIApplicationCommand>(
-    Routes.applicationGuildCommand(appId, guildId, commandId)
+    Routes.applicationGuildCommand(appId, guildId, commandId),
   );
 
 export const getGuildCommands = (appId: string, guildId: string) =>
   getDiscordRoute<Array<APIApplicationCommand>>(
-    Routes.applicationGuildCommands(appId, guildId)
+    Routes.applicationGuildCommands(appId, guildId),
   );
 
 export const postGuildScheduledEvent = (
   guildId: string,
-  body: RESTPostAPIGuildScheduledEventJSONBody
+  body: RESTPostAPIGuildScheduledEventJSONBody,
 ) =>
   postDiscordRoute<RESTPostAPIGuildScheduledEventResult>(
     Routes.guildScheduledEvents(guildId),
-    { body }
+    { body },
   );
 
 export const patchGuildScheduledEvent = (
   guildId: string,
   scheduledEventId: string,
-  body: RESTPatchAPIGuildScheduledEventJSONBody
+  body: RESTPatchAPIGuildScheduledEventJSONBody,
 ) =>
   patchDiscordRoute<RESTPatchAPIGuildScheduledEventResult>(
     Routes.guildScheduledEvent(guildId, scheduledEventId),
-    { body }
+    { body },
   );
 
 export const deleteGuildScheduledEvent = (guildId: string, scheduledEventId: string) =>
   deleteDiscordRoute<RESTDeleteAPIGuildScheduledEventResult>(
-    Routes.guildScheduledEvent(guildId, scheduledEventId)
+    Routes.guildScheduledEvent(guildId, scheduledEventId),
   );
 
 export function getDiscordUser(userId: string) {
@@ -250,11 +251,12 @@ export function getDiscordUser(userId: string) {
 
 export function listGuildMembers(guildId: string) {
   return getDiscordRoute<RESTGetAPIGuildMembersResult>(
-    `${Routes.guildMembers(guildId)}?limit=1000`
+    `${Routes.guildMembers(guildId)}?limit=1000`,
   );
 }
+
 export function getGuildMember(guildId: string, userId: string) {
   return getDiscordRoute<RESTGetAPIGuildMemberResult>(
-    `${Routes.guildMember(guildId, userId)}`
+    `${Routes.guildMember(guildId, userId)}`,
   );
 }

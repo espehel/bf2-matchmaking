@@ -1,4 +1,4 @@
-import { EventMatchesRow, MatchesJoined } from '@bf2-matchmaking/types';
+import { EventsMatchJoined, MatchesJoined } from '@bf2-matchmaking/types';
 import Time from '@/components/commons/Time';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
@@ -11,9 +11,10 @@ import ActionButton from '@/components/ActionButton';
 
 interface Props {
   match: MatchesJoined;
+  eventMatch: EventsMatchJoined | null;
 }
 
-export default async function MatchTimeForm({ match }: Props) {
+export default async function MatchTimeForm({ match, eventMatch }: Props) {
   if (
     !match.scheduled_at ||
     match.config.type === 'Mix' ||
@@ -21,9 +22,6 @@ export default async function MatchTimeForm({ match }: Props) {
   ) {
     return <MatchTimeFallback match={match} />;
   }
-
-  const cookieStore = await cookies();
-  const { data: eventMatch } = await supabase(cookieStore).getEventMatch(match.id);
 
   async function updateMatchScheduledAtSA(data: FormData) {
     'use server';
@@ -50,6 +48,7 @@ export default async function MatchTimeForm({ match }: Props) {
       </div>
     );
   }
+  const cookieStore = await cookies();
   const isOfficer = await supabase(cookieStore).isMatchOfficer(match);
 
   const team = await getSessionPlayerTeam(match);
@@ -71,7 +70,7 @@ function Alert({
   team,
 }: {
   match: MatchesJoined;
-  eventMatch: EventMatchesRow;
+  eventMatch: EventsMatchJoined;
   team: 'home' | 'away';
 }) {
   async function updateMatchScheduledAtSA(data: FormData) {
@@ -97,7 +96,7 @@ function Alert({
     (eventMatch.away_accepted && team === 'away')
   ) {
     return (
-      <div role="alert" className="alert alert-info">
+      <div role="alert" className="alert alert-info w-fit">
         <InformationCircleIcon className="w-5 h-5 mr-2" />
         <span>Waiting for opponent to accept match time...</span>
       </div>
@@ -105,7 +104,7 @@ function Alert({
   }
 
   return (
-    <div role="alert" className="alert alert-warning">
+    <div role="alert" className="alert alert-info w-fit">
       <BellAlertIcon className="w-5 h-5 mr-2" />
       <span>Confirm match time or propose new</span>
       <ActionButton
@@ -138,7 +137,7 @@ async function Badge({ home, away }: { home: boolean; away: boolean }) {
   return home && away ? (
     <div className="badge badge-success ml-1">Confirmed</div>
   ) : (
-    <div className="badge badge-warning ml-1">Unconfirmed</div>
+    <div className="badge badge-info ml-1">Unconfirmed</div>
   );
 }
 

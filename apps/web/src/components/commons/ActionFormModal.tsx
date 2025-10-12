@@ -38,7 +38,7 @@ export default function ActionFormModal({
         {openBtnLabel}
       </button>
       <dialog ref={ref} className="modal">
-        <div className="modal-box">
+        <div className="modal-box text-base-content">
           <ActionForm {...actionFormProps} onSuccess={() => ref.current?.close()}>
             <h3 className="font-bold text-lg">{title}</h3>
             {children}
