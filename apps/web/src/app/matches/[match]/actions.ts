@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import {
   EventMatchesUpdate,
   isDiscordMatch,
+  isScheduledMatch,
   MatchesJoined,
   MatchStatus,
 } from '@bf2-matchmaking/types';
@@ -25,6 +26,7 @@ import {
   sendMatchTimeAcceptedMessage,
   sendMatchTimeProposedMessage,
 } from '@/lib/discord/channel-message';
+import { createGuildEvent } from '@/lib/discord/guild-events';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const cookieStore = await cookies();
@@ -379,6 +381,10 @@ export async function acceptMatchTime(
     await sendMatchTimeProposedMessage(match, teamName);
   } else {
     await sendMatchTimeAcceptedMessage(match);
+
+    if (isScheduledMatch(match)) {
+      await createGuildEvent(match);
+    }
   }
 
   return result;

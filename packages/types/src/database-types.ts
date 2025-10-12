@@ -44,6 +44,7 @@ export type ChallengeTeamsInsert =
   Database['public']['Tables']['challenge_teams']['Insert'];
 export type AdminRolesInsert = Database['public']['Tables']['admin_roles']['Insert'];
 export type EventsInsert = Database['public']['Tables']['events']['Insert'];
+export type EventMatchesInsert = Database['public']['Tables']['event_matches']['Insert'];
 export type MatchDraftsInsert = Database['public']['Tables']['match_drafts']['Insert'];
 
 export type MatchesUpdate = Database['public']['Tables']['matches']['Update'];

@@ -6,7 +6,7 @@ import { getMatchThumbnail } from './discord-services';
 
 export function createScheduledMatchEvent(
   match: ScheduledMatch,
-  servers: Array<ServersRow> | null | undefined
+  servers?: Array<ServersRow> | null | undefined
 ): RESTPostAPIGuildScheduledEventJSONBody {
   const name = `${match.config.type}: ${match.home_team.name} vs. ${match.away_team.name}`;
   const description = getMatchDescription(match, servers);

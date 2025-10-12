@@ -1,32 +1,42 @@
 import { assertNumber, assertString } from '@bf2-matchmaking/utils';
-import { supabase } from '@/lib/supabase/supabase-server';
+import { events, supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { EventMatchesRow, EventRoundsRow, EventsJoined } from '@bf2-matchmaking/types';
-import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import {
+  EventMatchesRow,
+  EventRoundsRow,
+  EventsJoined,
+  MatchStatus,
+} from '@bf2-matchmaking/types';
 import { getValue, getValues } from '@bf2-matchmaking/utils/form';
 import { DateTime } from 'luxon';
+import { matchApi } from '@/lib/match';
 
 export async function addRoundMatch(
   event: EventsJoined,
   round: EventRoundsRow,
   data: FormData
 ) {
-  const homeTeam = Number(data.get('home_team[id]'));
-  const awayTeam = Number(data.get('away_team[id]'));
-  assertNumber(homeTeam, 'Missing home team');
-  assertNumber(awayTeam, 'Missing away team');
+  const home_team = Number(data.get('home_team[id]'));
+  const away_team = Number(data.get('away_team[id]'));
+  assertNumber(home_team, 'Missing home team');
+  assertNumber(away_team, 'Missing away team');
 
   const cookieStore = await cookies();
-  const match = await supabase(cookieStore)
-    .createScheduledMatch(event.config, homeTeam, awayTeam, round.start_at)
-    .then(verifySingleResult);
 
-  const result = await supabase(cookieStore).createEventMatch(
-    event.id,
-    round.id,
-    match.id
-  );
+  const match = await matchApi.create({
+    config: event.config,
+    status: MatchStatus.Scheduled,
+    scheduled_at: round.start_at,
+    home_team,
+    away_team,
+  });
+
+  const result = await events.matches.create({
+    event: event.id,
+    round: round.id,
+    match: match.id,
+  });
 
   if (result.data) {
     revalidatePath(`/events/${event.id}`);
@@ -55,11 +65,18 @@ export async function addEventRound(eventId: number, data: FormData) {
   assertString(label, 'Missing label');
   assertString(startAt, 'Missing startAt');
 
-  const startDateTime = DateTime.fromISO(startAt).set({'hour': 21}).setZone("Europe/Paris").toISO();
+  const startDateTime = DateTime.fromISO(startAt)
+    .set({ hour: 21 })
+    .setZone('Europe/Paris')
+    .toISO();
   assertString(startDateTime, 'Failed to set start time and zone');
 
   const cookieStore = await cookies();
-  const result = await supabase(cookieStore).createEventRound(eventId, label, startDateTime);
+  const result = await supabase(cookieStore).createEventRound(
+    eventId,
+    label,
+    startDateTime
+  );
 
   if (result.data) {
     revalidatePath(`/events/${eventId}`);

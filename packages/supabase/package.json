@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./configs": "./src/domain/configs.ts",
+    "./events": "./src/domain/events.ts",
     "./matches": "./src/domain/matches.ts",
     "./players": "./src/domain/players.ts",
     "./session": "./src/domain/session.ts"

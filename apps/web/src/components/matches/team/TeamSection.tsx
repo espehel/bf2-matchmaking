@@ -25,6 +25,13 @@ export default async function TeamSection({ match, team }: Props) {
   return (
     <section>
       <h3 className="text-xl font-bold mb-2">{`Team ${team.name}`}</h3>
+      {match.config.type !== 'Mix' && <div className="divider">Roster</div>}
+      {players.length === 0 && (
+        <p className="text-xs opacity-60 max-w-52 mb-2">
+          No players in roster yet. Team Players can be added manually below, or
+          automatically when joining server.
+        </p>
+      )}
       <ul>
         <Suspense
           fallback={
