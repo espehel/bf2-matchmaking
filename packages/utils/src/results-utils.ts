@@ -11,6 +11,7 @@ import {
   PlayerRatingsRow,
   PlayerResultInfo,
   MatchResultInfo,
+  MatchResultsJoined,
 } from '@bf2-matchmaking/types';
 import { parseJSON } from './json-utils';
 import { isTeam } from './team-utils';
@@ -291,4 +292,13 @@ export function createPlayerResultInfo(
     playerTeam:
       mp.team === match.home_team.id ? match.home_team.name : match.away_team.name,
   };
+}
+
+export function calculateLeaguePoints(
+  home: MatchResultsJoined,
+  away: MatchResultsJoined
+) {
+  const scoreHome = home.maps + (home.tickets > away.tickets ? 1 : 0);
+  const scoreAway = away.maps + (away.tickets > home.tickets ? 1 : 0);
+  return [scoreHome, scoreAway];
 }

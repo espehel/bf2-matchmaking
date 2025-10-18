@@ -235,12 +235,17 @@ export function matches(
       .select(MATCHES_JOINED_QUERY)
       .single<MatchesJoined>();
   }
+  async function remove(matchId: number) {
+    const client = await resolveClient(supabaseClient);
+    return client.from('matches').delete().eq('id', matchId);
+  }
   return {
     create,
     getAll,
     get,
     getJoined,
     update,
+    remove,
     players: matchPlayers(supabaseClient),
     roles: matchRoles(supabaseClient),
     maps: matchMaps(supabaseClient),

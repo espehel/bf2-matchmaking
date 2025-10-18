@@ -22,7 +22,7 @@ export default function AddMatchForm({ event, round }: Props) {
   return (
     <ActionForm
       formAction={addEventTeamSA}
-      successMessage="Successfully aded team"
+      successMessage="Successfully added team"
       errorMessage="Failed to add team"
     >
       <div className="flex gap-2 items-center">

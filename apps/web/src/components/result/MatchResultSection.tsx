@@ -47,23 +47,25 @@ export default async function MatchResultSection({ match }: Props) {
   const [team1Result, team2Result] = matchResult;
 
   return (
-    <div className="flex flex-col xl:flex-row justify-around items-center xl:items-start w-full">
-      <div className="flex flex-col mt-2 gap-4 w-5/12">
-        <TeamStats matchResult={team1Result} />
-        <TeamResultTable
-          playerResults={playerResults.filter(isTeam(team1Result.team.id))}
-          match={match}
-        />
+    <section className="section">
+      <div className="flex flex-col xl:flex-row justify-around items-center xl:items-start w-full">
+        <div className="flex flex-col mt-2 gap-4 w-5/12">
+          <TeamStats matchResult={team1Result} />
+          <TeamResultTable
+            playerResults={playerResults.filter(isTeam(team1Result.team.id))}
+            match={match}
+          />
+        </div>
+        <div className="divider xl:divider-horizontal">vs</div>
+        <div className="flex flex-col mt-2 gap-4 w-5/12">
+          <TeamStats matchResult={team2Result} />
+          <TeamResultTable
+            playerResults={playerResults.filter(isTeam(team2Result.team.id))}
+            match={match}
+          />
+        </div>
       </div>
-      <div className="divider xl:divider-horizontal">vs</div>
-      <div className="flex flex-col mt-2 gap-4 w-5/12">
-        <TeamStats matchResult={team2Result} />
-        <TeamResultTable
-          playerResults={playerResults.filter(isTeam(team2Result.team.id))}
-          match={match}
-        />
-      </div>
-    </div>
+    </section>
   );
 }
 

@@ -2,16 +2,27 @@ import {
   EventMatchesRow,
   EventRoundsRow,
   EventsJoined,
+  EventsMatch,
   isDefined,
 } from '@bf2-matchmaking/types';
 import { DateTime } from 'luxon';
-import React from 'react';
+import React, { Suspense } from 'react';
 import AddMatchForm from '@/components/events/AddMatchForm';
 import IconBtn from '@/components/commons/IconBtn';
 import { XCircleIcon } from '@heroicons/react/24/outline';
-import { deleteEventMatch, deleteEventRound } from '@/app/events/[event]/actions';
+import {
+  announceRound,
+  confirmEventMatch,
+  deleteEventMatch,
+  deleteEventRound,
+} from '@/app/events/[event]/actions';
 import ActionWrapper from '@/components/commons/ActionWrapper';
 import Link from 'next/link';
+import ActionButton from '../commons/action/ActionButton';
+import { CheckIcon } from '@heroicons/react/20/solid';
+import { matches, results } from '@/lib/supabase/supabase-server';
+import { calculateLeaguePoints } from '@bf2-matchmaking/utils';
+import Time from '../commons/Time';
 
 interface Props {
   event: EventsJoined;
@@ -39,10 +50,26 @@ export default function EventRound({ event, round, edit }: Props) {
     };
   }
 
+  function confirmEventMatchSA(match: EventMatchesRow) {
+    return async () => {
+      'use server';
+      return confirmEventMatch(match);
+    };
+  }
+
   return (
     <section className="flex flex-col gap-1">
       <div className="flex items-center justify-end border-b-2 border-primary">
-        <h3 className="font-bold mr-auto">{round.label}</h3>
+        <h3 className="font-bold">{round.label}</h3>
+        <ActionButton
+          action={announceRound}
+          input={{ eventId: event.id, roundId: round.id }}
+          size="sm"
+          kind="ghost"
+        >
+          Announce
+        </ActionButton>
+        <input type="checkbox" className=" mr-auto" />
         <p>{DateTime.fromISO(round.start_at).toFormat('EEEE, DD')}</p>
         <ActionWrapper
           action={deleteEventRoundSA}
@@ -57,9 +84,19 @@ export default function EventRound({ event, round, edit }: Props) {
         {matches.map((match) => (
           <li key={match.id} className="flex items-center justify-end">
             <Link className="link link-hover mr-auto" href={`/matches/${match.id}`}>
-              {match.id} - {match.home_team.name} v. {match.away_team.name}
+              {match.home_team.name} v. {match.away_team.name}
             </Link>
-            <Badge home={match.home_accepted} away={match.away_accepted} />
+            <Suspense fallback={<div className="badge invisible" />}>
+              <MatchBadge eventMatch={match} />
+            </Suspense>
+            <ActionWrapper
+              action={confirmEventMatchSA(match)}
+              successMessage="Match time confirmed"
+              errorMessage="Failed to confirm match time"
+              visible={edit && !isConfirmed(match)}
+            >
+              <IconBtn Icon={CheckIcon} size="sm" className="text-success" />
+            </ActionWrapper>
             <ActionWrapper
               action={deleteEventMatchSA(match)}
               successMessage="Match deleted"
@@ -76,10 +113,32 @@ export default function EventRound({ event, round, edit }: Props) {
   );
 }
 
-function Badge({ home, away }: { home: boolean; away: boolean }) {
-  return home && away ? (
-    <div className="badge badge-success">Confirmed</div>
-  ) : (
-    <div className="badge badge-warning">Unconfirmed</div>
-  );
+async function MatchBadge({ eventMatch }: { eventMatch: EventMatchesRow & EventsMatch }) {
+  const { data: match } = await matches.get(eventMatch.match);
+  const { data: result } = await results.getByMatchId(eventMatch.match);
+  const home = result?.find((r) => r.team.id === eventMatch.home_team.id);
+  const away = result?.find((r) => r.team.id === eventMatch.away_team.id);
+
+  if (home && away) {
+    const [homePoints, awayPoints] = calculateLeaguePoints(home, away);
+    return <div className="badge badge-info">{`${homePoints} - ${awayPoints}`}</div>;
+  }
+
+  if (!eventMatch.home_accepted || !eventMatch.away_accepted) {
+    return <div className="badge badge-warning">Unconfirmed</div>;
+  }
+
+  if (match?.scheduled_at) {
+    return (
+      <div className="badge badge-success">
+        <Time date={match.scheduled_at} format="HH:mm - EEEE, MMMM d" />
+      </div>
+    );
+  }
+
+  return <div className="badge badge-success">Confirmed</div>;
+}
+
+function isConfirmed(eventMatch: EventMatchesRow) {
+  return eventMatch.home_accepted && eventMatch.away_accepted;
 }

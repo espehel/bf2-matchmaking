@@ -34,7 +34,7 @@ export default async function EventPage(props: Props) {
           className="btn btn-sm btn-secondary ml-auto"
           href={edit ? `/events/${event.id}` : `/events/${event.id}?edit=true`}
         >
-          {edit ? 'Back' : 'Edit'}
+          {edit ? 'Return' : 'Manage'}
         </Link>
       </div>
       <div className="flex gap-6 w-full mt-6">

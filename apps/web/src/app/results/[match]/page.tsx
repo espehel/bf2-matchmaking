@@ -8,6 +8,7 @@ import MatchFinishedSection from '@/components/result/MatchFinishedSection';
 import Link from 'next/link';
 import Time from '@/components/commons/Time';
 import React from 'react';
+import Main from '@/components/commons/Main';
 
 interface Props {
   params: Promise<{ match: string }>;
@@ -18,21 +19,33 @@ export default async function ResultsMatch(props: Props) {
   const match = await supabase(cookieStore)
     .getMatch(Number(params.match))
     .then(verifySingleResult);
+  const { data: eventMatch } = await supabase(cookieStore).getEventMatch(match.id);
 
   const isFinished = match.status === MatchStatus.Finished;
   const isClosed = match.status === MatchStatus.Closed;
   const isOngoing =
     match.status === MatchStatus.Ongoing || match.status === MatchStatus.Scheduled;
 
+  const breadcrumbs = eventMatch
+    ? [
+        { href: '/events', label: 'Events' },
+        { href: `/events/${eventMatch.event.id}`, label: eventMatch.event.name },
+      ]
+    : [{ href: '/results', label: 'Results' }];
+
   return (
-    <main className="main text-center">
+    <Main
+      title={match.config.name}
+      breadcrumbs={breadcrumbs}
+      relevantRoles={['match_admin']}
+    >
       <div className="mb-8">
-        <h1 className="text-accent font-bold">{`Match ${match.id}`}</h1>
         <p className="text-sm text-gray font-bold">
           <Time
-            date={match.closed_at || match.created_at}
+            date={match.scheduled_at || match.closed_at || match.created_at}
             format="HH:mm - EEEE, MMMM d"
           />
+          {` - Match ${match.id}`}
         </p>
       </div>
       {isFinished && <MatchFinishedSection match={match} />}
@@ -48,6 +61,6 @@ export default async function ResultsMatch(props: Props) {
           a.created_at.localeCompare(b.created_at)
         )}
       />
-    </main>
+    </Main>
   );
 }

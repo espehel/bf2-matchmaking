@@ -6,6 +6,7 @@ import {
   EventsJoined,
   EventsMatchJoined,
 } from '@bf2-matchmaking/types/supabase';
+import { EventmatchesUpdate } from '@bf2-matchmaking/schemas/types';
 
 const EVENT_QUERY =
   '*, teams!event_teams(*), rounds:event_rounds!event_rounds_event_fkey(*, matches:event_matches(*)), matches!event_matches(id, home_team(*), away_team(*))';
@@ -25,9 +26,30 @@ export function matches(
       .eq('match', matchId)
       .single<EventsMatchJoined>(); // TODO: fix these request to not contain so much data
   }
+  async function remove(matchId: number) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('event_matches')
+      .delete()
+      .eq('match', matchId)
+      .select('*')
+      .single();
+  }
+  async function update(matchId: number, values: Omit<EventmatchesUpdate, 'match'>) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('event_matches')
+      .update(values)
+      .eq('match', matchId)
+      .select('*')
+      .single();
+  }
+
   return {
     create,
     get,
+    update,
+    remove,
   };
 }
 
@@ -38,7 +60,11 @@ export function events(supabaseClient: SupabaseClient | (() => Promise<SupabaseC
   }
   async function get(eventId: number) {
     const client = await resolveClient(supabaseClient);
-    client.from('events').select(EVENT_QUERY).eq('id', eventId).single<EventsJoined>();
+    return client
+      .from('events')
+      .select(EVENT_QUERY)
+      .eq('id', eventId)
+      .single<EventsJoined>();
   }
 
   return {

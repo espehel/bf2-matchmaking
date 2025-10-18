@@ -1,5 +1,6 @@
+'use server';
 import { assertNumber, assertString } from '@bf2-matchmaking/utils';
-import { events, supabase } from '@/lib/supabase/supabase-server';
+import { events, matches, supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import {
@@ -11,6 +12,7 @@ import {
 import { getValue, getValues } from '@bf2-matchmaking/utils/form';
 import { DateTime } from 'luxon';
 import { matchApi } from '@/lib/match';
+import { ActionInput, ActionResult } from '@/lib/types/form';
 
 export async function addRoundMatch(
   event: EventsJoined,
@@ -21,8 +23,6 @@ export async function addRoundMatch(
   const away_team = Number(data.get('away_team[id]'));
   assertNumber(home_team, 'Missing home team');
   assertNumber(away_team, 'Missing away team');
-
-  const cookieStore = await cookies();
 
   const match = await matchApi.create({
     config: event.config,
@@ -100,10 +100,20 @@ export async function deleteEventRound(
 }
 
 export async function deleteEventMatch({ match, event }: EventMatchesRow) {
-  const cookieStore = await cookies();
-  const result = await supabase(cookieStore).deleteEventMatch(match);
+  const result = await events.matches.remove(match);
   if (result.data) {
-    await supabase(cookieStore).deleteMatch(match);
+    await matches.remove(match);
+    revalidatePath(`/events/${event}`);
+  }
+  return result;
+}
+
+export async function confirmEventMatch({ match, event }: EventMatchesRow) {
+  const result = await events.matches.update(match, {
+    home_accepted: true,
+    away_accepted: true,
+  });
+  if (result.data) {
     revalidatePath(`/events/${event}`);
   }
   return result;
@@ -134,4 +144,10 @@ export async function setEventOpen(formData: FormData) {
     revalidatePath(`/events/${event}`);
   }
   return result;
+}
+
+export async function announceRound(input: ActionInput): Promise<ActionResult> {
+  assertNumber(input.eventId);
+  assertNumber(input.roundId);
+  return { success: 'eyy', error: null, ok: true };
 }
