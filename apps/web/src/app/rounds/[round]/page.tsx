@@ -38,7 +38,7 @@ export default async function RoundPage(props: Props) {
       ? formatSecToMin(info.roundTime)
       : formatSecToMin(info.timeLimit);
 
-  async function registerPlayer(playerId: string, keyhash: string) {
+  async function registerPlayer(playerId: string, keyhash: string | null) {
     'use server';
     return updatePlayer(round.id, playerId, { keyhash });
   }

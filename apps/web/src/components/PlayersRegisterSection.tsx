@@ -11,7 +11,7 @@ interface Props {
   matchPlayers: Array<PlayersRow>;
   registerPlayerAction: (
     playerId: string,
-    keyhash: string
+    keyhash: string | null
   ) => PromiseLike<PostgrestSingleResponse<PlayersRow>>;
 }
 
@@ -46,7 +46,7 @@ export default function PlayersRegisterSection({
   );
 
   const handleRegisterClick = useCallback(
-    async (keyhash: string) => {
+    async (keyhash: string | null) => {
       if (!selectedPlayer) {
         return toast.error('Select a player to register');
       }
@@ -64,10 +64,13 @@ export default function PlayersRegisterSection({
     <section className="mt-2">
       <div className="flex items-center gap-6">
         <PlayerCombobox onPlayerSelected={setSelectedPlayer} />
-        <div className="grow bg-base-100 rounded shadow p-2">
+        <div className="bg-base-100 rounded shadow p-2">
           <p>{`Selected: ${selectedPlayer?.nick || 'None'}`}</p>
           <p>{`Keyhash: ${selectedPlayer?.keyhash || 'None'}`}</p>
         </div>
+        <button className="btn btn-secondary" onClick={() => handleRegisterClick(null)}>
+          Reset
+        </button>
       </div>
       <table className="table mt-2 bg-base-100 shadow-xl">
         <thead>
