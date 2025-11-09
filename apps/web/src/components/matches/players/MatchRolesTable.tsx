@@ -31,7 +31,7 @@ export default function MatchRolesTable({ matchRoles }: Props) {
             <td>{role.priority}</td>
             <td>
               <ActionButton
-                kind="ghost"
+                style="ghost"
                 action={removeMatchRole}
                 input={{ matchId: role.match_id, role: role.name }}
               >

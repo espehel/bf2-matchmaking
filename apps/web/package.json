@@ -33,7 +33,7 @@
     "autoprefixer": "^10.4.14",
     "classnames": "^2.3.2",
     "copy-text-to-clipboard": "^3.2.0",
-    "daisyui": "^5.0.43",
+    "daisyui": "^5.3.0",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
     "luxon": "^3.4.3",
@@ -48,7 +48,7 @@
     "react-toastify": "^11.0.5",
     "request-ip": "^3.3.0",
     "swr": "^2.2.1",
-    "tailwindcss": "^4.1.13",
+    "tailwindcss": "^4.1.16",
     "typescript": "^5.2.2"
   },
   "devDependencies": {

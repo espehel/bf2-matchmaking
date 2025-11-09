@@ -10,6 +10,7 @@
     "./matches/utils": "./src/match/match-utils.ts",
     "./players": "./src/player-service.ts",
     "./rcon": "./src/rcon/bf2-rcon-api.ts",
+    "./results": "./src/results-service.ts",
     "./schemas/*": "./src/schemas/*",
     "./server": "./src/server/server-service.ts",
     "./server/Server": "./src/server/server-api.ts",

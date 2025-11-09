@@ -303,6 +303,7 @@ export const eventMatchesRelationshipsSchema = z.tuple([
 ]);
 
 export const eventRoundsRowSchema = z.object({
+  announcement: z.string().nullable(),
   created_at: z.string(),
   event: z.number(),
   id: z.number(),
@@ -312,6 +313,7 @@ export const eventRoundsRowSchema = z.object({
 });
 
 export const eventRoundsInsertSchema = z.object({
+  announcement: z.string().optional().nullable(),
   created_at: z.string().optional(),
   event: z.number(),
   id: z.number().optional(),
@@ -321,6 +323,7 @@ export const eventRoundsInsertSchema = z.object({
 });
 
 export const eventRoundsUpdateSchema = z.object({
+  announcement: z.string().optional().nullable(),
   created_at: z.string().optional(),
   event: z.number().optional(),
   id: z.number().optional(),

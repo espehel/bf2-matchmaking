@@ -1,6 +1,6 @@
 'use client';
 import React, { PropsWithChildren, useCallback } from 'react';
-import { Colors, Sizes } from '@/lib/types/daisyui';
+import { Colors, Sizes, Styles } from '@/lib/types/daisyui';
 import { useAction } from '@/hooks/useAction';
 import classNames from 'classnames';
 import { ActionFunction, ActionInput } from '@/lib/types/form';
@@ -9,7 +9,8 @@ interface Props extends PropsWithChildren {
   action: ActionFunction;
   input: ActionInput;
   size?: Sizes;
-  kind?: Colors | 'ghost';
+  color?: Colors;
+  style?: Styles;
   disabled?: boolean;
   className?: string;
 }
@@ -18,8 +19,9 @@ export default function ActionButton({
   children,
   action,
   input,
-  kind,
+  color,
   size,
+  style,
   disabled,
   className,
 }: Props) {
@@ -29,7 +31,7 @@ export default function ActionButton({
 
   const classes = classNames(
     'btn',
-    { [`btn-${kind}`]: kind, [`btn-${size}`]: size },
+    { [`btn-${color}`]: color, [`btn-${size}`]: size, [`btn-${style}`]: style },
     className
   );
 

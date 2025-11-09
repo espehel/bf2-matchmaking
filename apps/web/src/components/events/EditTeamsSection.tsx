@@ -10,10 +10,9 @@ import { TeamsSelect } from '@/components/TeamsSelect';
 
 interface Props {
   event: EventsJoined;
-  edit: boolean;
 }
 
-export default function TeamsSection({ event, edit }: Props) {
+export default function EditTeamsSection({ event }: Props) {
   function deleteEventTeamSA(teamId: number) {
     return async () => {
       'use server';
@@ -22,20 +21,18 @@ export default function TeamsSection({ event, edit }: Props) {
   }
 
   return (
-    <section className="section gap-2">
+    <section className="section gap-2 col-span-2">
       <div className="flex gap-8 items-center justify-between">
         <h2>Teams</h2>
-        {edit && (
-          <ToggleAction
-            name="open"
-            label="Allow sign ups"
-            action={setEventOpen}
-            successMessage={event.open ? 'Sign ups closed' : 'Sign ups open'}
-            errorMessage="Failed to update sign ups"
-            extras={{ event: event.id.toString() }}
-            defaultChecked={event.open}
-          />
-        )}
+        <ToggleAction
+          name="open"
+          label="Allow sign ups"
+          action={setEventOpen}
+          successMessage={event.open ? 'Sign ups closed' : 'Sign ups open'}
+          errorMessage="Failed to update sign ups"
+          extras={{ event: event.id.toString() }}
+          defaultChecked={event.open}
+        />
       </div>
       <ul>
         {event.teams.map((team) => (
@@ -47,14 +44,13 @@ export default function TeamsSection({ event, edit }: Props) {
               action={deleteEventTeamSA(team.id)}
               successMessage="Team deleted"
               errorMessage="Failed to delete team"
-              visible={edit}
             >
               <IconBtn Icon={XCircleIcon} size="xs" className="text-error" />
             </ActionWrapper>
           </li>
         ))}
       </ul>
-      <AddTeamForm eventId={event.id} edit={edit} open={event.open} />
+      <AddTeamForm eventId={event.id} edit={true} open={event.open} />
     </section>
   );
 }

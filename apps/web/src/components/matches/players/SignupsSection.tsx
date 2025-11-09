@@ -45,7 +45,7 @@ export default function SignupsSection({ match }: Props) {
           <ArrowTopRightOnSquareIcon className="size-4" />
         </Link>
         <ActionButton
-          kind="secondary"
+          color="secondary"
           action={resetMatchPlayersRating}
           input={{ matchId: match.id }}
         >

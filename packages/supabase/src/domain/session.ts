@@ -47,9 +47,19 @@ export function session(supabaseClient: ResolvableSupabaseClient) {
       .single();
     return data;
   }
+
+  async function getAdminRoles() {
+    const client = await resolveClient(supabaseClient);
+    const { data, error } = await client.auth.getUser();
+    if (data.user) {
+      return client.from('admin_roles').select('*').eq('user_id', data.user.id).single();
+    }
+    return { data: null, error };
+  }
   return {
     getSession,
     getSessionPlayer,
     getSessionPlayerSafe,
+    getAdminRoles,
   };
 }

@@ -1,6 +1,6 @@
 'use server';
-import { assertNumber, assertString } from '@bf2-matchmaking/utils';
-import { events, matches, supabase } from '@/lib/supabase/supabase-server';
+import { assertNumber, assertObj, assertString } from '@bf2-matchmaking/utils';
+import { configs, events, matches, supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import {
@@ -13,6 +13,9 @@ import { getValue, getValues } from '@bf2-matchmaking/utils/form';
 import { DateTime } from 'luxon';
 import { matchApi } from '@/lib/match';
 import { ActionInput, ActionResult } from '@/lib/types/form';
+import { sendAnnounceEventRoundMessage } from '@/lib/discord/channel-message';
+import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import { logErrorMessage } from '@bf2-matchmaking/logging';
 
 export async function addRoundMatch(
   event: EventsJoined,
@@ -147,7 +150,23 @@ export async function setEventOpen(formData: FormData) {
 }
 
 export async function announceRound(input: ActionInput): Promise<ActionResult> {
-  assertNumber(input.eventId);
   assertNumber(input.roundId);
-  return { success: 'eyy', error: null, ok: true };
+  const round = await events.rounds.get(input.roundId).then(verifySingleResult);
+  const config = await configs.get(round.event.config).then(verifySingleResult);
+
+  assertString(config.channel, `Event ${round.event.name} config missing channel`);
+  const res = await sendAnnounceEventRoundMessage(round, config.channel);
+
+  if (res.error || !res.data) {
+    const msg = `Failed to announce round`;
+    logErrorMessage(msg, res.error, { round, config });
+    return { success: null, error: msg, ok: false };
+  }
+
+  events.rounds.update(round.id, { announcement: res.data.id });
+  return {
+    success: `Round announced to channel ${config.channel}`,
+    error: null,
+    ok: true,
+  };
 }

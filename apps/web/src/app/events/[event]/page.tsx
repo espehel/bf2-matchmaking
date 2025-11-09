@@ -1,11 +1,8 @@
-import { supabase } from '@/lib/supabase/supabase-server';
-import { cookies } from 'next/headers';
+import { events } from '@/lib/supabase/supabase-server';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
-import AddRoundForm from '@/components/events/AddRoundForm';
 import EventRound from '@/components/events/EventRound';
-import TeamsSection from '@/components/events/TeamsSection';
 import Link from 'next/link';
-import Main from '@/components/commons/Main';
+import AddTeamForm from '@/components/events/AddTeamForm';
 
 interface Props {
   params: Promise<{ event: string }>;
@@ -13,44 +10,32 @@ interface Props {
 }
 
 export default async function EventPage(props: Props) {
-  const searchParams = await props.searchParams;
   const params = await props.params;
-  const cookieStore = await cookies();
-  const event = await supabase(cookieStore)
-    .getEvent(Number(params.event))
-    .then(verifySingleResult);
-  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
-
-  const edit = adminRoles?.match_admin ? searchParams.edit === 'true' : false;
+  const event = await events.get(Number(params.event)).then(verifySingleResult);
 
   return (
-    <Main
-      title={event.name}
-      breadcrumbs={[{ href: '/events', label: 'Events' }, { label: event.name }]}
-      relevantRoles={['match_admin']}
-    >
-      <div className="flex justify-between items-end">
-        <Link
-          className="btn btn-sm btn-secondary ml-auto"
-          href={edit ? `/events/${event.id}` : `/events/${event.id}?edit=true`}
-        >
-          {edit ? 'Return' : 'Manage'}
-        </Link>
-      </div>
-      <div className="flex gap-6 w-full mt-6">
-        <section className="section gap-6 grow">
-          <h2>Rounds</h2>
-          <ul>
-            {event.rounds.map((round) => (
-              <li key={round.id} className="mb-4">
-                <EventRound event={event} round={round} edit={edit} />
-              </li>
-            ))}
-          </ul>
-          {edit && <AddRoundForm eventId={event.id} />}
-        </section>
-        <TeamsSection event={event} edit={edit} />
-      </div>
-    </Main>
+    <div className="flex gap-6 w-full mt-2">
+      <section className="section gap-6 grow">
+        <ul>
+          {event.rounds.map((round) => (
+            <li key={round.id} className="mb-6">
+              <EventRound event={event} round={round} edit={false} />
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section className="section gap-2">
+        <ul>
+          {event.teams.map((team) => (
+            <li className="flex items-center gap-1 text-lg" key={team.id}>
+              <Link className="link link-hover" href={`/teams/${team.id}`}>
+                {team.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <AddTeamForm eventId={event.id} edit={false} open={event.open} />
+      </section>
+    </div>
   );
 }

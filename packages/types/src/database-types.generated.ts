@@ -250,6 +250,7 @@ export type Database = {
       }
       event_rounds: {
         Row: {
+          announcement: string | null
           created_at: string
           event: number
           id: number
@@ -258,6 +259,7 @@ export type Database = {
           start_at: string
         }
         Insert: {
+          announcement?: string | null
           created_at?: string
           event: number
           id?: number
@@ -266,6 +268,7 @@ export type Database = {
           start_at: string
         }
         Update: {
+          announcement?: string | null
           created_at?: string
           event?: number
           id?: number

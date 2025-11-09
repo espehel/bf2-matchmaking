@@ -227,6 +227,18 @@ export interface EventsMatchJoined extends Omit<EventMatchesRow, 'event' | 'roun
   round: EventRoundsRow;
 }
 
+export interface EventsRoundMatch extends Omit<EventMatchesRow, 'match'> {
+  match: Omit<MatchesRow, 'home_team' | 'away_team'> & {
+    home_team: TeamsRow;
+    away_team: TeamsRow;
+  };
+}
+
+export interface EventsRound extends Omit<EventRoundsRow, 'event'> {
+  event: EventsRow;
+  event_matches: Array<EventsRoundMatch>;
+}
+
 export interface RatedMatchPlayer extends Omit<MatchPlayersInsert, 'rating'> {
   rating: number;
 }

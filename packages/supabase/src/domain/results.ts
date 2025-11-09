@@ -26,10 +26,18 @@ export function results(
       .select<'*, team(*)', MatchResultsJoined>('*, team(*)')
       .eq('match_id', matchId);
   }
+  async function getByMatchIds(matchIds: Array<number>) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_results')
+      .select<'*, team(*)', MatchResultsJoined>('*, team(*)')
+      .in('match_id', matchIds);
+  }
 
   return {
     create,
     getAll,
     getByMatchId,
+    getByMatchIds,
   };
 }

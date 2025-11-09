@@ -11,18 +11,17 @@ import AddMatchForm from '@/components/events/AddMatchForm';
 import IconBtn from '@/components/commons/IconBtn';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import {
-  announceRound,
   confirmEventMatch,
   deleteEventMatch,
   deleteEventRound,
 } from '@/app/events/[event]/actions';
 import ActionWrapper from '@/components/commons/ActionWrapper';
 import Link from 'next/link';
-import ActionButton from '../commons/action/ActionButton';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { matches, results } from '@/lib/supabase/supabase-server';
 import { calculateLeaguePoints } from '@bf2-matchmaking/utils';
 import Time from '../commons/Time';
+import { AnnounceRoundAction } from './AnnounceRoundAction';
 
 interface Props {
   event: EventsJoined;
@@ -59,18 +58,12 @@ export default function EventRound({ event, round, edit }: Props) {
 
   return (
     <section className="flex flex-col gap-1">
-      <div className="flex items-center justify-end border-b-2 border-primary">
-        <h3 className="font-bold">{round.label}</h3>
-        <ActionButton
-          action={announceRound}
-          input={{ eventId: event.id, roundId: round.id }}
-          size="sm"
-          kind="ghost"
-        >
-          Announce
-        </ActionButton>
-        <input type="checkbox" className=" mr-auto" />
-        <p>{DateTime.fromISO(round.start_at).toFormat('EEEE, DD')}</p>
+      <div className="flex items-end justify-end border-b-2 pb-1 border-primary">
+        <p className="font-bold">{round.label}</p>
+        {edit && <AnnounceRoundAction round={round} />}
+        <p className="ml-auto">
+          {DateTime.fromISO(round.start_at).toFormat('EEEE d, DD')}
+        </p>
         <ActionWrapper
           action={deleteEventRoundSA}
           successMessage="Round deleted"

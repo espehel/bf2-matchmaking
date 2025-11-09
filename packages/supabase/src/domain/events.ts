@@ -5,15 +5,14 @@ import {
   EventsInsert,
   EventsJoined,
   EventsMatchJoined,
+  EventsRound,
 } from '@bf2-matchmaking/types/supabase';
-import { EventmatchesUpdate } from '@bf2-matchmaking/schemas/types';
+import { EventmatchesUpdate, EventroundsUpdate } from '@bf2-matchmaking/schemas/types';
 
 const EVENT_QUERY =
   '*, teams!event_teams(*), rounds:event_rounds!event_rounds_event_fkey(*, matches:event_matches(*)), matches!event_matches(id, home_team(*), away_team(*))';
 
-export function matches(
-  supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)
-) {
+function matches(supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)) {
   async function create(values: EventMatchesInsert) {
     const client = await resolveClient(supabaseClient);
     return client.from('event_matches').insert(values).select('*').single();
@@ -53,6 +52,30 @@ export function matches(
   };
 }
 
+function rounds(supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)) {
+  async function get(roundId: number) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('event_rounds')
+      .select('*, event(*), event_matches(*, match(*, home_team(*), away_team(*)))')
+      .eq('id', roundId)
+      .single<EventsRound>();
+  }
+  async function update(roundId: number, values: Omit<EventroundsUpdate, 'id'>) {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('event_rounds')
+      .update(values)
+      .eq('id', roundId)
+      .select('*')
+      .single<EventsRound>();
+  }
+  return {
+    get,
+    update,
+  };
+}
+
 export function events(supabaseClient: SupabaseClient | (() => Promise<SupabaseClient>)) {
   async function create(values: EventsInsert) {
     const client = await resolveClient(supabaseClient);
@@ -71,5 +94,6 @@ export function events(supabaseClient: SupabaseClient | (() => Promise<SupabaseC
     create,
     get,
     matches: matches(supabaseClient),
+    rounds: rounds(supabaseClient),
   };
 }

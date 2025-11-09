@@ -2,6 +2,7 @@ const basePath = 'https://bf2.top';
 
 export const web = {
   basePath,
+  eventPage: (eventId: number | string) => `${basePath}/events/${eventId}`,
   matchPage: (matchId: number | string, playerId?: string) =>
     `${basePath}/matches/${matchId}${playerId ? `?player=${playerId}` : ''}`,
   teamspeakPage: (id?: string) => {
