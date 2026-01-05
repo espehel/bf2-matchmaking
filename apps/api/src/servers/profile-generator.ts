@@ -7,6 +7,7 @@ interface Options {
   MaxPlayers: number;
   InfantryOnly: boolean;
 }
+
 export function generateProfileXml({
   RCONPassword,
   ServerName,
@@ -408,6 +409,48 @@ export function generateProfileXml({
     <RunningMapID>44</RunningMapID>
     <Order>44</Order>
     <MapName>Waterfront</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>45</RunningMapID>
+    <Order>45</Order>
+    <MapName>devils_perch_day</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>46</RunningMapID>
+    <Order>46</Order>
+    <MapName>dnister_city</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>47</RunningMapID>
+    <Order>47</Order>
+    <MapName>fall_of_frankfurt</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>48</RunningMapID>
+    <Order>48</Order>
+    <MapName>ghost_town</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>49</RunningMapID>
+    <Order>49</Order>
+    <MapName>iron_gator</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>50</RunningMapID>
+    <Order>50</Order>
+    <MapName>sunset_at_kraken</MapName>
     <GameMode>gpm_cq</GameMode>
     <MaxPlayers>16</MaxPlayers>
   </RunningMaps>
