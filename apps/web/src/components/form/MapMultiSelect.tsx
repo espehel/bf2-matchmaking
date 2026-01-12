@@ -40,7 +40,7 @@ export default function MapMultiSelect({ maps, defaultMaps = [] }: Props) {
             key={map.id}
             className="hidden"
             name={`mapSelect[${i}]`}
-            value={map.id}
+            defaultValue={map.id}
           />
         ))}
       </div>
@@ -58,7 +58,7 @@ export default function MapMultiSelect({ maps, defaultMaps = [] }: Props) {
           ))}
         </div>
         <select
-          className="select  ed w-full"
+          className="select w-full"
           id="mapSelect"
           onChange={handleMapSelected}
           onSelect={handleMapSelected}

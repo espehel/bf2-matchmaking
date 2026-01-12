@@ -1,7 +1,7 @@
 import { LiveInfo } from '@bf2-matchmaking/types';
 import { hash } from '../core/hash';
 import { set } from '../core/set';
-import { assertString } from '@bf2-matchmaking/utils';
+import { assertString, isUniqueString } from '@bf2-matchmaking/utils';
 import { json } from '../core/json';
 import { Server, ServerData } from '../types';
 import { serverDataSchema } from '../schemas';
@@ -15,7 +15,9 @@ export async function getAllServers() {
       getServersWithStatus(ServerStatus.OFFLINE),
       getServersWithStatus(ServerStatus.RESTARTING),
     ])
-  ).flat();
+  )
+    .flat()
+    .filter(isUniqueString);
 }
 
 export function getServersWithStatus(status: ServerStatus) {
