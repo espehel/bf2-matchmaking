@@ -1,4 +1,4 @@
-import Main from '@/components/commons/Main';
+import MainOld from '@/components/commons/MainOld';
 import { matches } from '@/lib/supabase/supabase-server';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import MatchLogSection from '@/components/matches/players/MatchLogSection';
@@ -15,7 +15,7 @@ export default async function MatchPlayersPage(props: Props) {
   const roles = await matches.roles.get(match.id).then(verifyResult);
 
   return (
-    <Main
+    <MainOld
       title={`Match ${match.id} Players`}
       relevantRoles={['match_admin']}
       breadcrumbs={[
@@ -36,6 +36,6 @@ export default async function MatchPlayersPage(props: Props) {
         </div>
         <MatchLogSection matchId={match.id} />
       </div>
-    </Main>
+    </MainOld>
   );
 }

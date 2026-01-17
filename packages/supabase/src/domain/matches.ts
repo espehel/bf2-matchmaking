@@ -4,8 +4,8 @@ import {
   MatchDraftsInsert,
   MatchesJoined,
   MatchPlayersInsert,
+  MatchServers,
   MatchServersInsert,
-  ServersRow,
 } from '@bf2-matchmaking/types';
 import {
   MatchesInsert,
@@ -167,7 +167,7 @@ export function matchServers(
       .from('matches')
       .select('id, servers(*)')
       .eq('id', matchId)
-      .overrideTypes<Array<{ id: number; server: ServersRow }>, { merge: false }>();
+      .single<MatchServers>();
   }
   async function add(matchId: number, ...servers: Array<Omit<MatchServersInsert, 'id'>>) {
     const client = await resolveClient(supabaseClient);
@@ -175,17 +175,17 @@ export function matchServers(
       .from('match_servers')
       .insert(servers.map((server) => ({ id: matchId, ...server })))
       .select('*, server(*)')
-      .overrideTypes<Array<{ id: number; server: ServersRow }>, { merge: false }>();
+      .single<MatchServers>();
   }
   async function remove(matchId: number, ...servers: Array<string>) {
     const client = await resolveClient(supabaseClient);
     return client
       .from('match_servers')
       .delete()
-      .eq('match_id', matchId)
+      .eq('id', matchId)
       .in('server', servers)
       .select('id, servers(*)')
-      .overrideTypes<Array<{ id: number; server: ServersRow }>, { merge: false }>();
+      .single<MatchServers>();
   }
   return {
     get,

@@ -8,7 +8,7 @@ import MatchFinishedSection from '@/components/result/MatchFinishedSection';
 import Link from 'next/link';
 import Time from '@/components/commons/Time';
 import React from 'react';
-import Main from '@/components/commons/Main';
+import MainOld from '@/components/commons/MainOld';
 
 interface Props {
   params: Promise<{ match: string }>;
@@ -34,7 +34,7 @@ export default async function ResultsMatch(props: Props) {
     : [{ href: '/results', label: 'Results' }];
 
   return (
-    <Main
+    <MainOld
       title={match.config.name}
       breadcrumbs={breadcrumbs}
       relevantRoles={['match_admin']}
@@ -61,6 +61,6 @@ export default async function ResultsMatch(props: Props) {
           a.created_at.localeCompare(b.created_at)
         )}
       />
-    </Main>
+    </MainOld>
   );
 }

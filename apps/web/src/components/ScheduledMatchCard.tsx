@@ -22,7 +22,7 @@ export default async function ScheduledMatchCard({ match }: Props) {
     matchServer?.servers?.at(0)?.name ?? (city ? `${city} server` : 'No server set');
 
   return (
-    <section className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100">
+    <section className="flex items-center justify-between px-8 border border-base-300 rounded-lg bg-base-200 shadow-sm card-interactive group">
       {match.scheduled_at && (
         <div className="stat w-fit">
           <div className="stat-title">{match.config.name}</div>
@@ -37,17 +37,16 @@ export default async function ScheduledMatchCard({ match }: Props) {
         <h2 className="stat-title">{serverText}</h2>
         <div className="stat-value">{`${match.home_team.name} vs ${match.away_team.name}`}</div>
       </div>
-      <div className="flex mr-4 ml-auto">
+      <div className="flex shrink-0 ml-auto">
         {match.maps.map((map) => (
-          <div key={map.id} className="relative -mr-16 w-44 h-28 overflow-hidden">
-            <SupabaseImage
-              className="mask mask-squircle object-cover"
-              src={`map_images/${map.id}.webp`}
-              fill={true}
-              sizes="11rem"
-              alt={map.name}
-            />
-          </div>
+          <SupabaseImage
+            key={map.id}
+            className="object-cover h-24 w-15.5 last:rounded-r-lg border-1 border-primary"
+            src={`map_images/${map.id}.webp`}
+            height={96}
+            width={96}
+            alt={map.name}
+          />
         ))}
       </div>
     </section>

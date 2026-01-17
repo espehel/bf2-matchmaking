@@ -18,7 +18,7 @@ export default function MatchResultCard({ matchId, matchResult, rounds }: Props)
   const maps = rounds.map((r) => r.map).filter(isUniqueObject);
 
   return (
-    <section className="flex items-center gap-8 px-8 border-2 border-primary rounded bg-base-100">
+    <section className="flex items-center gap-8 px-8 border border-base-300 rounded-lg bg-base-200 shadow-sm card-interactive group">
       <div className="stat">
         <div className="stat-title">{`Match ${matchId}`}</div>
         <div className="stat-value capitalize">
@@ -42,7 +42,7 @@ export default function MatchResultCard({ matchId, matchResult, rounds }: Props)
       </div>
       <div className="flex mr-4 ml-auto">
         {maps.map((map) => (
-          <div key={map.id} className="relative -mr-16 w-44 h-28 overflow-hidden">
+          <div key={map.id} className="relative -mr-16 w-44 h-28 overflow-hidden transition-transform duration-300 group-hover:scale-105">
             <SupabaseImage
               className="mask mask-parallelogram object-cover"
               src={`map_images/${map.id}.webp`}

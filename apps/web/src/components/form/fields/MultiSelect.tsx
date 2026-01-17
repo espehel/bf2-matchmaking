@@ -9,6 +9,8 @@ interface Props {
   defaultOptions?: Array<Option>;
   name: string;
   placeholder: string;
+  onOptionSelected?: (option: Option) => void;
+  onOptionRemoved?: (option: Option) => void;
 }
 
 export default function MultiSelect({
@@ -16,6 +18,8 @@ export default function MultiSelect({
   defaultOptions = [],
   name,
   placeholder,
+  onOptionSelected,
+  onOptionRemoved,
 }: Props) {
   const [selectedOptions, setSelectedOptions] = useState<Array<Option>>(
     () => defaultOptions
@@ -39,8 +43,9 @@ export default function MultiSelect({
         return;
       }
       setSelectedOptions((prevState) => [...prevState, option]);
+      onOptionSelected?.(option);
     },
-    [options]
+    [options, onOptionSelected]
   );
 
   return (
@@ -61,13 +66,15 @@ export default function MultiSelect({
           {selectedOptions.map(([value, label]) => (
             <button
               key={value}
-              onClick={() =>
-                setSelectedOptions(selectedOptions.filter((s) => s[0] !== value))
-              }
-              className="badge badge-info"
+              onClick={() => {
+                const removed = selectedOptions.find((s) => s[0] === value);
+                setSelectedOptions(selectedOptions.filter((s) => s[0] !== value));
+                if (removed) onOptionRemoved?.(removed);
+              }}
+              className="badge badge-info min-w-0 cursor-pointer"
             >
-              <XMarkIcon className="size-4" />
-              <p>{label}</p>
+              <XMarkIcon className="size-4 shrink-0" />
+              <p className="truncate">{label}</p>
             </button>
           ))}
         </div>

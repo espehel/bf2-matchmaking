@@ -8,19 +8,16 @@ import {
   startMatch,
 } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
-import { supabase } from '@/lib/supabase/supabase-server';
-import { cookies } from 'next/headers';
-import MatchMapsSelect from '@/components/matches/MatchMapsSelect';
-import OrganizerCommandCopyButton from '@/components/matches/OrganizerCommandCopyButton';
+import ActionForm from '@/components/commons/action/ActionForm';
+import SelectField from '@/components/form/fields/SelectField';
+import { matches } from '@/lib/supabase/supabase-server';
+import SubmitActionFormButton from '@/components/commons/action/SubmitActionFormButton';
 
 interface Props {
   match: MatchesJoined;
 }
 
 export default async function MatchActions({ match }: Props) {
-  const cookieStore = await cookies();
-  const { data: maps } = await supabase(cookieStore).getMaps();
-
   const isScheduled = match.status === MatchStatus.Scheduled;
   const isOngoing = match.status === MatchStatus.Ongoing;
   const isFinished = match.status === MatchStatus.Finished;
@@ -39,10 +36,6 @@ export default async function MatchActions({ match }: Props) {
     'use server';
     return closeMatch(match.id);
   }
-  async function startMatchSA() {
-    'use server';
-    return startMatch(match.id);
-  }
   async function createResultsSA() {
     'use server';
     return createResults(match.id);
@@ -54,68 +47,86 @@ export default async function MatchActions({ match }: Props) {
   }
 
   return (
-    <div>
-      <div className="divider mt-0" />
-      <div className="flex gap-4 flex-col">
-        {isScheduled && (
-          <div className=" flex gap-2 text-left">
-            <ActionButton
-              formAction={startMatchSA}
-              successMessage="Match started."
-              errorMessage="Failed to start match"
-            >
-              Start match
-            </ActionButton>
-            <OrganizerCommandCopyButton match={match} />
-            <ActionButton
-              formAction={deleteMatchSA}
-              successMessage="Match deleted."
-              errorMessage="Failed to delete match"
-              kind="btn-error"
-            >
-              Delete match
-            </ActionButton>
-          </div>
-        )}
-        {isOngoing && (
+    <div className="flex flex-wrap gap-2">
+      {isScheduled && (
+        <>
+          <StartMatchForm match={match} />
           <ActionButton
-            formAction={finishMatchSA}
+            formAction={deleteMatchSA}
+            successMessage="Match deleted."
+            errorMessage="Failed to delete match"
+            kind="btn-error"
+          >
+            Delete match
+          </ActionButton>
+        </>
+      )}
+      {isOngoing && (
+        <ActionButton
+          formAction={finishMatchSA}
+          successMessage="Match closed and results created."
+          errorMessage="Match set to finished but results not created"
+        >
+          Finish match
+        </ActionButton>
+      )}
+      {isFinished && (
+        <>
+          <ActionButton
+            formAction={closeMatchSA}
+            successMessage="Match closed without results."
+            errorMessage="Failed to close match"
+          >
+            Close match
+          </ActionButton>
+          <ActionButton
+            formAction={createResultsSA}
             successMessage="Match closed and results created."
-            errorMessage="Match set to finished but results not created"
+            errorMessage="Failed to create results"
+            errorRedirect={`/results/${match.id}`}
           >
-            Finish match
+            Create results
           </ActionButton>
-        )}
-        {isFinished && (
-          <div className="flex gap-4">
-            <ActionButton
-              formAction={closeMatchSA}
-              successMessage="Match closed without results."
-              errorMessage="Failed to close match"
-            >
-              Close match
-            </ActionButton>
-            <ActionButton
-              formAction={createResultsSA}
-              successMessage="Match closed and results created."
-              errorMessage="Failed to create results"
-              errorRedirect={`/results/${match.id}`}
-            >
-              Create results
-            </ActionButton>
-          </div>
-        )}
-        {isClosed && (
-          <ActionButton
-            formAction={reopenMatchSA}
-            successMessage="Match reopened."
-            errorMessage="Failed to reopen match"
-          >
-            Reopen match
-          </ActionButton>
-        )}
-        {maps && !isClosed && <MatchMapsSelect match={match} maps={maps} />}
-      </div>
+        </>
+      )}
+      {isClosed && (
+        <ActionButton
+          formAction={reopenMatchSA}
+          successMessage="Match reopened."
+          errorMessage="Failed to reopen match"
+        >
+          Reopen match
+        </ActionButton>
+      )}
     </div>
+  );
+}
+
+async function StartMatchForm({ match }: Props) {
+  const { data: matchServers } = await matches.servers.get(match.id);
+  const options: Array<[string, string]> =
+    matchServers?.servers.map((server) => [server.ip, server.name]) || [];
+  const defaultValue = options.at(0)?.at(0);
+  return (
+    <ActionForm formAction={startMatch} extras={{ matchId: match.id.toString() }}>
+      <div className="join">
+        <SelectField
+          key={options.join()}
+          kind="primary"
+          options={options}
+          defaultValue={defaultValue}
+          name="server"
+          label="Server"
+          className="join-item"
+          placeholder="Missing server"
+        />
+        <SubmitActionFormButton
+          className="join-item btn-primary"
+          disabled={!defaultValue}
+        >
+          Start match
+        </SubmitActionFormButton>
+      </div>
+    </ActionForm>
   );
 }

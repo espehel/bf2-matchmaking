@@ -1,6 +1,30 @@
 'use client';
 import { useMemo } from 'react';
-import { toLocalISO } from '@bf2-matchmaking/utils';
+import { DateTime } from 'luxon';
+import classNames from 'classnames';
+
+function toLocalISO(date: string | undefined | null, zone: string) {
+  return date ? DateTime.fromISO(date).setZone(zone).toISO() || undefined : undefined;
+}
+
+const colors = {
+  primary: 'input-primary',
+  secondary: 'input-secondary',
+  accent: 'input-accent',
+  neutral: 'input-neutral',
+  info: 'input-info',
+  success: 'input-success',
+  warning: 'input-warning',
+  error: 'input-error',
+  ghost: 'input-ghost',
+} as const;
+const sizes = {
+  xs: 'input-xs',
+  sm: 'input-sm',
+  md: 'input-md',
+  lg: 'input-lg',
+  xl: 'input-xl',
+} as const;
 
 interface Props {
   defaultValue?: string | null;
@@ -8,9 +32,21 @@ interface Props {
   max?: string | null;
   label: string;
   name: string;
+  className?: string;
+  size?: keyof typeof sizes;
+  kind?: keyof typeof colors;
 }
 
-export default function DatetimeInput({ label, name, defaultValue, min, max }: Props) {
+export default function DatetimeInput({
+  label,
+  name,
+  defaultValue,
+  min,
+  max,
+  className,
+  size = 'md',
+  kind = 'neutral',
+}: Props) {
   const localZone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
   const localDefaultValue = useMemo(
     () => toLocalISO(defaultValue, localZone)?.substring(0, 16),
@@ -24,11 +60,14 @@ export default function DatetimeInput({ label, name, defaultValue, min, max }: P
     () => toLocalISO(max, localZone)?.substring(0, 16),
     [localZone, max]
   );
+
+  const classes = classNames('select', sizes[size], colors[kind], className);
+
   return (
     <label className="floating-label">
       <span>{label}</span>
       <input
-        className="input"
+        className={classes}
         type="datetime-local"
         name={name}
         defaultValue={localDefaultValue}

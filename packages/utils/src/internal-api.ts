@@ -154,8 +154,6 @@ const v2 = {
   postMatch: (body: PostMatchRequestBody) => postJSON<MatchesJoined>(`${matches}`, body),
   getMatches: () => getJSON<Array<LiveMatch>>(`${matches}`),
   getMatch: (matchId: number) => getJSON<LiveMatch>(`${matches}/${matchId}`),
-  postMatchStart: (matchId: number) =>
-    postJSON<LiveMatch>(`${matches}/${matchId}/start`, {}),
   getMatchServer: (matchId: number) =>
     getJSON<ConnectedLiveServer>(`${matches}/${matchId}/server`),
   postMatchServer: (matchId: number, address: string, force: boolean) =>

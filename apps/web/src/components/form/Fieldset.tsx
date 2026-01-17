@@ -9,10 +9,11 @@ type Props = PropsWithChildren<{
   helpText?: string;
 }>;
 
-export default function Fieldset({ legend, children, size, helpText }: Props) {
+export default function Fieldset({ legend, children, size, helpText, className }: Props) {
   const classes = classNames(
-    'fieldset bg-base-200 border-base-300 rounded-box border p-4 gap-2',
-    { [`fieldset-${size}`]: size }
+    'fieldset bg-base-300 border-primary rounded-box border p-4 gap-2',
+    { [`fieldset-${size}`]: size },
+    className
   );
   return (
     <fieldset className={classes}>

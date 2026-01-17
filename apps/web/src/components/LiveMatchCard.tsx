@@ -21,7 +21,13 @@ export default async function LiveMatchCard({ match, liveInfo, liveState }: Prop
       ? ''
       : `: ${match.home_team.name} vs. ${match.away_team.name}`;
   return (
-    <section className="px-8 border-2 border-primary rounded bg-base-100">
+    <section className="px-8 border border-base-300 rounded-lg bg-base-200 shadow-sm card-interactive relative overflow-hidden">
+      <div className="absolute top-3 right-3 flex items-center gap-2">
+        <span className="w-2 h-2 bg-success rounded-full animate-pulse-subtle" />
+        <span className="text-xs font-medium text-success uppercase tracking-wide">
+          Live
+        </span>
+      </div>
       <h3 className="mt-3 text-left font-bold text-lg text-accent">{`${match.config.type}${teamText}`}</h3>
       <div className="divider divider-vertical m-0" />
       <div className="flex items-center gap-8">
@@ -46,3 +52,4 @@ export default async function LiveMatchCard({ match, liveInfo, liveState }: Prop
     </section>
   );
 }
+

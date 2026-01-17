@@ -33,7 +33,7 @@
     "autoprefixer": "^10.4.14",
     "classnames": "^2.3.2",
     "copy-text-to-clipboard": "^3.2.0",
-    "daisyui": "^5.3.0",
+    "daisyui": "^5.5.14",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
     "luxon": "^3.4.3",
@@ -55,5 +55,6 @@
     "@types/luxon": "^3.3.3",
     "@types/react-collapse": "^5.0.4",
     "encoding": "^0.1.13"
-  }
+  },
+  "browserslist": "> 1%"
 }

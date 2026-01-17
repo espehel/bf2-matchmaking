@@ -2,7 +2,16 @@ import Cloudflare from 'cloudflare';
 import { assertString } from '@bf2-matchmaking/utils';
 import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { CLOUDFLARE } from './constants';
-type ARecord = Cloudflare.DNS.Records.ARecord;
+
+interface ARecord extends Cloudflare.DNS.Records.ARecord {
+  id: string;
+  created_on: string;
+  meta: unknown;
+  modified_on: string;
+  proxiable: boolean;
+  comment_modified_on?: string;
+  tags_modified_on?: string;
+}
 
 assertString(process.env.CLOUDFLARE_TOKEN, 'CLOUDFLARE_TOKEN is not set.');
 const client = new Cloudflare({ apiToken: process.env.CLOUDFLARE_TOKEN });

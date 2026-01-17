@@ -13,7 +13,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    logError(JSON.stringify(error))
+    logError(error)
       .then(() => console.error(error.message))
       .catch((err) => console.error(err));
   }, [error]);

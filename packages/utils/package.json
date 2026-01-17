@@ -6,6 +6,7 @@
     "./assert": "./src/assert.ts",
     "./cache": "./src/cache.ts",
     "./form": "./src/form-data.ts",
+    "./map": "./src/map-utils.ts",
     "./url-builder": "./src/url-builder.ts"
   },
   "scripts": {

@@ -1,32 +1,16 @@
-import { AdminRoleBadgeList } from '@/components/commons/AdminRoleBadgeList';
-import { Suspense } from 'react';
-import Breadcrumbs from '@/components/commons/Breadcrumbs';
+import classNames from 'classnames';
+
 interface Props {
   children: React.ReactNode;
-  title: string;
-  breadcrumbs?: Array<{ href?: string; label: string }>;
-  relevantRoles?: Array<'player_admin' | 'match_admin' | 'server_admin' | 'system_admin'>;
+  header: React.ReactNode;
+  className?: string;
 }
-export default async function Main({
-  children,
-  title,
-  breadcrumbs,
-  relevantRoles,
-}: Props) {
+export default async function Main({ children, header, className }: Props) {
+  const classes = classNames('flex-1 min-w-0 animate-fade-in', className);
   return (
-    <>
-      <div className="flex gap-2 p-4 items-start justify-between">
-        {breadcrumbs ? <Breadcrumbs breadcrumbs={breadcrumbs} /> : <div />}
-        {relevantRoles && (
-          <Suspense fallback={null}>
-            <AdminRoleBadgeList relevantRoles={relevantRoles} />
-          </Suspense>
-        )}
-      </div>
-      <main className="main mt-0">
-        <h1>{title}</h1>
-        {children}
-      </main>
-    </>
+    <main className={classes}>
+      {typeof header === 'string' ? <h1>{header}</h1> : header}
+      {children}
+    </main>
   );
 }

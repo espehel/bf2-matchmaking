@@ -9,7 +9,12 @@ import {
   MatchStatus,
 } from '@bf2-matchmaking/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { api, assertObj, assertString, getPlayersToSwitch } from '@bf2-matchmaking/utils';
+import {
+  api as internalApi,
+  assertObj,
+  assertString,
+  getPlayersToSwitch,
+} from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   deleteGuildScheduledEvent,
@@ -20,13 +25,23 @@ import { DateTime } from 'luxon';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
 import { ActionInput, ActionResult } from '@/lib/types/form';
-import { getOptionalValueAsNumber, getValueAsNumber } from '@bf2-matchmaking/utils/form';
+import {
+  getArray,
+  getOptionalValueAsNumber,
+  getValue,
+  getValueAsNumber,
+} from '@bf2-matchmaking/utils/form';
 import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
 import {
   sendMatchTimeAcceptedMessage,
   sendMatchTimeProposedMessage,
 } from '@/lib/discord/channel-message';
 import { createGuildEvent } from '@/lib/discord/guild-events';
+import { matchApi } from '@/lib/match';
+import { parseError } from '@bf2-matchmaking/services/error';
+import { api } from '@bf2-matchmaking/services/api';
+import { getPlayerToken } from '@/lib/token';
+import { toFail, toSuccess } from '@/lib/form';
 
 export async function removeMatchPlayer(matchId: number, playerId: string) {
   const cookieStore = await cookies();
@@ -76,7 +91,7 @@ export async function reopenMatch(matchId: number) {
 }
 
 export async function createResults(matchId: number) {
-  const result = await api.live().postMatchResults(matchId);
+  const result = await internalApi.live().postMatchResults(matchId);
 
   if (!result.error) {
     revalidatePath(`/results/${matchId}`);
@@ -93,23 +108,23 @@ export async function finishMatch(matchId: number) {
     return result;
   }
 
-  const apiResult = await api.live().postMatchResults(matchId);
+  const apiResult = await internalApi.live().postMatchResults(matchId);
   revalidatePath(`/matches/${matchId}`);
 
   return apiResult;
 }
 
-export async function startMatch(matchId: number) {
-  const cookieStore = await cookies();
-  const { data: player } = await supabase(cookieStore).getSessionPlayer();
-  const result = await api.v2.postMatchStart(matchId);
-  logMessage(`Match ${matchId} started by ${player?.nick}`, { matchId, player, result });
+export async function startMatch(formData: FormData): Promise<ActionResult> {
+  const matchId = getValueAsNumber(formData, 'matchId');
+  const server = getValue(formData, 'server');
+  const token = await getPlayerToken();
+  const result = await api.postMatchStart(matchId, server, token);
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
+    return toSuccess('Match started!');
   }
-
-  return result;
+  return toFail('Failed to start match!');
 }
 
 export async function closeMatch(matchId: number) {
@@ -164,7 +179,7 @@ export async function pauseRound(matchId: number, serverIp: string) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  const result = await api.v2.postServerPause(serverIp, createToken(player));
+  const result = await internalApi.v2.postServerPause(serverIp, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -177,7 +192,7 @@ export async function unpauseRound(matchId: number, serverIp: string) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  const result = await api.v2.postServerUnpause(serverIp, createToken(player));
+  const result = await internalApi.v2.postServerUnpause(serverIp, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/matches/${matchId}`);
@@ -189,7 +204,7 @@ export async function restartRound(matchId: number, serverIp: string) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  const result = await api.v2.postServerExec(
+  const result = await internalApi.v2.postServerExec(
     serverIp,
     { cmd: 'admin.restartMap' },
     createToken(player)
@@ -202,32 +217,20 @@ export async function restartRound(matchId: number, serverIp: string) {
   return result;
 }
 
-export async function restartServer(matchId: number, serverIp: string) {
-  const cookieStore = await cookies();
-  const { data: player } = await supabase(cookieStore).getSessionPlayer();
-  assertObj(player, 'Player not found');
-  const result = await api.v2.postServerExec(
-    serverIp,
-    { cmd: 'quit' },
-    createToken(player)
-  );
-
-  if (!result.error) {
-    revalidatePath(`/matches/${matchId}`);
-  }
-
-  return result;
+export async function restartServer(serverIp: string) {
+  const token = await getPlayerToken();
+  return await api.postServerExec(serverIp, { cmd: 'quit' }, token);
 }
 
 export async function setTeams(match: MatchesJoined, serverIp: string) {
-  const playersResult = await api.live().getServerPlayerList(serverIp);
+  const playersResult = await internalApi.live().getServerPlayerList(serverIp);
   if (playersResult.error) {
     return playersResult;
   }
 
   const players = getPlayersToSwitch(match, playersResult.data);
 
-  const result = await api.live().postServerPlayersSwitch(serverIp, { players });
+  const result = await internalApi.live().postServerPlayersSwitch(serverIp, { players });
   if (!result.error) {
     revalidatePath(`/matches/${match.id}`);
   }
@@ -345,7 +348,7 @@ export async function changeServerMap(serverIp: string, mapId: number) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  return api.v2.postServerMaps(serverIp, mapId, createToken(player));
+  return internalApi.v2.postServerMaps(serverIp, mapId, createToken(player));
 }
 
 export async function acceptMatchTime(
@@ -427,4 +430,32 @@ export async function removeMatchRole(input: ActionInput): Promise<ActionResult>
 
   revalidatePath(`/matches/${matchId}`);
   return { success: 'Role removed', error: null, ok: true };
+}
+
+export async function updateMatchSetup(formData: FormData): Promise<ActionResult> {
+  try {
+    const matchId = getValueAsNumber(formData, 'matchId');
+
+    const serverSelect = getArray(formData, 'serverSelect');
+
+    const mapSelect = getArray(formData, 'mapSelect');
+    const matchMaps = mapSelect.map(Number);
+
+    await matchApi.update(matchId).setMaps(matchMaps).setServers(serverSelect).commit();
+
+    revalidatePath(`/matches/${matchId}`);
+
+    return {
+      success: 'Match updated',
+      ok: true,
+      error: null,
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      success: null,
+      ok: false,
+      error: `Failed to update match (${parseError(e)})`,
+    };
+  }
 }

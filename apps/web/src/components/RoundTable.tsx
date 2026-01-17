@@ -13,7 +13,7 @@ export default function RoundTable({ liveInfo }: Props) {
   const getTeam = (teamNumber: string) =>
     teamNumber === '1' ? liveInfo.team1_Name : liveInfo.team2_Name;
   return (
-    <table className="table text-secondary-content mt-2 bg-secondary shadow-sm shadow-primary">
+    <table className="table text-secondary-content mt-2 bg-secondary border-1 border-accent">
       <thead>
         <tr>
           <th />

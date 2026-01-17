@@ -49,8 +49,12 @@ export const api = {
     postJSON<MatchesJoined>(`${matches}`, body),
   getMatches: () => getJSON<Array<LiveMatch>>(`${matches}`),
   getMatch: (matchId: number) => getJSON<LiveMatch>(`${matches}/${matchId}`),
-  postMatchStart: (matchId: number) =>
-    postJSON<LiveMatch>(`${matches}/${matchId}/start`, {}),
+  postMatchStart: (matchId: number, server: string, token: string) =>
+    postJSON<LiveMatch>(
+      `${matches}/${matchId}/start`,
+      { address: server },
+      toBearerRequestInit(token)
+    ),
   getMatchServer: (matchId: number) =>
     getJSON<ConnectedLiveServer>(`${matches}/${matchId}/server`),
   postMatchServer: (matchId: number, address: string, force: boolean) =>
@@ -86,8 +90,16 @@ export const api = {
     postJSON(`${servers}/${address}/maps`, { map }, toBearerRequestInit(token)),
   deleteServer: (address: string, token: string) =>
     deleteJSON(`${servers}/${address}`, toBearerRequestInit(token)),
-  postServerRestart: (address: string, body: PostRestartServerRequestBody) =>
-    postWithApiKeyJSON<PostServerExecResponseBody>(`${servers}/${address}/restart`, body),
+  postServerRestart: (
+    address: string,
+    body: PostRestartServerRequestBody,
+    token: string
+  ) =>
+    postJSON<PostServerExecResponseBody>(
+      `${servers}/${address}/restart`,
+      body,
+      toBearerRequestInit(token)
+    ),
   adminReset: () => postWithApiKeyJSON(`${admin}/reset`, {}),
   adminResetEngine: () => postWithApiKeyJSON(`${admin}/reset/engine`, {}),
   adminResetServers: () => postWithApiKeyJSON(`${admin}/reset/servers`, {}),

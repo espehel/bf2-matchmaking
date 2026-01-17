@@ -38,9 +38,12 @@ async function getServerName(address: string) {
 }
 
 export async function getLiveServer(address: string): Promise<LiveServer | null> {
+  const values = await getServer(address);
+  if (!values) {
+    return null;
+  }
   try {
     const data = await getServerDataSafe(address);
-    const values = await getServer(address);
     const live = await getServerLiveInfo(address);
     const name = await getServerName(address);
 

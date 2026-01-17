@@ -14,7 +14,7 @@ export default function MatchCard({ match }: Props) {
       : `: ${match.home_team.name} vs. ${match.away_team.name}`;
 
   return (
-    <section className="px-8 border-2 border-primary rounded bg-base-100">
+    <section className="px-8 border border-base-300 rounded-lg bg-base-200 shadow-sm card-interactive">
       <h3 className="mt-3 text-left font-bold text-lg text-accent">{`${match.config.type}${teamText}`}</h3>
       <div className="divider divider-vertical m-0" />
       <div className="flex items-center gap-8">
@@ -39,3 +39,4 @@ export default function MatchCard({ match }: Props) {
     </section>
   );
 }
+

@@ -5,7 +5,7 @@ import { isConnectedLiveServer, isNotNull } from '@bf2-matchmaking/types/guards'
 import { MatchStatus } from '@bf2-matchmaking/types/supabase';
 import { info } from '@bf2-matchmaking/logging';
 import { getLiveServer, getLiveServerByMatchId } from '../servers/server-service';
-import { createPendingMatch, getMatch } from './match-service';
+import { createPendingMatch, getLiveMatch, verifyServer } from './match-service';
 import { Context } from 'koa';
 import { matchKeys } from '@bf2-matchmaking/redis/generic';
 import { Server } from '@bf2-matchmaking/services/server/Server';
@@ -16,6 +16,7 @@ import {
 } from '@bf2-matchmaking/services/schemas/matches.ts';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { matchApi, matchService } from '../lib/match';
+import { protect } from '../auth.ts';
 
 export const matchesRouter = new Router({
   prefix: '/matches',
@@ -64,7 +65,7 @@ matchesRouter.post('/:matchid/results', async (ctx: Context): Promise<void> => {
 matchesRouter.post('/:matchid/server', async (ctx: Context): Promise<void> => {
   const force = `${ctx.query.force}`.toLowerCase() === 'true';
 
-  const match = await getMatch(ctx.params.matchid);
+  const match = await getLiveMatch(ctx.params.matchid);
   ctx.assert(match, 404, 'Live match not found.');
 
   const liveServer = await getLiveServer(ctx.request.body.address);
@@ -93,8 +94,9 @@ matchesRouter.post('/:matchid/server', async (ctx: Context): Promise<void> => {
   ctx.status = 200;
 });
 
-matchesRouter.post('/:matchid/start', async (ctx: Context) => {
+matchesRouter.post('/:matchid/start', protect('user'), async (ctx: Context) => {
   const { matchid } = ctx.params;
+  const { address } = ctx.request.body;
   const { data } = await client().getMatch(parseInt(matchid));
   ctx.assert(data, 404, 'Match does not exist.');
 
@@ -106,8 +108,15 @@ matchesRouter.post('/:matchid/start', async (ctx: Context) => {
   }
 
   await createPendingMatch(data);
+  const server = await verifyServer(address);
+  ctx.assert(server, 400, 'Failed to get server data');
+
+  await Server.setMatch(address, matchid);
+
+  matchApi.log(matchid, `Started on ${address} by ${ctx.request.user?.nick || 'system'}`);
+
   ctx.status = 201;
-  ctx.body = await getMatch(matchid);
+  ctx.body = await getLiveMatch(matchid);
 });
 
 matchesRouter.get('/:matchid/server', async (ctx: Context) => {
@@ -122,14 +131,14 @@ matchesRouter.get('/:matchid/server', async (ctx: Context) => {
 });
 
 matchesRouter.get('/:matchid', async (ctx: Context) => {
-  const match = await getMatch(ctx.params.matchid);
+  const match = await getLiveMatch(ctx.params.matchid);
   ctx.assert(match, 404, 'Live match not found.');
   ctx.body = match;
 });
 
 matchesRouter.get('/', async (ctx) => {
   const keys = await matchKeys('matches:live:*');
-  ctx.body = keys.map(getMatch).filter(isNotNull);
+  ctx.body = keys.map(getLiveMatch).filter(isNotNull);
 });
 
 matchesRouter.post('/', async (ctx: Context) => {

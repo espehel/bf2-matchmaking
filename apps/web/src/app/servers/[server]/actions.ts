@@ -9,15 +9,17 @@ import {
 } from '@bf2-matchmaking/types';
 import { revalidatePath } from 'next/cache';
 import { hasError } from '@bf2-matchmaking/supabase';
-import { api, assertObj } from '@bf2-matchmaking/utils';
+import { api as oldApi, assertObj } from '@bf2-matchmaking/utils';
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { createToken } from '@bf2-matchmaking/auth/token';
+import { api } from '@bf2-matchmaking/services/api';
+import { getPlayerToken } from '@/lib/token';
 
 export async function pauseRound(address: string) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  const result = await api.v2.postServerPause(address, createToken(player));
+  const result = await oldApi.v2.postServerPause(address, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/servers/${address}`);
@@ -30,7 +32,7 @@ export async function unpauseRound(address: string) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  const result = await api.v2.postServerUnpause(address, createToken(player));
+  const result = await oldApi.v2.postServerUnpause(address, createToken(player));
 
   if (!result.error) {
     revalidatePath(`/servers/${address}`);
@@ -42,7 +44,7 @@ export async function restartRound(address: string) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  const result = await api.v2.postServerExec(
+  const result = await oldApi.v2.postServerExec(
     address,
     { cmd: 'admin.restartMap' },
     createToken(player)
@@ -56,7 +58,12 @@ export async function restartRound(address: string) {
 }
 
 export async function restartServerInfantry(ip: string) {
-  const result = await api.v2.postServerRestart(ip, { mode: 'infantry', admins: 'all' });
+  const token = await getPlayerToken();
+  const result = await api.postServerRestart(
+    ip,
+    { mode: 'infantry', admins: 'all' },
+    token
+  );
   if (!result.error) {
     revalidatePath(`/servers/${ip}`);
   }
@@ -64,7 +71,12 @@ export async function restartServerInfantry(ip: string) {
 }
 
 export async function restartServerVehicles(ip: string) {
-  const result = await api.v2.postServerRestart(ip, { mode: 'vehicles', admins: 'all' });
+  const token = await getPlayerToken();
+  const result = await api.postServerRestart(
+    ip,
+    { mode: 'vehicles', admins: 'all' },
+    token
+  );
   if (!result.error) {
     revalidatePath(`/servers/${ip}`);
   }
@@ -124,7 +136,7 @@ export async function deleteServer(address: string) {
   const cookieStore = await cookies();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   assertObj(player, 'Player not found');
-  const result = await api.v2.deleteServer(address, createToken(player));
+  const result = await oldApi.v2.deleteServer(address, createToken(player));
 
   if (result.error) {
     logErrorMessage(`Server ${address}: Failed to delete`, result.error);

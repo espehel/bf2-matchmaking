@@ -33,7 +33,7 @@ export default function AddPlayerForm({ teamId, matchId, config, label }: Props)
   );
 
   return (
-    <form action={handleFormAction} className=" flex flex-col">
+    <form action={handleFormAction} className="flex flex-col w-full">
       <div className="flex items-center gap-2">
         <PlayerCombobox
           placeholder={label || 'Empty slot'}

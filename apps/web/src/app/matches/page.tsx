@@ -1,18 +1,14 @@
-import LiveMatchesList from '@/components/LiveMatchesList';
-import PendingMatchesList from '@/components/PendingMatchesList';
 import { Suspense } from 'react';
 import LoadingSection from '@/components/commons/LoadingSection';
-import ScheduledMatchesList from '@/components/matches/ScheduledMatchesList';
+import ScheduleMatchForm from '@/components/matches/ScheduleMatchForm';
 
 export default async function MatchesPage() {
   return (
-    <main className="main">
-      <h1 className="mb-8">Matches</h1>
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold mb-6">Create Match</h1>
       <Suspense fallback={<LoadingSection />}>
-        <ScheduledMatchesList />
-        <LiveMatchesList />
-        <PendingMatchesList />
+        <ScheduleMatchForm />
       </Suspense>
-    </main>
+    </div>
   );
 }
