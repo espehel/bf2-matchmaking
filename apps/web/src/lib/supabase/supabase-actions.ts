@@ -1,7 +1,12 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseApi, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { MatchesJoined } from '@bf2-matchmaking/types';
-import { hasPlayer, isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
+import {
+  hasPlayer,
+  isCaptain,
+  isTeamCaptain,
+  matchTeamsHasPlayer,
+} from '@bf2-matchmaking/utils';
 
 export function getActions(client: SupabaseClient) {
   const api = getSupabaseApi(client);
@@ -47,6 +52,9 @@ export function getActions(client: SupabaseClient) {
     const { data: player } = await getSessionPlayer();
     if (!player) {
       return false;
+    }
+    if (matchTeamsHasPlayer(match, player.id)) {
+      return true;
     }
     return hasPlayer(player.id)(match);
   }
