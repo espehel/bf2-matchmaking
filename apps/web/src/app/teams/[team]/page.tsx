@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import LoadingSection from '@/components/commons/LoadingSection';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/16/solid';
-import Main from '@/components/commons/Main';
+import MainOld from '@/components/commons/MainOld';
 
 interface Props {
   params: Promise<{ team: string }>;
@@ -30,7 +30,7 @@ export default async function TeamPage(props: Props) {
   const edit = isTeamOfficer && searchParams.edit === 'true';
 
   return (
-    <Main
+    <MainOld
       title={`Team ${team.name}`}
       relevantRoles={['player_admin']}
       breadcrumbs={[{ label: 'Teams', href: '/teams' }, { label: team.name }]}
@@ -66,6 +66,6 @@ export default async function TeamPage(props: Props) {
           )}
         </Suspense>
       </div>
-    </Main>
+    </MainOld>
   );
 }

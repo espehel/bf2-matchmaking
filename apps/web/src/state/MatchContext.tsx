@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useMemo, ReactNode } from 'react';
-import { MatchesJoined, MatchServers, ServersRow } from '@bf2-matchmaking/types';
+import { MatchesJoined, ServersRow } from '@bf2-matchmaking/types';
 import { assertObj, isCaptain, isTeamCaptain } from '@bf2-matchmaking/utils';
 import { usePlayer } from '@/state/PlayerContext';
 import { useMatchRoom } from '@/state/realtime-hooks';

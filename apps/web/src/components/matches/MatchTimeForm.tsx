@@ -30,7 +30,7 @@ export default async function MatchTimeForm({ match, eventMatch }: Props) {
 
   if (!eventMatch) {
     return (
-      <div className="flex gap-2 items-center text-gray font-bold mb-2">
+      <div className="flex gap-2 items-center text-gray font-bold">
         <Time date={match.scheduled_at} format="HH:mm - EEEE, MMMM d" />
         <ActionFormModal
           title="Change time"
@@ -55,7 +55,7 @@ export default async function MatchTimeForm({ match, eventMatch }: Props) {
 
   return (
     <>
-      <div className="text-gray font-bold mb-2">
+      <div className="text-gray font-bold">
         <Time date={match.scheduled_at} format="HH:mm - EEEE, MMMM d" />
         <Badge home={eventMatch.home_accepted} away={eventMatch.away_accepted} />
       </div>

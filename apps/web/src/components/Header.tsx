@@ -2,13 +2,13 @@ import Link from 'next/link';
 import AuthButton from '@/components/AuthButton';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
-import { isDevelopment } from '@bf2-matchmaking/utils';
 
 export default async function Header() {
   const cookieStore = await cookies();
   const { data } = await supabase(cookieStore).auth.getUser();
   const { data: player } = await supabase(cookieStore).getSessionPlayer();
   const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
+
   return (
     <header className="navbar bg-primary text-primary-content h-header">
       <div className="navbar-start">
@@ -16,13 +16,13 @@ export default async function Header() {
           BF2 Matchmaking
         </Link>
       </div>
-      <div className="navbar-end gap-4">
-        {isDevelopment() && (<Link href="/challenges">Challenges</Link>)}
-        {isDevelopment() && (<Link href="/events">Events</Link>)}
+      <div className="navbar-center gap-4">
+        <Link href="/challenges">Challenges</Link>
         <Link href="/matches">Matches</Link>
-        <Link href="/results">Results</Link>
-        <Link href="/teams">Teams</Link>
         <Link href="/servers">Servers</Link>
+        <Link href="/teams">Teams</Link>
+      </div>
+      <div className="navbar-end gap-4">
         {adminRoles?.system_admin && <Link href="/admin">Admin</Link>}
         {player && <Link href={`/players/${player.id}`}>{player.nick}</Link>}
         <AuthButton className="btn btn-accent" user={data.user} />

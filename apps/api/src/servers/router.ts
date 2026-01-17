@@ -72,7 +72,7 @@ serversRouter.get('/:address/log', async (ctx: Context) => {
   ctx.body = streamMessages.map(({ message }) => message);
 });
 
-serversRouter.post('/:ip/restart', protect('server_admin'), async (ctx: Context) => {
+serversRouter.post('/:ip/restart', protect('user'), async (ctx: Context) => {
   const { mode, mapName, serverName, admins, pubobotMatchId } = ctx.request
     .body as PostRestartServerRequestBody;
 

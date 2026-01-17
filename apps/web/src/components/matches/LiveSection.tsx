@@ -1,6 +1,6 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import RoundTable from '@/components/RoundTable';
-import { api, assertObj } from '@bf2-matchmaking/utils';
+import { api as internalApi, assertObj } from '@bf2-matchmaking/utils';
 import ActionButton from '@/components/ActionButton';
 import { revalidatePath } from 'next/cache';
 import { supabase } from '@/lib/supabase/supabase-server';
@@ -10,7 +10,7 @@ interface Props {
   match: MatchesJoined;
 }
 export default async function LiveSection({ match }: Props) {
-  const { data: liveMatch } = await api.v2.getMatch(match.id);
+  const { data: liveMatch } = await internalApi.v2.getMatch(match.id);
   const cookieStore = await cookies();
   const { data: matchServer } = await supabase(cookieStore).getMatchServers(match.id);
   const isMatchOfficer = await supabase(cookieStore).isMatchOfficer(match);
@@ -22,19 +22,10 @@ export default async function LiveSection({ match }: Props) {
     return null;
   }
 
-  async function startLiveMatch() {
-    'use server';
-    const result = await api.v2.postMatchStart(match.id);
-    if (result.data) {
-      revalidatePath(`/matches/${match.id}`);
-    }
-    return result;
-  }
-
   async function setLiveMatchServer() {
     'use server';
     assertObj(server);
-    const result = await api.v2.postMatchServer(match.id, server?.ip, true);
+    const result = await internalApi.v2.postMatchServer(match.id, server?.ip, true);
     if (result.data) {
       revalidatePath(`/matches/${match.id}`);
     }
@@ -55,16 +46,6 @@ export default async function LiveSection({ match }: Props) {
       )}
       {
         <div className="flex gap-2">
-          {!liveMatch && isMatchOfficer && (
-            <ActionButton
-              formAction={startLiveMatch}
-              successMessage="Live match started"
-              errorMessage="Failed to start live match"
-              kind="btn-primary"
-            >
-              Start live match
-            </ActionButton>
-          )}
           {server && server.name != liveMatch?.server?.data?.name && isMatchOfficer && (
             <ActionButton
               formAction={setLiveMatchServer}

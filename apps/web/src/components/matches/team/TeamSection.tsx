@@ -60,7 +60,7 @@ export default async function TeamSection({ match, team }: Props) {
           />
         </li>
       </ul>
-      {<TeamPlayersList match={match} team={team} />}
+      <TeamPlayersList match={match} team={team} />
     </section>
   );
 }

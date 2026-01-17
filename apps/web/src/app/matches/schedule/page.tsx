@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import CreateMatchFromDiscordForm from '@/components/matches/schedule/CreateMatchFromDiscordForm';
-import CreateMatchForm from '@/components/matches/schedule/CreateMatchForm';
 
 type SearchParam = string | undefined;
 
@@ -16,9 +15,6 @@ export default async function ScheduleMatchPage({ searchParams }: Props) {
       <section className="section">
         <ul className="list">
           <li>
-            <Suspense fallback={null}>
-              <CreateMatchForm />
-            </Suspense>
             <Suspense fallback={null}>
               <CreateMatchFromDiscordForm
                 defaultMaps={toMapIds(maps)}

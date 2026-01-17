@@ -61,3 +61,63 @@
 .ReactCollapse--collapse {
   transition: height 300ms;
 }
+
+/* Smooth animation utilities */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+@utility animate-slide-up {
+  animation: slide-up 0.4s ease-out both;
+}
+
+@utility animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@utility transition-smooth {
+  @apply transition-all duration-200 ease-out;
+}
+
+@utility hover-lift {
+  @apply transition-smooth;
+  &:hover {
+    @apply -translate-y-0.5 shadow-lg;
+  }
+}
+
+@utility card-interactive {
+  @apply transition-smooth;
+  &:hover {
+    @apply -translate-y-1 shadow-xl border-accent;
+  }
+}

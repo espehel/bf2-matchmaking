@@ -87,6 +87,9 @@ export const Server = {
   update: (address: string, server: Partial<RedisServer>) => {
     return hash(`servers:${address}`).set(server);
   },
+  get(address: string) {
+    return getServer(address);
+  },
   getData: (address: string) => {
     return getServerData(address);
   },
@@ -111,7 +114,7 @@ export const Server = {
           'skascz.bf2.top',
         ].map(async (address) => {
           const server = await getServer(address);
-          return server.status === ServerStatus.IDLE ? address : null;
+          return server?.status === ServerStatus.IDLE ? address : null;
         })
       )
     ).filter(isNotNull);

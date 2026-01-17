@@ -223,7 +223,7 @@ class MatchUpdater {
     info('createMatchServers', `Creating match servers`);
     return matches(this.#dbClient)
       .servers.add(this.#matchId, ...this.#servers.map((server) => ({ server })))
-      .then(verifyResult);
+      .then(verifySingleResult);
   }
   async #createMatchDraft() {
     if (!this.#draft) {

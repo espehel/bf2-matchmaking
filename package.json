@@ -30,5 +30,6 @@
     "supazod": "^2.0.0",
     "turbo": "^2.0.6"
   },
-  "packageManager": "npm@10.2.3"
+  "packageManager": "npm@10.2.3",
+  "browserslist": "> 1%"
 }

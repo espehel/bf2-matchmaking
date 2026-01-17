@@ -1,6 +1,6 @@
 import { session } from '@/lib/supabase/supabase-server';
 import SignInButton from '@/components/gather/register/SignInButton';
-import Main from '@/components/commons/Main';
+import MainOld from '@/components/commons/MainOld';
 import ActionForm from '@/components/commons/action/ActionForm';
 import InputField from '@/components/form/fields/InputField';
 import SubmitActionFormButton from '@/components/commons/action/SubmitActionFormButton';
@@ -23,13 +23,13 @@ export default async function GatherRegisterPage(props: Props) {
 
   if (!player) {
     return (
-      <Main title="You must be logged in to register">
+      <MainOld title="You must be logged in to register">
         <SignInButton />
-      </Main>
+      </MainOld>
     );
   }
   return (
-    <Main title="Register for Gather">
+    <MainOld title="Register for Gather">
       <section className="section mb-4">
         <h2>Register keyhash</h2>
         <ActionForm
@@ -73,6 +73,6 @@ export default async function GatherRegisterPage(props: Props) {
           </div>
         )}
       </section>
-    </Main>
+    </MainOld>
   );
 }

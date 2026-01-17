@@ -1,4 +1,4 @@
-import Main from '@/components/commons/Main';
+import MainOld from '@/components/commons/MainOld';
 import { ReactNode } from 'react';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { verifySingleResult } from '@bf2-matchmaking/supabase';
@@ -19,13 +19,13 @@ export default async function EventLayout(props: Props) {
 
   const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
   return (
-    <Main
+    <MainOld
       title={event.name}
       breadcrumbs={[{ href: '/events', label: 'Events' }, { label: event.name }]}
       relevantRoles={['match_admin']}
     >
       <EventNav event={params.event} isAdmin={adminRoles?.match_admin || false} />
       {props.children}
-    </Main>
+    </MainOld>
   );
 }

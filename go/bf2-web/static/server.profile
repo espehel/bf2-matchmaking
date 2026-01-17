@@ -1,0 +1,414 @@
+<?xml version="1.0" standalone="yes"?>
+<Profile>
+  <ServerInfo>
+    <ServerInfoID>1</ServerInfoID>
+    <GameIP>0.0.0.0</GameIP>
+    <GamePort>16567</GamePort>
+    <GamespyPort>29900</GamespyPort>
+    <RCONIP>0.0.0.0</RCONIP>
+    <RCONPort>4711</RCONPort>
+    <IsInternet>true</IsInternet>
+    <AllowNATNegotiate>false</AllowNATNegotiate>
+    <PunkbusterEnabled>false</PunkbusterEnabled>
+    <RCONPassword>super123</RCONPassword>
+  </ServerInfo>
+  <GameInfo>
+    <GameInfoID>1</GameInfoID>
+    <ServerName>BF2.top server</ServerName>
+    <ServerPassword>2025</ServerPassword>
+    <AllowFreeCam>true</AllowFreeCam>
+    <AllowExternalViews>true</AllowExternalViews>
+    <AllowNoseCam>true</AllowNoseCam>
+    <ShowHitIndicator>true</ShowHitIndicator>
+    <DeathCamType>0</DeathCamType>
+    <MaxPlayers>20</MaxPlayers>
+    <PlayersToStart>1</PlayersToStart>
+    <StartDelay>30</StartDelay>
+    <EndDelay>15</EndDelay>
+    <SpawnTime>15</SpawnTime>
+    <ManDownTime>15</ManDownTime>
+    <TicketRatio>200</TicketRatio>
+    <RoundsPerMap>99</RoundsPerMap>
+    <TimeLimit>20</TimeLimit>
+    <ScoreLimit>0</ScoreLimit>
+    <SoldierFF>100</SoldierFF>
+    <VehicleFF>100</VehicleFF>
+    <SoldierFFSplash>100</SoldierFFSplash>
+    <VehicleFFSplash>100</VehicleFFSplash>
+    <TKPunishEnabled>false</TKPunishEnabled>
+    <TKsToKick>3</TKsToKick>
+    <TKPunishByDefault>false</TKPunishByDefault>
+    <VotingEnabled>false</VotingEnabled>
+    <VoteTime>90</VoteTime>
+    <MinPlayersVote>2</MinPlayersVote>
+    <RestartMapDelay>30</RestartMapDelay>
+    <AutoBalanceEnabled>false</AutoBalanceEnabled>
+    <TeamRatioPercent>100</TeamRatioPercent>
+    <AutoRecordDemo>true</AutoRecordDemo>
+    <DemoIndexURL>http://127.0.0.1/demos/</DemoIndexURL>
+    <DemoDownloadURL>http://127.0.0.1/demos/</DemoDownloadURL>
+    <AutoDemoHook>adminutils/demo/rotate_demo.py</AutoDemoHook>
+    <AdminScript>modmanager</AdminScript>
+    <SponsorText />
+    <SponsorLogoURL />
+    <WelcomeMessage />
+    <BandwidthChoke>0</BandwidthChoke>
+    <EndOfRoundDelay>15</EndOfRoundDelay>
+    <CommunityLogoURL />
+    <NotEnoughPlayersRestartDelay>15</NotEnoughPlayersRestartDelay>
+    <UseGlobalRank>false</UseGlobalRank>
+    <UseGlobalUnlocks>false</UseGlobalUnlocks>
+    <RadioSpamInterval>6</RadioSpamInterval>
+    <RadioMaxSpamFlagCount>6</RadioMaxSpamFlagCount>
+    <RadioBlockedDurationTime>30</RadioBlockedDurationTime>
+    <DemoQuality>3</DemoQuality>
+    <Ranked>false</Ranked>
+    <ReservedSlots>0</ReservedSlots>
+    <Mod>bf2</Mod>
+    <MinesFF>0</MinesFF>
+    <ShowTKPunishAnnouncements>2</ShowTKPunishAnnouncements>
+    <CustomCommands />
+    <CoopBotCount>16</CoopBotCount>
+    <CoopBotRatio>50</CoopBotRatio>
+    <CoopBotDifficulty>50</CoopBotDifficulty>
+    <VotingEnableTeamOnly>false</VotingEnableTeamOnly>
+    <InfantryOnly>true</InfantryOnly>
+  </GameInfo>
+  <RunningMaps>
+    <RunningMapID>18</RunningMapID>
+    <Order>17</Order>
+    <MapName>Strike At Karkand</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>15</RunningMapID>
+    <Order>14</Order>
+    <MapName>Road To Jalalabad</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>8</RunningMapID>
+    <Order>7</Order>
+    <MapName>Mashtuur City</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>5</RunningMapID>
+    <Order>4</Order>
+    <MapName>Gulf Of Oman</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>16</RunningMapID>
+    <Order>15</Order>
+    <MapName>Sharqi Peninsula</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>3</RunningMapID>
+    <Order>3</Order>
+    <MapName>Fushe Pass</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>2</RunningMapID>
+    <Order>2</Order>
+    <MapName>Dragon Valley</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>1</RunningMapID>
+    <Order>1</Order>
+    <MapName>Daqing Oilfields</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>0</RunningMapID>
+    <Order>0</Order>
+    <MapName>Dalian Plant</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>7</RunningMapID>
+    <Order>6</Order>
+    <MapName>Kubra Dam</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>10</RunningMapID>
+    <Order>9</Order>
+    <MapName>Operation Blue Pearl</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>9</RunningMapID>
+    <Order>8</Order>
+    <MapName>Midnight Sun</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>6</RunningMapID>
+    <Order>5</Order>
+    <MapName>Highway Tampa</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>11</RunningMapID>
+    <Order>10</Order>
+    <MapName>Operation Clean Sweep</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>12</RunningMapID>
+    <Order>11</Order>
+    <MapName>Operation Harvest</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>13</RunningMapID>
+    <Order>12</Order>
+    <MapName>Operation Road Rage</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>14</RunningMapID>
+    <Order>13</Order>
+    <MapName>Operation Smoke Screen</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>17</RunningMapID>
+    <Order>16</Order>
+    <MapName>Songhua Stalemate</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>19</RunningMapID>
+    <Order>18</Order>
+    <MapName>Taraba Quarry</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>20</RunningMapID>
+    <Order>19</Order>
+    <MapName>Wake Island 2007</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>21</RunningMapID>
+    <Order>20</Order>
+    <MapName>Zatar Wetlands</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>4</RunningMapID>
+    <Order>21</Order>
+    <MapName>Great Wall</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>21</RunningMapID>
+    <Order>21</Order>
+    <MapName>Great Wall</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>22</RunningMapID>
+    <Order>22</Order>
+    <MapName>Twl Inf East Side</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>23</RunningMapID>
+    <Order>23</Order>
+    <MapName>Karkandfu</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>24</RunningMapID>
+    <Order>24</Order>
+    <MapName>Jungle Stream</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>25</RunningMapID>
+    <Order>25</Order>
+    <MapName>Hue</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>26</RunningMapID>
+    <Order>26</Order>
+    <MapName>Goods Station</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>27</RunningMapID>
+    <Order>27</Order>
+    <MapName>Frostbite Night</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>28</RunningMapID>
+    <Order>28</Order>
+    <MapName>Dines City</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>29</RunningMapID>
+    <Order>29</Order>
+    <MapName>City Park</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>30</RunningMapID>
+    <Order>30</Order>
+    <MapName>Sharqi West</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>31</RunningMapID>
+    <Order>31</Order>
+    <MapName>City Of The Dead</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>32</RunningMapID>
+    <Order>32</Order>
+    <MapName>Basrah Streets</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>33</RunningMapID>
+    <Order>33</Order>
+    <MapName>Aces High</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>34</RunningMapID>
+    <Order>34</Order>
+    <MapName>Anctoville 1944</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>35</RunningMapID>
+    <Order>35</Order>
+    <MapName>De Dust2</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>36</RunningMapID>
+    <Order>36</Order>
+    <MapName>Olesko Keep</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>37</RunningMapID>
+    <Order>37</Order>
+    <MapName>Jungle City</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>38</RunningMapID>
+    <Order>38</Order>
+    <MapName>Opk Code Bravo</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>39</RunningMapID>
+    <Order>39</Order>
+    <MapName>Opk Village</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>40</RunningMapID>
+    <Order>40</Order>
+    <MapName>The Battle For Sfakia</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <RunningMaps>
+    <RunningMapID>41</RunningMapID>
+    <Order>41</Order>
+    <MapName>Tunis 1943</MapName>
+    <GameMode>gpm_cq</GameMode>
+    <MaxPlayers>16</MaxPlayers>
+  </RunningMaps>
+  <VOIPInfo>
+    <VOIPInfoID>1</VOIPInfoID>
+    <IsRemote>false</IsRemote>
+    <ServerRemoteIP />
+    <ServerPort>55125</ServerPort>
+    <BFClientPort>55123</BFClientPort>
+    <BFServerPort>55124</BFServerPort>
+    <SharedPassword />
+    <Quality>3</Quality>
+    <IsEnabled>true</IsEnabled>
+  </VOIPInfo>
+  <ScoreInfo>
+    <ScoreInfoID>1</ScoreInfoID>
+    <Death>0</Death>
+    <Kill>2</Kill>
+    <AssistKill>1</AssistKill>
+    <InDirectKill>1</InDirectKill>
+    <Tk>-4</Tk>
+    <Heal>1</Heal>
+    <SoldierRevive>2</SoldierRevive>
+    <Repair>1</Repair>
+    <VehicleRevive>2</VehicleRevive>
+    <Ammo>1</Ammo>
+    <FlagCapture>5</FlagCapture>
+    <FlagReturn>2</FlagReturn>
+    <ControlPointCapture>4</ControlPointCapture>
+    <Objective>5</Objective>
+    <DriverPassenger>1</DriverPassenger>
+    <TeamDamage>-1</TeamDamage>
+    <TeamVehicleDamage>-2</TeamVehicleDamage>
+    <HealScoreLimit>100</HealScoreLimit>
+    <RepairScoreLimit>100</RepairScoreLimit>
+    <AmmoScoreLimit>100</AmmoScoreLimit>
+    <TeamDamageLimit>50</TeamDamageLimit>
+    <TeamVehicleDamageLimit>25</TeamVehicleDamageLimit>
+  </ScoreInfo>
+</Profile>

@@ -4,7 +4,7 @@ import { set } from '../core/set';
 import { assertString, isUniqueString } from '@bf2-matchmaking/utils';
 import { json } from '../core/json';
 import { Server, ServerData } from '../types';
-import { serverDataSchema } from '../schemas';
+import { serverDataSchema, serverSchema } from '../schemas';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 
 export async function getAllServers() {
@@ -80,7 +80,10 @@ export async function setServer(address: string, server: Partial<Server>) {
   return hash(`servers:${address}`).set(server);
 }
 export async function getServer(address: string) {
-  return hash<Server>(`servers:${address}`).getAll();
+  const result = await hash<Server>(`servers:${address}`)
+    .getAll()
+    .then(serverSchema.safeParse);
+  return result.data || null;
 }
 
 export async function addServer(address: string, status: ServerStatus) {

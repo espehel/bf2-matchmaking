@@ -50,7 +50,7 @@ export async function updateLiveServer(
   const now = DateTime.now().toISO();
 
   const server = await getServer(address);
-  if (server.status === ServerStatus.RESTARTING) {
+  if (server?.status === ServerStatus.RESTARTING) {
     return null;
   }
   try {
@@ -59,11 +59,12 @@ export async function updateLiveServer(
     await Server.update(address, {
       errorAt: undefined,
       updatedAt: now,
-      status: server.status === ServerStatus.OFFLINE ? ServerStatus.IDLE : server.status,
+      status:
+        server?.status === ServerStatus.OFFLINE ? ServerStatus.IDLE : server?.status,
     });
     return live;
   } catch (e) {
-    if (!server.errorAt) {
+    if (!server?.errorAt) {
       await Server.setError(address, e);
       return null;
     }
@@ -126,10 +127,10 @@ export async function resetServers() {
     let idleServers = 0;
 
     for (const server of servers) {
-      const { status } = await Server.init(server);
-      if (status === ServerStatus.IDLE) {
+      const newServer = await Server.init(server);
+      if (newServer?.status === ServerStatus.IDLE) {
         idleServers++;
-      } else if (status === ServerStatus.OFFLINE) {
+      } else if (newServer?.status === ServerStatus.OFFLINE) {
         offlineServers++;
       }
     }
@@ -152,7 +153,7 @@ export async function resetServers() {
 export async function reinitServer(address: string) {
   info('reinitServer', `Reinitializing server ${address}`);
   const server = await getServer(address);
-  if (server.status !== ServerStatus.RESTARTING) {
+  if (server?.status !== ServerStatus.RESTARTING) {
     logWarnMessage(`Server ${address}: status is not RESTARTING, cannot reinitialize`, {
       server,
     });

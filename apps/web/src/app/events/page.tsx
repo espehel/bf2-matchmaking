@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import Link from 'next/link';
-import Main from '@/components/commons/Main';
+import MainOld from '@/components/commons/MainOld';
 import CreateEventModal from '@/components/events/CreateEventModal';
 import { ArrowRightIcon } from '@heroicons/react/16/solid';
 
@@ -11,7 +11,7 @@ export default async function LeaguesPage() {
   const cookieStore = await cookies();
   const events = await supabase(cookieStore).getEvents().then(verifySingleResult);
   return (
-    <Main title="Events" relevantRoles={['match_admin']}>
+    <MainOld title="Events" relevantRoles={['match_admin']}>
       <div className="max-w-3xl">
         <CreateEventModal />
         <ul className="menu menu-lg gap-4">
@@ -25,6 +25,6 @@ export default async function LeaguesPage() {
           ))}
         </ul>
       </div>
-    </Main>
+    </MainOld>
   );
 }
