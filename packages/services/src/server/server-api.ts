@@ -98,7 +98,6 @@ export const Server = {
     await setServer(address, { status: ServerStatus.ACTIVE, matchId: Number(matchId) });
     await addActiveMatchServer(address, matchId.toString());
     await removeServerWithStatus(address, ServerStatus.IDLE);
-    await client().createMatchServers(Number(matchId), { server: address });
     logServerMessage(address, `Assigned to match ${matchId}`);
   },
   findByMatch: async (matchId: string | number) => {

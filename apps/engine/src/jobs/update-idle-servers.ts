@@ -17,6 +17,7 @@ import { Server } from '@bf2-matchmaking/services/server/Server';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 import { Job } from '@bf2-matchmaking/scheduler';
 import { isActiveMatchServer } from '@bf2-matchmaking/services/server/utils';
+import { client } from '@bf2-matchmaking/supabase';
 
 async function updateIdleServers() {
   verbose('updateIdleServers', 'Updating idle servers');
@@ -72,6 +73,7 @@ async function handleActiveMatchServer(address: string, liveState: LiveInfo) {
     await Server.reset(currentServer);
   }
   await Server.setMatch(address, match.id);
+  await client().createMatchServers(Number(match.id), { server: address });
 }
 
 async function findOngoingMatch(

@@ -6,6 +6,7 @@ import { json } from '../core/json';
 import { Server, ServerData } from '../types';
 import { serverDataSchema, serverSchema } from '../schemas';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
+import { logErrorMessage } from '@bf2-matchmaking/logging';
 
 export async function getAllServers() {
   return (
@@ -83,6 +84,11 @@ export async function getServer(address: string) {
   const result = await hash<Server>(`servers:${address}`)
     .getAll()
     .then(serverSchema.safeParse);
+  if (result.error) {
+    logErrorMessage(`Server ${address}: Failed to parse values`, result.error, {
+      result,
+    });
+  }
   return result.data || null;
 }
 
