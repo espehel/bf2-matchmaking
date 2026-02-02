@@ -19,17 +19,17 @@ export default function TeamPlayersList({ match, team }: Props) {
     [match.teams, team.players]
   );
 
-  if (players.length === 0) {
-    return null;
-  }
-
   const toggleOpenState = useCallback<MouseEventHandler<HTMLDetailsElement>>(
     (event) => {
       event.preventDefault();
       setOpenState(openState === 'open' ? 'closed' : 'open');
     },
-    [openState]
+    [openState, setOpenState]
   );
+
+  if (players.length === 0) {
+    return null;
+  }
 
   return (
     <details

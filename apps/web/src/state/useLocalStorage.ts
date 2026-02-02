@@ -23,10 +23,13 @@ export function useLocalStorage(key: string) {
   }, [key]);
 
   const syncedValue = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const set = useCallback((nextValue: string) => {
-    localStorage.setItem(key, nextValue);
-    emitChange(key);
-  }, []);
+  const set = useCallback(
+    (nextValue: string) => {
+      localStorage.setItem(key, nextValue);
+      emitChange(key);
+    },
+    [key]
+  );
   return [syncedValue, set] as const;
 }
 

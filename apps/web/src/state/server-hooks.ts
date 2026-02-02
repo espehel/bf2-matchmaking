@@ -21,7 +21,7 @@ export function useServerRestart(
       router.refresh();
       setRestarted(true);
     }, 15000);
-    return restartServer(matchId, server?.address || '');
+    return restartServer(server?.address || '');
   }, [matchId, server, router]);
 
   useEffect(() => {
