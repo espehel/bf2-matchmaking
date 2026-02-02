@@ -19,7 +19,13 @@ interface Props {
 
 export default async function MatchTeamsCard({ match }: Props) {
   const cookieStore = await cookies();
-  const isMatchOfficer = await supabase(cookieStore).isMatchOfficer(match);
+  const isMatchPlayer = await supabase(cookieStore).isMatchPlayer(match);
+  const { data: adminRoles } = await supabase(cookieStore).getAdminRoles();
+  const hasAdmin =
+    isMatchPlayer ||
+    adminRoles?.match_admin ||
+    adminRoles?.server_admin ||
+    adminRoles?.system_admin;
 
   return (
     <Card>
@@ -29,7 +35,7 @@ export default async function MatchTeamsCard({ match }: Props) {
         </div>
         <MatchSetup match={match} />
       </div>
-      {isMatchOfficer && (
+      {hasAdmin && (
         <>
           <div className="divider divider-start">Match actions</div>
           <Suspense fallback={null}>
