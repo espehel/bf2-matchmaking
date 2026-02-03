@@ -792,7 +792,7 @@ export type Database = {
           closed_at: string | null
           config: number
           created_at: string
-          events: string[]
+          discord_event: string | null
           home_team: number
           id: number
           live_at: string | null
@@ -806,7 +806,7 @@ export type Database = {
           closed_at?: string | null
           config: number
           created_at?: string
-          events?: string[]
+          discord_event?: string | null
           home_team?: number
           id?: number
           live_at?: string | null
@@ -820,7 +820,7 @@ export type Database = {
           closed_at?: string | null
           config?: number
           created_at?: string
-          events?: string[]
+          discord_event?: string | null
           home_team?: number
           id?: number
           live_at?: string | null

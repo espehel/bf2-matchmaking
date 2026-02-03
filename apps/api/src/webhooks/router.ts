@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import { info } from '@bf2-matchmaking/logging';
-import { handleMatchClosed, handleMatchScheduledAtUpdate } from './match-handler';
+import { handleMatchClosed } from './match-handler';
 import {
   isDiscordConfigsDelete,
   isDiscordConfigsInsert,
@@ -25,9 +25,6 @@ webhooksRouter.post('/matches', async (ctx) => {
 
     if (record.status === MatchStatus.Closed || record.status === MatchStatus.Deleted) {
       await handleMatchClosed(record);
-    }
-    if (old_record.scheduled_at !== record.scheduled_at) {
-      await handleMatchScheduledAtUpdate(record);
     }
 
     ctx.status = 204;

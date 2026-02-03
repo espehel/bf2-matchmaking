@@ -10,7 +10,7 @@ import {
 import ActionButton from '@/components/ActionButton';
 import ActionForm from '@/components/commons/action/ActionForm';
 import SelectField from '@/components/form/fields/SelectField';
-import { matches } from '@/lib/supabase/supabase-server';
+import { matches, session, supabase } from '@/lib/supabase/supabase-server';
 import SubmitActionFormButton from '@/components/commons/action/SubmitActionFormButton';
 
 interface Props {
@@ -18,10 +18,15 @@ interface Props {
 }
 
 export default async function MatchActions({ match }: Props) {
+  const { data: adminRoles } = await session.getAdminRoles();
+
   const isScheduled = match.status === MatchStatus.Scheduled;
   const isOngoing = match.status === MatchStatus.Ongoing;
   const isFinished = match.status === MatchStatus.Finished;
   const isClosed = match.status === MatchStatus.Closed;
+  const isDeleted = match.status === MatchStatus.Deleted;
+
+  const isMatchAdmin = adminRoles?.match_admin || adminRoles?.system_admin || false;
 
   async function deleteMatchSA() {
     'use server';
@@ -48,9 +53,9 @@ export default async function MatchActions({ match }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {isScheduled && (
-        <>
-          <StartMatchForm match={match} />
+      {isScheduled && <StartMatchForm match={match} />}
+      {isScheduled ||
+        (isMatchAdmin && !isDeleted && (
           <ActionButton
             formAction={deleteMatchSA}
             successMessage="Match deleted."
@@ -59,8 +64,7 @@ export default async function MatchActions({ match }: Props) {
           >
             Delete match
           </ActionButton>
-        </>
-      )}
+        ))}
       {isOngoing && (
         <ActionButton
           formAction={finishMatchSA}

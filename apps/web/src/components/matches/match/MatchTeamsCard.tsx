@@ -3,15 +3,20 @@ import MatchActions from '@/components/matches/MatchActions';
 import Link from 'next/link';
 import TeamSection from '@/components/matches/team/TeamSection';
 import React, { Suspense } from 'react';
-import { matches, supabase } from '@/lib/supabase/supabase-server';
+import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import SummoningSection from '@/components/matches/SummoningSection';
 import { ArrowRightIcon } from '@heroicons/react/16/solid';
 import MultiSelect from '@/components/form/fields/MultiSelect';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { Option } from '@/lib/types/form';
-import { revalidatePath } from 'next/cache';
 import { Card } from '@/components/commons/card/Card';
+import {
+  addMap,
+  addMatchServer,
+  removeMap,
+  removeMatchServer,
+} from '@/app/matches/[match]/actions';
 
 interface Props {
   match: MatchesJoined;
@@ -100,24 +105,20 @@ async function MatchSetup({ match }: Props) {
   const { data: matchServers } = await supabase(cookieStore).getMatchServers(match.id);
   async function addServerAction(option: Option) {
     'use server';
-    await matches.servers.add(match.id, { server: option[0].toString() });
-    revalidatePath(`matches/${match.id}`);
+    await addMatchServer(match.id, option[0].toString());
   }
   async function removeServerAction(option: Option) {
     'use server';
-    await matches.servers.remove(match.id, option[0].toString());
-    revalidatePath(`matches/${match.id}`);
+    await removeMatchServer(match.id, option[0].toString());
   }
 
   async function addMapAction(option: Option) {
     'use server';
-    await matches.maps.add(match.id, Number(option[0]));
-    revalidatePath(`matches/${match.id}`);
+    await addMap(match.id, Number(option[0]));
   }
   async function removeMapAction(option: Option) {
     'use server';
-    await matches.maps.remove(match.id, Number(option[0]));
-    revalidatePath(`matches/${match.id}`);
+    await removeMap(match.id, Number(option[0]));
   }
 
   return (

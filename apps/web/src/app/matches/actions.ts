@@ -77,7 +77,7 @@ export async function createScheduledMatch(formData: FormData): Promise<ActionRe
 
     if (event) {
       const cookieStore = await cookies();
-      await supabase(cookieStore).updateMatch(match.id, { events: [event.id] });
+      await supabase(cookieStore).updateMatch(match.id, { discord_event: event.id });
     } else {
       logErrorMessage('Failed to post scheduled event to discord', discordError, {
         match,

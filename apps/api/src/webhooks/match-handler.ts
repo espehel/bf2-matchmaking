@@ -1,31 +1,14 @@
 import { MatchesRow } from '@bf2-matchmaking/types';
 import { retry, wait } from '@bf2-matchmaking/utils';
-import { client, verifySingleResult } from '@bf2-matchmaking/supabase';
-import { info, logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
+import { client } from '@bf2-matchmaking/supabase';
+import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import { Instance } from '@bf2-matchmaking/types/platform';
 import {
   deleteInstance,
   getDnsRecord,
   getInstancesByMatchId,
 } from '../platform/platform-service';
-import { patchGuildScheduledEvent } from '@bf2-matchmaking/discord';
 import { Server } from '@bf2-matchmaking/services/server/Server';
-
-export async function handleMatchScheduledAtUpdate(match: MatchesRow) {
-  try {
-    if (match.events.length > 0) {
-      await updateDiscordEvents(match);
-      info(
-        'handleMatchScheduledAtUpdate',
-        `Match ${match.id}: ${match.events.length} discord events updated`
-      );
-    }
-  } catch (e) {
-    logErrorMessage(`Match ${match.id} failed to handle scheduled_at update`, e, {
-      match,
-    });
-  }
-}
 
 export async function handleMatchClosed(match: MatchesRow) {
   const instances = await getInstancesByMatchId(match.id);
@@ -73,19 +56,5 @@ async function getAddress(ip: string) {
     return dns.name;
   } catch (e) {
     return ip;
-  }
-}
-
-async function updateDiscordEvents(match: MatchesRow) {
-  const { scheduled_at, events, id } = match;
-  const { guild } = await client().getMatchConfig(id).then(verifySingleResult);
-  if (guild && scheduled_at) {
-    await Promise.all(
-      events.map((eventId) =>
-        patchGuildScheduledEvent(guild, eventId, {
-          scheduled_start_time: scheduled_at,
-        })
-      )
-    );
   }
 }

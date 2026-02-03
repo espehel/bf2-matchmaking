@@ -6,7 +6,7 @@ import { api } from '@bf2-matchmaking/utils';
 import IconBtn from '@/components/commons/IconBtn';
 import { ArrowRightCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import ActionWrapper from '@/components/commons/ActionWrapper';
-import { removeMatchServer } from '@/app/matches/[match]/actions';
+import { removeServer } from '@/app/matches/[match]/actions';
 import { revalidatePath } from 'next/cache';
 
 interface Props {
@@ -23,7 +23,7 @@ export default async function MatchServerList({ match }: Props) {
   function removeMatchServerSA(address: string) {
     return async () => {
       'use server';
-      return removeMatchServer(match.id, address);
+      return removeServer(match.id, address);
     };
   }
   function setActiveServer(address: string) {

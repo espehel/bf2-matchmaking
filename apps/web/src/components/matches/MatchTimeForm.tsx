@@ -8,6 +8,7 @@ import DatetimeInput from '@/components/commons/DatetimeInput';
 import ActionFormModal from '@/components/commons/ActionFormModal';
 import { acceptMatchTime, updateMatchScheduledAt } from '@/app/matches/[match]/actions';
 import ActionButton from '@/components/ActionButton';
+import ActionModal from '../commons/action/ActionModal';
 
 interface Props {
   match: MatchesJoined;
@@ -23,28 +24,22 @@ export default async function MatchTimeForm({ match, eventMatch }: Props) {
     return <MatchTimeFallback match={match} />;
   }
 
-  async function updateMatchScheduledAtSA(data: FormData) {
-    'use server';
-    return updateMatchScheduledAt(match.id, data);
-  }
-
   if (!eventMatch) {
     return (
       <div className="flex gap-2 items-center text-gray font-bold">
         <Time date={match.scheduled_at} format="HH:mm - EEEE, MMMM d" />
-        <ActionFormModal
+        <ActionModal
           title="Change time"
           openBtnLabel="Change time"
-          formAction={updateMatchScheduledAtSA}
-          errorMessage="Something went wrong"
-          successMessage="Time changed"
+          formAction={updateMatchScheduledAt}
+          extras={{ matchId: match.id.toString() }}
         >
           <DatetimeInput
             label="Match time"
             name="dateInput"
             defaultValue={match.scheduled_at}
           />
-        </ActionFormModal>
+        </ActionModal>
       </div>
     );
   }
@@ -75,8 +70,8 @@ function Alert({
 }) {
   async function updateMatchScheduledAtSA(data: FormData) {
     'use server';
-    const result = await updateMatchScheduledAt(match.id, data);
-    if (result.data) {
+    const result = await updateMatchScheduledAt(data);
+    if (result.ok) {
       await acceptMatchTime(match, team, true);
     }
     return result;
@@ -116,19 +111,17 @@ function Alert({
       >
         Accept
       </ActionButton>
-      <ActionFormModal
+      <ActionModal
         title="Propose new time"
         openBtnLabel="Propose time"
         formAction={updateMatchScheduledAtSA}
-        errorMessage="Something went wrong"
-        successMessage="New time proposed"
       >
         <DatetimeInput
           label="Match time"
           name="dateInput"
           defaultValue={match.scheduled_at}
         />
-      </ActionFormModal>
+      </ActionModal>
     </div>
   );
 }

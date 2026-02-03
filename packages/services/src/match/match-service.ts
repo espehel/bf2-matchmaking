@@ -10,8 +10,10 @@ import {
 import { logErrorMessage, logMessage } from '@bf2-matchmaking/logging';
 import {
   getDebugMatchResultsEmbed,
+  getMatchDescription,
   getMatchResultsEmbed,
   LOG_CHANNEL_ID,
+  patchGuildScheduledEvent,
   sendChannelMessage,
 } from '@bf2-matchmaking/discord';
 import { fixMissingMatchPlayers, updatePlayerRatings } from '../player-service';
@@ -25,6 +27,7 @@ import {
 } from '@bf2-matchmaking/utils';
 import { validateMatch } from './match-utils';
 import { createMatchApi } from './match-api';
+import { DateTime } from 'luxon';
 
 export function createMatchService(matchApi: ReturnType<typeof createMatchApi>) {
   async function createMatch(queuePlayers: Array<GatherPlayer>, config: MatchConfigsRow) {
@@ -38,6 +41,34 @@ export function createMatchService(matchApi: ReturnType<typeof createMatchApi>) 
       config
     );
     return matchApi.update(summoningMatch.id).setTeams(matchPlayers).commit();
+  }
+
+  async function rescheduleMatch(
+    matchId: string | number,
+    scheduledAt: string
+  ): Promise<void> {
+    const match = await matchApi
+      .update(matchId)
+      .commit({ status: MatchStatus.Scheduled, scheduled_at: scheduledAt });
+
+    let event: unknown = null;
+    if (match.config.guild && match.discord_event) {
+      const scheduled_start_time = scheduledAt;
+      const scheduled_end_time =
+        DateTime.fromISO(scheduledAt).plus({ hours: 2 }).toISO() || undefined;
+      event = await patchGuildScheduledEvent(match.config.guild, match.discord_event, {
+        scheduled_start_time,
+        scheduled_end_time,
+      });
+    }
+
+    matchApi.log(
+      matchId,
+      `Rescheduled to ${DateTime.fromISO(scheduledAt).toLocaleString(
+        DateTime.DATE_FULL
+      )}`,
+      { match, event }
+    );
   }
 
   const finishMatch = async (matchId: string | number) => {
@@ -158,10 +189,11 @@ export function createMatchService(matchApi: ReturnType<typeof createMatchApi>) 
   }
 
   return {
+    closeMatch,
     createMatch,
     finishMatch,
-    closeMatch,
     processResults,
+    rescheduleMatch,
     updateMatchRating,
   };
 }

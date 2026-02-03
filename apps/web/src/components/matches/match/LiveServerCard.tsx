@@ -32,7 +32,7 @@ export async function LiveServerCard({ match }: Props) {
     adminRoles?.match_admin ||
     adminRoles?.server_admin ||
     adminRoles?.system_admin;
-
+  console.log(liveMatch);
   if (!liveMatch || !liveMatch.server) {
     return null;
   }

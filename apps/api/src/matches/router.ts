@@ -100,6 +100,9 @@ matchesRouter.post('/:matchid/start', protect('user'), async (ctx: Context) => {
   const { data } = await client().getMatch(parseInt(matchid));
   ctx.assert(data, 404, 'Match does not exist.');
 
+  const server = await verifyServer(address);
+  ctx.assert(server, 400, 'Failed to get server data');
+
   if (data.status !== MatchStatus.Ongoing) {
     await matchApi.update(matchid).commit({
       status: MatchStatus.Ongoing,
@@ -108,8 +111,6 @@ matchesRouter.post('/:matchid/start', protect('user'), async (ctx: Context) => {
   }
 
   await createPendingMatch(data);
-  const server = await verifyServer(address);
-  ctx.assert(server, 400, 'Failed to get server data');
 
   await Server.setMatch(address, matchid);
 

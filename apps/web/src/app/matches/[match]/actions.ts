@@ -22,7 +22,7 @@ import {
 } from '@bf2-matchmaking/discord/rest';
 import { getMatchDescription } from '@bf2-matchmaking/discord';
 import { DateTime } from 'luxon';
-import { verifySingleResult } from '@bf2-matchmaking/supabase';
+import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
 import { ActionInput, ActionResult } from '@/lib/types/form';
 import {
@@ -30,14 +30,18 @@ import {
   getOptionalValueAsNumber,
   getValue,
   getValueAsNumber,
+  getValues,
 } from '@bf2-matchmaking/utils/form';
 import { publicMatchRoleSchema } from '@bf2-matchmaking/schemas';
 import {
   sendMatchTimeAcceptedMessage,
   sendMatchTimeProposedMessage,
 } from '@/lib/discord/channel-message';
-import { createGuildEvent } from '@/lib/discord/guild-events';
-import { matchApi } from '@/lib/match';
+import {
+  createGuildEvent,
+  updateGuildEventDescription,
+} from '@/lib/discord/guild-events';
+import { matchApi, matchService } from '@/lib/match';
 import { parseError } from '@bf2-matchmaking/services/error';
 import { api } from '@bf2-matchmaking/services/api';
 import { getPlayerToken } from '@/lib/token';
@@ -159,10 +163,8 @@ export async function deleteMatch(matchId: number) {
   const match = result.data;
   const guild = match.config.guild;
   let events: unknown = null;
-  if (guild && match.events.length > 0) {
-    events = await Promise.all(
-      match.events.map((eventId) => deleteGuildScheduledEvent(guild, eventId))
-    );
+  if (guild && match.discord_event) {
+    events = await deleteGuildScheduledEvent(guild, match.discord_event);
   }
 
   logMessage(`Match ${matchId}: Deleted by ${player?.nick}`, {
@@ -254,14 +256,10 @@ export async function addServer(matchId: number, serverIp: string) {
   const guild = match.config.guild;
 
   let events: unknown = null;
-  if (guild && match.events.length > 0) {
-    events = await Promise.all(
-      match.events.map((eventId) =>
-        patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, servers?.servers),
-        })
-      )
-    );
+  if (guild && match.discord_event) {
+    events = await patchGuildScheduledEvent(guild, match.discord_event, {
+      description: getMatchDescription(match, servers?.servers),
+    });
   }
 
   logMessage(`Match ${match.id}: Server ${serverIp} set by ${player?.nick}`, {
@@ -302,14 +300,10 @@ export async function setMaps(matchId: number, maps: Array<number>) {
 
   const guild = match?.config.guild;
   let events: unknown = null;
-  if (guild && match?.events.length > 0) {
-    events = await Promise.all(
-      match.events.map((eventId) =>
-        patchGuildScheduledEvent(guild, eventId, {
-          description: getMatchDescription(match, server?.servers),
-        })
-      )
-    );
+  if (guild && match?.discord_event) {
+    events = await patchGuildScheduledEvent(guild, match.discord_event, {
+      description: getMatchDescription(match, server?.servers),
+    });
   }
 
   logMessage(`Match ${matchId}: Maps ${JSON.stringify(maps)} set by ${player?.nick}`, {
@@ -323,25 +317,22 @@ export async function setMaps(matchId: number, maps: Array<number>) {
   return result;
 }
 
-export async function updateMatchScheduledAt(matchId: number, formData: FormData) {
-  const { dateInput, timezone } = Object.fromEntries(formData);
-  assertString(dateInput);
-  assertString(timezone);
+export async function updateMatchScheduledAt(formData: FormData): Promise<ActionResult> {
+  try {
+    const matchId = getValueAsNumber(formData, 'matchId');
+    const { dateInput, timezone } = getValues(formData, 'timezone', 'dateInput');
 
-  const scheduled_at = DateTime.fromISO(dateInput, { zone: timezone }).toUTC().toISO();
-  assertString(scheduled_at);
+    const scheduled_at = DateTime.fromISO(dateInput, { zone: timezone }).toUTC().toISO();
+    assertString(scheduled_at);
 
-  const cookieStore = await cookies();
-  const result = await supabase(cookieStore).updateMatch(matchId, {
-    scheduled_at,
-  });
+    await matchService.rescheduleMatch(matchId, scheduled_at);
 
-  if (result.error) {
-    return result;
+    revalidatePath(`/matches/${matchId}`);
+
+    return toSuccess('Match rescheduled');
+  } catch (error) {
+    return toFail('Failed to reschedule match');
   }
-
-  revalidatePath(`/matches/${matchId}`);
-  return result;
 }
 
 export async function changeServerMap(serverIp: string, mapId: number) {
@@ -393,7 +384,7 @@ export async function acceptMatchTime(
   return result;
 }
 
-export async function removeMatchServer(matchId: number, address: string) {
+export async function removeServer(matchId: number, address: string) {
   const cookieStore = await cookies();
   const result = await supabase(cookieStore).deleteMatchServer(matchId, address);
   if (result.data) {
@@ -432,30 +423,59 @@ export async function removeMatchRole(input: ActionInput): Promise<ActionResult>
   return { success: 'Role removed', error: null, ok: true };
 }
 
-export async function updateMatchSetup(formData: FormData): Promise<ActionResult> {
+export async function addMatchServer(matchId: number, address: string) {
   try {
-    const matchId = getValueAsNumber(formData, 'matchId');
+    const addedServer = await matches.servers
+      .add(matchId, { server: address })
+      .then(verifySingleResult);
+    const event = await updateGuildEventDescription(matchId);
 
-    const serverSelect = getArray(formData, 'serverSelect');
+    matchApi.log(matchId, 'Server added', { addedServer, event });
 
-    const mapSelect = getArray(formData, 'mapSelect');
-    const matchMaps = mapSelect.map(Number);
-
-    await matchApi.update(matchId).setMaps(matchMaps).setServers(serverSelect).commit();
-
-    revalidatePath(`/matches/${matchId}`);
-
-    return {
-      success: 'Match updated',
-      ok: true,
-      error: null,
-    };
+    revalidatePath(`matches/${matchId}`);
   } catch (e) {
-    console.error(e);
-    return {
-      success: null,
-      ok: false,
-      error: `Failed to update match (${parseError(e)})`,
-    };
+    logErrorMessage('Failed to add match server', e);
+  }
+}
+export async function removeMatchServer(matchId: number, address: string) {
+  try {
+    const removedServer = await matches.servers
+      .remove(matchId, address)
+      .then(verifySingleResult);
+
+    const event = await updateGuildEventDescription(matchId);
+
+    matchApi.log(matchId, 'Server removed', { addedServer: removedServer, event });
+
+    revalidatePath(`matches/${matchId}`);
+  } catch (e) {
+    logErrorMessage('Failed to remove match server', e);
+  }
+}
+
+export async function addMap(matchId: number, mapId: number) {
+  try {
+    const addedMap = await matches.maps.add(matchId, mapId).then(verifySingleResult);
+
+    const event = await updateGuildEventDescription(matchId);
+
+    matchApi.log(matchId, 'Map added', { addedMap, event });
+
+    revalidatePath(`matches/${matchId}`);
+  } catch (e) {
+    logErrorMessage('Failed to add match map', e);
+  }
+}
+export async function removeMap(matchId: number, mapId: number) {
+  try {
+    const removedMap = await matches.maps.remove(matchId, mapId).then(verifySingleResult);
+
+    const event = await updateGuildEventDescription(matchId);
+
+    matchApi.log(matchId, 'Map removed', { addedMap: removedMap, event });
+
+    revalidatePath(`matches/${matchId}`);
+  } catch (e) {
+    logErrorMessage('Failed to remove match map', e);
   }
 }

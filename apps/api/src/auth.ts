@@ -31,19 +31,22 @@ export function protect(...roles: Array<AccessRoles>) {
       ctx.throw(401, 'Missing id token');
     }
 
+    let userFromToken;
+    let userRoles;
     try {
-      const userFromToken = await verifyToken(idToken);
-      const userRoles = await getPlayerRoles(userFromToken.id);
-      if (
-        userRoles.includes('system_admin') ||
-        roles.some((role) => userRoles.includes(role))
-      ) {
-        ctx.request.user = userFromToken;
-        return await next();
-      }
+      userFromToken = await verifyToken(idToken);
+      userRoles = await getPlayerRoles(userFromToken.id);
     } catch (e) {
       error('protect', e);
       ctx.throw(401, 'Invalid id token');
+    }
+
+    if (
+      userRoles.includes('system_admin') ||
+      roles.some((role) => userRoles.includes(role))
+    ) {
+      ctx.request.user = userFromToken;
+      return next();
     }
 
     ctx.throw(401, 'Unauthorized');
