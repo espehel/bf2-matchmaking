@@ -28,7 +28,7 @@ export const serverDataSchema = z.object({
 });
 export const serverSchema = z.object({
   status: z.nativeEnum(ServerStatus),
-  matchId: z.number().optional(),
+  matchId: z.coerce.number().optional(),
   liveAt: z.string().datetime({ offset: true }).optional(),
   updatedAt: z.string().datetime({ offset: true }).optional(),
   errorAt: z.string().datetime({ offset: true }).optional(),

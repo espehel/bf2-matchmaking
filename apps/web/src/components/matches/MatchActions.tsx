@@ -10,7 +10,7 @@ import {
 import ActionButton from '@/components/ActionButton';
 import ActionForm from '@/components/commons/action/ActionForm';
 import SelectField from '@/components/form/fields/SelectField';
-import { matches, session, supabase } from '@/lib/supabase/supabase-server';
+import { matches, session } from '@/lib/supabase/supabase-server';
 import SubmitActionFormButton from '@/components/commons/action/SubmitActionFormButton';
 
 interface Props {

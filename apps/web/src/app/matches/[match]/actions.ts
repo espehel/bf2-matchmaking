@@ -128,6 +128,7 @@ export async function startMatch(formData: FormData): Promise<ActionResult> {
     revalidatePath(`/matches/${matchId}`);
     return toSuccess('Match started!');
   }
+  logErrorMessage(`Match ${matchId}: Failed to start`, result.error, { result, server });
   return toFail('Failed to start match!');
 }
 
