@@ -20,13 +20,14 @@ const sizes = {
   xl: 'select-xl',
 } as const;
 
-interface Props {
+export interface SelectFieldProps {
   options: Array<[string | number | undefined, string]> | Array<string>;
   defaultValue?: string | number | null;
   placeholder?: string;
   label?: string;
   name?: string;
   className?: string;
+  disabled?: boolean;
   onChange?: ChangeEventHandler<HTMLSelectElement>;
   onSelect?: ReactEventHandler<HTMLSelectElement>;
   value?: string | number;
@@ -45,7 +46,8 @@ export default function SelectField({
   value,
   size = 'md',
   kind = 'neutral',
-}: Props) {
+  disabled,
+}: SelectFieldProps) {
   const classes = classNames('select', sizes[size], colors[kind], className);
   return (
     <label className={classes}>
@@ -56,6 +58,7 @@ export default function SelectField({
         onChange={onChange}
         onSelect={onSelect}
         value={value}
+        disabled={disabled}
       >
         {placeholder && (
           <option disabled={true} value="">

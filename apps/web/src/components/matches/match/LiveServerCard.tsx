@@ -14,6 +14,7 @@ import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/ac
 import { formatServerMapName } from '@bf2-matchmaking/utils/map';
 import { LiveServer } from '@bf2-matchmaking/types/server';
 import { RestartServerAction } from '@/components/matches/match/RestartServerAction';
+import ChangeMapForm from '@/components/matches/ChangeMapForm';
 
 interface Props {
   match: MatchesJoined;
@@ -32,7 +33,7 @@ export async function LiveServerCard({ match }: Props) {
     adminRoles?.match_admin ||
     adminRoles?.server_admin ||
     adminRoles?.system_admin;
-  console.log(liveMatch);
+
   if (!liveMatch || !liveMatch.server) {
     return null;
   }
@@ -116,7 +117,7 @@ export async function LiveServerCard({ match }: Props) {
       {hasAdmin && server && (
         <>
           <div className="divider divider-start">Server actions</div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-4">
             {isPaused ? (
               <ActionButton
                 formAction={unpauseRoundSA}
@@ -146,6 +147,7 @@ export async function LiveServerCard({ match }: Props) {
               matchId={match.id}
               isMatchPlayer={hasAdmin}
             />
+            <ChangeMapForm server={server} />
           </div>
         </>
       )}

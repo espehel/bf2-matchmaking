@@ -1,5 +1,5 @@
 'use server';
-import { matches, supabase } from '@/lib/supabase/supabase-server';
+import { matches, session, supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import {
   EventMatchesUpdate,
@@ -336,11 +336,17 @@ export async function updateMatchScheduledAt(formData: FormData): Promise<Action
   }
 }
 
-export async function changeServerMap(serverIp: string, mapId: number) {
-  const cookieStore = await cookies();
-  const { data: player } = await supabase(cookieStore).getSessionPlayer();
-  assertObj(player, 'Player not found');
-  return internalApi.v2.postServerMaps(serverIp, mapId, createToken(player));
+export async function changeServerMap(formData: FormData): Promise<ActionResult> {
+  const address = getValue(formData, 'address');
+  const mapId = getValueAsNumber(formData, 'mapId');
+
+  const player = await session.getSessionPlayer();
+
+  const result = await api.postServerMaps(address, mapId, createToken(player));
+  if (!result.error) {
+    return toSuccess('Server is changing map...');
+  }
+  return toFail('Failed to change server map');
 }
 
 export async function acceptMatchTime(

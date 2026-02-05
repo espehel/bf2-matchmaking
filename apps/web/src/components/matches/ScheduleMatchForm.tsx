@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/supabase-server';
+import { supabase, teams } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
 import { verifyResult } from '@bf2-matchmaking/supabase';
 import { createScheduledMatch } from '@/app/matches/actions';
@@ -11,6 +11,8 @@ import DatetimeInput from '@/components/form/fields/DatetimeInput';
 import { NotSignedInCard } from '@/components/commons/NotSignedInCard';
 import Link from 'next/link';
 import { Card } from '@/components/commons/card/Card';
+import { LOCAL_TEST_TEAMS } from '@/constants';
+import { isDevelopment } from '@bf2-matchmaking/utils';
 
 export default async function ScheduleMatchForm() {
   const cookieStore = await cookies();
@@ -24,19 +26,19 @@ export default async function ScheduleMatchForm() {
     .getMatchConfigs()
     .then(verifyResult)
     .then(filterVisible);
-  const teams = await supabase(cookieStore)
-    .getActiveTeams()
+  const activeTeams = await teams
+    .getAllJoined()
     .then(verifyResult)
+    .then(filterActive)
     .then(sortByName);
 
-  if (teams.length < 2) {
+  if (activeTeams.length < 2) {
     throw new Error('Not enough teams found.');
   }
-
   const defaultHomeTeam =
-    teams.find((t) => t.players.some((p) => p.player_id === player.id))?.id ??
-    teams.at(0)?.id;
-  const defaultAwayTeam = teams.find((t) => t.id !== defaultHomeTeam)?.id;
+    activeTeams.find((t) => t.players.some((p) => p.id === player.id))?.id ??
+    activeTeams.at(0)?.id;
+  const defaultAwayTeam = activeTeams.find((t) => t.id !== defaultHomeTeam)?.id;
   const defaultConfig = configs.find((c) => c.name === 'PB 5v5 Cup')?.id;
 
   return (
@@ -69,7 +71,7 @@ export default async function ScheduleMatchForm() {
             name="homeSelect"
             kind="accent"
             size="lg"
-            options={teams.map<[number, string]>(({ id, name }) => [id, name])}
+            options={activeTeams.map<[number, string]>(({ id, name }) => [id, name])}
             defaultValue={defaultHomeTeam}
           />
           <SelectField
@@ -77,7 +79,7 @@ export default async function ScheduleMatchForm() {
             name="awaySelect"
             kind="accent"
             size="lg"
-            options={teams.map<[number, string]>(({ id, name }) => [id, name])}
+            options={activeTeams.map<[number, string]>(({ id, name }) => [id, name])}
             defaultValue={defaultAwayTeam}
           />
           <Link
@@ -109,6 +111,14 @@ export default async function ScheduleMatchForm() {
         </div>
       </ActionForm>
     </Card>
+  );
+}
+
+function filterActive<T extends { active: boolean; id: number }>(
+  array: Array<T>
+): Array<T> {
+  return array.filter(
+    (e) => e.active || (isDevelopment() && LOCAL_TEST_TEAMS.includes(e.id))
   );
 }
 
