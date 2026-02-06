@@ -12,7 +12,7 @@ import { getDnsByIp } from '../platform/cloudflare';
 import { client, verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
 import { parseError, ServiceError } from '@bf2-matchmaking/services/error';
 import { hash } from '@bf2-matchmaking/redis/hash';
-import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerApi } from '@bf2-matchmaking/services/server/Server';
 import { LiveServer, RestartBF2ServerData } from '@bf2-matchmaking/types/server';
 import { generateUsersXml } from '../players/users-generator';
 import { matchApi } from '../lib/match';
@@ -20,7 +20,7 @@ import { generateProfileXml } from './profile-generator';
 import { pubobotHash } from '@bf2-matchmaking/redis/pubobot';
 
 export async function getLiveServerByMatchId(matchId: string) {
-  const address = await Server.findByMatch(matchId);
+  const address = await ServerApi.findByMatch(matchId);
   if (address) {
     return getLiveServer(address);
   }
@@ -109,7 +109,7 @@ export async function connectPendingServer(pendingServer: PendingServer) {
     'connectPendingServer',
     `Upserted server ${address} with name ${serverInfo.serverName}`
   );
-  await Server.init(server);
+  await ServerApi.init(server);
 }
 
 export async function upsertServer(
@@ -175,7 +175,7 @@ export async function buildServerProfile(
     const rcon = await hash('cache:rcons').get(address);
     assertString(rcon);
 
-    const server = await Server.getData(address);
+    const server = await ServerApi.getData(address);
     const serverName = `${server.name} bf2.top Match ${matchId}`;
 
     const profilexml = Buffer.from(

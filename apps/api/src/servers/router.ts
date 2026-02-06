@@ -32,7 +32,7 @@ import { protect } from '../auth';
 import { PostRestartServerRequestBody, ServerRconsRow } from '@bf2-matchmaking/types';
 import { deleteInstance } from '../platform/platform-service';
 import { client } from '@bf2-matchmaking/supabase';
-import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerApi } from '@bf2-matchmaking/services/server/Server';
 import { stream } from '@bf2-matchmaking/redis/stream';
 import { getAllServers } from '@bf2-matchmaking/redis/servers';
 import { ServerLogEntry } from '@bf2-matchmaking/types/server';
@@ -119,7 +119,7 @@ serversRouter.post('/:ip/restart', protect('user'), async (ctx: Context) => {
       ctx.throw(502, 'Could not restart server with default mode', { result });
     }
   }
-  ctx.body = await Server.restart(ctx.params.ip);
+  ctx.body = await ServerApi.restart(ctx.params.ip);
   if (ctx.request.user) {
     stream(`servers:${ctx.params.ip}:log`)
       .log(`Server restarted with mode ${mode} by ${ctx.request.user.nick}`, 'info')
@@ -216,7 +216,7 @@ serversRouter.delete('/:address', protect('server_admin'), async (ctx) => {
   const server = await client().deleteServer(address);
   const rcon = await client().deleteServerRcon(address);
   const instance = await deleteInstance(address).catch((e) => e);
-  const redis = await Server.delete(address).catch((e) => e);
+  const redis = await ServerApi.delete(address).catch((e) => e);
   if (ctx.request.user) {
     stream(`servers:${address}:log`)
       .log(`Server deleted by ${ctx.request.user.nick}`, 'info')
@@ -269,7 +269,7 @@ serversRouter.post('/', async (ctx: Context): Promise<void> => {
   );
   info('routes/servers', `Upserted server ${address} with name ${serverInfo.serverName}`);
 
-  const liveServer = Server.init(server);
+  const liveServer = ServerApi.init(server);
   ctx.assert(liveServer, 502, 'Failed to create live server');
 
   ctx.body = liveServer;

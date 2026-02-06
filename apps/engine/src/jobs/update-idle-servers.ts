@@ -13,7 +13,7 @@ import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
 import { Match } from '@bf2-matchmaking/redis/types';
-import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerApi } from '@bf2-matchmaking/services/server/Server';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
 import { Job } from '@bf2-matchmaking/scheduler';
 import { isActiveMatchServer } from '@bf2-matchmaking/services/server/utils';
@@ -68,11 +68,11 @@ async function handleActiveMatchServer(address: string, liveState: LiveInfo) {
     await initMatchLive(match.id);
   }
 
-  const currentServer = await Server.findByMatch(match.id);
+  const currentServer = await ServerApi.findByMatch(match.id);
   if (currentServer) {
-    await Server.reset(currentServer);
+    await ServerApi.reset(currentServer);
   }
-  await Server.setMatch(address, match.id);
+  await ServerApi.setMatch(address, match.id);
   await client().createMatchServers(Number(match.id), { server: address });
 }
 

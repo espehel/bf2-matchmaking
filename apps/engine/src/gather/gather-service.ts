@@ -1,6 +1,6 @@
 import { info, logErrorMessage, verbose, warn } from '@bf2-matchmaking/logging';
 import { isGatherPlayer } from '@bf2-matchmaking/types';
-import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerApi } from '@bf2-matchmaking/services/server/Server';
 import { assertObj, assertString } from '@bf2-matchmaking/utils';
 import { gather } from '@bf2-matchmaking/redis/gather';
 import {
@@ -19,7 +19,7 @@ import { stream } from '@bf2-matchmaking/redis/stream';
 export async function initGather(configId: number) {
   try {
     const config = await syncConfig(configId);
-    const address = await Server.findIdle();
+    const address = await ServerApi.findIdle();
     assertString(address, 'No idle server found');
 
     const gather = await TeamSpeakGather.init(config);
@@ -86,7 +86,7 @@ const handleGatherStarted: GatherStartedListener = async (
   team2,
   gather
 ) => {
-  const address = await Server.findIdle();
+  const address = await ServerApi.findIdle();
   assertString(address, 'No idle server found');
   await gather.nextQueue(address);
 };

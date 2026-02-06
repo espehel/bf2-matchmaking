@@ -9,7 +9,7 @@ import { json } from '@bf2-matchmaking/redis/json';
 import { AppEngineState } from '@bf2-matchmaking/types/engine';
 import { DateTime } from 'luxon';
 import { parseError } from '@bf2-matchmaking/utils';
-import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerApi } from '@bf2-matchmaking/services/server/Server';
 import { Job } from '@bf2-matchmaking/scheduler';
 import { matchService } from '../lib/match';
 
@@ -36,15 +36,15 @@ async function updateLiveMatch(address: string, matchId: string, live: LiveInfo)
 
     if (match.state === 'stale') {
       info('updateLiveMatch', `No players connected, resetting ${address}`);
-      await Server.reset(address);
+      await ServerApi.reset(address);
     }
 
     if (match.state === 'finished') {
       await matchService.finishMatch(matchId);
       await removeLiveMatch(matchId);
-      await Server.reset(address);
+      await ServerApi.reset(address);
 
-      const server = await Server.getData(address);
+      const server = await ServerApi.getData(address);
       if (Number(match.roundsPlayed) > 0 && isStartedMatch(cachedMatch)) {
         await saveMatchDemos(address, cachedMatch, server);
       }

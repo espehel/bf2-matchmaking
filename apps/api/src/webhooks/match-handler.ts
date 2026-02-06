@@ -8,7 +8,7 @@ import {
   getDnsRecord,
   getInstancesByMatchId,
 } from '../platform/platform-service';
-import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerApi } from '@bf2-matchmaking/services/server/Server';
 
 export async function handleMatchClosed(match: MatchesRow) {
   const instances = await getInstancesByMatchId(match.id);
@@ -31,7 +31,7 @@ async function deleteServerInstance(match: MatchesRow, instance: Instance) {
   const address = await getAddress(instance.main_ip);
   try {
     await deleteInstance(address);
-    await Server.delete(address);
+    await ServerApi.delete(address);
     const { data: server } = await client().deleteServer(address);
     const { data: rcon } = await client().deleteServerRcon(address);
     logMessage(`Match ${match.id} deleted server instance ${address}`, {

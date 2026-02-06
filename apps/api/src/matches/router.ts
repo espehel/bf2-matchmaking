@@ -8,7 +8,7 @@ import { getLiveServer, getLiveServerByMatchId } from '../servers/server-service
 import { createPendingMatch, getLiveMatch, verifyServer } from './match-service';
 import { Context } from 'koa';
 import { matchKeys } from '@bf2-matchmaking/redis/generic';
-import { Server } from '@bf2-matchmaking/services/server/Server';
+import { ServerApi } from '@bf2-matchmaking/services/server/Server';
 import { DateTime } from 'luxon';
 import {
   getMatchLogsResponseSchema,
@@ -87,9 +87,9 @@ matchesRouter.post('/:matchid/server', async (ctx: Context): Promise<void> => {
   }
 
   if (match.server) {
-    await Server.reset(match.server.address);
+    await ServerApi.reset(match.server.address);
   }
-  await Server.setMatch(ctx.request.body.address, ctx.params.matchid);
+  await ServerApi.setMatch(ctx.request.body.address, ctx.params.matchid);
   ctx.body = await getLiveServer(ctx.request.body.address);
   ctx.status = 200;
 });
@@ -112,7 +112,7 @@ matchesRouter.post('/:matchid/start', protect('user'), async (ctx: Context) => {
 
   await createPendingMatch(data);
 
-  await Server.setMatch(address, matchid);
+  await ServerApi.setMatch(address, matchid);
 
   matchApi.log(matchid, `Started on ${address} by ${ctx.request.user?.nick || 'system'}`);
 

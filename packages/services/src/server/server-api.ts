@@ -59,7 +59,7 @@ function logServerError(
     );
 }
 
-export const Server = {
+export const ServerApi = {
   init: async (server: ServersRow) => {
     const { ip: address } = server;
     logServerMessage(address, 'Initializing server connection', { server });
