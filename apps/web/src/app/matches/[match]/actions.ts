@@ -22,11 +22,10 @@ import {
 } from '@bf2-matchmaking/discord/rest';
 import { getMatchDescription } from '@bf2-matchmaking/discord';
 import { DateTime } from 'luxon';
-import { verifyResult, verifySingleResult } from '@bf2-matchmaking/supabase';
+import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { createToken } from '@bf2-matchmaking/auth/token';
 import { ActionInput, ActionResult } from '@/lib/types/form';
 import {
-  getArray,
   getOptionalValueAsNumber,
   getValue,
   getValueAsNumber,
@@ -42,7 +41,6 @@ import {
   updateGuildEventDescription,
 } from '@/lib/discord/guild-events';
 import { matchApi, matchService } from '@/lib/match';
-import { parseError } from '@bf2-matchmaking/services/error';
 import { api } from '@bf2-matchmaking/services/api';
 import { getPlayerToken } from '@/lib/token';
 import { toFail, toSuccess } from '@/lib/form';
@@ -146,36 +144,22 @@ export async function closeMatch(matchId: number) {
   return result;
 }
 
-export async function deleteMatch(matchId: number) {
-  const cookieStore = await cookies();
-  const result = await supabase(cookieStore).updateMatch(matchId, {
-    status: MatchStatus.Deleted,
-  });
+export async function deleteMatch({ matchId }: ActionInput): Promise<ActionResult> {
+  try {
+    const deletedMatch = await matchApi.remove(Number(matchId), MatchStatus.Deleted);
+    await matches.servers.removeAll();
 
-  const { data: player } = await supabase(cookieStore).getSessionPlayer();
+    const guild = deletedMatch.config.guild;
+    if (guild && deletedMatch.discord_event) {
+      await deleteGuildScheduledEvent(guild, deletedMatch.discord_event);
+    }
 
-  if (result.error) {
-    logErrorMessage('Failed to delete match', result.error, { matchId, player });
-    return result;
+    revalidatePath(`/matches/${matchId}`);
+    return toSuccess('Match removed!');
+  } catch (error) {
+    logErrorMessage(`Match ${matchId}: Failed to delete match!`, error);
+    return toFail('Failed to delete match!');
   }
-
-  await supabase(cookieStore).deleteAllMatchServers(matchId);
-
-  const match = result.data;
-  const guild = match.config.guild;
-  let events: unknown = null;
-  if (guild && match.discord_event) {
-    events = await deleteGuildScheduledEvent(guild, match.discord_event);
-  }
-
-  logMessage(`Match ${matchId}: Deleted by ${player?.nick}`, {
-    match,
-    player,
-    events,
-  });
-
-  revalidatePath(`/matches/${matchId}`);
-  return result;
 }
 
 export async function pauseRound(matchId: number, serverIp: string) {

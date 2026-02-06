@@ -24,6 +24,7 @@ export default async function ChangeMapForm({ server }: Props) {
   return (
     <SelectActionForm
       label="Change map"
+      name="mapId"
       options={maps.map<[number, string]>(({ id, name }) => [id, name])}
       action={changeServerMap}
       defaultValue={currentMap}

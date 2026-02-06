@@ -7,6 +7,7 @@ import MatchTimeForm, { MatchTimeFallback } from '@/components/matches/MatchTime
 import { Metadata } from 'next/types';
 import Main from '@/components/commons/Main';
 import { LiveServerCard } from '@/components/matches/match/LiveServerCard';
+import MatchAdminCard from '@/components/matches/match/MatchAdminCard';
 
 interface Props {
   params: Promise<{ match: string }>;
@@ -54,6 +55,7 @@ export default async function MatchPage(props: Props) {
     >
       <MatchTeamsCard match={match} />
       <LiveServerCard match={match} />
+      <MatchAdminCard match={match} />
     </Main>
   );
 }

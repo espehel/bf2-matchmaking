@@ -7,11 +7,12 @@ import {
   createResults,
   startMatch,
 } from '@/app/matches/[match]/actions';
-import ActionButton from '@/components/ActionButton';
 import ActionForm from '@/components/commons/action/ActionForm';
 import SelectField from '@/components/form/fields/SelectField';
 import { matches, session } from '@/lib/supabase/supabase-server';
 import SubmitActionFormButton from '@/components/commons/action/SubmitActionFormButton';
+import ActionButton from '@/components/commons/action/ActionButton';
+import ActionButtonOld from '@/components/ActionButton';
 
 interface Props {
   match: MatchesJoined;
@@ -28,10 +29,6 @@ export default async function MatchActions({ match }: Props) {
 
   const isMatchAdmin = adminRoles?.match_admin || adminRoles?.system_admin || false;
 
-  async function deleteMatchSA() {
-    'use server';
-    return deleteMatch(match.id);
-  }
   async function finishMatchSA() {
     'use server';
     return finishMatch(match.id);
@@ -56,51 +53,46 @@ export default async function MatchActions({ match }: Props) {
       {isScheduled && <StartMatchForm match={match} />}
       {isScheduled ||
         (isMatchAdmin && !isDeleted && (
-          <ActionButton
-            formAction={deleteMatchSA}
-            successMessage="Match deleted."
-            errorMessage="Failed to delete match"
-            kind="btn-error"
-          >
+          <ActionButton action={deleteMatch} input={{ matchId: match.id }} color="error">
             Delete match
           </ActionButton>
         ))}
       {isOngoing && (
-        <ActionButton
+        <ActionButtonOld
           formAction={finishMatchSA}
           successMessage="Match closed and results created."
           errorMessage="Match set to finished but results not created"
         >
           Finish match
-        </ActionButton>
+        </ActionButtonOld>
       )}
       {isFinished && (
         <>
-          <ActionButton
+          <ActionButtonOld
             formAction={closeMatchSA}
             successMessage="Match closed without results."
             errorMessage="Failed to close match"
           >
             Close match
-          </ActionButton>
-          <ActionButton
+          </ActionButtonOld>
+          <ActionButtonOld
             formAction={createResultsSA}
             successMessage="Match closed and results created."
             errorMessage="Failed to create results"
             errorRedirect={`/results/${match.id}`}
           >
             Create results
-          </ActionButton>
+          </ActionButtonOld>
         </>
       )}
       {isClosed && (
-        <ActionButton
+        <ActionButtonOld
           formAction={reopenMatchSA}
           successMessage="Match reopened."
           errorMessage="Failed to reopen match"
         >
           Reopen match
-        </ActionButton>
+        </ActionButtonOld>
       )}
     </div>
   );

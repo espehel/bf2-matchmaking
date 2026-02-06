@@ -187,10 +187,19 @@ export function matchServers(
       .select('id, servers(*)')
       .single<MatchServers>();
   }
+  async function removeAll() {
+    const client = await resolveClient(supabaseClient);
+    return client
+      .from('match_servers')
+      .delete()
+      .select('id, servers(*)')
+      .single<MatchServers>();
+  }
   return {
     get,
     add,
     remove,
+    removeAll,
   };
 }
 
