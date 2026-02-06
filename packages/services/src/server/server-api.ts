@@ -149,7 +149,6 @@ export const Server = {
       .schedule({
         input: address,
         interval: '10s',
-        singeRun: true,
       });
     return getServer(address);
   },
