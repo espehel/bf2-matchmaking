@@ -12,7 +12,7 @@
     "verify": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22"
   },
   "keywords": [],
   "author": "",

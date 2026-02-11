@@ -9,7 +9,7 @@
     "verify": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22"
   },
   "dependencies": {
     "@bf2-matchmaking/discord": "*",
