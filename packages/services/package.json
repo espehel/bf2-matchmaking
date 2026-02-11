@@ -2,6 +2,7 @@
   "name": "@bf2-matchmaking/services",
   "exports": {
     "./api": "./src/api.ts",
+    "./clientApi": "./src/client-api.ts",
     "./config": "./src/config-service.ts",
     "./error": "./src/error.ts",
     "./gather": "./src/Gather.ts",

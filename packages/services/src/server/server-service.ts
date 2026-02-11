@@ -158,7 +158,10 @@ export async function resetServers() {
 export async function reinitServer(address: string) {
   info('reinitServer', `Reinitializing server ${address}`);
   const server = await getServer(address);
-  if (server?.status !== ServerStatus.RESTARTING) {
+  if (!server) {
+    throw new Error('Failed to get server');
+  }
+  if (server.status !== ServerStatus.RESTARTING) {
     logWarnMessage(`Server ${address}: status is not RESTARTING, cannot reinitialize`, {
       server,
     });

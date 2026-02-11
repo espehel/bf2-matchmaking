@@ -141,10 +141,12 @@ export const ServerApi = {
       })
       .on('finished', (name, output) => {
         if (!output) {
-          warn(address, 'Server reinitialized, but no output received');
-          return;
+          return Job.get(name).delete();
         }
         info(address, `Server reinitialized with status ${output.status}`);
+      })
+      .on('stopped', () => {
+        warn(address, 'Server reinitialization stopped.');
       })
       .schedule({
         input: address,

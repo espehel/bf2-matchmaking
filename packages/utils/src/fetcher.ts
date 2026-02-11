@@ -147,13 +147,33 @@ export const postWithApiKeyJSON = async <T>(
 
 export const getEventSource = (url: string): EventSource => {
   const source = new EventSource(url);
-  source.onopen = () => {
-    console.log('SSE connection opened.');
-  };
-  source.onerror = (event) => {
+  source.addEventListener('error', (event) => {
     console.error('SSE Error:', JSON.stringify(event));
-  };
+  });
   return source;
+};
+
+export const getEventSourceAsync = (url: string): Promise<EventSource> => {
+  const abortController = new AbortController();
+  return new Promise((resolve, reject) => {
+    const source = new EventSource(url);
+    source.addEventListener(
+      'open',
+      () => {
+        abortController.abort();
+        resolve(source);
+      },
+      { signal: abortController.signal }
+    );
+    source.addEventListener(
+      'error',
+      (event) => {
+        abortController.abort();
+        reject('SSE Error: '.concat(JSON.stringify(event)));
+      },
+      { signal: abortController.signal }
+    );
+  });
 };
 
 export const verify = <T>(result: FetchResult<T>): T => {

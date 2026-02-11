@@ -72,6 +72,8 @@ export const api = {
     getJSON<LiveServer>(`${servers}/${address}`, {
       cache: 'no-store',
     }),
+  getServerLiveStream: (address: string) =>
+    getEventSource(`${servers}/${address}/stream`),
   getServerLog: (address: string) =>
     getJSON<Array<ServerLogEntry>>(`${servers}/${address}/log`, {
       cache: 'no-store',

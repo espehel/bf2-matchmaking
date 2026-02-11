@@ -38,6 +38,8 @@ import { getAllServers } from '@bf2-matchmaking/redis/servers';
 import { ServerLogEntry } from '@bf2-matchmaking/types/server';
 import { serverGetProfileXmlQueriesSchema } from '@bf2-matchmaking/services/schemas/servers.ts';
 import { generateProfileXml } from './profile-generator';
+import { ServerInfoStream } from './ServerInfoStream';
+import { addClient, removeClient } from './server-info-broadcaster';
 
 export const serversRouter = new Router({
   prefix: '/servers',
@@ -273,6 +275,40 @@ serversRouter.post('/', async (ctx: Context): Promise<void> => {
   ctx.assert(liveServer, 502, 'Failed to create live server');
 
   ctx.body = liveServer;
+});
+
+serversRouter.get('/:address/stream', async (ctx) => {
+  ctx.request.socket.setTimeout(0);
+  ctx.req.socket.setNoDelay(true);
+  ctx.req.socket.setKeepAlive(true);
+
+  ctx.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+
+  const sseStream = new ServerInfoStream();
+  const { address } = ctx.params;
+
+  await addClient(address, sseStream);
+
+  const interval = setInterval(() => {
+    sseStream.writeHeartbeat();
+  }, 10000);
+
+  sseStream.on('close', () => {
+    info(`GET /servers/${address}/stream`, 'Stream close');
+    clearInterval(interval);
+    removeClient(address, sseStream);
+  });
+  sseStream.on('error', (err) => {
+    error(`GET /servers/${address}/stream`, err);
+  });
+
+  ctx.status = 200;
+  ctx.body = sseStream;
 });
 
 serversRouter.get('/:ip', async (ctx: Context) => {

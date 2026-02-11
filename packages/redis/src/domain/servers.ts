@@ -3,6 +3,7 @@ import { hash } from '../core/hash';
 import { set } from '../core/set';
 import { assertString, isUniqueString } from '@bf2-matchmaking/utils';
 import { json } from '../core/json';
+import { topic } from '../core/topic';
 import { Server, ServerData } from '../types';
 import { serverDataSchema, serverSchema } from '../schemas';
 import { ServerStatus } from '@bf2-matchmaking/types/server';
@@ -57,7 +58,9 @@ export async function removeServerWithStatus(address: string, key: ServerStatus)
 }
 
 export async function setServerLiveInfo(address: string, info: LiveInfo) {
-  return json(`servers:${address}:info`).set(info);
+  const result = await json(`servers:${address}:info`).set(info);
+  await topic('servers:info').publish({ address, info });
+  return result;
 }
 export async function getServerLiveInfo(address: string) {
   return json<LiveInfo>(`servers:${address}:info`).get();

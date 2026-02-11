@@ -23,7 +23,7 @@ export function protect(...roles: Array<AccessRoles>) {
         ctx.throw(401, 'Invalid API key');
       }
       ctx.request.user = { id: 'system', nick: 'system', keyhash: 'system' };
-      return await next();
+      return next();
     }
 
     const idToken = ctx.request.token;
