@@ -59,7 +59,6 @@ export async function removeServerWithStatus(address: string, key: ServerStatus)
 
 export async function setServerLiveInfo(address: string, info: LiveInfo) {
   const result = await json(`servers:${address}:info`).set(info);
-  await topic('servers:info').publish({ address, info });
   return result;
 }
 export async function getServerLiveInfo(address: string) {
