@@ -41,7 +41,7 @@ discordClient
     scheduleCloseOldMatchesJob();
     scheduleIdleServersJob();
     scheduleActiveServersJob();
-    scheduleStartScheduledMatchesJob();
+    //scheduleStartScheduledMatchesJob(); TODO: do it when there is an available server selected
     scheduleCloseOldChallengesJob();
     //set8v8queueCheckinTask.start();
     //reset8v8queueCheckinTask.start();
