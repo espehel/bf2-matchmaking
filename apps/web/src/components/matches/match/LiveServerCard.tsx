@@ -1,20 +1,14 @@
 import { Card } from '@/components/commons/card/Card';
-import { api as internalApi, formatSecToMin } from '@bf2-matchmaking/utils';
+import { api as internalApi } from '@bf2-matchmaking/utils';
 import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase/supabase-server';
-import {
-  GameStatus,
-  LiveServerState,
-  MatchesJoined,
-  MatchStatus,
-} from '@bf2-matchmaking/types';
-import RoundTable from '@/components/RoundTable';
+import { GameStatus, MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import ActionButton from '@/components/ActionButton';
 import { pauseRound, restartRound, unpauseRound } from '@/app/matches/[match]/actions';
-import { formatServerMapName } from '@bf2-matchmaking/utils/map';
 import { LiveServer } from '@bf2-matchmaking/types/server';
 import { RestartServerAction } from '@/components/matches/match/RestartServerAction';
 import ChangeMapForm from '@/components/matches/ChangeMapForm';
+import LiveServerInfo from '@/components/matches/match/LiveServerInfo';
 
 interface Props {
   match: MatchesJoined;
@@ -33,7 +27,7 @@ export async function LiveServerCard({ match }: Props) {
     adminRoles?.match_admin ||
     adminRoles?.server_admin ||
     adminRoles?.system_admin;
-
+  console.log({ liveMatch });
   if (!liveMatch || !liveMatch.server) {
     return null;
   }
@@ -63,54 +57,14 @@ export async function LiveServerCard({ match }: Props) {
   return (
     <Card title={server.name}>
       {live ? (
-        <>
-          <div className="grid grid-cols-[repeat(6,auto)] gap-x-4 gap-y-1 text-sm mt-2 w-fit">
-            <span>Match status</span>
-            <div>
-              <div className="inline-grid *:[grid-area:1/1] mr-1">
-                <div
-                  className={`status animate-ping ${getStatusColor(liveMatch.state)}`}
-                />
-                <div className={`status ${getStatusColor(liveMatch.state)}`} />
-              </div>
-              {liveMatch.state}
-            </div>
-            <span className="text-base-content/70">Map</span>
-            <span>{formatServerMapName(live.currentMapName)}</span>
-            <span className="text-base-content/70">Players</span>
-            <span>
-              {live.connectedPlayers}/{live.maxPlayers}
-            </span>
-            <span className="text-base-content/70">Rounds played</span>
-            <span>{liveMatch?.roundsPlayed}</span>
-            <span className="text-base-content/70">Mode</span>
-            <span>{getVehicleMode(server)}</span>
-            <span className="text-base-content/70">Round status</span>
-            <span>{getGameStatusLabel(live.currentGameStatus)}</span>
-          </div>
-          {server?.data?.joinmeHref && (
-            <a
-              href={server.data.joinmeHref}
-              className="link link-secondary text-sm"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Join server
-            </a>
-          )}
-          <div className="badge badge-xl badge-outline badge-primary flex justify-between text-sm font-semibold mt-2 mx-auto">
-            <span>
-              {live.team1_Name}: {live.team1_tickets}
-            </span>
-            <div className="divider divider-horizontal" />
-            <span>{formatSecToMin(live.timeLeft)}</span>
-            <div className="divider divider-horizontal" />
-            <span>
-              {live.team2_Name}: {live.team2_tickets}
-            </span>
-          </div>
-          <RoundTable liveInfo={live} />
-        </>
+        <LiveServerInfo
+          address={server.address}
+          initialInfo={live}
+          matchState={liveMatch.state}
+          roundsPlayed={liveMatch?.roundsPlayed}
+          vehicleMode={getVehicleMode(server)}
+          joinmeHref={server?.data?.joinmeHref}
+        />
       ) : (
         <p className="text-base-content/70">No live data available</p>
       )}
@@ -153,42 +107,6 @@ export async function LiveServerCard({ match }: Props) {
       )}
     </Card>
   );
-}
-
-function getStatusColor(state: LiveServerState): string {
-  switch (state) {
-    case 'live':
-      return 'status-success';
-    case 'warmup':
-    case 'prelive':
-      return 'status-info';
-    case 'pending':
-    case 'endlive':
-      return 'status-warning';
-    case 'stale':
-      return 'status-error';
-    default:
-      return 'status-neutral';
-  }
-}
-
-function getGameStatusLabel(status: string): string {
-  switch (status) {
-    case GameStatus.Playing:
-      return 'Playing';
-    case GameStatus.EndGame:
-      return 'End game';
-    case GameStatus.PreGame:
-      return 'Pre-game';
-    case GameStatus.Paused:
-      return 'Paused';
-    case GameStatus.RestartServer:
-      return 'Restarting';
-    case GameStatus.NotConnected:
-      return 'Not connected';
-    default:
-      return 'Unknown';
-  }
 }
 
 function getVehicleMode(server: LiveServer) {

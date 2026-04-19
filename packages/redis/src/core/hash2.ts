@@ -9,7 +9,7 @@ export function hash<F extends string>(key: string) {
     return client.HGETALL(key) as Promise<Record<F, string>>;
   };
 
-  const getSafe = async (field: F): Promise<string | undefined> => {
+  const getSafe = async (field: F): Promise<string | null> => {
     const client = await getClient();
     return client.HGET(key, field);
   };

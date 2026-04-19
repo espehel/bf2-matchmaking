@@ -8,6 +8,9 @@ import { Metadata } from 'next/types';
 import Main from '@/components/commons/Main';
 import { LiveServerCard } from '@/components/matches/match/LiveServerCard';
 import MatchAdminCard from '@/components/matches/match/MatchAdminCard';
+import { MatchRoster } from '@/components/matches/match/MatchRoster';
+import MatchActions from '@/components/matches/MatchActions';
+import MatchActionsCard from '@/components/matches/match/MatchActionsCard';
 
 interface Props {
   params: Promise<{ match: string }>;
@@ -53,7 +56,10 @@ export default async function MatchPage(props: Props) {
       }
       className="space-y-8"
     >
-      <MatchTeamsCard match={match} />
+      <div className="flex gap-2">
+        <MatchRoster match={match} />
+        <MatchActionsCard match={match} />
+      </div>
       <LiveServerCard match={match} />
       <MatchAdminCard match={match} />
     </Main>

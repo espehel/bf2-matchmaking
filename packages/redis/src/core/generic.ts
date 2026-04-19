@@ -1,5 +1,5 @@
 import { getClient } from '../client';
-import { RedisFlushModes } from 'redis';
+import { REDIS_FLUSH_MODES } from 'redis';
 
 export async function del(keys: Array<string> | string) {
   if (Array.isArray(keys) && keys.length === 0) {
@@ -27,7 +27,7 @@ export async function getConnections() {
 
 export async function flush() {
   const client = await getClient();
-  return client.flushDb(RedisFlushModes.ASYNC);
+  return client.flushDb(REDIS_FLUSH_MODES.ASYNC);
 }
 
 export async function save() {
@@ -38,9 +38,9 @@ export async function save() {
 type ArrayFilterPredicate<T> = (value: T, index: number, array: T[]) => boolean;
 export async function matchKeys(pattern: string, filter?: ArrayFilterPredicate<string>) {
   const client = await getClient();
-  const res = [];
+  let res: Array<string> = [];
   for await (const value of client.scanIterator({ MATCH: pattern })) {
-    res.push(value);
+    res = res.concat(value);
   }
   if (filter) {
     return res.filter(filter);

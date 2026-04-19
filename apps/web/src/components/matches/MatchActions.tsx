@@ -1,10 +1,10 @@
 import { MatchesJoined, MatchStatus } from '@bf2-matchmaking/types';
 import {
   closeMatch,
+  createResults,
   deleteMatch,
   finishMatch,
   reopenMatch,
-  createResults,
   startMatch,
 } from '@/app/matches/[match]/actions';
 import ActionForm from '@/components/commons/action/ActionForm';
@@ -50,7 +50,7 @@ export default async function MatchActions({ match }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {isScheduled && <StartMatchForm match={match} />}
+      <StartMatchForm match={match} />
       {isScheduled ||
         (isMatchAdmin && !isDeleted && (
           <ActionButton action={deleteMatch} input={{ matchId: match.id }} color="error">
@@ -99,13 +99,17 @@ export default async function MatchActions({ match }: Props) {
 }
 
 async function StartMatchForm({ match }: Props) {
+  if (match.status !== MatchStatus.Scheduled && match.status !== MatchStatus.Ongoing) {
+    return null;
+  }
+
   const { data: matchServers } = await matches.servers.get(match.id);
   const options: Array<[string, string]> =
     matchServers?.servers.map((server) => [server.ip, server.name]) || [];
   const defaultValue = options.at(0)?.at(0);
   return (
     <ActionForm formAction={startMatch} extras={{ matchId: match.id.toString() }}>
-      <div className="join">
+      <div className="join join-vertical">
         <SelectField
           key={options.join()}
           kind="primary"
@@ -120,7 +124,8 @@ async function StartMatchForm({ match }: Props) {
           className="join-item btn-primary"
           disabled={!defaultValue}
         >
-          Start match
+          {match.status === MatchStatus.Scheduled && 'Start match'}
+          {match.status === MatchStatus.Ongoing && 'Change server'}
         </SubmitActionFormButton>
       </div>
     </ActionForm>

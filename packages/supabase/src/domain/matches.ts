@@ -140,7 +140,7 @@ export function matchMaps(
     return client
       .from('match_maps')
       .insert(maps.map((mapId) => ({ match_id: matchId, map_id: mapId })))
-      .select('*');
+      .select('*, map:maps(name)');
   }
   async function remove(matchId: number, ...maps: Array<number>) {
     const client = await resolveClient(supabaseClient);
@@ -149,7 +149,7 @@ export function matchMaps(
       .delete()
       .eq('match_id', matchId)
       .in('map_id', maps)
-      .select('*');
+      .select('*, map:maps(name)');
   }
   return {
     get,

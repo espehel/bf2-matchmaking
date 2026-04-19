@@ -416,12 +416,16 @@ export async function removeMatchRole(input: ActionInput): Promise<ActionResult>
 
 export async function addMatchServer(matchId: number, address: string) {
   try {
+    const player = await session.getSessionPlayer();
     const addedServer = await matches.servers
       .add(matchId, { server: address })
       .then(verifySingleResult);
     const event = await updateGuildEventDescription(matchId);
 
-    matchApi.log(matchId, 'Server added', { addedServer, event });
+    matchApi.log(matchId, `Server ${address} added by ${player.nick}`, {
+      addedServer,
+      event,
+    });
 
     revalidatePath(`matches/${matchId}`);
   } catch (e) {
@@ -430,13 +434,17 @@ export async function addMatchServer(matchId: number, address: string) {
 }
 export async function removeMatchServer(matchId: number, address: string) {
   try {
+    const player = await session.getSessionPlayer();
     const removedServer = await matches.servers
       .remove(matchId, address)
       .then(verifySingleResult);
 
     const event = await updateGuildEventDescription(matchId);
 
-    matchApi.log(matchId, 'Server removed', { addedServer: removedServer, event });
+    matchApi.log(matchId, `Server ${address} removed by ${player.nick}`, {
+      addedServer: removedServer,
+      event,
+    });
 
     revalidatePath(`matches/${matchId}`);
   } catch (e) {
@@ -446,11 +454,14 @@ export async function removeMatchServer(matchId: number, address: string) {
 
 export async function addMap(matchId: number, mapId: number) {
   try {
-    const addedMap = await matches.maps.add(matchId, mapId).then(verifySingleResult);
-
+    const player = await session.getSessionPlayer();
+    const [addedMap] = await matches.maps.add(matchId, mapId).then(verifySingleResult);
     const event = await updateGuildEventDescription(matchId);
 
-    matchApi.log(matchId, 'Map added', { addedMap, event });
+    matchApi.log(matchId, `Map ${addedMap.map.name} added by ${player.nick}`, {
+      addedMap,
+      event,
+    });
 
     revalidatePath(`matches/${matchId}`);
   } catch (e) {
@@ -459,11 +470,14 @@ export async function addMap(matchId: number, mapId: number) {
 }
 export async function removeMap(matchId: number, mapId: number) {
   try {
+    const player = await session.getSessionPlayer();
     const removedMap = await matches.maps.remove(matchId, mapId).then(verifySingleResult);
-
     const event = await updateGuildEventDescription(matchId);
 
-    matchApi.log(matchId, 'Map removed', { addedMap: removedMap, event });
+    matchApi.log(matchId, `Map ${removedMap.map.name} removed by ${player.nick}`, {
+      addedMap: removedMap,
+      event,
+    });
 
     revalidatePath(`matches/${matchId}`);
   } catch (e) {

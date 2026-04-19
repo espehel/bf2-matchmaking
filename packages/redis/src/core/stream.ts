@@ -27,10 +27,15 @@ export function stream(key: string) {
 
   const readEventsBlocking = async (start: string) => {
     const client = await createNewClient(`stream_${key}_client`).connect();
-    const stream = await client.XREAD(
+    const stream = (await client.XREAD(
       { key, id: start },
       { BLOCK: 1000 * 60 * 30, COUNT: 10 }
-    );
+    )) as
+      | Array<{
+          name: string;
+          messages: Array<{ id: string; message: Record<string, string> }>;
+        }>
+      | null;
     return stream ? stream[0].messages.map(toStreamEventReply) : null;
   };
 

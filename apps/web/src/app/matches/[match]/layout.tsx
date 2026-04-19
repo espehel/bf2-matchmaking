@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { supabase } from '@/lib/supabase/supabase-server';
 import { cookies } from 'next/headers';
-import { verifySingleResult } from '@bf2-matchmaking/supabase';
 import { MatchProvider } from '@/state/MatchContext';
 import { notFound } from 'next/navigation';
 
@@ -21,7 +20,7 @@ export default async function MatchLayout(props: {
     supabase(cookieStore).getMatch(matchId),
     supabase(cookieStore).getMatchServers(matchId),
   ]);
-  if(!matchRes.data) {
+  if (!matchRes.data) {
     notFound();
   }
 

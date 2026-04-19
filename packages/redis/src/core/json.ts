@@ -39,7 +39,7 @@ export function json<T = unknown>(key: string) {
 
   const delProperty = async <K extends keyof T & string>(property: K) => {
     const client = await getClient();
-    return client.json.DEL(key, `$.${property}`);
+    return client.json.DEL(key, { path: `$.${property}` });
   };
 
   return {

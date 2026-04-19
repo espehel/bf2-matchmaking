@@ -19,7 +19,7 @@ export function set(key: string) {
   };
   const isMember = async (value: string): Promise<boolean> => {
     const client = await getClient();
-    return client.SISMEMBER(key, value);
+    return client.SISMEMBER(key, value).then((res) => res === 1);
   };
   return {
     add,
