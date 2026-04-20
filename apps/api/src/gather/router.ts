@@ -5,7 +5,7 @@ import { stream } from '@bf2-matchmaking/redis/stream';
 import { isString } from '@bf2-matchmaking/types';
 import { waitForEvent } from './event-stream';
 import { error, info } from '@bf2-matchmaking/logging';
-import { gather, getGatherPlayers } from '@bf2-matchmaking/redis/gather';
+import { gather } from '@bf2-matchmaking/redis/gather';
 
 export const gathersRouter = new Router({
   prefix: '/gathers',
@@ -14,7 +14,7 @@ export const gathersRouter = new Router({
 gathersRouter.get('/:config', async (ctx: Context): Promise<void> => {
   const state = await gather.getState(ctx.params.config).getAll();
   const queue = await gather.getQueue(ctx.params.config).range();
-  const players = await getGatherPlayers(queue);
+  const players = await gather.getPlayersByIdentifier(queue);
   const events = await stream(`gather:${ctx.params.config}:events`).readEvents(true);
   ctx.body = { state, players, events };
 });

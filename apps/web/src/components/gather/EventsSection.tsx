@@ -1,5 +1,4 @@
 import EventList from '@/components/gather/EventList';
-import { api, verify } from '@bf2-matchmaking/utils';
 import { StreamEventReply } from '@bf2-matchmaking/types/redis';
 
 interface Props {

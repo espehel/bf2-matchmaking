@@ -8,7 +8,6 @@ import { logMessage } from '@bf2-matchmaking/logging';
 import { putMatch } from '@bf2-matchmaking/redis/matches';
 import { DateTime } from 'luxon';
 import { protect } from '../auth';
-import { Gather } from '@bf2-matchmaking/services/gather';
 import { resetServers } from '@bf2-matchmaking/services/server';
 import {
   buildMapsCache,
@@ -23,12 +22,8 @@ export const adminRouter = new Router({
 });
 
 adminRouter.post('/reset/engine', protect(), async (ctx) => {
-  const [gatherResult, serviceResult] = await Promise.all([
-    Gather(20).del(),
-    restartServiceByName('engine'),
-  ]);
+  const serviceResult = await restartServiceByName('engine');
   ctx.body = {
-    ...gatherResult,
     ...serviceResult,
   };
 });

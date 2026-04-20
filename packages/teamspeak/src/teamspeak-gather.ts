@@ -103,7 +103,7 @@ export class TeamSpeakGather extends EventEmitter {
     const clientUIDs = queueClients.map((client) => client.uniqueIdentifier);
     await this.reset(address);
     await this.queue.rpush(...clientUIDs);
-    this.emit('initiated', clientUIDs, this);
+    this.emit('initiated', clientUIDs, address, this);
     return this;
   }
   #handleClientMoved = async ({ channel, client }: ClientMovedEvent) => {
@@ -146,7 +146,7 @@ export class TeamSpeakGather extends EventEmitter {
       address,
     });
     const queueClients = await this.queue.range();
-    this.emit('nextQueue', queueClients, this);
+    this.emit('nextQueue', queueClients, address, this);
   }
   async reset(address: string) {
     await this.state.del();

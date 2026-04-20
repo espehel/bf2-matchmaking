@@ -60,24 +60,32 @@ const handlePlayersSummoned: PlayersSummonedListener = async (
   clientUIds,
   gather
 ) => {
-  const serverPlayers = await getPlayerList(server).then(verifyRconResult);
-  const gatherPlayers = await Promise.all(clientUIds.map(getGatherPlayer));
+  try {
+    const serverPlayers = await getPlayerList(server).then(verifyRconResult);
+    const gatherPlayers = await Promise.all(clientUIds.map(getGatherPlayer));
 
-  const connectedClientUIdList = gatherPlayers
-    .filter((gp) => serverPlayers.some((sp) => sp.keyhash === gp.keyhash))
-    .map((p) => p.teamspeak_id);
+    const connectedClientUIdList = gatherPlayers
+      .filter((gp) => serverPlayers.some((sp) => sp.keyhash === gp.keyhash))
+      .map((p) => p.teamspeak_id);
 
-  await gather.verifySummon(connectedClientUIdList);
+    await gather.verifySummon(connectedClientUIdList);
+  } catch (e) {
+    logErrorMessage(`Gather ${gather.config.id}: Failed to summon players`, e);
+  }
 };
 const handleSummonComplete = async (
   clientUIds: Array<string>,
   gather: TeamSpeakGather
 ) => {
-  const players = await Promise.all(clientUIds.map(getGatherPlayer));
-  const match = await matchService.createMatch(players, gather.config);
-  const team1 = getMatchTeam(match, 1);
-  const team2 = getMatchTeam(match, 2);
-  await gather.initiateMatchChannels(match.id, team1, team2);
+  try {
+    const players = await Promise.all(clientUIds.map(getGatherPlayer));
+    const match = await matchService.createMatch(players, gather.config);
+    const team1 = getMatchTeam(match, 1);
+    const team2 = getMatchTeam(match, 2);
+    await gather.initiateMatchChannels(match.id, team1, team2);
+  } catch (e) {
+    logErrorMessage(`Gather ${gather.config.id}: Failed to complete summon`, e);
+  }
 };
 
 const handleGatherStarted: GatherStartedListener = async (
@@ -86,9 +94,13 @@ const handleGatherStarted: GatherStartedListener = async (
   team2,
   gather
 ) => {
-  const address = await ServerApi.findIdle();
-  assertString(address, 'No idle server found');
-  await gather.nextQueue(address);
+  try {
+    const address = await ServerApi.findIdle();
+    assertString(address, 'No idle server found');
+    await gather.nextQueue(address);
+  } catch (e) {
+    logErrorMessage(`Gather ${gather.config.id}: Failed to start next queue`, e);
+  }
 };
 
 async function getGatherPlayer(clientUId: string) {
@@ -116,119 +128,6 @@ async function getGatherPlayerSafe(clientUId: string) {
     return null;
   }
 }
-
-/*export async function initGatherQueue(configId: number) {
-  try {
-    info('initGatherQueue', `Initializing gather queue for config ${configId}`);
-    const ts = await TeamspeakBot.connect();
-
-    // TODO mark server as used for gather somehow
-    const address = await Server.findIdle();
-    if (!address) {
-      await Gather(configId).error('No idle server found');
-      return;
-    }
-
-    const queueingPlayers = await Promise.all(
-      ts.getQueueingPlayers().map((p) => verifyPlayer(p, ts))
-    );
-
-    await Gather(configId).init(address, queueingPlayers.filter(isNotNull));
-
-    ts.onClientJoined(handleClientJoin);
-    ts.onClientLeft(handleClientLeft);
-
-    async function handleClientJoin(client: TeamSpeakClient) {
-      if (await Gather(configId).hasPlayer(client.uniqueIdentifier)) {
-        info(
-          'listenToChannelJoin',
-          `Client ${client.nickname} already in queue, no action taken.`
-        );
-        return;
-      }
-
-      const player = await verifyPlayer(client.uniqueIdentifier, ts);
-      if (!player) {
-        return;
-      }
-
-      const nextState = await Gather(configId).addPlayer(player);
-      if (nextState) {
-        scheduleReadServerJob(nextState.payload.address).on(
-          'finished',
-          onLiveInfo(ts, configId, nextState.payload.address)
-        );
-      }
-    }
-
-    async function handleClientLeft(client: TeamSpeakClient) {
-      await Gather(configId).removePlayer(client.uniqueIdentifier);
-    }
-  } catch (e) {
-    error('initGatherQueue', e);
-    logErrorMessage(`Gather ${configId}: Failed`, e);
-    await Gather(configId)
-      .error('Unknown Gather Error')
-      .catch((e) => error('initGatherQueue', e));
-  }
-}
-
-function onLiveInfo(ts: TeamspeakBot, configId: number, address: string) {
-  return async (name: string, live: LiveInfo) => {
-    try {
-      info(
-        'onLiveInfo',
-        `Gather ${configId}: Handling live info at ${address}[${live.players.length} players]`
-      );
-      const stateChange = await Gather(configId).handleSummonedPlayers(live.players);
-      if (!stateChange) {
-        return;
-      }
-
-      if (stateChange.status === GatherStatus.Playing) {
-        await ts.initiateMatchChannels(stateChange.payload);
-      }
-      if (stateChange.status === GatherStatus.Aborting) {
-        await ts.kickLatePlayers(stateChange.payload.map((p) => p.teamspeak_id));
-      }
-
-      assertString(address, 'Missing server address');
-      stopReadServerJob(address);
-      const queueingPlayers = await Promise.all(
-        ts.getQueueingPlayers().map((p) => verifyPlayer(p, ts))
-      );
-      // TODO should probably use the redis list/queueu somehow here
-      await Gather(configId).init(address, queueingPlayers.filter(isNotNull));
-    } catch (e) {
-      logErrorMessage('Failed to handle live info, hard resetting gather', e, {
-        live,
-      });
-      assertString(address, 'Missing server address');
-      stopReadServerJob(address);
-      await ts.clearQueueChannel();
-      await Gather(configId).init(address, []);
-    }
-  };
-}
-
-async function verifyPlayer(identifier: string, ts: TeamspeakBot) {
-  const cachedPlayer = await getGatherPlayer(identifier);
-  if (cachedPlayer) {
-    return cachedPlayer;
-  }
-
-  const player = await getTeamspeakPlayer(identifier);
-  if (!player) {
-    await ts.kickUnregisteredClient(identifier);
-    return null;
-  }
-  if (!isGatherPlayer(player)) {
-    await ts.kickClient(identifier, 'Missing keyhash', 'Missing keyhash');
-    return null;
-  }
-  await setGatherPlayer(player);
-  return player;
-}*/
 
 async function addEventStream(ts: TeamSpeakGather) {
   const events = await stream(`gather:${ts.config.id}:events`);

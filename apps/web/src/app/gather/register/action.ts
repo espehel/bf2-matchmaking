@@ -7,9 +7,9 @@ import { ActionResult } from '@/lib/types/form';
 
 export async function registerTeamspeakId(data: FormData): Promise<ActionResult> {
   try {
-    const { teamspeakId, playerId } = getValues(data, 'teamspeakId', 'playerId');
+    const { tsid, playerId } = getValues(data, 'tsid', 'playerId');
     const player = await players
-      .update(playerId, { teamspeak_id: teamspeakId })
+      .update(playerId, { teamspeak_id: tsid })
       .then(verifySingleResult);
     return {
       success: `Teamspeak ID registered for ${player.nick}`,

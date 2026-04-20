@@ -1,27 +1,29 @@
-import { MatchConfigsRow } from '@bf2-matchmaking/types';
+import { GatherPlayer, MatchConfigsRow } from '@bf2-matchmaking/types';
 import { session } from '@/lib/supabase/supabase-server';
 import { getGuildMember } from '@bf2-matchmaking/discord';
 import { api, assertString, verify } from '@bf2-matchmaking/utils';
 import Link from 'next/link';
-import { getUser } from '@bf2-matchmaking/teamspeak/api';
 import { TEAMSPEAK_SERVER_URI } from '@bf2-matchmaking/teamspeak';
 import SearchParamToggle from '@/components/gather/SearchParamToggle';
 
 interface Props {
   config: MatchConfigsRow;
-  serverAddress: string;
+  serverAddress: string | undefined;
+  players: Array<GatherPlayer>;
 }
-export default async function ConnectionsSection({ config, serverAddress }: Props) {
+export default async function ConnectionsSection({ config, serverAddress, players }: Props) {
   assertString(config.guild, 'Guild ID is not defined in match config');
 
   const player = await session.getSessionPlayer();
   const { data: guildMember } = await getGuildMember(config.guild, player.id);
-  const teamspeak = undefined; //player.teamspeak_id ? await getUser(player.teamspeak_id) : undefined;
 
-  const server = await api.v2.getServer(serverAddress).then(verify);
-  const isConnectedBf2Server = server.live?.players.some(
-    (player) => player.keyhash === player.keyhash
+  const server = serverAddress ? await api.v2.getServer(serverAddress).then(verify) : null;
+  const isConnectedBf2Server = server?.live?.players.some(
+    (serverPlayer) => serverPlayer.keyhash === player.keyhash
   );
+  const isInQueue =
+    player.teamspeak_id != null &&
+    players.some((p) => p.teamspeak_id === player.teamspeak_id);
 
   return (
     <section className="section">
@@ -44,18 +46,28 @@ export default async function ConnectionsSection({ config, serverAddress }: Prop
         </Link>
       )}
       <h3>Teamspeak</h3>
-      <p>Link to setup teamspeak id</p>
-      {teamspeak ? (
-        <p>{/*teamspeak.channelGroupId*/}not happening</p>
+      {player.teamspeak_id ? (
+        isInQueue ? (
+          <p>In queue</p>
+        ) : (
+          <>
+            <p>Registered ({player.teamspeak_id})</p>
+            <Link className="link" href={TEAMSPEAK_SERVER_URI}>
+              Connect to queue
+            </Link>
+          </>
+        )
       ) : (
-        <Link className="link" href={TEAMSPEAK_SERVER_URI}>
-          Connect
-        </Link>
+        <>
+          <p>No Teamspeak ID registered</p>
+          <Link className="link" href={`/gather/register?tsid=`}>
+            Register Teamspeak ID
+          </Link>
+        </>
       )}
       <h3>BF2 Server</h3>
-      <p>Link to setup keyhash</p>
       {isConnectedBf2Server ? <p>Connected</p> : <p>Not connected</p>}
-      {!isConnectedBf2Server && server.data && (
+      {!isConnectedBf2Server && server?.data && (
         <>
           <Link href={server.data.joinmeHref}>Join me</Link>
           <Link href={server.data.joinmeDirect}>Start bf2</Link>

@@ -6,36 +6,73 @@ import Time from '@/components/commons/Time';
 import { useRouter } from 'next/navigation';
 import { GatherEvent } from '@bf2-matchmaking/types/gather';
 
+const MAX_BACKOFF_MS = 30_000;
+const HEARTBEAT_TIMEOUT_MS = 15_000;
+
 interface Props {
   defaultEvents: Array<StreamEventReply>;
   config: number;
 }
-let timeoutId: number | undefined;
 export default function EventList({ defaultEvents, config }: Props) {
   const [events, setEvents] = useState(defaultEvents);
   const [isConnected, setConnected] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
   const router = useRouter();
+  const latestEventId = useRef(defaultEvents.at(0)?.id);
 
   useEffect(() => {
-    const source = api.v2.getGatherEventsStream(config, defaultEvents.at(0)?.id);
+    let source: EventSource;
+    let heartbeatTimeoutId: number | undefined;
+    let reconnectTimeoutId: number | undefined;
+    let backoff = 1000;
+    let stopped = false;
 
-    source.addEventListener('data', (event) => {
-      const newEvent = JSON.parse(event.data);
-      setEvents((currentEvents) => [newEvent, ...currentEvents]);
-      router.refresh();
-    });
+    function connect() {
+      source = api.v2.getGatherEventsStream(config, latestEventId.current);
 
-    source.addEventListener('heartbeat', (event) => {
-      setConnected(true);
-      window.clearTimeout(timeoutId);
-      timeoutId = window.setTimeout(() => {
+      source.addEventListener('data', (event) => {
+        const newEvent = JSON.parse(event.data);
+        latestEventId.current = newEvent.id;
+        setEvents((currentEvents) => [newEvent, ...currentEvents]);
+        router.refresh();
+      });
+
+      source.addEventListener('heartbeat', () => {
+        setConnected(true);
+        backoff = 1000;
+        window.clearTimeout(heartbeatTimeoutId);
+        heartbeatTimeoutId = window.setTimeout(() => {
+          setConnected(false);
+          source.close();
+          scheduleReconnect();
+        }, HEARTBEAT_TIMEOUT_MS);
+      });
+
+      source.onerror = () => {
         setConnected(false);
-      }, 15000);
-    });
+        source.close();
+        scheduleReconnect();
+      };
+    }
 
-    return () => source.close();
-  }, [defaultEvents, router]);
+    function scheduleReconnect() {
+      if (stopped) return;
+      window.clearTimeout(reconnectTimeoutId);
+      reconnectTimeoutId = window.setTimeout(() => {
+        backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
+        connect();
+      }, backoff);
+    }
+
+    connect();
+
+    return () => {
+      stopped = true;
+      window.clearTimeout(heartbeatTimeoutId);
+      window.clearTimeout(reconnectTimeoutId);
+      source.close();
+    };
+  }, [config]);
 
   useEffect(() => {
     listRef.current?.scrollTo(0, 0);
